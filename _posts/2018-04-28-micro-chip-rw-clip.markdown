@@ -114,5 +114,15 @@ After a lot of trial and error, I was able to squeeze a second grabber next to t
 I was never able to do so with the two making contact. And since the I2C pins were right next to 
 each other, there was no way to probe them at the same time with these grabbers.
 
+# Conclusion
 
+The probes are cheap and they are small enough to grab isolated pins on a TQFP144 package or pairs, adjacent pairs of
+a TSOP. You're out of luck if you need to probe adjacent pairs on the TQFP144, which made them useless
+in my case.
 
+If you have the tools (solder iron, microscope, very thin wires), soldering probe wires is much more effective solution, with
+the additional benefit that the measurement setup is far less fragile.
+
+That said, I'm happy to have these probes in my toolbox. They'll be useful one day.
+
+Tom
