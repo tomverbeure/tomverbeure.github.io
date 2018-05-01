@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "In the lab: Bauch and Lomb StereoZoom 4 with Phone Adapter"
+title:  "In the lab: Bausch and Lomb StereoZoom 4 with Phone Adapter"
 date:   2018-04-29 22:00:00 -0700
 categories: tools
 ---
@@ -10,10 +10,10 @@ categories: tools
 In an [earlier log](https://hackaday.io/project/122480-eecolor-color3/log/144836-sii9233-and-sii9136-i2c-traces), 
 I already wrote about needing a microscope to solder probe wires onto the pins of a TQFP 144 package.
 
-The microscope in question is a Bauch and Lomb StereoZoom 4. There's a really good article about this microscope
+The microscope in question is a Bausch and Lomb StereoZoom 4. There's a really good article about this microscope
 [here](http://www.covingtoninnovations.com/stereozoom/), but the gist of it is this:
 
-* It was produced from 1959 to 2000(!) and sold under the brands of Bauch & Lomb, Leica, and Cambridge Instruments.
+* It was produced from 1959 to 2000(!) and sold under the brands of Bausch & Lomb, Leica, and Cambridge Instruments.
 * By far the most common configuration has a zoom ratio of the main body from 0.7x to 3.0x, with 10x eye pieces.
 * It's a stereo-microscope which means there is a sense of depth. This helps a bit when doing soldering work.
 
