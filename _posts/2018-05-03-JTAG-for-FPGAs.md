@@ -43,6 +43,8 @@ This is what this series of articles is trying to address.
 
 # JTAG_GPIO
 
+## Functionality
+
 To make things easy, let's us a really simply JTAG block, one that is essentially a copy of the Altera In-System
 Sources and Probes block: `JTAG_GPIO`. 
 
@@ -52,9 +54,19 @@ connect the gpio\_output signals to logic nodes you want to control, and the gpi
 You can find the source of this block in [`jtag_gpios.v`](https://github.com/tomverbeure/jtag_gpios/blob/master/rtl/jtag_gpios.v) 
 on GitHub.
 
+It has the following scan registers:
+
+| Scan Register | IR activation | Size       | Bit            | Name        |
+|---------------|---------------|------------|----------------|-------------|
+| `scan_n`      | `SCAN_N`      | 1          | [0]            | `select`    |
+| `config`      | `EXTEST`      | NR_GPIOS+1 | [NR_GPIOS-1:0] | `direction` |
+|               |               |            | [NR_GPIOS]     | `update`    |
+| `data`        | `EXTEST`      | NR_GPIOS+1 | [NR_GPIOS-1:0] | `value`     |
+|               |               |            | [NR_GPIOS]     | `update`    |
+
 It works as follows:
 
-* There are 3 data (scan) registers: `scan_n`, `config` and `data`.
+* There are 3 data scan registers: `scan_n`, `config` and `data`.
 * The `scan_n` register is the active data scan register when the `SCAN_N` instruction is selected. `scan_n` determines which
   data register is active when the `EXTEST` instruction is active. In our particular case, `scan_n` is used to select between 
   `config` and `data`, so this register is only 1 bit.
@@ -63,41 +75,62 @@ It works as follows:
   reset.)
 * The `data` register is used to read back the value of the GPIO inputs or to program the value of GPIO outputs.
 
-You provide the number of GPIOs as a parameter, `NR\_GPIOS`, of the jtag_gpio instance.
+The number of GPIOs is a Verilog parameter, `NR\_GPIOS`, of the jtag_gpio instance.
 
-You'd expect the size of `config` and the `data` shift registers to be the length of the number of GPIOs. But that is not the case!
-It's actually `NR\_GPIOS+1`.
-
-There is really good reason for this. To understand that, let's see what happens when doing a JTAG scan operation. 
-
-It always happens in the following order:
-
-* `CAPTURE_DR`: during this clock cycle, some parallel value is captured into the data scan register.
-* `SHIFT_DR`: this is where the contents that were captured in the previous cycle are shifted out and where a new value
-  is shifted in via the `TDI` input.
-* `UPDATE_DR`: when a new value has been fully shifted into the data scan regiser, this state is used to apply the value one
-  way or the other.
-
-It is impossible to scan an internal value out and a new value in without going through the `CAPTURE_DR` or `UPDATE_DR` states.
-
-Let's now look at an operation where you want to change the input/output configuration of the JTAG_GPIO block.
-
-* `CAPTURE_DR`: load the current configuration
-* `SHIFT_DR`: shift the current configuration out, shift the new configuration
-* `UPDATE_DR`: apply the new configuration
-
-*Without special precautions, you can not do a read-modify-write operation!*
-
-For this reason, the `config` and `data` scan registers have one 1 addition bit `update` bit: the `UPDATE_DR` operation is only
+The `config` and `data` scan registers have one 1 additional `update` bit `update` bit: the JTAG TAP `UPDATE_DR` operation is only
 executed when this bit is set. Otherwise, the new value that is shifted in through `TDI` has no effect at all.
 
+Without such a bit it would be impossible to do read-modify-write operations, because a shift operation into the `data` or `config`
+scan register would always execute `UPDATE_DR` as well.
 
-| Scan Register | IR activation | Size       | Bit            | Name        | Description                                                                                                                                                                                                                                             |
-|---------------|---------------|------------|----------------|-------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `scan_n`      | `SCAN_N`      | 1          | [0]            | `select`    | When 0, INTEST instructions operate on the `config` scan register. When 1, they operate on the `data` scan register.                                                                                                                                    |
-| `config`      | `INTEST`      | NR\_GPIOS+1 | [NR\_GPIOS-1:0] | `direction` | One bit per GPIO. When 0, a GPIO is configured as input. When 1, it's configured as output.                                                                                                                                                             |
-|               |               |            | [NR\_GPIOS]     | `update`    | When 1, the `UPDATE_DR` phase will update the configuration of the GPIOs. When 0, `UPDATE_DR` will have no effect, and the configuration will stay the same.  Using a value of 0 makes it possible to read the configuration register without updating. |
-| `data`        | `INTEST`      | NR\_GPIOS+1 | [NR\_GPIOS-1:0] | `value`     | `CAPTURE_DR` loads the GPIO input values into these bits of the scan register.  `UPDATE_DR` sets the GPIO output value to these bits of the scan register, but only when `update` is 1.                                                                 |
-|               |               |            | [NR\_GPIOS]     | `update`    | See `config` scan register.                                                                                                                                                                                                                             |
+## JTAG Usage
+
+Let's assume that we have 3 GPIOs.
+
+The JTAG\_GPIO block is used as follows:
+
+Configure the direction of the GPIOs:
+* `jtag_ir_scan(SCAN_N)`
+
+    Set the `SCAN_N` instruction. This select the `scan_n` data scan register.
+
+* `jtag_dr_scan(1'b0)`
+
+    Set the `scan_n` scan register to 0 (=`config`)
+
+* `jtag_ir_scan(EXTEST)`
+
+    Set the `EXTEST` instruction. This, in combination with `scan_n` = 0, connects `config` as data scan register.
+
+* `prev_config = jtag_dr_scan(4'b1011)`
+
+    The MSB sets the `update` flag. The 3 lower bits set GPIO 0 and 1 to output, and GPIO 2 as input.
+    The previous config value gets returned as `prev_config`. In this case, we don't use it.
+
+Control and observe GPIO pins:
+* `jtag_ir_scan(SCAN_N)`
+
+    Set the `SCAN_N` instruction. This select the `scan_n` data scan register.
+
+* `jtag_dr_scan(1'b1)`
+
+    Set the `scan_n` scan register to 1 (=`data`)
+
+* `jtag_ir_scan(EXTEST)`
+
+    Set the `EXTEST` instruction. This, in combination with `scan_n` = 1, connects `data` as data scan register.
+
+* `gpio_input = jtag_dr_scan(4'b1001)`
+
+    Update the GPIO 0 and 1 outputs to 1 and 0. The value of all GPIOs is returned as `gpio_input`
+
+* `gpio_input = jtag_dr_scan(4'b1010)`
+	
+    Toggle GPIO 0 from 1 to 0 and GPIO 1 from 0 to 1. Also get the `gpio_input` values.
+
+* `gpio_input = jtag_dr_scan(4'b0010)`
+	
+    Get the `gpio_input` values *without updating the GPIO outputs*! This is because the MSB of the value that
+    is being scanned in is 0.
 
 
