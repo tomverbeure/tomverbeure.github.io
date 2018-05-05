@@ -63,10 +63,10 @@ It works as follows:
   reset.)
 * The `data` register is used to read back the value of the GPIO inputs or to program the value of GPIO outputs.
 
-You provide the number of GPIOs as a parameter, `NR_GPIOS`, of the jtag_gpio instance.
+You provide the number of GPIOs as a parameter, `NR\_GPIOS`, of the jtag_gpio instance.
 
 You'd expect the size of `config` and the `data` shift registers to be the length of the number of GPIOs. But that is not the case!
-It's actually `NR_GPIOS+1`.
+It's actually `NR\_GPIOS+1`.
 
 There is really good reason for this. To understand that, let's see what happens when doing a JTAG scan operation. 
 
@@ -87,5 +87,17 @@ Let's now look at an operation where you want to change the input/output configu
 * `UPDATE_DR`: apply the new configuration
 
 *Without special precautions, you can not do a read-modify-write operation!*
+
+For this reason, the `config` and `data` scan registers have one 1 addition bit `update` bit: the `UPDATE_DR` operation is only
+executed when this bit is set. Otherwise, the new value that is shifted in through `TDI` has no effect at all.
+
+
+| Scan Register | IR activation | Size       | Bit            | Name        | Description                                                                                                                                                                                                                                             |
+|---------------|---------------|------------|----------------|-------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `scan_n`      | `SCAN_N`      | 1          | [0]            | `select`    | When 0, INTEST instructions operate on the `config` scan register. When 1, they operate on the `data` scan register.                                                                                                                                    |
+| `config`      | `INTEST`      | NR\_GPIOS+1 | [NR\_GPIOS-1:0] | `direction` | One bit per GPIO. When 0, a GPIO is configured as input. When 1, it's configured as output.                                                                                                                                                             |
+|               |               |            | [NR\_GPIOS]     | `update`    | When 1, the `UPDATE_DR` phase will update the configuration of the GPIOs. When 0, `UPDATE_DR` will have no effect, and the configuration will stay the same.  Using a value of 0 makes it possible to read the configuration register without updating. |
+| `data`        | `INTEST`      | NR\_GPIOS+1 | [NR\_GPIOS-1:0] | `value`     | `CAPTURE_DR` loads the GPIO input values into these bits of the scan register.  `UPDATE_DR` sets the GPIO output value to these bits of the scan register, but only when `update` is 1.                                                                 |
+|               |               |            | [NR\_GPIOS]     | `update`    | See `config` scan register.                                                                                                                                                                                                                             |
 
 
