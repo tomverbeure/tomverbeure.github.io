@@ -134,3 +134,10 @@ Control and observe GPIO pins:
     is being scanned in is 0.
 
 
+# Conclusion
+
+This part introduces a simple but usable JTAG controlled GPIO block. 
+
+In the next installment of this series, we'll try to get it to work on a real FPGA.
+
+
