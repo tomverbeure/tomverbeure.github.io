@@ -7,17 +7,16 @@ categories: JTAG
 
 # Introduction
 
-During the development of an FPGA project, you sometimes want to be able to control design internal nodes from your
+During the development of an FPGA project, you sometimes want to be able to control internal signals of the design from your
 host PC, or observe internal state.
 
 Even if you plan to have a real control interface on your final board (such as a USB to serial port), that interface
 may not yet be ready. Or maybe you want to debug the functionality of that interface itself, and you need another
 side band way to access your information.
 
-When you're using Altera tools (or the Xilinx equivalent), you could use In-System Sources and Probes: with a small
-amount of effort, you can create a block with a user specified number of control and observability points, instantiate
-that block in your design, and use a Quartus GUI to control and observe, or you can bypass the GUI and control and observe
-the nodes through a TCL API.
+When you're using Altera tools (or the Xilinx equivalent), you can use *In-System Sources and Probes*: with a small
+amount of effort, you can create a block with a user specified number of control outputs and observability inputs, instantiate
+that block in your design, and use a Quartus GUI or a TCL API to control and observe these points.
 
 The communication between the design and the host PC happens over JTAG.
 
@@ -35,18 +34,14 @@ Maybe you've even want to make your CPU debuggable over GDB?
 
 For reasons like this, it may be useful to roll your own JTAG debug infrastructure.
 
-If you want to go that route, one of the immediate questions that follows is: how will I control those JTAG capable block in my design from
-my host PC?
+In this series of articles, we'll explore what it takes to get there.
 
-This is what this series of articles is trying to address.
-
+We start by introduction a simple block, JTAG\_GPIO, that more or less mimics the Altera sources and probes tool. And
+then we dive into the intrastructure that's need to operate this block from a host PC.
 
 # JTAG_GPIO
 
-## Functionality
-
-To make things easy, let's us a really simply JTAG block, one that is essentially a copy of the Altera In-System
-Sources and Probes block: `JTAG_GPIO`. 
+The JTAG\_GPIO block has a very simple core functionality.
 
 You instantiate the block in your design, connect it on one side to a JTAG TAP (Test Access Port) and
 connect the gpio\_output signals to logic nodes you want to control, and the gpio\_input signals to nodes you want to observe.
@@ -83,7 +78,7 @@ executed when this bit is set. Otherwise, the new value that is shifted in throu
 Without such a bit it would be impossible to do read-modify-write operations, because a shift operation into the `data` or `config`
 scan register would always execute `UPDATE_DR` as well.
 
-## JTAG Usage
+# JTAG Usage
 
 Let's assume that we have 3 GPIOs.
 
