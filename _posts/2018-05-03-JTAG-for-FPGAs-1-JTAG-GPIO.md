@@ -128,11 +128,14 @@ Control and observe GPIO pins:
     Get the `gpio_input` values *without updating the GPIO outputs*! This is because the MSB of the value that
     is being scanned in is 0.
 
-
-# Conclusion
+# Coming up...
 
 This part introduces a simple but usable JTAG controlled GPIO block. 
 
-In the next installment of this series, we'll try to get it to work on a real FPGA.
+While it's good to know how to use this block in theory, we need to add it to a real design, and figure out
+a way to sends the JTAG instructions to the hardware. The two most populare ways of doing that 
+are [OpenOCD](http://openocd.org) and [UrJTAG](http://urjtag.org).
+
+In the next installment of this series, we'll have a closer look at this.
 
 
