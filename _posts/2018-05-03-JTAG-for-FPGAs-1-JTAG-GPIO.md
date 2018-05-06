@@ -70,7 +70,7 @@ It works as follows:
   reset.)
 * The `data` register is used to read back the value of the GPIO inputs or to program the value of GPIO outputs.
 
-The number of GPIOs is a Verilog parameter, `NR\_GPIOS`, of the jtag_gpio instance.
+The number of GPIOs is a Verilog parameter, `NR_GPIOS`, of the jtag_gpio instance.
 
 The `config` and `data` scan registers have one 1 additional `update` bit `update` bit: the JTAG TAP `UPDATE_DR` operation is only
 executed when this bit is set. Otherwise, the new value that is shifted in through `TDI` has no effect at all.
