@@ -46,3 +46,34 @@ the instructions register, it also provides a bypass register to cover the case 
 has been scanned in.
 
 Finally, the top links the GPIO pins to the LEDs and button.
+
+# Simulation
+
+A self-checking testbench? Who needs that when eye-balling works just fine!
+
+To run a simulation, just go to the `./tb` directory and just type `make`.
+
+`make wave` will bring up a GTKWave window with beautiful waveforms to explore!
+
+# The Physical World 
+
+To make things work in the real world, we need 3 things:
+
+* An FPGA development board
+
+    Any FPGA development board should be fine to test this design.  
+    I'm using a [BlackIce-II](https://github.com/mystorm-org/BlackIce-II/wiki) FPGA board which has one of the popular iCE40
+    FPGAs from Lattice, and a full open source tool flow.
+
+* A JTAG cable
+
+    There are tons of them in existence. They can go from $3 USB Blaster clones that can be bought on AliExpress to 
+    many hundreds of dollar for some really fancy ones. The most important part is that the JTAG cable is supported by
+    OpenOCD.
+
+    In the picture above, I'm using a cheap clone of a Digilent Xilinx JTAG Programming cable that can be bought
+    on AliExpress for $24. 
+
+    
+
+
