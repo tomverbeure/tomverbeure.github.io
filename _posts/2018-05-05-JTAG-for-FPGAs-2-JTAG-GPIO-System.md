@@ -57,7 +57,10 @@ To run a simulation, just go to the `./tb` directory and just type `make`.
 
 # The Physical World 
 
-To make things work in the real world, we need 3 things:
+Here's what a full setup looks like in the real world:
+
+![BlackIce-II and JTAG](./assets/jtag/black_ice_jtag.jpg)
+
 
 * An FPGA development board
 
@@ -71,9 +74,17 @@ To make things work in the real world, we need 3 things:
     many hundreds of dollar for some really fancy ones. The most important part is that the JTAG cable is supported by
     OpenOCD.
 
-    In the picture above, I'm using a cheap clone of a Digilent Xilinx JTAG Programming cable that can be bought
-    on AliExpress for $24. 
+    In the picture above, I'm using a relatively cheap clone of a Digilent Xilinx JTAG Programming cable that can be bought
+    on AliExpress for $24. Yes, that's than 10x more expensive than the really cheap stuff, but 
+    [the experience with the very cheap ones isn't always great](https://hackaday.io/project/92800-fpga-experiments/log/144407-terasic-vs-cheap-clone-usb-blaster).
 
-    
+* A JTAG cable to FPGA board adapter
+
+    That's the soldered contraption in the picture.
+
+    The BlackIce-II board (and my board from different brands like it) have PMOD connectors. These are more or less 
+    standardized with 6 pins: ground, 3.3V, and 4 GPIOs. 4 signals is all that's needed for JTAG, so that works out 
+    perfectly.
+
 
 
