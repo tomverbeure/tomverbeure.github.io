@@ -24,11 +24,13 @@ This post contains my installation notes.
 
 * Total download size is 6.5GB. 
 * Untar file...
-* ./xsetup
-* Select "ISE WebPACK". Diskspace required: another 17GB!
-* Settings file is written to ./Xilinx/14.7/ISE_DS/settings64.csh and ./Xilinx/14.7/ISE_DS/settings64.sh
-* source ./Xilinx/14.7/ISE_DS/settings64.sh
-* ise
+* sudo ./xsetup
+* Select "ISE WebPACK" and "Cable Drivers". Diskspace required: another 17GB!
+* Create alias in ~/.bashrc: 
+     /opt/Xilinx/14.7/ISE_DS/ISE/bin/lin64/ise
+
+     The alternative is to use one of the settings files: `source /opt/Xilinx/14.7/ISE_DS/settings64.sh`
+* Start the IDE: ise
 
 # License
 
@@ -73,12 +75,22 @@ sudo apt-get install gitk git-gui libusb-dev build-essential libc6-dev fxload li
 install Webpack (LabTools only doesn't work with the scripts that are used later.)
 
 
-git clone usb-driver
+git clone git://git.zerfleddert.de/usb-driver
+cd usb-driver
 make
-setuppc
+./setup_pcusb
 
 export LD_PRELOAD=~/usb-driver/libusb-driver.so
 
+Add following line to libusb-driverrc file:
+#Digilent clone
+LPT4 = FTDI:0403:6014
+
+cp libusb-driverrc ~/.libusb-driverrc
+
 # SUCCESS !
 sudo LD_PRELOAD=/home/vagrant/usb-driver/libusb-driver.so /opt/Xilinx/14.7/ISE_DS/ISE/bin/lin/impact &
+
+
+
 
