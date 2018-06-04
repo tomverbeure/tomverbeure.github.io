@@ -111,7 +111,7 @@ It isn't encouraging: the gap between the grabber and the next pin seems to be n
 width of the grabber itself.
 
 After a lot of trial and error, I was able to squeeze a second grabber next to the first one, but
-I was never able to do so with the two making contact. And since the I2C pins were right next to 
+I was never able to do so without the two making contact. And since the I2C pins were right next to 
 each other, there was no way to probe them at the same time with these grabbers.
 
 # Conclusion
