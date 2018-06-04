@@ -9,7 +9,7 @@ Introduction
 ------------
 
 One of my on-going projects is the reverse engineering of a Pano Logic Zero Client. 
-Going forware, my [Hackaday Project Page](https://hackaday.io/project/136227-pano-logic-zero-client-g1) will mostly
+Going forward, my [Hackaday Project Page](https://hackaday.io/project/136227-pano-logic-zero-client-g1) will mostly
 track the contents of this blog, but here are few earlier logs:
 
 * [Acquisition of the Goods](https://hackaday.io/project/136227-pano-logic-zero-client-g1/log/144009-acquisition-of-the-goods)
@@ -25,7 +25,7 @@ PCB Reverse Engineering Progress
 The most important resource are the connections between the FPGA and its surroundings. That information is captured
 in the [top.ucf](https://github.com/tomverbeure/panologic/blob/master/shared/top.ucf) file.
 
-Right now, I have the following interface have been completed:
+Right now, the following interfaces have been mapped out:
 
 * IDT ICS307 clock generator
 
@@ -50,6 +50,12 @@ Right now, I have the following interface have been completed:
     Audio bringup soon!
 
 * DDR2 SDRAM
+
+    All pins identified.
+
+* NXT ISP1760 USB Host Controller
+
+    First pins identified.
 
 VGA Bringup
 -----------
