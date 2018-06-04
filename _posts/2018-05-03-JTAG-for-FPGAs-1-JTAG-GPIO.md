@@ -70,7 +70,7 @@ It works as follows:
   reset.)
 * The `data` register is used to read back the value of the GPIO inputs or to program the value of GPIO outputs.
 
-The number of GPIOs is a Verilog parameter, `NR\_GPIOS`, of the jtag_gpio instance.
+The number of GPIOs is a Verilog parameter, `NR_GPIOS`, of the jtag_gpio instance.
 
 The `config` and `data` scan registers have one 1 additional `update` bit `update` bit: the JTAG TAP `UPDATE_DR` operation is only
 executed when this bit is set. Otherwise, the new value that is shifted in through `TDI` has no effect at all.
@@ -128,11 +128,14 @@ Control and observe GPIO pins:
     Get the `gpio_input` values *without updating the GPIO outputs*! This is because the MSB of the value that
     is being scanned in is 0.
 
-
-# Conclusion
+# Coming up...
 
 This part introduces a simple but usable JTAG controlled GPIO block. 
 
-In the next installment of this series, we'll try to get it to work on a real FPGA.
+While it's good to know how to use this block in theory, we need to add it to a real design, and figure out
+a way to sends the JTAG instructions to the hardware. The two most populare ways of doing that 
+are [OpenOCD](http://openocd.org) and [UrJTAG](http://urjtag.org).
+
+In the next installment of this series, we'll have a closer look at this.
 
 
