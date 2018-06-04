@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Pano Logic Project Update"
+title:  "Pano Logic Project Update - VGA is UP, VexRiscV CPU, Text Mode"
 date:   2018-06-03 22:00:00 -0700
 categories: Pano Logic
 ---
