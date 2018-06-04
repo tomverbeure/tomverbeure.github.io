@@ -86,5 +86,30 @@ Here's what a full setup looks like in the real world:
     standardized with 6 pins: ground, 3.3V, and 4 GPIOs. 4 signals is all that's needed for JTAG, so that works out 
     perfectly.
 
+# Synthesis & Uploading 
+
+If you're using a BlackIce-II board too, you can synthesize your design by running `make` in the `./ice40` directory.
+When all goes well, you can then run `sudo make upload` to load your design into the FPGA.
+
+A different ICE40 based development board will require you to edit the `blackice-ii.pcf` file and adjust the pinout, and upload
+the design in a different way as well.
+
+If everything thing well, you should see one of the 3 LEDs blinking constantly. That LED is not controlled by the JTAG\_GPIO block but
+simply controlled by a counter.
+
+# Controlling JTAG through UrJTAG
+
+Finally things are getting interesting!
+
+sudo apt-get install urjtag
+
+git clone https://git.code.sf.net/p/urjtag/git urjtag-git
+sudo apt-get install gettext autopoint python-dev
+cd urjtag-git
+./autogen.sh
+./configure --prefix=/opt/urjtag
+
+sudo /opt/urjtag/bin/jtag
+
 
 
