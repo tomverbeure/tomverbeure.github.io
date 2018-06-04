@@ -59,7 +59,7 @@ To run a simulation, just go to the `./tb` directory and just type `make`.
 
 Here's what a full setup looks like in the real world:
 
-![BlackIce-II and JTAG](./assets/jtag/black_ice_jtag.jpg)
+![BlackIce-II and JTAG](/assets/jtag/black_ice_jtag.jpg)
 
 
 * An FPGA development board
