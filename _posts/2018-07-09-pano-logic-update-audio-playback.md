@@ -30,8 +30,8 @@ bugs in the hub, so that probably explains the presence of this SMSC chip.
 The SMSC chip has an I2C interface, but was only able to identify a reset and a clkin signal between the FPGA and the SMSC chip.
 It's possible that the default configuration is sufficient and that no further configuration is necessary.
 
-Ethernet Connections
---------------------
+Ethernet 
+--------
 
 A bunch of connections between the Micrel KSZ8721BL Ethernet PHY and the FPGA were identified as well. However, there are
 some signals that seem to be suspiciously not connected (e.g. `eth_txc` and `eth_pd_`).
