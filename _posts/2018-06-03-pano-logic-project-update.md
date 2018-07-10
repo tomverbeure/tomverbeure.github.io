@@ -93,7 +93,7 @@ ubiquitous [PicoRV32](https://github.com/cliffordwolf/picorv32) are:
     It's not that we *need* a faster CPU for our current purposes, but the amount of logic resources for the VexRiscV is almost the same as for the PicoRV32. 
     And it's fun to explore different cores. So why not?
 
-At this time, the CPU is only used to blink the LEDs (yay!). That's because some other infrastructure is necessary to really start using it: as way
+At this time, the CPU is only used to blink the LEDs (yay!). That's because some other infrastructure is necessary to really start using it: a way
 to tell the user what's going on. That's why the following was developed:
 
 Text Mode Output
