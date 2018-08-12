@@ -237,6 +237,7 @@ case class Timer(width : Int) extends Component{
   }
   
 }
+```
 
 This part is really pretty straightfoward.
 
