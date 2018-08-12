@@ -154,6 +154,8 @@ And even if I could write my own watered down, minimalistic version of it, I'd b
 
 # SpinalHDL
 
+## Quick Feature Overview
+
 Since Verilog and SystemVerilog with assorted hacks didn't work out, I started to look at alternatives. I experimented a bit with
 [MyHDL](http://myhdl.org/) and [migen](https://m-labs.hk/migen/manual/index.html#https://m-labs.hk/migen/manual/index.html#), but 
 eventually I found [SpinalHDL](https://spinalhdl.github.io/SpinalDoc/).
@@ -181,8 +183,9 @@ The library contains everything you need to build construct RTL:
 
     And those functions can be passed as an argument to a Component object, which makes it possible to create very powerful abstractions.
 
+## A Not Totally Trivial Timer Example
 
-For example, you could create a timer block that hangs on a CPU bus. But instead of specifying a specific bus (say, AXI) with very specific signals,
+Let's create a timer module that hangs on a CPU bus. But instead of specifying a specific bus (say, AXI) with very specific signals,
 you could give it a function or a abstract object that has a generic API that could apply to kind of bus.
 
 The timer block gets its request by using this generic API.
@@ -191,10 +194,11 @@ When you instantiate the timer block in your design, you pass along a concrete b
 
 The end result, will be a design with that particular bus, but the design of the Timer block itself is entirely generic and interface agnostic.
 
-And that's exactly one of the [examples](https://spinalhdl.github.io/SpinalDoc/spinal/examples/timer/) that is given in the SpinalHDL manual, but 
-I'm going into a bit more detail here.
+And that's exactly one of the [examples](https://spinalhdl.github.io/SpinalDoc/spinal/examples/timer/) that is given in the SpinalHDL manual.
 
-Here's the full code:
+The description below is for a slightly different example though. You can find the project [here](https://github.com/tomverbeure/SpinalTimer) on GitHub.
+
+The code for the generic timer:
 
 ```Scala
 case class Timer(width : Int) extends Component{
