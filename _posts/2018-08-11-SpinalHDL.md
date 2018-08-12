@@ -239,38 +239,68 @@ case class Timer(width : Int) extends Component{
 }
 ```
 
-This part is really pretty straightfoward.
+The first part is really pretty straightfoward.
 
-You see that the parameters of the class are similar to Verilog parameters. In this case, 
-it's a simple integer, but for more complex designs, it's usually some kind of struct with many parameters.
+```Scala
+case class Timer(width : Int) extends Component{
+```
 
-IOs are grouped into a Bundle in which each item is specified as 'in' or 'out'. Note that Bundles are a general
-way of grouping signals that belong together, they're not restricted to just IOs. And, of course, they
-can be hierarchical, with nested Bundles and all that. That fact that they are assigned to 'io' is really just
+The parameters of the class are similar to Verilog parameters. In this case, 
+it's a simple integer, but for more complex designs, it's usually some kind of struct with many parameters. This makes
+it very easy to pass parameters around, and change some of them as needed. One could also create recursive hardware.
+
+```Scala
+  val io = new Bundle{
+    val tick      = in Bool
+    val clear     = in Bool
+    val limit     = in UInt(width bits)
+
+    val full      = out Bool
+    val value     = out UInt(width bits)
+  }  
+```
+
+IOs are grouped into a Bundle in which each item is specified as 'in' or 'out'. 
+
+Note that Bundles are a general way of grouping signals that belong together, they're not restricted to just IOs. And, of course, they
+can be hierarchical, with nested Bundles and all that. That fact that they are assigned to `io` is really just
 the choice of the designer, who could have chosen any other name. Or decide to have multiple Bundles for IOs.
 
 Since a Bundle is a class, you can subclass it to make your design more abstract. For example, you could
-create a Bundle subclass that's called ApbInterface.
+create a Bundle subclass that's called `ApbInterface`.
 
 The implementation it pretty straightforward.
 
-One things that's not obvious is that RTL constructs don't use Scala operators, but methods.
+```Scala
+  val counter = Reg(UInt(width bits))
+  when(io.tick && !io.full){
+    counter := counter + 1
+  }
+  when(io.clear){
+    counter := 0
+  }
 
-For example, Scala uses `if (...) <...> else <...>`. However, if you want to do such a construct for your RTL, you
-need to use `when(...){ <...> }.otherwise{ <...> }`.
+  io.full := counter === io.limit && io.tick
+  io.value := counter
+```
 
-You *can* still use if-else, but those don't convert to RTL, they are evaluated during the equivalent of elaboration, if you will. They are
+One things that can't be seen above is that RTL constructs don't use Scala keywords, but objects and methods from the SpinalHDL library.
+
+For example, Scala uses `if (...) <...> else <...>` like many other languages. `if` and `else` are reserved keywords.
+
+However, if you want to do such a construct for your RTL, you need to use `when(...){ <...> }.otherwise{ <...> }`. `when` is an object of the
+WhenContext and `otherwise` is method of the that `when` object.
+
+You *can* still use if-else keywords, but those don't convert to RTL: they are evaluated during the equivalent of elaboration, if you will. They are
 like `if ... generate` statements in Verilog.
-
-This is also visible in the RTL comparison operation, which uses `===` instead of `==`.
 
 Another interesting aspect is that you can freely mix assignement to combinational and registered signals. Registered signals are indicated
 as such by wrapping `Reg(...)` around the type.
 
-The real interesting part with the `driveFrom` method.
+The real interesting part starts with the `driveFrom` method.
 
 This method doesn't add new hardware to the Timer module directly, but it creates a new Area object that references the signals of
-the `io` bundle and connects it to interface hardware.
+the `io` bundle, creates some glue logic for the interface hardware, registers this glue logic with a bus factory object.
 
 ```Scala
   def driveFrom(busCtrl : BusSlaveFactory,baseAddress : BigInt)(ticks : Seq[Bool],clears : Seq[Bool]) = new Area {
@@ -288,14 +318,14 @@ That's what happens here:
     io.tick  := (ticksEnable  & ticks.asBits ).orR
 ```
 
-The timer counter increments when `io.tick` is high. `io.tick` comes from a vector of multiple ticks, where each bit can individually
-be masked.
+The timer counter increments when `io.tick` is high. Some glue logic is added to create `io.tick`: it comes from a vector of multiple ticks, where 
+each bit can individually be masked.
 
 This masking register is `tickEnable`: it's a configuration register that is a field of a bus register that starts at relative address 0, 
-and that starts at bit zero within that register. The bus register can be read or written by the bus.
+and that starts at bit zero within that register. The bus register is read/write.
 
-It is the task of the `busCtrl` factory object to gather the information of all registers that will hang off the bus, by all calls to 
-`createReadWrite`, `driveAndRead`, `read` and `write`, and eventually construct all the registers and wires that make up the bus fabric.
+It is the task of the `busCtrl` factory object to gather the information of all registers that will hang off the bus by calls to 
+`createReadWrite`, `driveAndRead`, `read` and `write`, and, eventually, construct all the registers and wires that make up the bus fabric.
 
 Finally, the example goes on actually use the Timer, with a bus connect to it. The most important parts are here:
 
@@ -307,15 +337,10 @@ case class ApbTimer(width : Int) extends Component{
   }
   
   ...
-  
   val timerA = Timer(width = 32)
-  
   ...
-  
   val busCtrl = Apb3SlaveFactory(io.apb)
-  
   ...
-  
   val timerABridge = timerA.driveFrom(busCtrl,0x40)(
     // The first element is True, which allows you to have a mode where the timer is always counting up.
     ticks  = List(True, prescaler.io.overflow),
@@ -330,12 +355,17 @@ case class ApbTimer(width : Int) extends Component{
 }
 ```
 
-Things about the bus are finally getting concrete:
+Things about the bus are now concrete:
 
 * The `ApbTimer` module has IOs that include an Apb3 bus.
-* `timerA` is a 32-bit wide timer
-* `busCtrl` is an `Apb3SlaveFactory` object who's task it is to gather all the requirements of the bus and eventually
+* `timerA` is a 32-bit wide timer.
+* `busCtrl` is an `Apb3SlaveFactory` object whose task it is to gather all the requirements of the bus and eventually
   generate the hardware for the Apb bus factory.
 * `timerABridge` asks `timerA` to wire up its internals to the bus.
 * Finally, the `full` output of `timerA` feeds into the input of an interrupt controller
+
+If at some later point, we want to hang the timer on a Wishbone bus, all we need to do is replace Apb3, ApbConfig, and Apb3SlaveFactory by their equivalent 
+and we're done.
+
+
 
