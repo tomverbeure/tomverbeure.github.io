@@ -109,14 +109,14 @@ module autosense (/*AUTOARG*/
    // End of automatics
 ```
 
-I heard for friends in the industry that it's used quite a bit in professional environments, so I gave it a try.
+I heard from friends in the industry that it's used quite a bit in professional environments, so I gave it a try.
 
-* it didn't do as much as I wanted it to do
-* what it was supposed to do, didn't always work
-* it's visually really ugly
-* the indenting rules were inconsistent
+* it didn't do as much as I wanted it to do.
+* what it was supposed to do, didn't always work.
+* it's visually really ugly (just look at the code above!)
+* the indenting rules were inconsistent and definitely not the way I wanted it, even after spending a lot of time trying to tweak it.
 
-verilog-mode is tool that can save a lot of time, but ultimately, it's a bit of an ugly hack. It just rubbed me the wrong way.
+verilog-mode is tool that can save a lot of time, but ultimately, it's an ugly hack that rubbed me the wrong way.
 Two months after trying it the first time, I gave it a second chance only to drop it soon after again. It's just not for me.
 
 ## SystemVerilog
@@ -124,7 +124,7 @@ Two months after trying it the first time, I gave it a second chance only to dro
 SystemVerilog has records and interfaces and they are a fantastic way to remove a large part of the verboseness, so that's 
 where I looked next.
 
-The main issue there is that it's just not supported very well if you're doing this as a hobbyist.
+The main issue with it is that it's just not supported very well if you're doing this as a hobbyist.
 
 The only tool that supports a decent amount of features is [Verilator](https://www.veripool.org/wiki/verilator). But 
 neither [Icarus Verilog](http://iverilog.icarus.com) nor [Yosys](http://www.clifford.at/yosys/) support records or interfaces. 
@@ -143,10 +143,198 @@ And even SystemVerilog doesn't have features that could be really useful.
 
 What I really want is a system where a zero fanout signal down deep in your design hierarchy automatically
 ripples through all the way to an upper hierachy levels until it finds a signal of the same name. One where I can use regular expressions to
-rename whole clusters of signals with one line. One where you have hundreds of plugins to write FSMs with all kinds of verification
-features enabled by default. One where the most elaborate parameterized multi-threaded FIFO with rewind can be instantiated 
-with a few lines of code. One where I don't even have to type the name of the module at the top of the file, because it's inferred
+rename whole clusters of signals with one line (expect that one signal that you don't want to rename). One where you have hundreds of plugins to write 
+FSMs with all kinds of verification features enabled by default. One where fully verified, parameterized multi-threaded FIFO with rewind can be instantiated 
+with a few lines of code. I don't even want to type the name of the module at the top of the file, because it's inferred
 from the file name.
 
+Such systems exists, but they're always proprietary, and maintained by a well funded CAD department.
 
+And even if I could write my own watered down, minimalistic version of it, I'd be afraid of stepping on IP of previous employers.
+
+# SpinalHDL
+
+Since Verilog and SystemVerilog with assorted hacks didn't work out, I started to look at alternatives. I experimented a bit with
+[MyHDL](http://myhdl.org/) and [migen](https://m-labs.hk/migen/manual/index.html#https://m-labs.hk/migen/manual/index.html#), but 
+eventually I found [SpinalHDL](https://spinalhdl.github.io/SpinalDoc/).
+
+SpinalHDL is a library of RTL related classes that are written in Scala.
+
+The library contains everything you need to build construct RTL:
+ 
+* Data types
+
+    Basic data types such as single wires (Bool), vectors (Bits), signed and unsigned integers (UInt, SInt), and Enums. Composite types
+    such a records (Bundle) and arrays (Vec).
+
+    Support for signed and unsigned fixed point and even floating point is under development.
+
+* Hierarchy
+
+    Verilog modules are called Components. And each component can contain multiple Areas, which have their down scope but can
+    reach out to other areas. 
+
+* Higher Level of Abstraction
+
+    Since everything is really a Scala object, Scala functions can create pretty much anything you want: Areas with logic and registers,
+    full components.
+
+    And those functions can be passed as an argument to a Component object, which makes it possible to create very powerful abstractions.
+
+
+For example, you could create a timer block that hangs on a CPU bus. But instead of specifying a specific bus (say, AXI) with very specific signals,
+you could give it a function or a abstract object that has a generic API that could apply to kind of bus.
+
+The timer block gets its request by using this generic API.
+
+When you instantiate the timer block in your design, you pass along a concrete bus interface: AXI or Wishbone or whatever interface you have in mind.
+
+The end result, will be a design with that particular bus, but the design of the Timer block itself is entirely generic and interface agnostic.
+
+And that's exactly one of the [examples](https://spinalhdl.github.io/SpinalDoc/spinal/examples/timer/) that is given in the SpinalHDL manual, but 
+I'm going into a bit more detail here.
+
+Here's the full code:
+
+```Scala
+case class Timer(width : Int) extends Component{
+  val io = new Bundle{
+    val tick      = in Bool
+    val clear     = in Bool
+    val limit     = in UInt(width bits)
+
+    val full      = out Bool
+    val value     = out UInt(width bits)
+  }  
+
+  val counter = Reg(UInt(width bits))
+  when(io.tick && !io.full){
+    counter := counter + 1
+  }
+  when(io.clear){
+    counter := 0
+  }
+
+  io.full := counter === io.limit && io.tick
+  io.value := counter
+
+  def driveFrom(busCtrl : BusSlaveFactory,baseAddress : BigInt)(ticks : Seq[Bool],clears : Seq[Bool]) = new Area {
+    //Address 0 => clear/tick masks + bus
+    val ticksEnable  = busCtrl.createReadWrite(Bits(ticks.length bits),baseAddress + 0,0) init(0)
+    val clearsEnable = busCtrl.createReadWrite(Bits(clears.length bits),baseAddress + 0,16) init(0)
+    val busClearing  = False
+
+    io.clear := (clearsEnable & clears.asBits).orR | busClearing
+    io.tick  := (ticksEnable  & ticks.asBits ).orR
+
+    //Address 4 => read/write limit (+ auto clear)
+    busCtrl.driveAndRead(io.limit,baseAddress + 4)
+    busClearing setWhen(busCtrl.isWriting(baseAddress + 4))
+
+    //Address 8 => read timer value / write => clear timer value
+    busCtrl.read(io.value,baseAddress + 8)
+    busClearing setWhen(busCtrl.isWriting(baseAddress + 8))
+  }
+  
+}
+
+This part is really pretty straightfoward.
+
+You see that the parameters of the class are similar to Verilog parameters. In this case, 
+it's a simple integer, but for more complex designs, it's usually some kind of struct with many parameters.
+
+IOs are grouped into a Bundle in which each item is specified as 'in' or 'out'. Note that Bundles are a general
+way of grouping signals that belong together, they're not restricted to just IOs. And, of course, they
+can be hierarchical, with nested Bundles and all that. That fact that they are assigned to 'io' is really just
+the choice of the designer, who could have chosen any other name. Or decide to have multiple Bundles for IOs.
+
+Since a Bundle is a class, you can subclass it to make your design more abstract. For example, you could
+create a Bundle subclass that's called ApbInterface.
+
+The implementation it pretty straightforward.
+
+One things that's not obvious is that RTL constructs don't use Scala operators, but methods.
+
+For example, Scala uses `if (...) <...> else <...>`. However, if you want to do such a construct for your RTL, you
+need to use `when(...){ <...> }.otherwise{ <...> }`.
+
+You *can* still use if-else, but those don't convert to RTL, they are evaluated during the equivalent of elaboration, if you will. They are
+like `if ... generate` statements in Verilog.
+
+This is also visible in the RTL comparison operation, which uses `===` instead of `==`.
+
+Another interesting aspect is that you can freely mix assignement to combinational and registered signals. Registered signals are indicated
+as such by wrapping `Reg(...)` around the type.
+
+The real interesting part with the `driveFrom` method.
+
+This method doesn't add new hardware to the Timer module directly, but it creates a new Area object that references the signals of
+the `io` bundle and connects it to interface hardware.
+
+```Scala
+  def driveFrom(busCtrl : BusSlaveFactory,baseAddress : BigInt)(ticks : Seq[Bool],clears : Seq[Bool]) = new Area {
+```
+
+`busCtrl` is an object of the `BusSlaveFactory` class. This is an abstract class that can be used to support any kind of bus that
+you want. The method doesn't need to know what kind of bus it is, all it really cares about it is that it has some methods available
+to tie itself into this bus with some registers, starting at a register that is determined by `baseAddress`.
+
+That's what happens here:
+
+```Scala
+    val ticksEnable  = busCtrl.createReadWrite(Bits(ticks.length bits),baseAddress + 0,0) init(0)
+    ...
+    io.tick  := (ticksEnable  & ticks.asBits ).orR
+```
+
+The timer counter increments when `io.tick` is high. `io.tick` comes from a vector of multiple ticks, where each bit can individually
+be masked.
+
+This masking register is `tickEnable`: it's a configuration register that is a field of a bus register that starts at relative address 0, 
+and that starts at bit zero within that register. The bus register can be read or written by the bus.
+
+It is the task of the `busCtrl` factory object to gather the information of all registers that will hang off the bus, by all calls to 
+`createReadWrite`, `driveAndRead`, `read` and `write`, and eventually construct all the registers and wires that make up the bus fabric.
+
+Finally, the example goes on actually use the Timer, with a bus connect to it. The most important parts are here:
+
+```Scala
+case class ApbTimer(width : Int) extends Component{
+  val io = new Bundle{
+    val apb = Apb3(ApbConfig(addressWidth = 8, dataWidth = 32))
+    ...
+  }
+  
+  ...
+  
+  val timerA = Timer(width = 32)
+  
+  ...
+  
+  val busCtrl = Apb3SlaveFactory(io.apb)
+  
+  ...
+  
+  val timerABridge = timerA.driveFrom(busCtrl,0x40)(
+    // The first element is True, which allows you to have a mode where the timer is always counting up.
+    ticks  = List(True, prescaler.io.overflow),
+    // By looping the timer full to the clears, it allows you to create an autoreload mode.
+    clears = List(timerA.io.full)
+  )
+  
+  val interruptCtrl = InterruptCtrl(4)
+  val interruptCtrlBridge = interruptCtrl.driveFrom(busCtrl,0x10)
+  interruptCtrl.io.inputs(0) := timerA.io.full
+  ..
+}
+```
+
+Things about the bus are finally getting concrete:
+
+* The `ApbTimer` module has IOs that include an Apb3 bus.
+* `timerA` is a 32-bit wide timer
+* `busCtrl` is an `Apb3SlaveFactory` object who's task it is to gather all the requirements of the bus and eventually
+  generate the hardware for the Apb bus factory.
+* `timerABridge` asks `timerA` to wire up its internals to the bus.
+* Finally, the `full` output of `timerA` feeds into the input of an interrupt controller
 
