@@ -198,9 +198,15 @@ And that's exactly one of the [examples](https://spinalhdl.github.io/SpinalDoc/s
 
 The description below is for a slightly different example though. You can find the project [here](https://github.com/tomverbeure/SpinalTimer) on GitHub.
 
-The code for the generic timer:
+The [code](https://github.com/tomverbeure/SpinalTimer/blob/master/src/main/scala/mylib/Timer.scala) for the generic timer:
 
 ```Scala
+package mylib
+
+import spinal.core._
+import spinal.lib._
+import spinal.lib.bus.misc._
+
 case class Timer(width : Int) extends Component{
   val io = new Bundle{
     val tick      = in Bool
@@ -209,7 +215,7 @@ case class Timer(width : Int) extends Component{
 
     val full      = out Bool
     val value     = out UInt(width bits)
-  }  
+  }
 
   val counter = Reg(UInt(width bits))
   when(io.tick && !io.full){
@@ -222,8 +228,8 @@ case class Timer(width : Int) extends Component{
   io.full := counter === io.limit && io.tick
   io.value := counter
 
-  def driveFrom(busCtrl : BusSlaveFactory,baseAddress : BigInt)(ticks : Seq[Bool],clears : Seq[Bool]) = new Area {
-    //Address 0 => clear/tick masks + bus
+  def driveFrom(busCtrl : BusSlaveFactory,baseAddress : BigInt)(ticks : Seq[Bool], clears : Seq[Bool]) = new Area {
+    // Address 0 => clear/tick masks + bus
     val ticksEnable  = busCtrl.createReadWrite(Bits(ticks.length bits),baseAddress + 0,0) init(0)
     val clearsEnable = busCtrl.createReadWrite(Bits(clears.length bits),baseAddress + 0,16) init(0)
     val busClearing  = False
@@ -231,16 +237,17 @@ case class Timer(width : Int) extends Component{
     io.clear := (clearsEnable & clears.asBits).orR | busClearing
     io.tick  := (ticksEnable  & ticks.asBits ).orR
 
-    //Address 4 => read/write limit (+ auto clear)
+    // Address 4 => read/write limit (+ auto clear)
     busCtrl.driveAndRead(io.limit,baseAddress + 4)
     busClearing setWhen(busCtrl.isWriting(baseAddress + 4))
 
-    //Address 8 => read timer value / write => clear timer value
+    // Address 8 => read timer value / write => clear timer value
     busCtrl.read(io.value,baseAddress + 8)
     busClearing setWhen(busCtrl.isWriting(baseAddress + 8))
   }
-  
+
 }
+
 ```
 
 The first part is really pretty straightfoward.
@@ -290,10 +297,11 @@ The implementation it pretty straightforward.
 
 One things that can't be seen above is that RTL constructs don't use Scala keywords, but objects and methods from the SpinalHDL library.
 
-For example, Scala uses `if (...) <...> else <...>` like many other languages. `if` and `else` are reserved keywords.
+For example, Scala uses the `if (...) <...> else <...>` like many other languages. `if` and `else` are reserved keywords.
 
 However, if you want to do such a construct for your RTL, you need to use `when(...){ <...> }.otherwise{ <...> }`. `when` is an object of the
-WhenContext and `otherwise` is method of the that `when` object.
+WhenContext and `otherwise` is method of the that `when` object. When you're using these RTL building constructs, SpinalHDL is building an
+AST-like data structure, just like Verilog and VHDL compilers and synthesis tools do when they're parsing your code.
 
 You *can* still use if-else keywords, but those don't convert to RTL: they are evaluated during the equivalent of elaboration, if you will. They are
 like `if ... generate` statements in Verilog.
@@ -304,15 +312,16 @@ as such by wrapping `Reg(...)` around the type.
 The real interesting part starts with the `driveFrom` method.
 
 This method doesn't add new hardware to the Timer module directly, but it creates a new Area object that references the signals of
-the `io` bundle, creates some glue logic for the interface hardware, registers this glue logic with a bus factory object.
+the `io` bundle and creates some glue logic for the interface hardware. It contects this glue logic to bus registers that
+are created by the bus factory object.
 
 ```Scala
   def driveFrom(busCtrl : BusSlaveFactory,baseAddress : BigInt)(ticks : Seq[Bool],clears : Seq[Bool]) = new Area {
 ```
 
 `busCtrl` is an object of the `BusSlaveFactory` class. This is an abstract class that can be used to support any kind of bus that
-you want. The method doesn't need to know what kind of bus it is, all it really cares about it is that it has some methods available
-to tie itself into this bus with some registers, starting at a register that is determined by `baseAddress`.
+you want. The method doesn't need to know what kind of bus it is dealing with: all it really cares about it is that there are methods available
+to tie itself into this bus with some registers that has a certain base address. 
 
 That's what happens here:
 
@@ -331,31 +340,40 @@ and that starts at bit zero within that register. The bus register is read/write
 It is the task of the `busCtrl` factory object to gather the information of all registers that will hang off the bus by calls to 
 `createReadWrite`, `driveAndRead`, `read` and `write`, and, eventually, construct all the registers and wires that make up the bus fabric.
 
-Finally, the example goes on actually use the Timer, with a bus connect to it. The most important parts are here:
+With the core Timer in place, we can now build [a Timer that uses an APB bus](https://github.com/tomverbeure/SpinalTimer/blob/master/src/main/scala/mylib/ApbTimer.scala):
 
 ```Scala
+package mylib
+
+import spinal.core._
+import spinal.lib._
+import spinal.lib.bus.amba3.apb._
+
 case class ApbTimer(width : Int) extends Component{
   val io = new Bundle{
     val apb = Apb3(ApbConfig(addressWidth = 8, dataWidth = 32))
-    ...
+    val tick      = in Bool
+    val interrupt = out Bool
   }
   
-  ...
-  val timerA = Timer(width = 32)
-  ...
+  val timer = Timer(width = 32)
   val busCtrl = Apb3SlaveFactory(io.apb)
   ...
   val timerABridge = timerA.driveFrom(busCtrl,0x40)(
-    // The first element is True, which allows you to have a mode where the timer is always counting up.
-    ticks  = List(True, prescaler.io.overflow),
+    // The 'True' allows for a mode where the timer increments each cycle without the need for activity on io.tick
+    ticks  = List(True, io.tick),
+
     // By looping the timer full to the clears, it allows you to create an autoreload mode.
     clears = List(timerA.io.full)
   )
-  
-  val interruptCtrl = InterruptCtrl(4)
-  val interruptCtrlBridge = interruptCtrl.driveFrom(busCtrl,0x10)
-  interruptCtrl.io.inputs(0) := timerA.io.full
-  ..
+
+  io.interrupt := timer.io.full
+}
+
+object ApbTimerVerilog {
+  def main(args: Array[String]) {
+    SpinalVerilog(new ApbTimer(8))
+  }
 }
 ```
 
@@ -370,6 +388,173 @@ Things about the bus are now concrete:
 
 If at some later point, we want to hang the timer on a Wishbone bus, all we need to do is replace Apb3, ApbConfig, and Apb3SlaveFactory by their equivalent 
 and we're done.
+
+## Generating Verilog
+
+Generating Verilog is matter of calling the `SpinalVerilog` method with our ApbTimer object:
+
+```scala
+object ApbTimerVerilog {
+  def main(args: Array[String]) {
+    SpinalVerilog(new ApbTimer(8))
+  }
+}
+```
+
+Run the following command in the root directory of the project: `sbt "run-main mylib.ApbTimerVerilog"`.
+
+If all went well, there will now be an `ApbTimer.v` Verilog file.
+
+
+## A Look at the Generated Verilog
+
+The generated Verilog isn't exactly what you'd write up yourself, but it matches the original code pretty well:
+
+```Verilog
+module Timer (
+      input   io_tick,
+      input   io_clear,
+      input  [31:0] io_limit,
+      output  io_full,
+      output [31:0] io_value,
+      input   clk,
+      input   reset);
+  wire  _zz_1;
+  reg [31:0] counter;
+  assign io_full = _zz_1;
+  assign _zz_1 = ((counter == io_limit) && io_tick);
+  assign io_value = counter;
+  always @ (posedge clk) begin
+    if((io_tick && (! _zz_1)))begin
+      counter <= (counter + (32'b00000000000000000000000000000001));
+    end
+    if(io_clear)begin
+      counter <= (32'b00000000000000000000000000000000);
+    end
+  end
+
+endmodule
+```
+
+```Verilog
+  assign io_full = _zz_1;
+  assign _zz_1 = ((counter == io_limit) && io_tick);
+```
+
+This could easily be simplified to:
+```Verilog
+  assign io_full = ((counter == io_limit) && io_tick);
+```
+
+Similarly, I'd prefer if the tool would keep the formatting of constants similar to the way they were specified in the original source code.
+Something like `32'b00000000000000000000000000000001` could be specified as `32'd1`.
+
+I have filed an [RFE](https://github.com/SpinalHDL/SpinalHDL/issues/132) to make SpinalHDL smarter about generating redundant
+intermediate signals. The author states that an experience user will typically not look at the Verilog code, so this isn't 
+super important. I believe that's true when you're stuck with limited feature tools like GTKwave, which don't have strong source
+code tracing features. But with (expensive) professional tools like Verdi, which allow very fast browsing through source code,
+it could be a bigger issue? For my use of SpinalHDL as a hobbyist, I don't think it will be a big deal.
+
+Here are some parts of the generated ApbTimer Verilog code:
+
+```Verilog
+module ApbTimer (
+      input  [7:0] io_apb_PADDR,
+      input  [0:0] io_apb_PSEL,
+      input   io_apb_PENABLE,
+      output  io_apb_PREADY,
+      input   io_apb_PWRITE,
+      input  [31:0] io_apb_PWDATA,
+      output reg [31:0] io_apb_PRDATA,
+      output  io_apb_PSLVERROR,
+      input   io_tick,
+      output  io_interrupt,
+      input   clk,
+      input   reset);
+...
+  Timer timer_1 (
+    .io_tick(_zz_4),
+    .io_clear(_zz_5),
+    .io_limit(_zz_1),
+    .io_full(_zz_7),
+    .io_value(_zz_8),
+    .clk(clk),
+    .reset(reset)
+  );
+...
+```
+    
+Yay for not having to type all those signals myself!
+
+```Verilog
+  assign io_apb_PREADY = _zz_6;
+  ...
+  assign _zz_6 = 1'b1;
+  ...
+  assign busCtrl_doWrite = (((io_apb_PSEL[0] && io_apb_PENABLE) && _zz_6) && io_apb_PWRITE);
+  assign busCtrl_doRead = (((io_apb_PSEL[0] && io_apb_PENABLE) && _zz_6) && (! io_apb_PWRITE));
+```
+
+`_zz_6` is another redundant signal that is unnecesary. Whether or not it should also be optimized away from the
+last 2 lines is up for debate. (Probably not?)
+
+
+Let's look at `_zz_1`:
+
+```Verilog
+  Timer timer_1 (
+    ...
+    .io_limit(_zz_1),
+    ...
+  );
+  ...
+  always @ (*) begin
+      ...
+      8'b01000100 : begin
+        if(busCtrl_doWrite)begin
+          _zz_2 = 1'b1;
+        end
+        io_apb_PRDATA[31 : 0] = _zz_1;
+      end
+      ...
+    endcase
+  end
+  ...
+  always @ (posedge clk) begin
+      ...
+    case(io_apb_PADDR)
+      8'b01000100 : begin
+        if(busCtrl_doWrite)begin
+          _zz_1 <= io_apb_PWDATA[31 : 0];
+        end
+      end
+      ...
+    endcase
+  end
+```
+
+The interesting part here is that `_zz_1` is a register. Having anonymous combinational registers is one thing, but anonymous
+registered signals is a bigger problem. It can cause all kinds of problems when doing things like formal equivalence checks
+and formal verification etc.
+
+If you want to put an `assert` on the `io_limit`, you'd have to use `_zz_1` instead. But as your design changes, that name would
+change as well. This is definitely something that will need to be improved.
+
+# Temporary Conclusion
+
+I've only just started to write my first lines of SpinalHDL. It isn't perfect, but I like it so far. You can use it to write
+RTL just like you would with Verilog or SystemVerilog, but it has the ability to do a lot more.
+
+The Timer above only scratches the surface of what's possible: one of the biggest attractions is a relatively large
+library of examples code. The most impressive one is the VexRiscv: an incredibly impressive implementation of a RISC-V CPU
+with tons of configuration options.
+
+That example take abstractions to a whole new level, and requires a relatively deep understanding of Scala to really grasp
+what's going on.
+
+In a future posts, I will try to describe how the VexRiscv makes use of some of the special features of SpinalHDL. And I'll also
+report on my progress in using the language myself.
+
 
 
 
