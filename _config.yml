@@ -23,7 +23,7 @@ github_username:  tomverbeure
 
 # Build settings
 markdown: kramdown
-theme: minimal
+theme: minima
 plugins:
   - jekyll-feed
 
