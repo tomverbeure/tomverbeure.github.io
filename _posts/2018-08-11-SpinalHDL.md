@@ -8,17 +8,18 @@ categories: RTL
 # Introduction
 
 Electronics in general and digital design in particular is what I do. I love coming up with a new archticture for a major block. 
-I love writing RTL. I love debugging my code up to the point where everything just works. It's what I do for a living, and 
-it's what I want to do as a hobby (though it competes for attention with my mountain bike...)
+I love writing RTL. I love debugging my code up to the point where everything just works. 
+
+It's what I do for a living, and it's what I want to do as a hobby (though it competes for attention with my mountain bike...)
 
 There only one problem: I want to write and debug code efficiently, and it's very hard to match the tools of
 a professional environment at home.
 
 # The Verboseness of Verilog
 
-The biggest problem by far is Verilog. Especially the way modules need to be connected together.
+The biggest problem by far is Verilog. Especially the verbosity in the way modules need to be connected together.
 
-We've all been here:
+We've all been [here](https://github.com/tomverbeure/panologic/blob/57d7f782f2c6061ea81fd954507cf2bba4a76c9e/bringup/rtl/soc.v#L32-L83):
 
 ```Verilog
 
@@ -74,12 +75,13 @@ We've all been here:
         );
 ```
 
-Now there are a couple of ways to work around this, but all of them have disadvantages that are disqualifying. (This is
+There are a ways to work around this, but all of them have disadvantages that are disqualifying. (This is
 obviously very subjective!)
 
 ## Verilog-mode
 
-One of the common recommendations is to use Emacs [verilog-mode](https://www.veripool.org/projects/verilog-mode/wiki/Examples).
+One of the common recommendations is to use Emacs [verilog-mode](https://www.veripool.org/projects/verilog-mode/wiki/Examples). (You don't
+need to use the Emacs *editor*. There are macros to run verilog-mode from Vim.)
 
 Verilog mode will analyze your code and expand some magic words in strategically placed comments into signal lists.
 
@@ -108,7 +110,7 @@ module autosense (/*AUTOARG*/
 
 I heard from friends in the industry that Verilog-mode is used quite a bit in professional environments, so I gave it a try.
 
-The problem:
+Without making it into a separate blog post, my problem with Verilog-mode was that:
 
 * it didn't do as much as I wanted it to do.
 * what it was supposed to do, worked most of the time, but not always work.
@@ -142,14 +144,14 @@ And even SystemVerilog doesn't have features that could be really useful.
 
 What I really want is a system where a zero fanout signal down deep in your design hierarchy automatically
 ripples through all the way to an upper hierachy levels until it finds a signal of the same name. One where I can use regular expressions to
-rename whole clusters of signals with one line (expect that one signal that you don't want to rename). One where you have hundreds of plugins to write 
-FSMs with all kinds of verification features enabled by default. One where fully verified, parameterized multi-threaded FIFO with rewind can be instantiated 
-with a few lines of code. I don't even want to type the name of the module at the top of the file, because it's inferred
-from the file name.
+rename whole clusters of signals with one line, expect that one signal that you don't want to rename. One where you have hundreds of plugins to write 
+FSMs with all kinds of verification features enabled by default or generate a fully verified, parameterized multi-threaded FIFO-with-rewind with a 
+few lines of code. Hell, I don't even want to type the name of the module at the top of the file when it can be inferred from the file name.
 
 Such systems exists, but they're always proprietary, and maintained by well funded CAD departments.
 
-I could write my own watered down, minimalistic version of it, but I'd be afraid of stepping on the IP of previous employers.
+I could write my own watered down, minimalistic version of it, but I'd be afraid of stepping on the IP of previous employers. And it'd always do
+less than what it could be. I want to write RTL, not tools that will allow me to write RTL.
 
 So Verilog and SystemVerilog with assorted hacks didn't work out. And since open source equivalents don't really exist either,
 I started to look at radical alternatives: completely different languages of writing RTL.
