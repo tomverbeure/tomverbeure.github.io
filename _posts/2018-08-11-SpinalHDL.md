@@ -315,24 +315,28 @@ The implementation of the timer is pretty straightforward:
   io.value := counter
 ```
 
-One things that can't be seen above is that RTL constructs don't use Scala keywords, but objects and methods from the SpinalHDL library.
+If you don't know Scala, you won't notice that RTL constructs don't use Scala keywords, but objects and methods from the SpinalHDL library.
 
-For example, Scala uses the `if (...) <...> else <...>` like many other languages. `if` and `else` are reserved keywords.
+For example, Scala uses `if (...) <...> else <...>` like many other languages. `if` and `else` are reserved Scala keywords.
 
-However, if you want to do such a construct for your RTL, you need to use `when(...){ <...> }.otherwise{ <...> }`. `when` is an object of the
-WhenContext and `otherwise` is method of the that `when` object. When you're using these RTL building constructs, SpinalHDL is building an
-AST-like data structure, just like Verilog and VHDL compilers and synthesis tools do when they're parsing your code.
+However, if you want to use such a construct in your RTL, you need to use `when(...){ <...> }.otherwise{ <...> }`, where `when` is an object of the
+[`WhenContext`](https://github.com/SpinalHDL/SpinalHDL/blob/ad8859b669d6b6773705d675aebb7b40397b9dde/core/src/main/scala/spinal/core/when.scala#L73-L88) and 
+`otherwise` is [method](https://github.com/SpinalHDL/SpinalHDL/blob/ad8859b669d6b6773705d675aebb7b40397b9dde/core/src/main/scala/spinal/core/when.scala#L103-L107) 
+of the that `when` object. 
+
+When you're using these RTL building constructs, SpinalHDL is building an
+AST-like data structure under the hood, just like Verilog and VHDL compilers and synthesis tools do when they're parsing your code.
 
 You *can* still use if-else keywords, but those don't convert to RTL: they are evaluated during the equivalent of elaboration, if you will. They are
 like `if ... generate` statements in Verilog.
 
-Another interesting aspect is that you can freely mix assignement to combinational and registered signals. Registered signals are indicated
+Another notable aspect is that you can freely mix assignement to combinational and registered signals. Registered signals are indicated
 as such by wrapping `Reg(...)` around the type.
 
 The real interesting part starts with the `driveFrom` method.
 
-This method doesn't add new hardware to the Timer module directly, but it creates a new Area object that references the signals of
-the `io` bundle and creates some glue logic for the interface hardware. It contects this glue logic to bus registers that
+This method doesn't add new hardware to the Timer module itself, but it creates a new Area object that references the signals of
+the `io` bundle and creates some glue logic for the interface hardware. It connects this glue logic to bus registers that
 are created by the bus factory object.
 
 ```Scala
@@ -341,7 +345,7 @@ are created by the bus factory object.
 
 `busCtrl` is an object of the `BusSlaveFactory` class. This is an abstract class that can be used to support any kind of bus that
 you want. The method doesn't need to know what kind of bus it is dealing with: all it really cares about it is that there are methods available
-to tie itself into this bus with some registers that has a certain base address. 
+int this class to tie itself into this bus, with some registers that has a certain base address. 
 
 That's what happens here:
 
@@ -379,12 +383,12 @@ case class ApbTimer(width : Int) extends Component{
   val timer = Timer(width = 32)
   val busCtrl = Apb3SlaveFactory(io.apb)
   ...
-  val timerABridge = timerA.driveFrom(busCtrl,0x40)(
+  val timerBridge = timer.driveFrom(busCtrl,0x40)(
     // The 'True' allows for a mode where the timer increments each cycle without the need for activity on io.tick
     ticks  = List(True, io.tick),
 
     // By looping the timer full to the clears, it allows you to create an autoreload mode.
-    clears = List(timerA.io.full)
+    clears = List(timer.io.full)
   )
 
   io.interrupt := timer.io.full
@@ -400,14 +404,14 @@ object ApbTimerVerilog {
 Things about the bus are now concrete:
 
 * The `ApbTimer` module has IOs that include an Apb3 bus.
-* `timerA` is a 32-bit wide timer.
+* `timer` is a 32-bit wide timer.
 * `busCtrl` is an `Apb3SlaveFactory` object whose task it is to gather all the requirements of the bus and eventually
   generate the hardware for the Apb bus factory.
-* `timerABridge` asks `timerA` to wire up its internals to the bus.
-* Finally, the `full` output of `timerA` feeds into the input of an interrupt controller
+* `timerBridge` asks `timer` to wire up its internals to the bus.
+* Finally, the `full` output of `timer` feeds into the input of an interrupt controller
 
-If at some later point, we want to hang the timer on a Wishbone bus, all we need to do is replace Apb3, ApbConfig, and Apb3SlaveFactory by their equivalent 
-and we're done.
+If at some later point, we want to hang the timer on a Wishbone bus, all we need to do is replace Apb3, ApbConfig, and Apb3SlaveFactory by their 
+Wishbone equivalent and we're done.
 
 ## Generating Verilog
 
@@ -456,12 +460,16 @@ module Timer (
 endmodule
 ```
 
+There's some low hanging fruit for improvement.
+
+This code:
+
 ```Verilog
   assign io_full = _zz_1;
   assign _zz_1 = ((counter == io_limit) && io_tick);
 ```
 
-This could easily be simplified to:
+can easily be simplified to:
 ```Verilog
   assign io_full = ((counter == io_limit) && io_tick);
 ```
@@ -470,10 +478,12 @@ Similarly, I'd prefer if the tool would keep the formatting of constants similar
 Something like `32'b00000000000000000000000000000001` could be specified as `32'd1`.
 
 I have filed an [RFE](https://github.com/SpinalHDL/SpinalHDL/issues/132) to make SpinalHDL smarter about generating redundant
-intermediate signals. The author states that an experience user will typically not look at the Verilog code, so this isn't 
-super important. I believe that's true when you're stuck with limited feature tools like GTKwave, which don't have strong source
-code tracing features. But with (expensive) professional tools like Verdi, which allow very fast browsing through source code,
-it could be a bigger issue? For my use of SpinalHDL as a hobbyist, I don't think it will be a big deal.
+intermediate signals. The author of SpinalHDL claims that an experienced user will typically not look at the Verilog code, so this isn't 
+super important. I believe that's true when you're stuck with limited feature tools like GTKwave that don't have strong source
+code tracing features, the Verilog code is indeed not that important. 
+
+But professional tools like Verdi are very good at fast browsing through source code, and these additional indirection would definitely
+be a nuisance. For my use of SpinalHDL as a hobbyist, I don't think it will be a big deal.
 
 Here are some parts of the generated ApbTimer Verilog code:
 
@@ -519,7 +529,7 @@ Yay for not having to type all those signals myself!
 last 2 lines is up for debate. (Probably not?)
 
 
-Let's look at `_zz_1`:
+Finally, let's look at `_zz_1`:
 
 ```Verilog
   Timer timer_1 (
@@ -553,11 +563,11 @@ Let's look at `_zz_1`:
   end
 ```
 
-The interesting part here is that `_zz_1` is a register. Having anonymous combinational registers is one thing, but anonymous
-registered signals is a bigger problem. It can cause all kinds of problems when doing things like formal equivalence checks
+The interesting part here is that `_zz_1` is a register. Having anonymous combinational signals is one thing, but anonymous
+registered signals are a bigger problem: they can cause all kinds of problems when doing things like formal equivalence checks
 and formal verification etc.
 
-If you want to put an `assert` on the `io_limit`, you'd have to use `_zz_1` instead. But as your design changes, that name would
+For example, if you want to put an `assert` on the `io_limit`, you'd have to use `_zz_1` instead. But as your design changes, that name would
 change as well. This is definitely something that will need to be improved.
 
 # Temporary Conclusion
@@ -565,11 +575,11 @@ change as well. This is definitely something that will need to be improved.
 I've only just started to write my first lines of SpinalHDL. It isn't perfect, but I like it so far. You can use it to write
 RTL just like you would with Verilog or SystemVerilog, but it has the ability to do a lot more.
 
-The Timer above only scratches the surface of what's possible: one of the biggest attractions is a relatively large
-library of examples code. The most impressive one is the VexRiscv: an incredibly impressive implementation of a RISC-V CPU
+The Timer above only scratches the surface of what's possible. One of the biggest attractions is a relatively large
+library of examples code and the most impressive one is the VexRiscv: an incredibly ingenious implementation of a RISC-V CPU
 with tons of configuration options.
 
-That example take abstractions to a whole new level, and requires a relatively deep understanding of Scala to really grasp
+That example takes abstractions to a whole new level, and requires a relatively deep understanding of Scala and SpinalHDL to grasp
 what's going on.
 
 In a future posts, I will try to describe how the VexRiscv makes use of some of the special features of SpinalHDL. And I'll also
