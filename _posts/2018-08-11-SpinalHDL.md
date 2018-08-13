@@ -188,26 +188,35 @@ The library contains everything you need to build construct RTL:
 
     And those functions can be passed as an argument to a Component object, which makes it possible to create very powerful abstractions.
 
-In addition to the core library, it also has a components library: a rather large collection of basic building blocks that can be used in your design. From
-counters to bus interfaces. From a full featured CPUs to an SDRAM controller.
+* Components Library
 
-This components library is excellent, not only because it will reduce the amount of work, but also because it often uses all the tricks in the 
-SpinalHDL book. They are a fantastic way to learn about how SpinalHDL works.
+    In addition to the core library, it also has a components library: a rather large collection of basic building blocks that can be used in your design. 
+    From counters to bus interfaces. From a full featured CPUs to an SDRAM controller.
+
+    This components library is excellent, not only because it will reduce the amount of work, but also because it often uses all the tricks 
+    in the SpinalHDL book. They are a fantastic way to learn about how SpinalHDL works.
+
+There is fairly large manual that takes you through some of the basics of the language. There is little point in repeating all of that here.
+
+Instead, I would like to take you through an example with trivial core functionality that also shows a hint of the greater power of SpinalHDL.
 
 ## A Not Totally Trivial Timer Example
 
-Let's create a timer module that hangs on a CPU bus. But instead of specifying a specific bus (say, AXI) with very specific signals,
-you could give it a function or a abstract object that has a generic API that could apply to kind of bus.
+There is nothing complex about a bus-connected timer. 
 
-The timer block gets its request by using this generic API.
+But what if we want to make it generic? We don't want to design it for one particular bus interface standard, we want it to work with any past
+and future bus standard, without having to redesign it later!
 
-When you instantiate the timer block in your design, you pass along a concrete bus interface: AXI or Wishbone or whatever interface you have in mind.
+Instead of connecting to the bus with low level signals, the timer uses an API of an abstract bus block. And it's up to the user of the timer block
+to later provide the details of this bus standard: AXI, APB, Wishbone or whatever interface you have in mind.
 
-The end result, will be a design with that particular bus, but the design of the Timer block itself is entirely generic and interface agnostic.
+When you instantiate the timer block in your design, you pass along a concrete bus interface: 
 
-And that's exactly one of the [examples](https://spinalhdl.github.io/SpinalDoc/spinal/examples/timer/) that is given in the SpinalHDL manual.
+The end result, will be a timer that works with the bus that you desire, but the design of the Timer block itself is entirely generic and interface agnostic.
 
-The description below is for a slightly different example though. You can find the project [here](https://github.com/tomverbeure/SpinalTimer) on GitHub.
+And that's one of the [examples](https://spinalhdl.github.io/SpinalDoc/spinal/examples/timer/) that is given in the SpinalHDL manual.
+
+The description below is for a bit different example though, with reduce functionality. You can find the project [here](https://github.com/tomverbeure/SpinalTimer) on GitHub.
 
 The [code](https://github.com/tomverbeure/SpinalTimer/blob/master/src/main/scala/mylib/Timer.scala) for the generic timer:
 
@@ -284,14 +293,14 @@ it very easy to pass parameters around, and change some of them as needed. One c
 
 IOs are grouped into a Bundle in which each item is specified as 'in' or 'out'. 
 
-Note that Bundles are a general way of grouping signals that belong together, they're not restricted to just IOs. And, of course, they
-can be hierarchical, with nested Bundles and all that. That fact that they are assigned to `io` is really just
+Bundles are a general way of grouping signals that belong together, they're not restricted to just IOs. And they
+can be hierarchical, with nested Bundles and all that. That fact that they are assigned to an `io` value is really just
 the choice of the designer, who could have chosen any other name. Or decide to have multiple Bundles for IOs.
 
-Since a Bundle is a class, you can subclass it to make your design more abstract. For example, you could
-create a Bundle subclass that's called `ApbInterface`.
+Since a Bundle is a class, you can subclass it. For example, you could
+create a Bundle subclass that's called [`Apb3`](https://github.com/SpinalHDL/SpinalHDL/blob/ad8859b669d6b6773705d675aebb7b40397b9dde/lib/src/main/scala/spinal/lib/bus/amba3/apb/APB3.scala#L49-L58https://github.com/SpinalHDL/SpinalHDL/blob/ad8859b669d6b6773705d675aebb7b40397b9dde/lib/src/main/scala/spinal/lib/bus/amba3/apb/APB3.scala#L49-L58).
 
-The implementation it pretty straightforward.
+The implementation of the timer is pretty straightforward:
 
 ```Scala
   val counter = Reg(UInt(width bits))
