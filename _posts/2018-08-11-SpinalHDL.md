@@ -7,14 +7,11 @@ categories: RTL
 
 # Introduction
 
-Electronics in general and digital design is what I do. I love coming up with an new archticture for a major block. 
-I love writing RTL. I love debugging my code up to the point where everything just works. It's what I do for a living
-and I don't want to do anything else.
+Electronics in general and digital design in particular is what I do. I love coming up with a new archticture for a major block. 
+I love writing RTL. I love debugging my code up to the point where everything just works. It's what I do for a living, and 
+it's what I want to do as a hobby (though it competes for attention with my mountain bike...)
 
-When I love it so much that I also want to do it in my spare time (though it needs to compete for attention with my
-mountain bike...)
-
-There only one problem: I also love to write and debug code efficiently, and it's very hard to match the tools of
+There only one problem: I want to write and debug code efficiently, and it's very hard to match the tools of
 a professional environment at home.
 
 # The Verboseness of Verilog
@@ -84,7 +81,7 @@ obviously very subjective!)
 
 One of the common recommendations is to use Emacs [verilog-mode](https://www.veripool.org/projects/verilog-mode/wiki/Examples).
 
-Verilog mode will analyze your code and expand some commented magic words into signal lists.
+Verilog mode will analyze your code and expand some magic words in strategically placed comments into signal lists.
 
 The net result is something like this:
 
@@ -109,14 +106,16 @@ module autosense (/*AUTOARG*/
    // End of automatics
 ```
 
-I heard from friends in the industry that it's used quite a bit in professional environments, so I gave it a try.
+I heard from friends in the industry that Verilog-mode is used quite a bit in professional environments, so I gave it a try.
+
+The problem:
 
 * it didn't do as much as I wanted it to do.
-* what it was supposed to do, didn't always work.
+* what it was supposed to do, worked most of the time, but not always work.
 * it's visually really ugly (just look at the code above!)
 * the indenting rules were inconsistent and definitely not the way I wanted it, even after spending a lot of time trying to tweak it.
 
-verilog-mode is tool that can save a lot of time, but ultimately, it's an ugly hack that rubbed me the wrong way.
+Verilog-mode is tool that can save a lot of time, but ultimately, it felt like an ugly hack that rubbed me the wrong way.
 Two months after trying it the first time, I gave it a second chance only to drop it soon after again. It's just not for me.
 
 ## SystemVerilog
@@ -124,7 +123,7 @@ Two months after trying it the first time, I gave it a second chance only to dro
 SystemVerilog has records and interfaces and they are a fantastic way to remove a large part of the verboseness, so that's 
 where I looked next.
 
-The main issue with it is that it's just not supported very well if you're doing this as a hobbyist.
+The main issue with it is that it's just not supported very well in a hobby environment. 
 
 The only tool that supports a decent amount of features is [Verilator](https://www.veripool.org/wiki/verilator). But 
 neither [Icarus Verilog](http://iverilog.icarus.com) nor [Yosys](http://www.clifford.at/yosys/) support records or interfaces. 
@@ -148,19 +147,23 @@ FSMs with all kinds of verification features enabled by default. One where fully
 with a few lines of code. I don't even want to type the name of the module at the top of the file, because it's inferred
 from the file name.
 
-Such systems exists, but they're always proprietary, and maintained by a well funded CAD department.
+Such systems exists, but they're always proprietary, and maintained by well funded CAD departments.
 
-And even if I could write my own watered down, minimalistic version of it, I'd be afraid of stepping on IP of previous employers.
+I could write my own watered down, minimalistic version of it, but I'd be afraid of stepping on the IP of previous employers.
+
+So Verilog and SystemVerilog with assorted hacks didn't work out. And since open source equivalents don't really exist either,
+I started to look at radical alternatives: completely different languages of writing RTL.
+
+I experimented a bit with [MyHDL](http://myhdl.org/) and [migen](https://m-labs.hk/migen/manual/index.html#https://m-labs.hk/migen/manual/index.html#), but 
+eventually I settled on [SpinalHDL](https://spinalhdl.github.io/SpinalDoc/). 
+
+That's what I'll be writing about for the rest of this article.
 
 # SpinalHDL
 
 ## Quick Feature Overview
 
-Since Verilog and SystemVerilog with assorted hacks didn't work out, I started to look at alternatives. I experimented a bit with
-[MyHDL](http://myhdl.org/) and [migen](https://m-labs.hk/migen/manual/index.html#https://m-labs.hk/migen/manual/index.html#), but 
-eventually I found [SpinalHDL](https://spinalhdl.github.io/SpinalDoc/).
-
-SpinalHDL is a library of RTL related classes that are written in Scala.
+At its core, SpinalHDL is a library of classes that are written in Scala that are used to write describe RTL.
 
 The library contains everything you need to build construct RTL:
  
@@ -182,6 +185,12 @@ The library contains everything you need to build construct RTL:
     full components.
 
     And those functions can be passed as an argument to a Component object, which makes it possible to create very powerful abstractions.
+
+In addition to the core library, it also has a components library: a rather large collection of basic building blocks that can be used in your design. From
+counters to bus interfaces. From a full featured CPUs to an SDRAM controller.
+
+This components library is excellent, not only because it will reduce the amount of work, but also because it often uses all the tricks in the 
+SpinalHDL book. They are a fantastic way to learn about how SpinalHDL works.
 
 ## A Not Totally Trivial Timer Example
 
