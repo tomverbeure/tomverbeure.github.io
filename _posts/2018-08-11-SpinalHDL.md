@@ -7,12 +7,12 @@ categories: RTL
 
 # Introduction
 
-Electronics in general and digital design in particular is what I do. I love coming up with a new archticture for a major block. 
+Electronics in general and digital design in particular is what I do. I love coming up with a new architecture for a major block. 
 I love writing RTL. I love debugging my code up to the point where everything just works. 
 
 It's what I do for a living, and it's what I want to do as a hobby (though it competes for attention with my mountain bike...)
 
-There only one problem: I want to write and debug code efficiently, and it's very hard to match the tools of
+There's only one problem: I want to write and debug code efficiently, and it's very hard to match the tools of
 a professional environment at home.
 
 # The Verboseness of Verilog
@@ -75,13 +75,13 @@ We've all been [here](https://github.com/tomverbeure/panologic/blob/57d7f782f2c6
         );
 ```
 
-There are a ways to work around this, but all of them have disadvantages that are disqualifying. (This is
+There are ways to work around this, but all of them have disadvantages that are disqualifying. (This is
 obviously very subjective!)
 
 ## Verilog-mode
 
 One of the common recommendations is to use Emacs [verilog-mode](https://www.veripool.org/projects/verilog-mode/wiki/Examples). (You don't
-need to use the Emacs *editor*. There are macros to run verilog-mode from Vim.)
+need to use the Emacs *editor*. There are Vim macros to run verilog-mode in batch mode.)
 
 Verilog mode will analyze your code and expand some magic words in strategically placed comments into signal lists.
 
@@ -113,7 +113,7 @@ I heard from friends in the industry that Verilog-mode is used quite a bit in pr
 Without making it into a separate blog post, my problem with Verilog-mode was that:
 
 * it didn't do as much as I wanted it to do.
-* what it was supposed to do, worked most of the time, but not always work.
+* what it was supposed to do, worked most of the time, but not always.
 * it's visually really ugly (just look at the code above!)
 * the indenting rules were inconsistent and definitely not the way I wanted it, even after spending a lot of time trying to tweak it.
 
@@ -132,10 +132,10 @@ neither [Icarus Verilog](http://iverilog.icarus.com) nor [Yosys](http://www.clif
 And even if you're using the free (as in beer) versions of commerical tools, then you're often out of luck. 
 The old [Xilinx ISE](https://www.xilinx.com/products/design-tools/ise-design-suite.html) 
 (which I use for my [Pano Logic project](https://github.com/tomverbeure/panologic)) has plenty of limitations and outright bugs for
-plenty of regular Verilog constructs, so SystemVerilog is completely out of the question. The same is true for 
-[Lattice iCEcube2](http://www.latticesemi.com/iCEcube2): you have to use Synplify Pro for the synthesis part.
+sometimes even common Verilog constructs, so SystemVerilog is completely out of the question. The same is true for 
+[Lattice iCEcube2](http://www.latticesemi.com/iCEcube2): you have to use Synplify Pro for synthesis.
 
-A minimal SystemVerilog to Verilog translator could be a solution, at some point I started working on exactly that, but right now
+A minimal SystemVerilog to Verilog translator could be a solution, and at some point I started working on exactly that, but right now
 it doesn't exist. 
 
 And even SystemVerilog doesn't have features that could be really useful.
@@ -143,18 +143,18 @@ And even SystemVerilog doesn't have features that could be really useful.
 ## What I Really Want
 
 What I really want is a system where a zero fanout signal down deep in your design hierarchy automatically
-ripples through all the way to an upper hierachy levels until it finds a signal of the same name. One where I can use regular expressions to
+ripples through all the way to upper hierachy levels until it finds a signal of the same name. One where I can use regular expressions to
 rename whole clusters of signals with one line, expect that one signal that you don't want to rename. One where you have hundreds of plugins to write 
 FSMs with all kinds of verification features enabled by default or generate a fully verified, parameterized multi-threaded FIFO-with-rewind with a 
 few lines of code. Hell, I don't even want to type the name of the module at the top of the file when it can be inferred from the file name.
 
-Such systems exists, but they're always proprietary, and maintained by well funded CAD departments.
+Such systems exist, but they're always proprietary, and maintained by well funded CAD departments.
 
 I could write my own watered down, minimalistic version of it, but I'd be afraid of stepping on the IP of previous employers. And it'd always do
 less than what it could be. I want to write RTL, not tools that will allow me to write RTL.
 
 So Verilog and SystemVerilog with assorted hacks didn't work out. And since open source equivalents don't really exist either,
-I started to look at radical alternatives: completely different languages of writing RTL.
+I started to look at radical alternatives: completely different RTL languages.
 
 I experimented a bit with [MyHDL](http://myhdl.org/) and [migen](https://m-labs.hk/migen/manual/index.html#https://m-labs.hk/migen/manual/index.html#), but 
 eventually I settled on [SpinalHDL](https://spinalhdl.github.io/SpinalDoc/). 
@@ -165,9 +165,9 @@ That's what I'll be writing about for the rest of this article.
 
 ## Quick Feature Overview
 
-At its core, SpinalHDL is a library of classes that are written in Scala that are used to write describe RTL.
+At its core, SpinalHDL is a library of classes, written in Scala, that are used to describe your hardware.
 
-The library contains everything you need to build construct RTL:
+The library contains everything you need to write RTL:
  
 * Data types
 
@@ -179,44 +179,46 @@ The library contains everything you need to build construct RTL:
 * Hierarchy
 
     Verilog modules are called Components. And each component can contain multiple Areas, which have their down scope but can
-    reach out to other areas. 
+    reach out to other areas. Think of them as souped up Verilog `always` constructs.
 
 * Higher Level of Abstraction
 
-    Since everything is really a Scala object, Scala functions can create pretty much anything you want: Areas with logic and registers,
+    Since everything is really a Scala object, Scala methods can create pretty much anything you want: Areas with logic and registers,
     full components.
 
-    And those functions can be passed as an argument to a Component object, which makes it possible to create very powerful abstractions.
+    And those objects can be passed as an argument to a Component object, which makes it possible to create very powerful abstractions.
 
 * Components Library
 
-    In addition to the core library, it also has a components library: a rather large collection of basic building blocks that can be used in your design. 
+    In addition to the core library, SpinalHDL also has a components library: a rather large collection of basic building blocks that can be used in your design. 
     From counters to bus interfaces. From a full featured CPUs to an SDRAM controller.
 
     This components library is excellent, not only because it will reduce the amount of work, but also because it often uses all the tricks 
     in the SpinalHDL book. They are a fantastic way to learn about how SpinalHDL works.
 
-There is fairly large manual that takes you through some of the basics of the language. There is little point in repeating all of that here.
+There is a fairly large manual that takes you through some of the basics of the language, so there is little point in repeating all of that here.
 
 Instead, I would like to take you through an example with trivial core functionality that also shows a hint of the greater power of SpinalHDL.
 
 ## A Not Totally Trivial Timer Example
 
-There is nothing complex about a bus-connected timer. 
+There is nothing complex about a timer that is connected to a CPU bus.
 
-But what if we want to make it generic? We don't want to design it for one particular bus interface standard, we want it to work with any past
-and future bus standard, without having to redesign it later!
+But what if we want to make it generic? We don't want to design it for one particular bus interface standard, we want it to work with any 
+standard, without having to redesign it later!
 
-Instead of connecting to the bus with low level signals, the timer uses an API of an abstract bus block. And it's up to the user of the timer block
-to later provide the details of this bus standard: AXI, APB, Wishbone or whatever interface you have in mind.
+Instead of connecting to the bus with low level signals, the timer uses an API of an abstract bus factory object. And it's up to the user 
+of the timer block to later provide the details of this bus standard: AXI, APB, Wishbone or whatever interface you have in mind.
 
-When you instantiate the timer block in your design, you pass along a concrete bus interface: 
+When you instantiate the timer block in your design, you pass along a concrete bus factory object. 
 
-The end result, will be a timer that works with the bus that you desire, but the design of the Timer block itself is entirely generic and interface agnostic.
+The end result will be a timer that works with the bus that you desire, but the design of the Timer block itself is entirely generic 
+and interface agnostic.
 
-And that's one of the [examples](https://spinalhdl.github.io/SpinalDoc/spinal/examples/timer/) that is given in the SpinalHDL manual.
+And that's one of the [examples](https://spinalhdl.github.io/SpinalDoc/spinal/examples/timer/) in the SpinalHDL manual.
 
-The description below is for a bit different example though, with reduce functionality. You can find the project [here](https://github.com/tomverbeure/SpinalTimer) on GitHub.
+The description below is for a slightly different example though, with reduce functionality. You can find the project 
+[here](https://github.com/tomverbeure/SpinalTimer) on GitHub.
 
 The [code](https://github.com/tomverbeure/SpinalTimer/blob/master/src/main/scala/mylib/Timer.scala) for the generic timer:
 
@@ -278,7 +280,7 @@ case class Timer(width : Int) extends Component{
 
 The parameters of the class are similar to Verilog parameters. In this case, 
 it's a simple integer, but for more complex designs, it's usually some kind of struct with many parameters. This makes
-it very easy to pass parameters around, and change some of them as needed. One could also create recursive hardware.
+it very easy to pass parameters around and change some of them as needed. One could also create recursive hardware.
 
 ```Scala
   val io = new Bundle{
@@ -294,13 +296,13 @@ it very easy to pass parameters around, and change some of them as needed. One c
 IOs are grouped into a Bundle in which each item is specified as 'in' or 'out'. 
 
 Bundles are a general way of grouping signals that belong together, they're not restricted to just IOs. And they
-can be hierarchical, with nested Bundles and all that. That fact that they are assigned to an `io` value is really just
+can be nested. The fact that they are assigned to an `io` value is really just
 the choice of the designer, who could have chosen any other name. Or decide to have multiple Bundles for IOs.
 
 Since a Bundle is a class, you can subclass it. For example, you could
 create a Bundle subclass that's called [`Apb3`](https://github.com/SpinalHDL/SpinalHDL/blob/ad8859b669d6b6773705d675aebb7b40397b9dde/lib/src/main/scala/spinal/lib/bus/amba3/apb/APB3.scala#L49-L58https://github.com/SpinalHDL/SpinalHDL/blob/ad8859b669d6b6773705d675aebb7b40397b9dde/lib/src/main/scala/spinal/lib/bus/amba3/apb/APB3.scala#L49-L58).
 
-The implementation of the timer is pretty straightforward:
+The implementation of the timer is straightforward as well:
 
 ```Scala
   val counter = Reg(UInt(width bits))
@@ -325,17 +327,17 @@ However, if you want to use such a construct in your RTL, you need to use `when(
 of the that `when` object. 
 
 When you're using these RTL building constructs, SpinalHDL is building an
-AST-like data structure under the hood, just like Verilog and VHDL compilers and synthesis tools do when they're parsing your code.
+AST-like data structure under the hood, just like simulators and synthesis tools do when they're parsing your Verilog code.
 
 You *can* still use if-else keywords, but those don't convert to RTL: they are evaluated during the equivalent of elaboration, if you will. They are
 like `if ... generate` statements in Verilog.
 
-Another notable aspect is that you can freely mix assignement to combinational and registered signals. Registered signals are indicated
-as such by wrapping `Reg(...)` around the type.
+Another notable aspect is that you can freely mix assignment to combinational and registered signals. Registered signals are indicated
+as such by wrapping `Reg(...)` around the type of the signal.
 
 The real interesting part starts with the `driveFrom` method.
 
-This method doesn't add new hardware to the Timer module itself, but it creates a new Area object that references the signals of
+This method doesn't add new hardware to the Timer module itself, but it returns a new Area object that references the signals of
 the `io` bundle and creates some glue logic for the interface hardware. It connects this glue logic to bus registers that
 are created by the bus factory object.
 
@@ -345,7 +347,7 @@ are created by the bus factory object.
 
 `busCtrl` is an object of the `BusSlaveFactory` class. This is an abstract class that can be used to support any kind of bus that
 you want. The method doesn't need to know what kind of bus it is dealing with: all it really cares about it is that there are methods available
-int this class to tie itself into this bus, with some registers that has a certain base address. 
+in this class to tie itself into this bus, with some registers that has a certain base address. 
 
 That's what happens here:
 
@@ -361,7 +363,7 @@ each bit can individually be masked.
 This masking register is `tickEnable`: it's a configuration register that is a field of a bus register that starts at relative address 0, 
 and that starts at bit zero within that register. The bus register is read/write.
 
-It is the task of the `busCtrl` factory object to gather the information of all registers that will hang off the bus by calls to 
+It is the task of the `busCtrl` factory object to gather the information of all registers that are attached to the bus by calls to 
 `createReadWrite`, `driveAndRead`, `read` and `write`, and, eventually, construct all the registers and wires that make up the bus fabric.
 
 With the core Timer in place, we can now build [a Timer that uses an APB bus](https://github.com/tomverbeure/SpinalTimer/blob/master/src/main/scala/mylib/ApbTimer.scala):
@@ -408,7 +410,7 @@ Things about the bus are now concrete:
 * `busCtrl` is an `Apb3SlaveFactory` object whose task it is to gather all the requirements of the bus and eventually
   generate the hardware for the Apb bus factory.
 * `timerBridge` asks `timer` to wire up its internals to the bus.
-* Finally, the `full` output of `timer` feeds into the input of an interrupt controller
+* Finally, the `full` output of `timer` is an out of the timer, to be used by some other block.
 
 If at some later point, we want to hang the timer on a Wishbone bus, all we need to do is replace Apb3, ApbConfig, and Apb3SlaveFactory by their 
 Wishbone equivalent and we're done.
@@ -427,7 +429,7 @@ object ApbTimerVerilog {
 
 Run the following command in the root directory of the project: `sbt "run-main mylib.ApbTimerVerilog"`.
 
-If all went well, there will now be an `ApbTimer.v` Verilog file.
+If all goes well, there will now be an `ApbTimer.v` Verilog file.
 
 
 ## A Look at the Generated Verilog
@@ -480,9 +482,9 @@ Something like `32'b00000000000000000000000000000001` could be specified as `32'
 I have filed an [RFE](https://github.com/SpinalHDL/SpinalHDL/issues/132) to make SpinalHDL smarter about generating redundant
 intermediate signals. The author of SpinalHDL claims that an experienced user will typically not look at the Verilog code, so this isn't 
 super important. I believe that's true when you're stuck with limited feature tools like GTKwave that don't have strong source
-code tracing features, the Verilog code is indeed not that important. 
+code tracing features. In that case, the Verilog code is indeed not that important. 
 
-But professional tools like Verdi are very good at fast browsing through source code, and these additional indirection would definitely
+But professional tools like Verdi are very good at fast browsing through source code, and these additional indirections would definitely
 be a nuisance. For my use of SpinalHDL as a hobbyist, I don't think it will be a big deal.
 
 Here are some parts of the generated ApbTimer Verilog code:
@@ -513,7 +515,7 @@ module ApbTimer (
   );
 ...
 ```
-    
+
 Yay for not having to type all those signals myself!
 
 ```Verilog
@@ -565,10 +567,10 @@ Finally, let's look at `_zz_1`:
 
 The interesting part here is that `_zz_1` is a register. Having anonymous combinational signals is one thing, but anonymous
 registered signals are a bigger problem: they can cause all kinds of problems when doing things like formal equivalence checks
-and formal verification etc.
+and formal verification.
 
-For example, if you want to put an `assert` on the `io_limit`, you'd have to use `_zz_1` instead. But as your design changes, that name would
-change as well. This is definitely something that will need to be improved.
+For example, if you want to put an `assert` on `io_limit`, you'd have to use `_zz_1` instead. But as your design changes, that name would
+change as well. This is something that will need to be improved.
 
 # Temporary Conclusion
 
@@ -576,8 +578,8 @@ I've only just started to write my first lines of SpinalHDL. It isn't perfect, b
 RTL just like you would with Verilog or SystemVerilog, but it has the ability to do a lot more.
 
 The Timer above only scratches the surface of what's possible. One of the biggest attractions is a relatively large
-library of examples code and the most impressive one is the VexRiscv: an incredibly ingenious implementation of a RISC-V CPU
-with tons of configuration options.
+library of examples code,  the most impressive of which is the VexRiscv CPU: an incredibly ingenious implementation of a RISC-V CPU
+with tons of configuration options through plugins.
 
 That example takes abstractions to a whole new level, and requires a relatively deep understanding of Scala and SpinalHDL to grasp
 what's going on.
