@@ -144,7 +144,7 @@ And even SystemVerilog doesn't have features that could be really useful.
 
 What I really want is a system where a zero fanout signal down deep in your design hierarchy automatically
 ripples through all the way to upper hierachy levels until it finds a signal of the same name. One where I can use regular expressions to
-rename whole clusters of signals with one line, expect that one signal that you don't want to rename. One where you have hundreds of plugins to write 
+rename whole clusters of signals with one line except that one signal that you don't want to rename. One where you have hundreds of plugins to write 
 FSMs with all kinds of verification features enabled by default or generate a fully verified, parameterized multi-threaded FIFO-with-rewind with a 
 few lines of code. Hell, I don't even want to type the name of the module at the top of the file when it can be inferred from the file name.
 
@@ -196,7 +196,7 @@ The library contains everything you need to write RTL:
     This components library is excellent, not only because it will reduce the amount of work, but also because it often uses all the tricks 
     in the SpinalHDL book. They are a fantastic way to learn about how SpinalHDL works.
 
-There is a fairly large manual that takes you through some of the basics of the language, so there is little point in repeating all of that here.
+There is a fairly large manual that takes you through most of the basics of the language, so there is little point in repeating all of that here.
 
 Instead, I would like to take you through an example with trivial core functionality that also shows a hint of the greater power of SpinalHDL.
 
