@@ -5,6 +5,19 @@ date:   2018-10-13 22:00:00 -0700
 categories: RTL
 ---
 
+# Introduction
+
+Since I've started using SpinalHDL for my hobby projects, I've been running into many issues. A few of those where minor bugs of SpinalHDL itself,
+but most of them are because Scala is a completely new language for me. 
+
+Initially, I've been using SpinalHDL as a pure RTL generator, a replacement of Verilog that requires less typing. In that case, you can get by
+with a bare minimum of commands and Scala. But SpinalHDL can do much more: complex generators, testbench integration etc. And when you start
+to get into that, lack of knowledge about Scala and the Scala development environment becomes a limitation quickly.
+
+This blog post serves as a collection of development road blocks and methods on how to navitage past these road blocks.
+
+It's a living document to which I'll keep adding more stuff as I get better at SpinalHDL.
+
 # Split Testbench into Functional Sections
 
 In general, the best practise seems to be to create a separate class per functional block. A good example of different tests is 
