@@ -85,8 +85,7 @@ The RISC-V 32-bit instruction set has 4 multiply instructions:
 For RISC-V, if you want to get the 64-bit result of a 32x32 bit multiplication, you need to use 2 instructions: 
 MUL, and one of the MULH variants.
 
-RTL Implementation on the PicoRV32
-------------------------------
+# RTL Implementation on the PicoRV32
 
 On the PicoRV32, when you strip away all the extraneous book keeping, the key part of [the implementation](https://github.com/cliffordwolf/picorv32/blob/23d7bbdc8bb3ff97b4d3ccf9cc2eb9ee291039de/picorv32.v#L2248-L2343)
 is straightforward:
@@ -104,8 +103,7 @@ or a copy of the sign bit for signed operands.
 The code above requires a 33-bit x 33-bit to 64-bit multiplier, with a multiplexer at the end to select the upper or lower
 32 bits.
 
-RTL Implementation on the VexRiscv
-----------------------------------
+# RTL Implementation on the VexRiscv
 
 The relevant code can be found in [MulPlugin.scala](https://github.com/SpinalHDL/VexRiscv/blob/25c0a0ff6fc4980e8ec8b5148fe213c24a245a56/src/main/scala/vexriscv/plugin/MulPlugin.scala#L6-L104)
 
@@ -164,8 +162,7 @@ Similar to the PicoRV32, 3 of the 4 16x16 multiplications are actually 17x17 bit
 from Xilinx and Intel/Altera have hard 18x18 multiplier macros in their DSP blocks, so it makes no difference to use 16x16 or 17x17
 operations: they're all mapped onto the same 18x18 hardware block anyway.
 
-Multiplier Mapping onto FPGA
-----------------------------
+# Multiplier Mapping onto FPGA
 
 On relatively modern Altera FPGAs such as the
 [Cyclone V series](https://www.intel.com/content/dam/altera-www/global/en_US/pdfs/literature/hb/cyclone-v/cv_5v2.pdf),
@@ -182,8 +179,7 @@ After synthesis, what we see is that Quartus maps the logic to 3 DSPs instead of
 
 For the VexRiscv, the 4 multipliers are mapped to 4 DSPs.
 
-Optimizing for MUL but not MULH*
---------------------------------
+# Optimizing for MUL but not MULH*
 
 In the vast majority of use cases, your C code will consist of int * int operations, where 2 32-bit integers are multiplied together and stores in a 32-bit integer as well. 
 In other words: you'll be using the MUL instruction.
@@ -242,8 +238,7 @@ For FPGAs that have hard 16x16 (or slightly larger) multipliers, that's about th
 
 But when using ASICs or FPGAs that don't have hard multipliers (e.g. the Lattice iCE40 series), we can do better.
 
-Reducing Logic Even More
-------------------------
+# Reducing Logic Even More
 
 Let's imagine that we have 8x8 instead of 16x16 multipliers, and that
 
@@ -325,8 +320,7 @@ The first 4 terms are a 16x16=32 multiplier, so we can implement this as
 1 16x16=32bit multiplier and 6 8x8=16bit multipliers. If these kind of multipliers
 are available as a hard macro, this could be a solution.
 
-Getting Ridiculous
-------------------
+# Getting Ridiculous
 
 If we can go from 16x16 to 8x8 multipliers, then we can also go even smaller, like 4x4=8, right? 
 
@@ -426,8 +420,7 @@ the best approach: there are much better ways to build fast multipliers. Looks u
 "Wallace Tree." Those are outside the scope of this post, and mostly irrelevant for FPGAs, since they require
 a lot of wiring and inefficient to map onto FPGA logic.
 
-Expanding a Floating Points Multiplier to a 32-bit multiplier
--------------------------------------------------------------
+# Expanding a Floating Points Multiplier to a 32-bit multiplier
 
 Finally, let's have a quick look at floating point multipliers. Single precision FP32 has a one sign bit,
 8 exponent bits, and 23 fraction bits. The 23 fraction bits have an implied MSB that is set to 1, so the
