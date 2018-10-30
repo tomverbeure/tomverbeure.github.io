@@ -5,7 +5,7 @@ date:   2018-08-11 22:00:00 -0700
 categories: RTL
 ---
 
-# Multipliers
+# CPU Multipliers
 
 I've been working on my own RISC-V CPU to learn SpinalHDL and to get some hands on experience with
 formal verification.
@@ -15,48 +15,68 @@ of today's RISC-V cores.
 
 There are different ways to go about this:
 
-* If you're really area constraints, you simply don't implement it at all, and you let the C compiler
-  call a multiplier library function.
-* If you want things to be a little faster, you implement an iterative multiplier which iterates
-  through all the bits of one of the operands and conditionally adds a shifted version of the other
-  operand. The picorv32 CPU code for that is [here](https://github.com/cliffordwolf/picorv32/blob/23d7bbdc8bb3ff97b4d3ccf9cc2eb9ee291039de/picorv32.v#L2127-L2246).
+* No HW Multiplier
+
+    If you're really area constraints, you simply don't implement it at all, and you let the C compiler
+    call a multiplier library function.
+
+* Iterative Multiplier
+
+    If you want things to be a little faster, you implement an iterative multiplier which iterates
+    through all the bits of one of the operands and conditionally adds a shifted version of the other
+    operand. The picorv32 CPU code for that is [here](https://github.com/cliffordwolf/picorv32/blob/23d7bbdc8bb3ff97b4d3ccf9cc2eb9ee291039de/picorv32.v#L2127-L2246).
+    And [here](https://github.com/SpinalHDL/VexRiscv/blob/25c0a0ff6fc4980e8ec8b5148fe213c24a245a56/src/main/scala/vexriscv/plugin/MulDivIterativePlugin.scala#L70-L85)'s 
+    the equivalent VexRiscV code.
+
+    In most cases, this kind of multiplier will do one bit at a time, but that's not really necessary. In
+    the picorv32 code, you can specify this by setting the desired [`STEP_AT_ONCE`](https://github.com/cliffordwolf/picorv32/blob/23d7bbdc8bb3ff97b4d3ccf9cc2eb9ee291039de/picorv32.v#L2128)
+    parameter, or the [`mulUnrollFactor'](https://github.com/SpinalHDL/VexRiscv/blob/25c0a0ff6fc4980e8ec8b5148fe213c24a245a56/src/main/scala/vexriscv/plugin/MulDivIterativePlugin.scala#L7)
+    of the VexRiscV.
+
 * Finally, if you really want performance, you uses a parallel multiplier.
+
+    The picrov32 CPU has the [`fast_mul`](https://github.com/cliffordwolf/picorv32/blob/23d7bbdc8bb3ff97b4d3ccf9cc2eb9ee291039de/picorv32.v#L2248-L2343) and the
+    VexRiscV has the [`MulPlugin`](https://github.com/SpinalHDL/VexRiscv/blob/25c0a0ff6fc4980e8ec8b5148fe213c24a245a56/src/main/scala/vexriscv/plugin/MulPlugin.scala#L6-L104) for
+    that.
 
 When you're using a PicoRV32 or VexRiscv RISC-V CPU core, you can freely select which version to use.
 
 I was mostly interested in the third option.
 
-The RISC-V 32-bit instruction set has 4 multiplication instructions:
+# RISC-V Multiply Instructions
 
-* MUL rd, rs1, rs2
+The RISC-V 32-bit instruction set has 4 multiply instructions:
+
+* `MUL rd, rs1, rs2`
 
     This multiplies operands *rs1* and *rs2* and stores the lower 32 bits of the result in *rd*.
 
     It doesn't matter whether rs1 and rs1 are signed or unsigned: the result is the same.
     You can quickly see this on a 2-bit x 2-bit example:
 
-    `Unsigned: 2'b11 x 2'b11 =  3 x  3 =  9 = 4'b1001 -> 2'b01`
-    `Signed:   2'b11 x 2'b11 = -1 x -1 =  1 = 4'b0001 -> 2'b01`
+    ```
+    Unsigned: 2'b11 x 2'b11 =  3 x  3 =  9 = 4'b1001 -> 2'b01
+    Signed:   2'b11 x 2'b11 = -1 x -1 =  1 = 4'b0001 -> 2'b01
+    ```
 
-    `Unsigned: 2'b01 x 2'b11 =  1 x  3 =  3 = 4'b0011 -> 2'b11`
-    `Signed:   2'b01 x 2'b11 =  1 x -1 = -1 = 4'b1111 -> 2'b11`
+    ```
+    Unsigned: 2'b01 x 2'b11 =  1 x  3 =  3 = 4'b0011 -> 2'b11
+    Signed:   2'b01 x 2'b11 =  1 x -1 = -1 = 4'b1111 -> 2'b11
+    ```
 
-    As long as the size of the result is stored with the same number of bits as the
-    size of the operands, the outcome is identical.
+    When the result is truncated to the same number of bits as the size of the operands, the outcome is identical.
 
-* MULH
+* `MULH rd, rs1, rs2`
 
     multiplies 2 *signed* rs1 and rs2 and stores the upper 32 bits in rd.
 
-
-* MULHU
+* `MULHU rd, rs1, rs2`
 
     multiplies 2 *unsigned* rs1 and rs2 and stores the upper 32 bits in rd.
 
-* MULHSU
+* `MULHSU rd, rs1, rs2`
 
     multiplies *signed* rs1 and *unsigned* rs2 and stores the upper 32 bits in rd.
-
 
 For RISC-V, if you want to get the 64-bit result of a 32x32 bit multiplication, you need to use 2 instructions: 
 MUL, and one of the MULH variants.
