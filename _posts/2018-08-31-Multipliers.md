@@ -176,21 +176,17 @@ as an example on how to do things right.
 
 After synthesis, what we see is that Quartus maps the logic to 3 DSPs instead of 2.
 
-* One DSP is used in (18x18 + 18x18) mode, where the output of two multipliers are added to eachother. This is `(a1*b0 + a0*b1)` term that is implemented in discrete form on the VexRiscV.
+* One DSP is used in (18x18 + 18x18) mode, where the output of two multipliers are added to eachother. This is the `(a1*b0 + a0*b1)` term that is implemented 
+  in discrete form on the VexRiscV.
 * Two DSPs are used in 18x18-only mode.
 
 For the VexRiscv, the 4 multipliers are mapped to 4 DSPs.
 
-3 DSPs:
-1x independent 18x18: fully registered: ax, ay, pipeline, output
-1x independent 18x18: partially registered: ax, ay, output (not: pipeline)
-1x sum of 2 18x18: partially registered: ay, by , pipeline, output (not: ax, bx)
-
 Optimizing for MUL but not MULH*
 --------------------------------
 
-In the vast majority of use cases, your C code will consist of int * int operations, where multiply 2 32-bit integers and store the result in a 32-bit integer as well. 
-In other words: you'll be using a MUL.
+In the vast majority of use cases, your C code will consist of int * int operations, where 2 32-bit integers are multiplied together and stores in a 32-bit integer as well. 
+In other words: you'll be using the MUL instruction.
 
 If DSP resources are tight but you still want a fast multiplication for the most common operation, it makes sense then to optimize for that, and incur a performance
 penalty for MULH.
@@ -207,8 +203,7 @@ a*b=
 
    (a1b1)<<32 + (a1b0+a0b1)<<16 + a0b0
 ```
-Note that each term `axbx` is 32 bits wide in the notation above, so you have 16 overlapping bits in this `(a1b0+a0b1)<<16 + a0b0` and this `(a1b1)<<32 + (a1b0+a0b1)<<16`
-sums.
+Note that each term `axbx` is 32 bits wide in the notation above, so you have 16 overlapping bits in these two sums: `(a1b0+a0b1)<<16 + a0b0` and `(a1b1)<<32 + (a1b0+a0b1)<<16`.
 
 If we only care about the bottom 32 bits of the result (MUL), it looks like this:
 
@@ -232,18 +227,16 @@ And then we sum these 3 terms for the final 32 bit result.
 
 So that's the smallest fast implementation: 1 16x16=32 multiplier and 2 16x16=16 multipliers.
 
-For an FPGA, there is no difference between a 16x16=16 or 16x16=32 multiplier so there is no savings on the DSP side, however, the
+For an FPGA, there is no difference between a 16x16=16 or 16x16=32 multiplier so there is no savings on the DSP side. However, the
 final adder that sums the 3 terms together will only need to 32 bits. That's very likely to be result in area and timing savings.
 
 Even if we only optimize for MUL, we may still want to support MULH in hardware. If an acceptable trade-off is for this MULH to
 take 2 steps instead of 1, then it makes sense to first calculate the MUL with 3 16x16=32 bits operations in the first step, and calculate
 a 50-bit sum.
 
-Then, in a second step, take the upper 18 bits \[49:32\] of this sum and add them to the result of a1*b1.
+Then, in a second step, take the upper 18 bits \[49:32\] of this sum and add them to the 32-bit result of a1*b1. 
 
-For the second step, we can obviously reuse one of the 16x16 multipliers that were used in the first step.
-
-We've now reduced the number of 16x16 multipliers from 4 to 3.
+We can reuse one of the 16x16 multipliers that were used in the first step, so the number of 16x16 multipliers is still 3 instead of the original 4.
 
 For FPGAs that have hard 16x16 (or slightly larger) multipliers, that's about the best we can do if we need a single step MUL.
 
@@ -254,7 +247,7 @@ Reducing Logic Even More
 
 Let's imagine that we have 8x8 instead of 16x16 multipliers, and that
 
-`a[31:0] = { a3[7:0],a2[7:0],a1[7:0],a0[7:0] }` and `b[31:0] = { b3[7:0],b2[7:0],b1[7:0],b0[7:0] }`
+`a[31:0] = { a3[7:0],a2[7:0],a1[7:0],a0[7:0] } = a3a2a1a0` and `b[31:0] = { b3[7:0],b2[7:0],b1[7:0],b0[7:0] } = b3b2b1b0`
 
 A full 32x32 multiplication now looks like this:
 
@@ -298,10 +291,10 @@ Rearranged:
       a2b3  |
     a3b3    |
 ```
-For a 32x32=32 result, we once again only care about the bits to the right of the vertical line, which means
+For a 32x32=32 result, we once again only care about terms with bits to the right of the vertical line, which means
 that the factors below the break are entirely not needed.
 
-Using 16x16 multiplications, we could reduce the number of multiplications from 4 to 3 (-25%), when using 8x8
+Using 16x16 multiplications, we could reduce the number of multiplications from 4 to 3 (-25%). When using 8x8
 multiplications, we can reduce them from 16 down to 10 (-37.5%).
 
 And if we still want to calculate MULH in 2 steps, then the result of the first step is 43 bits of which we can
@@ -329,11 +322,19 @@ We can arrange it still different:
 ```
 
 The first 4 terms are a 16x16=32 multiplier, so we can implement this as
-1 16x16=32bit multipliers and 6 8x8=16bit multipliers. If these kind of multipliers
+1 16x16=32bit multiplier and 6 8x8=16bit multipliers. If these kind of multipliers
 are available as a hard macro, this could be a solution.
 
+Getting Ridiculous
+------------------
 
-If we're using 4x4=8 multipliers as our smallest possible multiplication, we get this:
+If we can go from 16x16 to 8x8 multipliers, then we can also go even smaller, like 4x4=8, right? 
+
+Yes, that's possible. But it's not very useful. For one, there are no FPGAs that have these kind of small hard multipliers, so the exercise is 
+academic. And second, when you start going this small, the timing path will long have moved from the multiplier to the adders that sum all these
+tiny terms together.
+
+But for completeness, there's how it works out:
 
 ```
 a[31:0]=a7a6a5a4a3a2a1a0
@@ -408,22 +409,22 @@ a*b =
 ```
 
 The terms are already separated into those that contribute to the lower 32 bits and those that do not.
-Out of 36 out of 64 4x4=8 multipliers matter, and 28 do not. A reduction of 43.75% compared to the single
+
+36 out of 64 4x4=8 multipliers matter, and 28 do not. A reduction of 43.75% compared to the single
 step 32x32=64 bit multiplier.
 
 As before, we could reduce some of those 4x4 terms into one 16x16=32 multiplier, and a number of 8x8=16 bit
 multipliers.
 
-
 It should be obvious by now that smaller multiplier building blocks will result in a lower amount of logic.
 Taken to its logical conclusion, you can do this with 1x1 multipliers: the
 number of multipliers decreases towards 50% of the ones needed for a full 64 bit result, however the number of
-address will go up.
+adders will go up.
 
 If you'd want to code things up like this in RTL, using small multipliers building blocks is definitely not
 the best approach: there are much better ways to build fast multipliers. Looks up "Booth encoding" and
-"Wallace Tree."
-
+"Wallace Tree." Those are outside the scope of this post, and mostly irrelevant for FPGAs, since they require
+a lot of wiring and inefficient to map onto FPGA logic.
 
 Expanding a Floating Points Multiplier to a 32-bit multiplier
 -------------------------------------------------------------
@@ -432,7 +433,7 @@ Finally, let's have a quick look at floating point multipliers. Single precision
 8 exponent bits, and 23 fraction bits. The 23 fraction bits have an implied MSB that is set to 1, so the
 significand is really 24 bits. 
 
-To multiply 2 FP32 number, you'll need to have a 24x24=24 multiplier.
+To multiply 2 FP32 numbers, you need a 24x24=24 multiplier.
 
 If we look back at a 32x32=32 bit multiplier that is composed of 8x8 bit multipliers, and we don't care
 about what's needed to get a 64-bit result, we had the following:
@@ -466,6 +467,10 @@ If the input is only 24 bits instead of 32-bit, we can ignore the terms with a '
           a3|b0
 ```
 
-What we learn from this, is: if you already support FP32, the extra cost to support INT32, is 2 8x8=8 multipliers.
+The most important take-away here is the following: if you already support FP32, the extra cost to support INT32, is just 2 additional 8x8=8 multipliers.
+
+So if your integer and floating point operations are use the same building blocks of the ALU, the extra cost for a full 32x32 bit multiplier is not
+super high.
+
 
 
