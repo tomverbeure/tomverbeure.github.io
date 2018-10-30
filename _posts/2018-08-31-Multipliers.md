@@ -29,13 +29,17 @@ There are different ways to go about this:
     the equivalent VexRiscV code.
 
     In most cases, this kind of multiplier will do one bit at a time, but that's not really necessary. In
-    the picorv32 code, you can specify this by setting the desired [`STEP_AT_ONCE`](https://github.com/cliffordwolf/picorv32/blob/23d7bbdc8bb3ff97b4d3ccf9cc2eb9ee291039de/picorv32.v#L2128)
-    parameter, or the [`mulUnrollFactor'](https://github.com/SpinalHDL/VexRiscv/blob/25c0a0ff6fc4980e8ec8b5148fe213c24a245a56/src/main/scala/vexriscv/plugin/MulDivIterativePlugin.scala#L7)
+    the picorv32 code, you can specify this by setting the desired [STEP_AT_ONCE](https://github.com/cliffordwolf/picorv32/blob/23d7bbdc8bb3ff97b4d3ccf9cc2eb9ee291039de/picorv32.v#L2128)
+    parameter, or the [mulUnrollFactor](https://github.com/SpinalHDL/VexRiscv/blob/25c0a0ff6fc4980e8ec8b5148fe213c24a245a56/src/main/scala/vexriscv/plugin/MulDivIterativePlugin.scala#L7)
     of the VexRiscV.
 
-* Finally, if you really want performance, you uses a parallel multiplier.
+* Parallel Multiplier
 
-    The picrov32 CPU has the [`fast_mul`](https://github.com/cliffordwolf/picorv32/blob/23d7bbdc8bb3ff97b4d3ccf9cc2eb9ee291039de/picorv32.v#L2248-L2343) and the
+    If you really want performance, you uses a parallel multiplier which takes in that 2 operands completely and spits out a result. The number of cycles
+    between input and output is often more than 1, but on a reasonably efficient and pipelined CPU (and in the absense of pipeline stalls), this can result
+    in 1 result per clock cycle.
+
+    The picrov32 CPU has the [`fast_mul`](https://github.com/cliffordwolf/picorv32/blob/23d7bbdc8bb3ff97b4d3ccf9cc2eb9ee291039de/picorv32.v#L2248-L2343) module and the
     VexRiscV has the [`MulPlugin`](https://github.com/SpinalHDL/VexRiscv/blob/25c0a0ff6fc4980e8ec8b5148fe213c24a245a56/src/main/scala/vexriscv/plugin/MulPlugin.scala#L6-L104) for
     that.
 
@@ -51,8 +55,8 @@ The RISC-V 32-bit instruction set has 4 multiply instructions:
 
     This multiplies operands *rs1* and *rs2* and stores the lower 32 bits of the result in *rd*.
 
-    It doesn't matter whether rs1 and rs1 are signed or unsigned: the result is the same.
-    You can quickly see this on a 2-bit x 2-bit example:
+    Note that there are no signed/unsigned variants: it doesn't matter whether rs1 and rs1 are signed or unsigned 
+    because the result is the same.  You can quickly see this on a 2-bit x 2-bit example:
 
     ```
     Unsigned: 2'b11 x 2'b11 =  3 x  3 =  9 = 4'b1001 -> 2'b01
@@ -68,15 +72,15 @@ The RISC-V 32-bit instruction set has 4 multiply instructions:
 
 * `MULH rd, rs1, rs2`
 
-    multiplies 2 *signed* rs1 and rs2 and stores the upper 32 bits in rd.
+    multiplies 2 *signed* operands rs1 and rs2 and stores the upper 32 bits in rd.
 
 * `MULHU rd, rs1, rs2`
 
-    multiplies 2 *unsigned* rs1 and rs2 and stores the upper 32 bits in rd.
+    multiplies 2 *unsigned* operands rs1 and rs2 and stores the upper 32 bits in rd.
 
 * `MULHSU rd, rs1, rs2`
 
-    multiplies *signed* rs1 and *unsigned* rs2 and stores the upper 32 bits in rd.
+    multiplies *signed* operand rs1 and *unsigned* r operands2 and stores the upper 32 bits in rd.
 
 For RISC-V, if you want to get the 64-bit result of a 32x32 bit multiplication, you need to use 2 instructions: 
 MUL, and one of the MULH variants.
@@ -84,17 +88,16 @@ MUL, and one of the MULH variants.
 RTL Implementation on the PicoRV32
 ------------------------------
 
-On the PicoRV32, the key part of [the implementation](https://github.com/cliffordwolf/picorv32/blob/23d7bbdc8bb3ff97b4d3ccf9cc2eb9ee291039de/picorv32.v#L2248-L2343)
+On the PicoRV32, when you strip away all the extraneous book keeping, the key part of [the implementation](https://github.com/cliffordwolf/picorv32/blob/23d7bbdc8bb3ff97b4d3ccf9cc2eb9ee291039de/picorv32.v#L2248-L2343)
 is straightforward:
-
 
 ```
     rd <= $signed(rs1) * $signed(rs2);
     assign pcpi_rd = shift_out ? rd >> 32 : rd;
 ```
 
-Of note is that `rs1` and `rs2` are 33-bit, not 32-bit, sized. As shown above in my 2x2 bit example, signed and unsigned operands r
-equire different multiplier behavior if you're interested in the full result. One can avoid having different 3 different multipliers (one for each
+Of note is that `rs1` and `rs2` are 33-bit, not 32-bit, sized. As shown above in my 2x2 bit example, signed and unsigned operands 
+require different multiplier behavior if you're interested in the full result. One can avoid having different 3 different multipliers (one for each
 MULH variant) by expanding the operands with 1 bit additional MSB. This MSB is set to 0 for unsigned operands
 or a copy of the sign bit for signed operands.
 
@@ -104,7 +107,7 @@ The code above requires a 33-bit x 33-bit to 64-bit multiplier, with a multiplex
 RTL Implementation on the VexRiscv
 ----------------------------------
 
-The relevant code can be found in [MulPlugin.scala](https://github.com/SpinalHDL/VexRiscv/blob/master/src/main/scala/vexriscv/plugin/MulPlugin.scala).
+The relevant code can be found in [MulPlugin.scala](https://github.com/SpinalHDL/VexRiscv/blob/25c0a0ff6fc4980e8ec8b5148fe213c24a245a56/src/main/scala/vexriscv/plugin/MulPlugin.scala#L6-L104)
 
 ```
     execute plug new Area {
@@ -171,29 +174,28 @@ there are 2 18x18 multipliers per DSP. In the best possible case, we'd only need
 If we assume that Altera knows best how to best map larger multipliers onto smaller ones, then we can use the PicoRV32 mapping
 as an example on how to do things right.
 
-What we see is that Quartus maps it to 3 DSPs, not 2 DSPs:
+After synthesis, what we see is that Quartus maps the logic to 3 DSPs instead of 2.
 
-* One DSP is used in (18x18 + 18x18) mode, where 
+* One DSP is used in (18x18 + 18x18) mode, where the output of two multipliers are added to eachother. This is `(a1*b0 + a0*b1)` term that is implemented in discrete form on the VexRiscV.
 * Two DSPs are used in 18x18-only mode.
 
 For the VexRiscv, the 4 multipliers are mapped to 4 DSPs.
-
 
 3 DSPs:
 1x independent 18x18: fully registered: ax, ay, pipeline, output
 1x independent 18x18: partially registered: ax, ay, output (not: pipeline)
 1x sum of 2 18x18: partially registered: ay, by , pipeline, output (not: ax, bx)
 
-Optimizing for MUL but not MULH
--------------------------------
+Optimizing for MUL but not MULH*
+--------------------------------
 
-In the vast majority of use cases, you will multiply 2 32-bit integers and store the result in a 32-bit integer. In other
-words: you'll be using a MUL.
+In the vast majority of use cases, your C code will consist of int * int operations, where multiply 2 32-bit integers and store the result in a 32-bit integer as well. 
+In other words: you'll be using a MUL.
 
-If resources are tight but you still want a fast multiplication, it makes sense to optimize for that, and incur a performance
+If DSP resources are tight but you still want a fast multiplication for the most common operation, it makes sense then to optimize for that, and incur a performance
 penalty for MULH.
 
-With `a[31:0] = { a1[15:0],a0[15:0] }` and `b[31:0] = { b1[15:0],b0[15:0] }`, the full multiplication looks like this sum:
+With `a[31:0] = { a1[15:0],a0[15:0] } = a1a0` and `b[31:0] = { b1[15:0],b0[15:0] } = b1b0`, the full multiplication looks like this sum:
 
 ```
 a*b=
@@ -202,9 +204,13 @@ a*b=
       a0b1
     a1b1
    +========
-```
-If we only care about the bottom 32 bits of the result (MUL), it looks like this:
 
+   (a1b1)<<32 + (a1b0+a0b1)<<16 + a0b0
+```
+Note that each term `axbx` is 32 bits wide in the notation above, so you have 16 overlapping bits in this `(a1b0+a0b1)<<16 + a0b0` and this `(a1b1)<<32 + (a1b0+a0b1)<<16`
+sums.
+
+If we only care about the bottom 32 bits of the result (MUL), it looks like this:
 
 ```
         |a0b0
@@ -216,22 +222,31 @@ If we only care about the bottom 32 bits of the result (MUL), it looks like this
 
 At the very minimum, we need 3 multiplications:
 
-a0b0: 16x16=32 bits
-a1b0: 16x16=16 bits
-a0b1: 16x16=16 bits
+```
+a0b0: 16x16 = 32 bits
+a1b0: 16x16 = truncated to lower 16 bits
+a0b1: 16x16 = truncated to lower 16 bits
+```
 
 And then we sum these 3 terms for the final 32 bit result.
 
-However, even if we only optimize for MUL, we still need to calculate MULH. If an acceptable trade-off is for this MULH to
-take 2 instead of 1 step, then it makes sense to first calculate the MUL with 3 16x16=32 bits operations in the first step, and retain
-a 50-bit result.
-And then, in a second step, take the upper 18 bits (50-32) and add them to the result of a1*b1.
+So that's the smallest fast implementation: 1 16x16=32 multiplier and 2 16x16=16 multipliers.
+
+For an FPGA, there is no difference between a 16x16=16 or 16x16=32 multiplier so there is no savings on the DSP side, however, the
+final adder that sums the 3 terms together will only need to 32 bits. That's very likely to be result in area and timing savings.
+
+Even if we only optimize for MUL, we may still want to support MULH in hardware. If an acceptable trade-off is for this MULH to
+take 2 steps instead of 1, then it makes sense to first calculate the MUL with 3 16x16=32 bits operations in the first step, and calculate
+a 50-bit sum.
+
+Then, in a second step, take the upper 18 bits \[49:32\] of this sum and add them to the result of a1*b1.
 
 For the second step, we can obviously reuse one of the 16x16 multipliers that were used in the first step.
 
 We've now reduced the number of 16x16 multipliers from 4 to 3.
 
 For FPGAs that have hard 16x16 (or slightly larger) multipliers, that's about the best we can do if we need a single step MUL.
+
 But when using ASICs or FPGAs that don't have hard multipliers (e.g. the Lattice iCE40 series), we can do better.
 
 Reducing Logic Even More
