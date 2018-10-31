@@ -420,50 +420,46 @@ the best approach: there are much better ways to build fast multipliers. Looks u
 "Wallace Tree." Those are outside the scope of this post, and mostly irrelevant for FPGAs, since they require
 a lot of wiring and inefficient to map onto FPGA logic.
 
-# Expanding a Floating Points Multiplier to a 32-bit multiplier
+# Floating Point Multiplier Multiplier Section
 
-Finally, let's have a quick look at floating point multipliers. Single precision FP32 has a one sign bit,
+Finally, let's have a quick look at floating point multipliers. Single precision FP32 has one sign bit,
 8 exponent bits, and 23 fraction bits. The 23 fraction bits have an implied MSB that is set to 1, so the
 significand is really 24 bits. 
 
-To multiply 2 FP32 numbers, you need a 24x24=24 multiplier.
+To multiply 2 FP32 numbers, you'd think you need a 24x24=24 multiplier, but that's not the case: since the
+implied MSB is set 1, you will always get a result for which the upper bits are set. So you need the
+upper 24 bits, or a few bits below that!
 
-If we look back at a 32x32=32 bit multiplier that is composed of 8x8 bit multipliers, and we don't care
-about what's needed to get a 64-bit result, we had the following:
-
-```
-            |    a0b0
-            |  a1b0
-            |  a0b1
-            |a2b0
-            |a1b1
-            |a0b2
-          a3|b0
-          a2|b1
-          a1|b2
-          a0|b3
-```
-
-If the input is only 24 bits instead of 32-bit, we can ignore the terms with a '3' in it:
+With `a[23:0] = { a2[7:0],a1[7:0],a0[7:0] } = a2a1a0` and `b[23:0] = { b2[7:0],b1[7:0],b0[7:0] } = b2b1b0`, we get this:
 
 ```
-            |    a0b0
-            |  a1b0
-            |  a0b1
-            |a2b0
-            |a1b1
-            |a0b2
-          a2|b1
-          a1|b2
-
-          a0|b3
-          a3|b0
+              |  a0b0
+              |a1b0
+              |a0b1
+            a2|b0
+            a1|b1
+            a0|b2
+          a2b1|
+          a1b2|
+        a2b2  |
 ```
 
-The most important take-away here is the following: if you already support FP32, the extra cost to support INT32, is just 2 additional 8x8=8 multipliers.
+In this case, we're only interested in the left side of the vertical bar, but that makes no difference in terms of the
+amount of logic that's needed because the terms on the right side also influence the bits on the left.
 
-So if your integer and floating point operations are use the same building blocks of the ALU, the extra cost for a full 32x32 bit multiplier is not
-super high.
+So, no matter what, we need 9 8x8 multipliers, with the option to reduce to 1 16x16 multiplier and 5 8x8, as seen below:
 
+```
+              |  a0b0
+              |a1b0
+              |a0b1
+            a1|b1
+              |
+            a2|b0
+            a0|b2
+          a2b1|
+          a1b2|
+        a2b2  |
+```
 
 
