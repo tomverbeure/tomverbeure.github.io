@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "A Bug-Free RISC-V Core without Simulation"
-date:   2018-09-03 22:00:00 -0700
+date:   2018-11-18 22:00:00 -0700
 categories: RISC-V
 ---
 
