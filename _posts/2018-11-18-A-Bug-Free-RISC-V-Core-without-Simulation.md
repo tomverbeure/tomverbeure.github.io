@@ -22,6 +22,8 @@ are in place to design a bug-free RISC-V core without the need to simulate anyth
 
 So that was the plan.
 
+*This project was completed about a month before the announcement of RISC-V design contest, which is probably a blessing. :-)*
+
 # Goals
 
 * Design my own minimal [RISC-V](https://riscv.org/specifications/) core
@@ -40,9 +42,9 @@ So that was the plan.
     The other reason is simply that I want to start with the very basics. As I get more proficient, I may
     start using more advanced features.
 
-I made it an explicit requirement to not simulate *anything* before getting a 100% PASS on all the formal tests.
+I imposed an explicit requirement to not simulate *anything* before getting a 100% PASS on all the formal tests.
 
-There were some additional guidelines for what I wanted the RISC-V code to do:
+There were some additional guidelines for what I wanted the RISC-V core to do:
 
 * performance/cycle had to be better than the ubiquitous [picorv32 RISC-V core](https://github.com/cliffordwolf/picorv32)
 
@@ -78,7 +80,7 @@ There were some additional guidelines for what I wanted the RISC-V code to do:
 * No CSRs
 
     Same thing as for the previou point: when I started the project, there was not support for this in the test suite. Looking at the
-    latest commits, support for these are being added.
+    latest riscv-formal commits, support for these are being added.
 
 # Some Early Design Decisions
 
@@ -104,7 +106,7 @@ There were some additional guidelines for what I wanted the RISC-V code to do:
     use the result in Execute.
 
     That said, for simplicity, initially I issued the register file read in Decode, so the output of the RAMs were not 
-    reflopped before they were used in the Execute stage. This had a major clock speed impact on my first version.
+    reflopped before they were used in the Execute stage. This had a major clock speed impact on my first version. 
 
 # Decoder
 
@@ -128,7 +130,7 @@ tranactions and the result of them.
 But what *can* be filled in is the `trap` field. When an illegal or unsupported instruction is encountered, the `rvfi_trap` field must
 be asserted.
 
-Out of the box, the testsuite has an example `complete` test that verifies that the decode issues a `trap` when an invalid instruction
+Out of the box, the testsuite has an example `complete` test that verifies that the decoder issues a `trap` when an invalid instruction
 is not flagged as such by the decoder.
 
 The first version of the design with only the decoder can be found [here](https://github.com/tomverbeure/mr1/tree/b61c3c7e43e5bd068304bd8c42c01024bcda0f6e/src/main/scala/mr1).
@@ -154,7 +156,7 @@ was ready for the first formal test.
 With only 40-something instructions, an RV32I decoder is pretty straightforward, but there were obviously a bunch of bugs in my original RTL code,
 and they were found immediately.
 
-The `complete` test finishes in just a couple of seconds. When the test fails, result is a VCD file of just a few clock cycles.
+The `complete` test finishes in just a couple of seconds. When the test fails, the result is a VCD file of just a few clock cycles.
 
 It took a little bit of time before I got comfortable with my debugging routine, but it ended up going like this:
 
@@ -200,7 +202,7 @@ figuring out how to set up and run riscv-formal on my own design, debugging the 
 
 The actual debug from first formal run to `complete` test fully passing only took about about an hour or so.
 
-Amazing part is that formal essentially stress tests your design under all possible conditions: no corner cases were left unturned.
+The amazing part is that formal essentially stress tests your design under all possible conditions with no corner cases were left unturned.
 
 # Instructions and the Difference between Traditional and Formal Tests
 
@@ -208,7 +210,7 @@ With the decoder logic functional, it was time for some fun implementing individ
 
 This requires some basic infrastructure: register file, execute stage, and program counter (PC).
 
-The riscv-formal test checks the progression of the instruction before and after, so even if you want a formal ADD test
+The riscv-formal test checks the progression of an instruction before and after, so even if you just want, say, a formal ADD instruction test
 to pass, you still need the program counter to be correct.
 
 And important thing to keep in mind is that all pure formal instruction tests rely on the RVFI interface to check the behavior
@@ -217,7 +219,8 @@ but don't really check what happens with the result during the next cycle.
 For example: 
 
 When it checks an ADD instructions, it will check that the RVFI_PC_WDATA field of the RVFI bus (the program counter
-after the execution) is equal to RVFI_PC_RDATA + 4. It will similarly check that registers were read from the correct addresses through the RVFI_RS1_ADDR and RVFI_RS2_ADDR fields, it will use the values on RVFI_RS1_DATA and RVFI_RS2_DATA to check that the RVFI_RD_WDATA
+after the execution) is equal to RVFI_PC_RDATA + 4. It will similarly check that registers were read from the correct addresses 
+through the RVFI_RS1_ADDR and RVFI_RS2_ADDR fields, it will use the values on RVFI_RS1_DATA and RVFI_RS2_DATA to check that the RVFI_RD_WDATA
 field is correct etc.
 
 However, it will *not* check that you were really fetching data from the right address of the register file. Or that you're writing
@@ -247,13 +250,13 @@ ADD r3, r1, r2
 ST r3, <result_address>
 ```
 
-When you simulate that on your CPU, in addition to testing ADD, you will also cover your instruction fetcher, your program counter
+When you simulate that on your DUT CPU, in addition to testing ADD, you will also cover your instruction fetcher, your program counter
 update logic, your memory load and store logic. 
 
 This is not the case for formal: it will feed all possible valid and nonsense instructions into the pipeline, then feed in the
 ADD. As long as those initial instructions don't hang the pipe, it won't complain for that particular test.
 
-The flip side of this is that you can verify a whole bunch of instructions despite that fact that there's no instruction
+The positive flip side of this is that you can verify a whole bunch of instructions despite that fact that there's no instruction
 fetch, load/store unit, or register write-back: riscv-formal was simply feeding instructions straight into the decoder and checking 
 what came out of the execute block.
 
