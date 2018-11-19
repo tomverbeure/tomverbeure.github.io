@@ -59,7 +59,7 @@ There were some additional guidelines for what I wanted the RISC-V code to do:
 * Focus on passing the riscv-formal test as quickly as possible
 
     In the first round, I didn't want to go out of my way to look at achievable clock speed, minimal area, or maximum IPC (as long
-    as it was better than a picorv32.) One I passed this milestone, I knew that I'd start iterating on one or more of those
+    as it was better than a picorv32.) Once I passed this milestone, I knew that I'd start iterating on one or more of those
     metrics, because optimizing stuff is fun.
 
 * RV32I only at first
