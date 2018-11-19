@@ -105,12 +105,6 @@ There were some additional guidelines for what I wanted the RISC-V code to do:
     That said, for simplicity, initially I issued the register file read in Decode, so the output of the RAMs were not 
     reflopped before they were used in the Execute stage. This had a major clock speed impact on my first version.
 
-# Interfacing between Stages
-
-I decided to group all the signals between major functional blocks into a Bundle (think of it as a struct, or as an `interface`
-in SystemVerilog.) This makes connecting them at the toplevel really quick. It also makes it very easy and low effort to
-add or remove signals between blocks later on.
-
 # First Step: Decoder
 
 I started out with the decoder, where a 32-bit instruction word enters, gets classified into an instruction type (which more or less
@@ -283,9 +277,13 @@ minimum repro case.
 
 Not complicated, or so I thought, and I was able to get my formal test pass quickly.
 
-But it's also the case where I got truly burnt by not running a test... that didn't exist at the time. See later.
+But it's also the case where I got truly burnt by not running a test... that didn't exist at the time: I had implemented RVFI interface
+so that it'd match the behavior of the core. But the behavior of the core was wrong, and thus the RVFI interface was wrong as well.
 
-In my first version, the LSU also writes back to the register file.
+Since the error only happened for non-word transactions, it didn't show up even after running the initial LED blink test and was only
+unconvered after implementing the wrapper for and running `dmemcheck`.
+
+Showing once again: a passing instruction test doesn't make the instruction works.
 
 # Blinking LED
 
