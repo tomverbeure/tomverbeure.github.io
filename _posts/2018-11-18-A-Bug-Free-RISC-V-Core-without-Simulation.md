@@ -106,7 +106,7 @@ There were some additional guidelines for what I wanted the RISC-V code to do:
     That said, for simplicity, initially I issued the register file read in Decode, so the output of the RAMs were not 
     reflopped before they were used in the Execute stage. This had a major clock speed impact on my first version.
 
-# First Step: Decoder
+# Decoder
 
 I started out with the decoder, where a 32-bit instruction word enters, gets classified into an instruction type (which more or less
 corresponds to a 7-bit RISC-V opcode: AUIPC, LUI, ALU, ...), and an instruction format (R, I, J, ...) as defined in the RISC-V
