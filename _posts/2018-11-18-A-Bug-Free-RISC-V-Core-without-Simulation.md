@@ -12,7 +12,8 @@ Earlier, I had a [quick look at SpinalHDL](2018-08-11-SpinalHDL.md) as a candida
 But as much as one can read the documentation and checkout some trivial tutorials, you need a real project to see if a language
 fits your needs.
 
-Since all the cool kids are designing their own RISC-V cores these days, I felt the need to write one myself as well.
+Since all the cool kids are designing their own RISC-V cores these days, I felt the need to write one myself 
+as well: [the MR1 core](https://github.com/tomverbeure/mr1).
 
 Verifying a CPU the traditional way is error prone and tedious. But with the arrival of
 [SymbiYosys](https://symbiyosys.readthedocs.io/en/latest/), an open source formal verification tool, and with the existence of
