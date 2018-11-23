@@ -78,4 +78,31 @@ in a recursive and a generic way that works for any sized vector input:
 [full code](https://github.com/tomverbeure/math/blob/96c222e541adc4670dfe1929005a5ea14e2a7123/src/main/scala/math/Misc.scala#L70-L93).
 
 
+# Initialize a 32-bit wide Mem with the contents of binary file
+
+* First pad the binary file to make it the desired size of the Mem.
+
+    I have this in my Makefile:
+
+```
+progmem8k.bin: progmem.bin
+        cp $< $@
+        dd if=/dev/zero of=$@ bs=1 count=0 seek=8192
+```
+
+* Then load it through the `initialContent` parameter when instantiating the Mem:
+
+```Scala
+        import java.nio.file.{Files, Paths}
+        
+        val byteArray = Files.readAllBytes(Paths.get("sw/progmem8k.bin"))
+        val cpuRamContent = for(i <- 0 until ramSize/4) yield { 
+                B( (byteArray(4*i).toLong & 0xff) + ((byteArray(4*i+1).toLong & 0xff)<<8) + ((byteArray(4*i+2).toLong & 0xff)<<16) + ((byteArray(4*i+3).toLong & 0xff)<<24), 32 bits)
+        }
+    
+        val cpu_ram = Mem(Bits(32 bits), initialContent = cpuRamContent)
+```
+
+I have filed a [SpinalHDL GitHub Issue](https://github.com/SpinalHDL/SpinalHDL/issues/160) to provide a better way to do this.
+
 
