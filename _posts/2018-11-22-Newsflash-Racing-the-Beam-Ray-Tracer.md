@@ -1,11 +1,11 @@
 ---
 layout: post
-title:  Newsflash - Race the Beam Ray Tracer"
+title:  Newsflash - Racing the Beam Ray Tracer"
 date:   2018-11-22 14:00:00 -0700
 categories: RTL
 ---
 
-# Newsflash - For Immediate Release - Race the Beam Ray Tracer
+# Newsflash - For Immediate Release - Racing the Beam Ray Tracer
 
 Ray-tracing has always been one of the best rendering techniques. It's often used in large scale compute farms to render the images
 of movies. But it's also very calculation intensive, and those movie images can take many hours per frame to complete.
@@ -13,11 +13,11 @@ of movies. But it's also very calculation intensive, and those movie images can 
 Nobody ever considered using ray tracing as the primary way of rendering graphics on an FPGA, and definitely not in a 10 year
 old Spartan 3E. Well, that ends today.
 
-Introducing: The Race the Beam Ray Tracer !!!
+Introducing: The Racing the Beam Ray Tracer !!!
 
 RtBRT has a bunch of very appealing and unique features:
 
-* Zero Latency Race the Beam Rendering
+* Zero Latency Racing the Beam Rendering
 
     Pioneered by the iconic Atari 2600, updated for the twenty first century, RtBRT has zero latency rendering: the value of each pixel
     is calculated at the exact point where it's needed, when it must be sent to the monitor.
