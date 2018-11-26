@@ -30,6 +30,8 @@ categories: RTL
 
 [SpinalHDL LatencyAnalysis Life Saver](#spinalhdl-latencyanalysis-life-saver)
 
+[Progression to C Model Match](#progression-to-c-model-match)
+
 
 # Introduction
 
@@ -555,6 +557,61 @@ adjust automatically.
 
 It's absolutely brilliant and an enormous life saver for a pipeline that has depth of more than
 100 pipeline stage.
+
+# Progression to C Model Match
+
+Implementing a ray tracing pipeline for the first time requires quite a bit of RTL without any kind of feedback:
+you need a lot of pieces in place before you can finally render an image.
+
+In my case, I decided to implement all the geometry before attempting to get an image going on the monitor.
+
+I hadn't implemented the plane checker board colors yet, so I expected 4 different colors: the sky (blue),
+the plane (green), a sphere reflecting the sky (yellow), and a sphere reflecting the plane (cyan.)
+
+Once everything compiled without syntax and pedantic elaboration errors (another *huge* benefit of SpinalHDL),
+I was ready to fire up the monitor for the first time, and was greeted with this:
+
+![Progression 1]({{ "/assets/rt/P1.JPG" | absolute_url }}) 
+
+Not bad huh?!
+
+I had flipped around the Y axis, so you only so that top of the sphere.
+
+Plane intersection always passed because I had forgotten to clamp the intersection point to only
+be in front of the camera.
+
+But, hey, something that resembles a circle! Let's fix the bugs...
+
+![Progression 2]({{ "/assets/rt/P2.JPG" | absolute_url }}) 
+
+Much better!
+
+Those weird boundaries on the right of the sphere? Those were a pipeline bug in my FpxxAdd block 
+that only showed up when using less than 5 pipeline stages (which was my only testbench configuration.)
+
+![Progression 3]({{ "/assets/rt/P3.JPG" | absolute_url }}) 
+
+Another pipelining bug...
+
+![Progression 4]({{ "/assets/rt/P4.JPG" | absolute_url }}) 
+
+Excellent! It's just a coincidence that the plane (green) and the reflected plane (cyan)
+align horizontally: that's because the camera is concidentally at the same level as the
+center of the sphere, and the plane is running all the way to infinity.
+
+![Progression 5]({{ "/assets/rt/P5.JPG" | absolute_url }}) 
+
+Checker board is ON!
+
+![Progression 6]({{ "/assets/rt/P6.JPG" | absolute_url }}) 
+
+Static Render is a GO!
+
+![Progression 7]({{ "/assets/rt/P7.JPG" | absolute_url }}) 
+
+See the fuzzy outlines around that sphere?
+
+That's because I took the picture while it was moving!
 
 
 
