@@ -123,7 +123,7 @@ Or you chose the alternative: only allow 1 reflecting object in the scene.
 Since our FPGA is really quite small, there was a strict limit on what could be done. So the decision was made
 to have a scene with just 1 non-reflecting plane, a reflecting ball.
 
-# Creating a C model
+# A Floating Point C model
 
 For a project with a lot of math, and a lot of pixels (and thus potentially very large simulation times), it's
 essential to first implement a C model to validate the whole concept before laying things down in RTL.
@@ -149,5 +149,14 @@ A bit more code resulted in this:
 and finally this:
 
 ![cmodel3-reflection.png]({{ "/assets/rt/cmodel3-reflection.png" | absolute_url }})
+
+This was the point where it was time to check if this could actually be built: how many FPGA resources would it need
+make calculate this kind of image?
+
+The [code](https://github.com/tomverbeure/rt/blob/ab0af1f9dfa09f676546dfc3bb8bb202aa4a0c36/src/main.c) is still quite simple, but there
+are square roots, reciprocal scare roots, divides, vector normalization, vector multiplications etc.
+
+# Math Operation Stats and Fixed Point
+
 
 
