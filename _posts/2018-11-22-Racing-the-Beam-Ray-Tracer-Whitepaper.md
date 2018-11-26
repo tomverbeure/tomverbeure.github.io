@@ -652,7 +652,15 @@ Much better!
 Notice how the shadow on the plane is also visible on the sphere. This is what makes ray tracing such an appealing
 rendering technique!
 
-# Bringing in a CPU
+The additional features bumped the core logic stats up from a comfortable 66% to a much tighter 92%. The
+number of HW multipliers doubled as well. 
 
-Everything up to this point was implemented completely in hardware.
+![Xilinx ISE Shadow and Light Stats]({{ "/assets/rt/Xilinx ISE Shadow and Light Stats.png" | absolute_url }})
+
+# Camera Movement and Flexibility - Bringing in a CPU
+
+Everything up to this point was implemented completely in hardware. The camera had a fixed
+location, and the its orientation was static as well.
+
+Ideally, we'd like to move the camera around and point in any directio we'd like.
 
