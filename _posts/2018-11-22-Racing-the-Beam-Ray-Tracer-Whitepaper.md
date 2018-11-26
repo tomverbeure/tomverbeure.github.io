@@ -123,10 +123,15 @@ Or you chose the alternative: only allow 1 reflecting object in the scene.
 Since our FPGA is really quite small, there was a strict limit on what could be done. So the decision was made
 to have a scene with just 1 non-reflecting plane, a reflecting ball.
 
-# Step 1: Creating a C model
+# Creating a C model
 
 For a project with a lot of math, and a lot of pixels (and thus potentially very large simulation times), it's
 essential to first implement a C model to validate the whole concept before laying things down in RTL.
 
+First step is to simply use floating point. Converting to a format that's more suitable for an FPGA is for later.
+
+It didn't take long to get the first useful pixels on the screen ([code](https://github.com/tomverbeure/rt/tree/cba6c0f1caa04c2797f21d0c4d85c9f1c127c88d):
+
+![cmodel1_plane]({{ "/assets/rt/cmodel1_plane.png" | absolute_url }})
 
 
