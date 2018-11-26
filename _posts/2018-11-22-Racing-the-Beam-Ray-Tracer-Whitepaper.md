@@ -26,6 +26,10 @@ categories: RTL
 
 [Conversion to 20-bit Floating Point Numbers](#conversion-to-20-bit-floating-point-numbers)
 
+[Building the Pipeline](#building-the-pipeline)
+
+[SpinalHDL LatencyAnalysis Life Saver](#spinalhdl-latencyanalysis-life-saver)
+
 
 # Introduction
 
@@ -57,12 +61,12 @@ intersection was high on the list but ultimately rejected.
 
 Lately, ray tracing has become sort of a big thing, so I wondered if anything could be done on my Pano Logic.
 
-Because, yes, it's a pretty pedestrian FPGA by today's standards, but the specs are actually pretty decent 
+Because, yes, it's a pretty pedestrian FPGA by today's standards, but the specs are actually pretty decent
 when compared to many of today's hobby FPGA boards: 27k LUTs, quite a bit of RAM, and 36 18x18bit hardware multipliers.
 
 Is that enough to do ray tracing? Let's find out...
 
-# Racing the Beam - Graphics without a Frame Buffer 
+# Racing the Beam - Graphics without a Frame Buffer
 
 The traditional way of doing computer graphics looks like this:
 
@@ -116,11 +120,11 @@ https://events.ccc.de/congress/2011/Fahrplan/attachments/2004_28c3-4711-Ultimate
 # One Pixel per Clock Ray Tracing
 
 Ray tracing algorithms typically render scenes with a lot of triangles. The algorithm injects a ray into
-the scene, figures out the closest intersecting triangle.  If there are hundreds of thousands or more triangles, 
+the scene, figures out the closest intersecting triangle.  If there are hundreds of thousands or more triangles,
 it uses bounding box acceleration structures to reduce the number of ray/triangle intersections.
 
 Once it has found the closest object, it calculates a base color and then casts a bunch
-of secondary rays into the scene to figure out light spots, shadows, reflections, refractions etc. 
+of secondary rays into the scene to figure out light spots, shadows, reflections, refractions etc.
 
 Doing all of that in a single clock cycle is a bit of a challenge, so there were some consequences and
 trade-offs.
@@ -136,7 +140,7 @@ intersection, the reflected ray, the sphere normal etc.
 
 But wait, it gets worse! One of the main benefits of ray tracing are the ease by which it can render reflections.
 It'd be a shame if you couldn't show that off. Unfortunately, reflection is recursive: if you have 2 reflecting
-objects, light rays can essentially bounce between them forever. You'd need an infinite amount of hardware to 
+objects, light rays can essentially bounce between them forever. You'd need an infinite amount of hardware to
 do that in one clock cycle... but even if you limit things to 2 bounces, you're still looking at a rapid expansion
 of math operations, and thus HW resources.
 
@@ -160,8 +164,8 @@ The [code](https://github.com/tomverbeure/rt/blob/cba6c0f1caa04c2797f21d0c4d85c9
 I decided on pure C code without any outside libraries, so I had to create my own vector structs. I made a lot
 of changes to those along the way.
 
-I used the [scratchapixel.com](scratchapixel.com) ray-tracing tutorial code as the base for 
-[ray/plane](https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection) 
+I used the [scratchapixel.com](scratchapixel.com) ray-tracing tutorial code as the base for
+[ray/plane](https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection)
 and [ray/sphere](https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection) intersection.
 
 A bit more code resulted in this:
@@ -180,8 +184,8 @@ are square roots, reciprocal scare roots, divides, vector normalization, vector 
 
 # From Floating Point to Fixed Point
 
-Ray tracing requires a lot of math operations with fractional numbers. The default to-go-to way to deal with fractional 
-numbers on an FPGA is [fixed point arithmetic](https://en.wikipedia.org/wiki/Fixed-point_arithmetic). It's essentially 
+Ray tracing requires a lot of math operations with fractional numbers. The default to-go-to way to deal with fractional
+numbers on an FPGA is [fixed point arithmetic](https://en.wikipedia.org/wiki/Fixed-point_arithmetic). It's essentially
 binary integer arithmetic, but the decimal... well... binary point is somewhere in the middle of the bit vector.
 
 After each operation, it's up to the user to make sure the binary point is adjusted: for an add/subract, no adjustements
@@ -193,7 +197,7 @@ So you need to right shift by 8 to get back to 8 fractional bits.
 
 This can all be automated with some specific rules, but some manual tuning may be needed due to resource restrictions.
 
-For example: most FPGAs have 18x18 bit multipliers. If your 2 operands are 24-bit fractional numbers with 8 integer and 
+For example: most FPGAs have 18x18 bit multipliers. If your 2 operands are 24-bit fractional numbers with 8 integer and
 16 fractional bits, then you can stay within the 18 bit restriction by dropping the lower 6 fractional bits for both operands.
 The resulting 18x18 multiplication will have 16 integer and 20 fractional bits. After dropping 4 additional fractional
 bits and 8 MSBs, you're back at a 24-bit fractional number.
@@ -209,7 +213,7 @@ In that case, it'd be better to drop unused integer bits from the operand A and 
 
 Like this: 8.16 x 8.16 -> 1.17 x 8.10 = 9.27 -> 8.16
 
-The end result is the same 8.16 fixed point format, but the given that particular nature of the 2 operands, 
+The end result is the same 8.16 fixed point format, but the given that particular nature of the 2 operands,
 the second result will have a much better accuracy.
 
 The disadvantage: it requires manual tuning.
@@ -219,7 +223,7 @@ are all roughly the same size, but that's not really the case for ray tracing: t
 smaller or equal than 1, but there are also calculations with relatively large intermediate results.
 
 Instead of writing a second, fixed point, C model, I did something better: I changed the code to calculate both floating
-and fixed point results for everything. This has the major benefit that the results of all math operations can be 
+and fixed point results for everything. This has the major benefit that the results of all math operations can be
 cross-checked against eachother to see if they start to diverge in some big way.
 
 A disadvantage is that all operations had to be converted into explicit function calls, even for basic C operations.
@@ -293,7 +297,7 @@ scalar_recip_sqrt_cntr: 2
 That biggest issue here are the number of multiplications: 48 is quite a bit larger than the 36 HW multipliers
 of our FPGA.
 
-The additions shouldn't be a problem at all. Divide is unexplored territory, but square root should be doable with 
+The additions shouldn't be a problem at all. Divide is unexplored territory, but square root should be doable with
 some memory lookup. Which is fine: who needs memory anyway when you are racing the beam?
 
 # Scene Math Optimization
@@ -344,13 +348,13 @@ scalar_sqrt_cntr:       1
 scalar_recip_sqrt_cntr: 2
 ```
 
-This isn't too bad! There are 36 HW multipliers in the FPGA, so that's an exact match. 
+This isn't too bad! There are 36 HW multipliers in the FPGA, so that's an exact match.
 
 # Start Your SpinalHDL RTL Coding Engines! Or... ?
 
 With all the preliminary work completed, it was time to start with the RTL coding.
 
-After [the excellent experience](https://tomverbeure.github.io/risc-v/2018/11/19/A-Bug-Free-RISC-V-Core-without-Simulation.html) 
+After [the excellent experience](https://tomverbeure.github.io/risc-v/2018/11/19/A-Bug-Free-RISC-V-Core-without-Simulation.html)
 with my [MR1](https://github.com/tomverbeure/mr1) RISC-V CPU, [SpinalHDL](https://spinalhdl.github.io/SpinalDoc/)
 is now my RTL hobby language of choice.
 
@@ -362,13 +366,13 @@ And then the coding starts.
 
 Or that was the initial plan.
 
-But for some reason, I just didn't feel like implementing this whole thing using fixed point. If somebody else else already 
+But for some reason, I just didn't feel like implementing this whole thing using fixed point. If somebody else else already
 created this whole library, it's not a whole lot of fun.
 
-What happened was one of the best parts of doing something as a hobby: you can do whatever you want. You can rabbit-hole 
+What happened was one of the best parts of doing something as a hobby: you can do whatever you want. You can rabbit-hole
 into details that don't matter but are just interesting.
 
-I got interested into limited precision floating point arithmetic. 
+I got interested into limited precision floating point arithmetic.
 I [adjusted the C model](https://github.com/tomverbeure/rt/blob/1f803ce8d4b8c1d590340ce40544b6315c133d33/cmodel/src/main.cpp)
 to support `fpxx`, a third numerical representation in addition to fp32 and fixed point.
 
@@ -384,15 +388,15 @@ typedef struct {
 
 And then I spent about a month researching and implementing floating point operations as its own C model and RTL.
 
-The resulting [Fpxx library](https://github.com/tomverbeure/math) is a story on itself. 
+The resulting [Fpxx library](https://github.com/tomverbeure/math) is a story on itself.
 
 # Conversion to 20-bit Floating Point Numbers
 
 Since fpxx library was implemented using C++ templates, it was trivial to update the ray tracing C model to use it.
 
-After some experimentation, the conclusion was that I could still render images with more or less the same quality 
+After some experimentation, the conclusion was that I could still render images with more or less the same quality
 by using a 13 bit mantissa and a 6 bit exponent.  Reducing either one by 1 bit results in serious image corruption.
-Add 1 sign bit, and we have a 20-bit vector for all our numbers. 
+Add 1 sign bit, and we have a 20-bit vector for all our numbers.
 
 The fixed point implementation was using 16 integer, and 16 fractional bits. Remember how this required making
 choices when doing multiplications.
@@ -400,8 +404,157 @@ choices when doing multiplications.
 By moving to a 13-bit mantissa we now only need 14x14 bit multiplier. This means that we don't need to drop
 any bits when using the 18x18 bit HW multipliers. So that's good!
 
-#
+# Building the Pipeline
 
+The time had finally come to build the whole pipeline.
+
+To make the conversion even easier, some C model code was update with additional intermediate variables to get a
+close match of C model variable names and RTL signals.
+
+Here's [a good example](https://github.com/tomverbeure/rt/commit/db9fbad12ee4ac026950e32debd1af0cb3b1daa7) of that:
+
+Old:
+```C
+    scalar_t c0r0_c0r0 = dot_product(c0r0, c0r0);
+    d2 = subtract_scalar_scalar(d2, mul_scalar_scalar(tca, tca));
+```
+
+New:
+```C
+    scalar_t c0r0_c0r0 = dot_product(c0r0, c0r0);
+    scalar_t tca_tca = mul_scalar_scalar(tca, tca);
+    scalar_t d2 = subtract_scalar_scalar(c0r0_c0r0, tca_tca);
+```
+
+And the corresponding RTL code:
+```Scala
+    //============================================================
+    // c0r0_c0r0
+    //============================================================
+
+    val c0r0_c0r0_vld = Bool
+    val c0r0_c0r0     = Fpxx(c.fpxxConfig)
+
+    val u_dot_c0r0_c0r0 = new DotProduct(c)
+    u_dot_c0r0_c0r0.io.op_vld     <> c0r0_vld
+    u_dot_c0r0_c0r0.io.op_a       <> c0r0
+    u_dot_c0r0_c0r0.io.op_b       <> c0r0
+
+    u_dot_c0r0_c0r0.io.result_vld <> c0r0_c0r0_vld
+    u_dot_c0r0_c0r0.io.result     <> c0r0_c0r0
+
+    //============================================================
+    // tca_tca
+    //============================================================
+
+    val tca_tca_vld = Bool
+    val tca_tca     = Fpxx(c.fpxxConfig)
+
+    val u_tca_tca = new FpxxMul(c.fpxxConfig, pipeStages = 5)
+    u_tca_tca.io.op_vld <> tca_vld
+    u_tca_tca.io.op_a   <> tca
+    u_tca_tca.io.op_b   <> tca
+
+    u_tca_tca.io.result_vld <> tca_tca_vld
+    u_tca_tca.io.result     <> tca_tca
+
+    //============================================================
+    // d2
+    //============================================================
+    ...
+```
+
+# SpinalHDL LatencyAnalysis Life Saver
+
+Imagine you're doing the following calculation:
+
+```
+q = a + b + c
+```
+
+However, all your math functional blocks only accept 2 operands. No problem, just split it up:
+
+```
+p = a + b
+q = p + c
+```
+
+That's easy to do when you right C or maybe use high-level synthesis language (HLS).
+
+But when you're right RTL and when each operation take a number of cycles, you need to be
+careful: if you pipeline accepts new inputs each and every clock cycle, you need to make
+sure that the operands for all functional blocks are aligned!
+
+For example: if the adder take 2 clock cycles, the result `p` will emerge
+after 2 clock cycles *and you need to delay `c` by 2 clock cycles to align it to 'p'* before
+you can apply both operands to the adder that calculated 'q'.
+
+My `fpxx` library has tons of flexilibity in terms of pipeline depth. The FpxxAdd block can
+be configured to take between zero and 5 pipeline stages, depending on your clock frequency
+needs. Other blocks have similar levels of configurability.
+
+In addition, larger functional block such as
+[ray/sphere intersection](https://github.com/tomverbeure/rt/blob/29070b46fa30c290d7e530f7700b9ea1ef45a3eb/src/main/scala/rt/Sphere.scala#L17-L402)
+have tons of operations both cascaded sequentially and in parallel.
+
+Even if the latencies through each core math block were fixed, it'd still be a small
+nightmare to ensure that all operations to all blocks were correctly latency
+aligned.
+
+Comes to the rescue: the [SpinalHDL LatencyAnalysis](https://spinalhdl.github.io/SpinalDoc/spinal/lib/utils/#special-utilities)
+function!
+
+It's function is a simple as it is brilliant: given a set of signals that are connected to eachother
+through a string of combinatorial and sequential logic, it returns the minimum number of clock
+cycles to travel through all nodes.
+
+The `fpxx` library has a `op_vld` input `result_vld` output for each core operations, which
+ultimately strings all operations together, from the input of the pipeline to the output.
+
+Now check out this helper function:
+```Scala
+object MatchLatency {
+
+    // Match arrival time of 2 signals with _vld
+    def apply[A <: Data, B <: Data](common_vld: Bool, a_vld : Bool, a : A, b_vld : Bool, b : B) : (Bool, A, B) = {
+
+        val a_latency = LatencyAnalysis(common_vld, a_vld)
+        val b_latency = LatencyAnalysis(common_vld, b_vld)
+
+        if (a_latency > b_latency) {
+            (a_vld, a, Delay(b, cycleCount = a_latency - b_latency) )
+        }
+        else if (b_latency > a_latency) {
+            (b_vld, Delay(a, cycleCount = b_latency - a_latency), b )
+        }
+        else {
+            (a_vld, a, b)
+        }
+    }
+}
+```
+
+This function accepts a common/root valid and 2 valid/value pairs A and B. It calculate the latency
+the common valid to the 2 A and B pairs and then inserts pipeline delays for either the A or the B pair
+so that they are now aligned to eachother.
+
+Here's an example how this is used in the code:
+```Scala
+    val (common_dly_vld, tca_tca_dly, c0r0_c0r0_dly) = MatchLatency(
+                                                io.op_vld,
+                                                tca_tca_vld,   tca_tca,
+                                                c0r0_c0r0_vld, c0r0_c0r0)
+
+```
+
+Thanks to MatchLatency and LatencyAnalysis, `tca_tca_dly` and `c0r0_c0r0_dly` are now latency
+aligned, with a `common_dly_vld` as their common valid signal!
+
+I can change the pipeline depth of each math operation at will, and the the whole pipeline
+adjust automatically.
+
+It's absolutely brilliant and an enormous life saver for a pipeline that has depth of more than
+100 pipeline stage.
 
 
 
