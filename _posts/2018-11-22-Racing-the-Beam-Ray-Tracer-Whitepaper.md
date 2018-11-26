@@ -22,6 +22,10 @@ categories: RTL
 
 [Scene Math Optimization](#scene-math-optimization)
 
+[Start Your SpinalHDL RTL Coding Engines! Or... ?](#start-your-spinalhdl-rtl-coding-engines-or-)
+
+[Conversion to 20-bit Floating Point Numbers](#conversion-to-20-bit-floating-point-numbers)
+
 
 # Introduction
 
@@ -341,5 +345,63 @@ scalar_recip_sqrt_cntr: 2
 ```
 
 This isn't too bad! There are 36 HW multipliers in the FPGA, so that's an exact match. 
+
+# Start Your SpinalHDL RTL Coding Engines! Or... ?
+
+With all the preliminary work completed, it was time to start with the RTL coding.
+
+After [the excellent experience](https://tomverbeure.github.io/risc-v/2018/11/19/A-Bug-Free-RISC-V-Core-without-Simulation.html) 
+with my [MR1](https://github.com/tomverbeure/mr1) RISC-V CPU, [SpinalHDL](https://spinalhdl.github.io/SpinalDoc/)
+is now my RTL hobby language of choice.
+
+It even has a fixed point library!
+
+First step is to get [an LED blinking](https://github.com/tomverbeure/rt/blob/2702712aa116c3d1b078ff453b5abaff12b455a1/src/main/scala/rt/Pano.scala).
+
+And then the coding starts.
+
+Or that was the initial plan.
+
+But for some reason, I just didn't feel like implementing this whole thing using fixed point. If somebody else else already 
+created this whole library, it's not a whole lot of fun.
+
+What happened was one of the best parts of doing something as a hobby: you can do whatever you want. You can rabbit-hole 
+into details that don't matter but are just interesting.
+
+I got interested into limited precision floating point arithmetic. 
+I [adjusted the C model](https://github.com/tomverbeure/rt/blob/1f803ce8d4b8c1d590340ce40544b6315c133d33/cmodel/src/main.cpp)
+to support `fpxx`, a third numerical representation in addition to fp32 and fixed point.
+
+```C
+typedef fpxx<14,6> floatrt;
+
+typedef struct {
+    float   fp32;
+    floatrt fpxx;
+    int     fixed;
+} scalar_t;
+```
+
+And then I spent about a month researching and implementing floating point operations as its own C model and RTL.
+
+The resulting [Fpxx library](https://github.com/tomverbeure/math) is a story on itself. 
+
+# Conversion to 20-bit Floating Point Numbers
+
+Since fpxx library was implemented using C++ templates, it was trivial to update the ray tracing C model to use it.
+
+After some experimentation, the conclusion was that I could still render images with more or less the same quality 
+by using a 13 bit mantissa and a 6 bit exponent.  Reducing either one by 1 bit results in serious image corruption.
+Add 1 sign bit, and we have a 20-bit vector for all our numbers. 
+
+The fixed point implementation was using 16 integer, and 16 fractional bits. Remember how this required making
+choices when doing multiplications.
+
+By moving to a 13-bit mantissa we now only need 14x14 bit multiplier. This means that we don't need to drop
+any bits when using the 18x18 bit HW multipliers. So that's good!
+
+#
+
+
 
 
