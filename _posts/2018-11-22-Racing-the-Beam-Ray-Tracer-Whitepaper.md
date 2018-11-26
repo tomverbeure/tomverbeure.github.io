@@ -130,8 +130,24 @@ essential to first implement a C model to validate the whole concept before layi
 
 First step is to simply use floating point. Converting to a format that's more suitable for an FPGA is for later.
 
-It didn't take long to get the first useful pixels on the screen ([code](https://github.com/tomverbeure/rt/tree/cba6c0f1caa04c2797f21d0c4d85c9f1c127c88d):
+It didn't take long to get the first useful pixels on the screen:
 
 ![cmodel1_plane]({{ "/assets/rt/cmodel1_plane.png" | absolute_url }})
+
+The [code](https://github.com/tomverbeure/rt/blob/cba6c0f1caa04c2797f21d0c4d85c9f1c127c88d/src/main.c) is almost trivial.
+I decided on pure C code without any outside libraries, so I had to create my own vector structs. I made a lot
+of changes to those along the way.
+
+I used the [scratchapixel.com](scratchapixel.com) ray-tracing tutorial code as the base for 
+[ray/plane](https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection) 
+and [ray/sphere](https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection) intersection.
+
+A bit more code resulted in this:
+
+![cmodel2_ray-sphere-intersection]({{ "/assets/rt/cmodel2-ray-sphere-intersection.png" | absolute_url }})
+
+and finally this:
+
+![cmodel3-reflection.png]({{ "/assets/rt/cmodel3-reflection.png" | absolute_url }})
 
 
