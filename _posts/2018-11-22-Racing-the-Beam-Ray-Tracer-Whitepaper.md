@@ -5,6 +5,24 @@ date:   2018-11-22 14:00:00 -0700
 categories: RTL
 ---
 
+
+# Table of Contents
+
+[Introduction](#introduction)
+
+[Racing the Beam - Graphics without a Frame Buffer ](#racing-the-beam---graphics-without-a-frame-buffer)
+
+[One Pixel per Clock Ray Tracing](#one-pixel-per-clock-ray-tracing)
+
+[A Floating Point C model](#a-floating-point-c-model)
+
+[From Floating Point to Fixed Point](#from-floating-point-to-fixed-point)
+
+[Math Resource Usage Statistics](#math-resource-usage-statistics)
+
+[Scene Math Optimization](#scene-math-optimization)
+
+
 # Introduction
 
 One of the most exciting moments of a chip designer is the first power-on of freshly baked silicon. Engineers
@@ -123,7 +141,7 @@ Or you chose the alternative: only allow 1 reflecting object in the scene.
 Since our FPGA is really quite small, there was a strict limit on what could be done. So the decision was made
 to have a scene with just 1 non-reflecting plane, a reflecting ball.
 
-# A Floating Point C model
+# A Floating Point C Model
 
 For a project with a lot of math, and a lot of pixels (and thus potentially very large simulation times), it's
 essential to first implement a C model to validate the whole concept before laying things down in RTL.
@@ -156,7 +174,172 @@ make calculate this kind of image?
 The [code](https://github.com/tomverbeure/rt/blob/ab0af1f9dfa09f676546dfc3bb8bb202aa4a0c36/src/main.c) is still quite simple, but there
 are square roots, reciprocal scare roots, divides, vector normalization, vector multiplications etc.
 
-# Math Operation Stats and Fixed Point
+# From Floating Point to Fixed Point
 
+Ray tracing requires a lot of math operations with fractional numbers. The default to-go-to way to deal with fractional 
+numbers on an FPGA is [fixed point arithmetic](https://en.wikipedia.org/wiki/Fixed-point_arithmetic). It's essentially 
+binary integer arithmetic, but the decimal... well... binary point is somewhere in the middle of the bit vector.
+
+After each operation, it's up to the user to make sure the binary point is adjusted: for an add/subract, no adjustements
+are needed, but pretty much all other operations, you need to shift the result to get the binary point back to where it
+belongs.
+
+When you multiply 2 fixed point numbers with 8 fractional bits, the result will be one with 16 fractional bits.
+So you need to right shift by 8 to get back to 8 fractional bits.
+
+This can all be automated with some specific rules, but some manual tuning may be needed due to resource restrictions.
+
+For example: most FPGAs have 18x18 bit multipliers. If your 2 operands are 24-bit fractional numbers with 8 integer and 
+16 fractional bits, then you can stay within the 18 bit restriction by dropping the lower 6 fractional bits for both operands.
+The resulting 18x18 multiplication will have 16 integer and 20 fractional bits. After dropping 4 additional fractional
+bits and 8 MSBs, you're back at a 24-bit fractional number.
+
+In other words: 8.16 x 8.16 -> 8.10 x 8.10 = 16.20 -> 8.16
+
+That's something you can easily automate.
+
+But what if operand A is a component of a normalized vector which is never larger than 1? And the operand B
+is always a rather large integer without many meaningful fractional bits?
+
+In that case, it'd be better to drop unused integer bits from the operand A and fraction bits from operand B.
+
+Like this: 8.16 x 8.16 -> 1.17 x 8.10 = 9.27 -> 8.16
+
+The end result is the same 8.16 fixed point format, but the given that particular nature of the 2 operands, 
+the second result will have a much better accuracy.
+
+The disadvantage: it requires manual tuning.
+
+In any case, the big take-away is this: fixed point works, but it can be a real pain. It's great when most operands
+are all roughly the same size, but that's not really the case for ray tracing: there are numbers that will always be
+smaller or equal than 1, but there are also calculations with relatively large intermediate results.
+
+Instead of writing a second, fixed point, C model, I did something better: I changed the code to calculate both floating
+and fixed point results for everything. This has the major benefit that the results of all math operations can be 
+cross-checked against eachother to see if they start to diverge in some big way.
+
+A disadvantage is that all operations had to be converted into explicit function calls, even for basic C operations.
+
+Here's what the [code](https://github.com/tomverbeure/rt/blob/e557ffebede9426f077157861130f942aad60e9f/src/main.c) looks like:
+
+A scalar number:
+
+```C
+typedef struct {
+    float   fp32;
+    int     fixed;
+} scalar_t;
+```
+
+Scalar addition:
+```C
+scalar_t add_scalar_scalar(scalar_t a, scalar_t b)
+{
+    scalar_t r;
+
+    r.fp32  = a.fp32  + b.fp32;
+    r.fixed = a.fixed + b.fixed;
+
+    ++scalar_add_cntr;
+
+    check_divergent(r);
+
+    return r;
+}
+```
+
+Notice the `check_divergent` function call. That's the one that checks if the fp32 and fixed point numbers are still more or less
+equal.
+
+In this version of the code, I'm taking a few liberties with the square root operation, but here's the generated image:
+
+![fixed_point.png]({{ "/assets/rt/fixed_point.png" | absolute_url }})
+
+It doesn't look half bad! The only real issue are the jaggies around the boundary of the sphere. Let's ignore those for now. :-)
+
+
+# Math Resource Usage Statistics
+
+Remember how we need to be able to fit all math operations in the FPGA *in parallel*? Now is the time to see how much is
+really needed.
+
+If you paid any attention, you probably noticed the `++scalar_add_cntr;` operation in the scalar addition code snippet
+above. That line is part of usage counters that keep track of all types of scalar operations that are performed to
+calculate a single pixel.
+
+Here are all the operations that are being tracked:
+
+```C
+int scalar_add_cntr         = 0;
+int scalar_mul_cntr         = 0;
+int scalar_div_cntr         = 0;
+int scalar_sqrt_cntr        = 0;
+int scalar_recip_sqrt_cntr  = 0;
+```
+
+When setting right `#define` variable, you end up with the following result:
+```
+scalar_add_cntr:        46
+scalar_mul_cntr:        48
+scalar_div_cntr:        2
+scalar_sqrt_cntr:       1
+scalar_recip_sqrt_cntr: 2
+```
+
+That biggest issue here are the number of multiplications: 48 is quite a bit larger than the 36 HW multipliers
+of our FPGA.
+
+The additions shouldn't be a problem at all. Divide is unexplored territory, but square root should be doable with 
+some memory lookup. Which is fine: who needs memory anyway when you are racing the beam?
+
+# Scene Math Optimization
+
+Here's one interesting observation: a lot of the math in the current scene is not really necessary.
+
+```
+ray_t camera = {
+    .origin   = { .s={ {0,0}, {10,0}, {-10,0} } }
+};
+
+plane_t plane = {
+    .origin = { .s={ {0, 0}, {0, 0}, {0, 0} } },
+    .normal = { .s={ {0, 0}, {1, 0}, {0, 0} } }
+};
+
+sphere_t sphere = {
+    .center = { .s={ {3, 0}, {10, 0}, {10, 0} } },
+    .radius = { 3 }
+};
+```
+
+There are a lot of numbers here that can be made constant. If we keep the plane in the same place and
+horizontal at all times, that's a lot of zeros and fixed numbers and math that can be optimized away.
+
+When you search in the [code](https://github.com/tomverbeure/rt/blob/e557ffebede9426f077157861130f942aad60e9f/src/main.c)
+for `SCENE_OPT`, you'll find a bunch of these kind of optimizations.
+
+A good example of the plane intersection:
+```C
+#ifdef SCENE_OPT
+    // Assume plane is always pointing upwards and normalized to 1.
+    denom = r.direction.s[1];
+#else
+    denom = dot_product(p.normal, r.direction);
+#endif
+```
+
+That's a vector dot product (3 multiplications and 2 additions) reduced to just 1 assignment!
+
+These are the usage stats after the dust settles:
+
+```
+scalar_add_cntr:        32
+scalar_mul_cntr:        36
+scalar_div_cntr:        2
+scalar_sqrt_cntr:       1
+scalar_recip_sqrt_cntr: 2
+```
+
+This isn't too bad! There are 36 HW multipliers in the FPGA, so that's an exact match. 
 
 
