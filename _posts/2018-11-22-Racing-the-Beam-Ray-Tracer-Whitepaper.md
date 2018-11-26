@@ -8,30 +8,20 @@ categories: RTL
 
 # Table of Contents
 
-[Introduction](#introduction)
-
-[Racing the Beam - Graphics without a Frame Buffer ](#racing-the-beam---graphics-without-a-frame-buffer)
-
-[One Pixel per Clock Ray Tracing](#one-pixel-per-clock-ray-tracing)
-
-[A Floating Point C model](#a-floating-point-c-model)
-
-[From Floating Point to Fixed Point](#from-floating-point-to-fixed-point)
-
-[Math Resource Usage Statistics](#math-resource-usage-statistics)
-
-[Scene Math Optimization](#scene-math-optimization)
-
-[Start Your SpinalHDL RTL Coding Engines! Or... ?](#start-your-spinalhdl-rtl-coding-engines-or-)
-
-[Conversion to 20-bit Floating Point Numbers](#conversion-to-20-bit-floating-point-numbers)
-
-[Building the Pipeline](#building-the-pipeline)
-
-[SpinalHDL LatencyAnalysis Life Saver](#spinalhdl-latencyanalysis-life-saver)
-
-[Progression to C Model Match](#progression-to-c-model-match)
-
+* [Introduction](#introduction)
+* [Racing the Beam - Graphics without a Frame Buffer ](#racing-the-beam---graphics-without-a-frame-buffer)
+* [One Pixel per Clock Ray Tracing](#one-pixel-per-clock-ray-tracing)
+* [A Floating Point C model](#a-floating-point-c-model)
+* [From Floating Point to Fixed Point](#from-floating-point-to-fixed-point)
+* [Math Resource Usage Statistics](#math-resource-usage-statistics)
+* [Scene Math Optimization](#scene-math-optimization)
+* [Start Your SpinalHDL RTL Coding Engines! Or... ?](#start-your-spinalhdl-rtl-coding-engines-or-)
+* [Conversion to 20-bit Floating Point Numbers](#conversion-to-20-bit-floating-point-numbers)
+* [Building the Pipeline](#building-the-pipeline)
+* [SpinalHDL LatencyAnalysis Life Saver](#spinalhdl-latencyanalysis-life-saver)
+* [Progression to C Model Match](#progression-to-c-model-match)
+* [Intermediate FPGA Synthesis Stats - A Pleasant Surprise!](#intermediate-fpga-synthesis-stats---a-pleasant-surprise)
+* [A Sphere Casting a Shadow and a Directional Light](#a-sphere-casting-a-shadow-and-a-directional-light)
 
 # Introduction
 
@@ -571,7 +561,7 @@ the plane (green), a sphere reflecting the sky (yellow), and a sphere reflecting
 Once everything compiled without syntax and pedantic elaboration errors (another *huge* benefit of SpinalHDL),
 I was ready to fire up the monitor for the first time, and was greeted with this:
 
-![Progression 1]({{ "/assets/rt/P1.JPG" | absolute_url }}) 
+![Progression 1]({{ "/assets/rt/P1.JPG" | absolute_url }})
 
 Not bad huh?!
 
@@ -582,36 +572,87 @@ be in front of the camera.
 
 But, hey, something that resembles a circle! Let's fix the bugs...
 
-![Progression 2]({{ "/assets/rt/P2.JPG" | absolute_url }}) 
+![Progression 2]({{ "/assets/rt/P2.JPG" | absolute_url }})
 
 Much better!
 
-Those weird boundaries on the right of the sphere? Those were a pipeline bug in my FpxxAdd block 
+Those weird boundaries on the right of the sphere? Those were a pipeline bug in my FpxxAdd block
 that only showed up when using less than 5 pipeline stages (which was my only testbench configuration.)
 
-![Progression 3]({{ "/assets/rt/P3.JPG" | absolute_url }}) 
+![Progression 3]({{ "/assets/rt/P3.JPG" | absolute_url }})
 
 Another pipelining bug...
 
-![Progression 4]({{ "/assets/rt/P4.JPG" | absolute_url }}) 
+![Progression 4]({{ "/assets/rt/P4.JPG" | absolute_url }})
 
 Excellent! It's just a coincidence that the plane (green) and the reflected plane (cyan)
 align horizontally: that's because the camera is concidentally at the same level as the
 center of the sphere, and the plane is running all the way to infinity.
 
-![Progression 5]({{ "/assets/rt/P5.JPG" | absolute_url }}) 
+![Progression 5]({{ "/assets/rt/P5.JPG" | absolute_url }})
 
 Checker board is ON!
 
-![Progression 6]({{ "/assets/rt/P6.JPG" | absolute_url }}) 
+![Progression 6]({{ "/assets/rt/P6.JPG" | absolute_url }})
 
 Static Render is a GO!
 
-![Progression 7]({{ "/assets/rt/P7.JPG" | absolute_url }}) 
+![Progression 7]({{ "/assets/rt/P7.JPG" | absolute_url }})
 
 See the fuzzy outlines around that sphere?
 
 That's because I took the picture while it was moving!
 
+<iframe src="https://player.vimeo.com/video/302770385" width="640" height="360" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe><script src="https://player.vimeo.com/api/player.js"></script>
 
+# Intermediate FPGA Synthesis Stats - A Pleasant Surprise!
+
+At this point, we're past the point of where the C model development was stopped: the sphere
+is bouncing, which reduces the amount of math that can be optimized away since the
+sphere Y coordinate is now variable.
+
+Yet we *were* able to fit this into the FPGA? Let's look at the actual FPGA resource usage:
+
+![Xilinx ISE Intermediate Stats]({{ "/assets/rt/Xilinx ISE Intermediate Stats.png" | absolute_url }})
+
+GASP!
+
+We are only using 66% of the FPGA core logic resources despite the fact that we're also using
+only 3 out of 36 HW multipliers!
+
+It turns out that the creaky old Xilinx ISE synthesis and mapping functions don't infer HW multipliers
+when their inputs are only 13x13 bits.
+
+This opens up the possibility for more functionality!
+
+The logic synthesizes at 61MHz. Plenty for a design that only needs to run at 25MHz (the pixel clock for
+640x480@60Hz video timings.)
+
+# A Sphere Casting a Shadow and a Directional Light
+
+A bouncing sphere is nice and all, it just didn't feel real: there is no sense of it approaching the
+plane before it bounces, and the sphere surface is just too flat.
+
+It needs a directional light that shines on the sphere and casts a shadow.
+
+That's trival to implement: we already have a `sphere_intersect` block! All we need to do is
+add a second one that shoots a ray from the ray/plane intersection point to the light at infinity
+and check if it intersects the sphere along the way.
+
+Similarly, already have the reflection vector of the eye-ray with the sphere. If we do a dot product
+with that vector with light direction vector and square it a few time, we get a very nice light
+spot on the sphere.
+
+This was quickly added to the C model, and almost just as quickly to the RTL:
+
+<iframe src="https://player.vimeo.com/video/302770502" width="640" height="360" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe><script src="https://player.vimeo.com/api/player.js"></script>
+
+Much better!
+
+Notice how the shadow on the plane is also visible on the sphere. This is what makes ray tracing such an appealing
+rendering technique!
+
+# Bringing in a CPU
+
+Everything up to this point was implemented completely in hardware.
 
