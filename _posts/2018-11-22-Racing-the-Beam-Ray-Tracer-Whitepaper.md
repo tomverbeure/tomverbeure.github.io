@@ -1,9 +1,21 @@
 ---
 layout: post
-title:  Racing the Beam Ray Tracer Whitepaper
-date:   2018-11-22 14:00:00 -0700
+title:  Racing the Beam Ray Tracer
+date:   2018-11-26 14:00:00 -0700
 categories: RTL
 ---
+
+# Executive Summary
+
+* This project uses real-time ray tracing to render a bouncing sphere on a plane.
+* Think of it as a technology demo, the way they were made in the late eighties
+  and early nineties for Amiga, PCs, Commodore 64 etc.
+* The techique used is entirely NOT scalable and thus kind of useless. It can't be used for anything that 
+  has move than a handful of objects. 
+* Everything is done using limited precision floating-point. The parameterizable floating-point
+  library stands on its own and should be useful for anyone who needs to issue one operation
+  per clock but doesn't really care about pipeline latency.
+* Everything is written in SpinalHDL.
 
 
 # Table of Contents
@@ -22,6 +34,8 @@ categories: RTL
 * [Progression to C Model Match](#progression-to-c-model-match)
 * [Intermediate FPGA Synthesis Stats - A Pleasant Surprise!](#intermediate-fpga-synthesis-stats---a-pleasant-surprise)
 * [A Sphere Casting a Shadow and a Directional Light](#a-sphere-casting-a-shadow-and-a-directional-light)
+* [Selectively Using HW Multipliers](#selectively-using-hw-multipliers)
+* [Camera Movement and Flexibility - Bringing in a CPU](#camera-movement-and-flexibility---bringing-in-a-cpu)
 
 # Introduction
 
@@ -657,10 +671,99 @@ number of HW multipliers doubled as well.
 
 ![Xilinx ISE Shadow and Light Stats]({{ "/assets/rt/Xilinx ISE Shadow and Light Stats.png" | absolute_url }})
 
+# Selectively Using HW Multipliers
+
+It's usually pretty simply to add hints to the synthesis tool about how to implement certain
+HW blocks, and I expected the same for forcing Xilinx ISE to use HW multipliers.
+
+But one way or the other, I wasn't able to get that to work.
+
+The brute-force alternative is to hand-instantiate the FPGA-specific multiplier primitives, so
+that's what I did instead.
+
+It requires just a tiny bit of work in SpinalHDL:
+
+* First you [define a black box](https://github.com/tomverbeure/math/blob/master/src/main/scala/math/MULT18X18SIO.scala) of 
+  the primitive that you want to add.
+
+* And then you simply treat that black box as [any other component](https://github.com/tomverbeure/math/blob/2d9fbf27218d7574083fee5c417021c707ce4d8c/src/main/scala/math/FpxxMul.scala#L62-L82).
+
+Since I want to be able to mix HW and 'soft' multipliers, built from regular logic elements, I added the options for each FpxxMul 
+component to use one or the other.
+
+One issue is that absense of a Verilog simulation for the HW multiplier. Writing one myself would
+have been the best option, but I decided to have one global variable that allows me to disable
+all HW multipliers. 
+
+When running simulation, I disable them. When creating a synthesis netlist, I enable them.
+
+It works like this:
+
+* For each Fpxx building block, I have a configuration class. For example, for FpxxMul, there is [FpxxMulConfig](https://github.com/tomverbeure/math/blob/2d9fbf27218d7574083fee5c417021c707ce4d8c/src/main/scala/math/FpxxMul.scala#L6-L100.
+
+```Scala
+case class FpxxMulConfig(
+    pipeStages      : Int     = 1,
+    hwMul           : Boolean = false
+    ){
+}
+```
+
+I then have some global instances of this configuration class. 
+One with [HW multiplier enabled](https://github.com/tomverbeure/rt/blob/29070b46fa30c290d7e530f7700b9ea1ef45a3eb/src/main/scala/rt/RT.scala#L55), 
+and [one without](https://github.com/tomverbeure/rt/blob/29070b46fa30c290d7e530f7700b9ea1ef45a3eb/src/main/scala/rt/RT.scala#L56).
+
+And, finally, [hwMulGlobal](https://github.com/tomverbeure/rt/blob/29070b46fa30c290d7e530f7700b9ea1ef45a3eb/src/main/scala/rt/RT.scala#L50-L63)
+ is the global selector that decides between using HW multipliers or not.
+
+```Scala
+object Constants {
+
+    val hwMulGlobal = true
+
+    ...
+    def fpxxMulConfig   = FpxxMulConfig(pipeStages = 5)
+    def fpxxHwMulConfig = FpxxMulConfig(pipeStages = 1, hwMul = hwMulGlobal)
+    ...
+    def dotHwMulConfig      = DotProductConfig(hwMul = hwMulGlobal)
+    def rotateHwMulConfig   = RotateConfig(hwMul = hwMulGlobal)
+}
+```
+
+After adding the 2 rotation matrix operations (see below), logic element usage was at 99%. After 
+enabling HW multipliers, I went down to around 80% or so!
+
 # Camera Movement and Flexibility - Bringing in a CPU
 
 Everything up to this point was implemented completely in hardware. The camera had a fixed
 location, and the its orientation was static as well.
 
-Ideally, we'd like to move the camera around and point in any directio we'd like.
+Ideally, you'd like to be able to move the camera around and point in any direction, left and
+right, and up and down.
+
+That requires 2 rotations that must be performed for each ray. It requires sine and cosine of the
+rotation angles. It also requires something that updates the position and angles once per frame.
+
+It's basically something you'd do on with a CPU!
+
+Adding the rotation was once again trivial. First added to the C model, then 
+[in hardware](https://github.com/tomverbeure/rt/commit/1080c236a264b0b9895e5380bdcf4389d6652e04).
+
+And since my previous project was a small RISC-V project, integrating that was very easy as well.
+
+Once the CPU was in place, I could remove the hardware that calculated the bouncing ball (gaining
+some logic elements in the process), but now the sphere position, the camera position and the
+rotations were fully programmable. Which removed the ability of the synthesis tool to optimize
+logic out.
+
+The CPU runs a small program, once per frame, that updates the position of the camera, looks up
+sine and cosines from a lookup table etc. It doesn't a particularly interesting thing with the
+camera, but it's good enough for a technology demo.
+
+# Text Overlay - The Final Step
+
+I wanted to show some text on the screen. I already had a Verilog VGA text generator, so I converted
+that one to SpinalHDL and called it a day.
+
+
 
