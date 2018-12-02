@@ -67,7 +67,7 @@ on the screen.
 
 So when I started to reverse engineered the [Pano Logic device](https://github.com/tomverbeure/panologic), 
 getting the VGA interface up and running was the first target. Luckily, it's also 
-[far easier to get going](/pano/logic/2018/06/03/pano-logic-project-update.html) 
+[far easier to get going](/pano/logic/2018/06/04/pano-logic-project-update.html) 
 than Ethernet and USB.
 
 ![Pano VGA]({{ "assets/panologic/hello_world.jpg" | absolute_url }})
