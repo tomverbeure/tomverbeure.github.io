@@ -17,6 +17,7 @@ categories: RTL
   per clock but doesn't really care about pipeline latency.
 * Everything is written in SpinalHDL.
 
+<iframe src="https://player.vimeo.com/video/303938705" width="640" height="360" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe><script src="https://player.vimeo.com/api/player.js"></script>
 
 # Table of Contents
 
@@ -34,10 +35,12 @@ categories: RTL
 * [Progression to C Model Match](#progression-to-c-model-match)
 * [Intermediate FPGA Synthesis Stats - A Pleasant Surprise!](#intermediate-fpga-synthesis-stats---a-pleasant-surprise)
 * [A Sphere Casting a Shadow and a Directional Light](#a-sphere-casting-a-shadow-and-a-directional-light)
-* [Selectively Using HW Multipliers](#selectively-using-hw-multipliers)
+* [SpinalHDL - Selectively Using HW Multipliers](#spinalhdl---selectively-using-hw-multipliers)
 * [Camera Movement and Flexibility - Bringing in a CPU](#camera-movement-and-flexibility---bringing-in-a-cpu)
 * [Final Toplevel Pipeline](#final-toplevel-pipeline)
 * [Text Overlay - The Final Step](#text-overlay---the-final-step)
+* [Total Resource Usage and Critical Path](#total-resource-usage-and-critical-path)
+* [The End](#the-end)
 
 # Introduction
 
@@ -69,7 +72,7 @@ than Ethernet and USB.
 
 ![Pano VGA]({{ "assets/panologic/hello_world.jpg" | absolute_url }})
 
-After [my short RISC-V detour](https://tomverbeure.github.io/risc-v/2018/11/19/A-Bug-Free-RISC-V-Core-without-Simulation.html), 
+After [my short RISC-V detour](/risc-v/2018/11/19/A-Bug-Free-RISC-V-Core-without-Simulation.html), 
 instead of getting back to Ethernet, I wanted get a real application going, and
 since ray tracing has been grabbing a lot of headlines lately, I wondered if something could be done.
 
@@ -569,7 +572,7 @@ That's because I took the picture while it was moving!
 
 # Intermediate FPGA Synthesis Stats - A Pleasant Surprise!
 
-At this point, we're past the point of where the C model development was stopped: the sphere
+At this point, the RTL has progressed past the point where the C model development was stopped: the sphere
 is bouncing, which reduces the amount of math that can be optimized away since the
 sphere Y coordinate is now variable.
 
@@ -583,12 +586,12 @@ We are only using 66% of the FPGA core logic resources despite the fact that we'
 only 3 out of 36 HW multipliers!
 
 It turns out that the creaky old Xilinx ISE synthesis and mapping functions don't infer HW multipliers
-when their inputs are only 13x13 bits.
+when their inputs are only 14x14 bits.
 
 This opens up the possibility for more functionality!
 
-The logic synthesizes at 61MHz. Plenty for a design that only needs to run at 25MHz (the pixel clock for
-640x480@60Hz video timings.)
+The logic synthesizes at 61MHz. Plenty for a design that only needs to run at 25MHz which is the pixel clock for
+640x480@60Hz video timings.
 
 # A Sphere Casting a Shadow and a Directional Light
 
@@ -598,7 +601,7 @@ plane before it bounces, and the sphere surface is just too flat.
 It needs a directional light that shines on the sphere and casts a shadow.
 
 That's trival to implement: we already have a `sphere_intersect` block! All we need to do is
-add a second one that shoots a ray from the ray/plane intersection point to the light at infinity
+add a second instance, shoot a ray from the ray/plane intersection point to the light at infinity,
 and check if it intersects the sphere along the way.
 
 Similarly, already have the reflection vector of the eye-ray with the sphere. If we do a dot product
@@ -619,7 +622,7 @@ number of HW multipliers doubled as well.
 
 ![Xilinx ISE Shadow and Light Stats]({{ "/assets/rt/Xilinx ISE Shadow and Light Stats.png" | absolute_url }})
 
-# Selectively Using HW Multipliers
+# SpinalHDL - Selectively Using HW Multipliers
 
 It's usually pretty simply to add hints to the synthesis tool about how to implement certain
 HW blocks, and I expected the same for forcing Xilinx ISE to use HW multipliers.
@@ -636,10 +639,10 @@ It requires just a tiny bit of work in SpinalHDL:
 
 * And then you simply treat that black box as [any other component](https://github.com/tomverbeure/math/blob/2d9fbf27218d7574083fee5c417021c707ce4d8c/src/main/scala/math/FpxxMul.scala#L62-L82).
 
-Since I want to be able to mix HW and 'soft' multipliers, built from regular logic elements, I added the options for each FpxxMul 
+Since I want to be able to mix HW and 'soft' multipliers, built from regular logic elements, I added the option for each FpxxMul 
 component to use one or the other.
 
-One issue is that absense of a Verilog simulation for the HW multiplier. Writing one myself would
+One issue is that absense of a Verilog simulation model for the HW multiplier. Writing one myself would
 have been the best option, but I decided to have one global variable that allows me to disable
 all HW multipliers. 
 
@@ -647,7 +650,7 @@ When running simulation, I disable them. When creating a synthesis netlist, I en
 
 It works like this:
 
-* For each Fpxx building block, I have a configuration class. For example, for FpxxMul, there is [FpxxMulConfig](https://github.com/tomverbeure/math/blob/2d9fbf27218d7574083fee5c417021c707ce4d8c/src/main/scala/math/FpxxMul.scala#L6-L100.
+* For each Fpxx building block, I have a configuration class. For example, for FpxxMul, there is [FpxxMulConfig](https://github.com/tomverbeure/math/blob/2d9fbf27218d7574083fee5c417021c707ce4d8c/src/main/scala/math/FpxxMul.scala#L6-L100).
 
 ```Scala
 case class FpxxMulConfig(
@@ -752,6 +755,71 @@ And when flatten all these blocks, you get this floating point monster pipeline:
 ![Exploded Top View]({{ "/assets/rt/RtBRT-Exploded Top View.svg" | absolute_url }})
 
 Use your browser's zoom function to zoom in on the individual operations!
+
+# Total Resource Usage and Critical Path
+
+Here's the final FPGA resource usage:
+
+![Xilinx ISE]({{ "/assets/rt/Xilinx ISE.png" | absolute_url }})
+
+94% of all LUTs is seriously disappointing: I should have pushed harder to get that closer
+to 99% by adding some additional features, but I was ready to move on to some new project.
+
+One feature that's relatively easy to implement would be to render a textured bitmap on top
+of the plane.
+
+There are still 4 multipliers left as well.
+
+RAM usage is split between CPU RAM, and a special table for the FpxxDiv, and lookup tables for
+the FpxxSqrt and the FpxxRSqrt.
+
+A quick look at the FPGA floorplan confirms that it's packed pretty tightly:
+
+![Worst Case Path 1]({{ "/assets/rt/Worst Case Path 1.png" | absolute_url }})
+
+The stuff in white is the critical path. Surprisingly enough, it's somewhere in the MR1 CPU, but
+it's still passing by a mile: target frequency 25MHz, achieved frequency some 38MHz.
+
+![Worst Case Path 3]({{ "/assets/rt/Worst Case Path 3.png" | absolute_url }})
+
+The red circled items above show how the Xilinx ISE placer has made decisions with 
+large routing delays. But there's nothing wrong with that: timing is met after all...
+
+I wanted to see if I'd get better placement (and timing) results if I tightened the clock speed
+from 25MHz to 50MHz.
+
+![Worst Case Path 4]({{ "/assets/rt/Worst Case Path 4.png" | absolute_url }})
+
+It's a bit harder to see, but timing is still met, and the critical path has moved from the CPU
+to half floating point multiplier and half floating point adder. Placement is a lot better, with
+only 2 routing delays that exceed 2ns and only 5 that exceed 1ns. We're probably close to the limit
+if we don't increase the amount of pipeline stages.
+
+And, indeed, with the clock increased to 66MHz, I got a result that was worse than the previous one:
+only 45MHz instead of 50MHz. That's not unusual: there's always a random factor at play with this
+kind of algorithms.
+
+I increased the number of pipeline stages in the floating point adders from 2 to 3. This increases
+the total pipeline depth from 82 <> to 105 and the number of flip-flops from 7966 to 10210.
+
+Sadly, that's too much of our little FPGA:
+
+![FpxxAdd 3 Stages]({{ "/assets/rt/FpxxAdd 3 Stages.png" | absolute_url }})
+
+# The End
+
+Ray tracing, floating point arithmetic, giving my RISC-V something useful
+to do, more SpinalHDL learning and pushing the Pano Logic Spartan-3E to its limits.
+
+The end result is pretty much useless: there is no practical application where this kind 
+of ray tracing would make sense. As soon as you add more (reflective) geometry to the scene, 
+the amount of logic explodes.
+
+But it was a lot of fun!
+
+Here's the end result again:
+
+<iframe src="https://player.vimeo.com/video/303938705" width="640" height="360" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe><script src="https://player.vimeo.com/api/player.js"></script>
 
 # References
 
