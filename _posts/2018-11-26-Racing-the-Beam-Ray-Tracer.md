@@ -22,6 +22,7 @@ categories: RTL
 # Table of Contents
 
 * [Introduction](#introduction)
+* [The HW Platform](#the-hw-platform)
 * [Racing the Beam - Graphics without a Frame Buffer ](#racing-the-beam---graphics-without-a-frame-buffer)
 * [One Pixel per Clock Ray Tracing](#one-pixel-per-clock-ray-tracing)
 * [A Floating Point C model](#a-floating-point-c-model)
@@ -87,6 +88,32 @@ Compared to today's high-end FPGAs, the Pano Logic has a fairly pedestrian Xilin
 when compared to many of today's hobby FPGA boards: 27k LUTs, quite a bit of RAM, and 36 18x18bit hardware multipliers.
 
 Is that enough to do ray tracing? Let's find out...
+
+# The HW Platform
+
+Pano Logic was a Bay Area startup that wanted to get rid of PCs in large organizations by replacing
+them with tiny CPU-less thin clients that were connected to a central server. Think of them as VNC
+replacements. No CPU? No software upgrades! No virusses!
+
+The thin clients had a wired Ethernet interface, a couple of USB ports, an audio port and a video port.
+
+All this was glued together with an FPGA.
+
+The company has been defunct since 2013 and the clients are not supported by anything.
+But they are amazing for hobby purposes and can be bought dirt cheap on eBay.
+
+There are 2 versions: the first one has a VGA video interface, later versions have a DVI port.
+
+The VGA version uses the Xilinx Spartan-3E 1600. The DVI version a very powerful Spartan-6 LX150.
+
+Both are very easy to open up and reuse for other applications, but
+**only the Spartan-3E FPGA is supported by the free Xilinx ISE software.**
+
+Consequently, only the Spartan-3E PCB has been almost completely reverse engineered by yours truly.
+The Spartan-6 version requires a very expensive (thousands of dollars per year) license.
+
+**If you want to recreate this project verbatim, make sure that you buy one on eBay that has a VGA port!**
+
 
 # Racing the Beam - Graphics without a Frame Buffer
 
@@ -237,7 +264,7 @@ In that case, it's better to drop unused integer bits from the operand A and fra
 
 Like this: 8.16 x 8.16 -> 1.17 x 8.10 = 9.27 -> 8.16
 
-The end result is the same 8.16 fixed point format, but the given the particular nature of the 2 operands,
+The end result is the same 8.16 fixed point format, but given the particular nature of the 2 operands,
 the second result will have a much better accuracy.
 
 The disadvantage: it requires manual tuning.
@@ -301,7 +328,7 @@ scalar_t _mul_scalar_scalar(scalar_t a, scalar_t b, int shift_a, int shift_b, in
 }
 ```
 
-Here you can see how I allow for flexibility in chosing pre- and post-operations shift parameters to get the best
+Here you can see how I allow for flexibility in chosing pre- and post-operation shift parameters to get the best
 precision and result.
 
 
@@ -403,9 +430,7 @@ With all the preliminary work completed, it was time to start with the RTL codin
 
 After [the excellent experience](https://tomverbeure.github.io/risc-v/2018/11/19/A-Bug-Free-RISC-V-Core-without-Simulation.html)
 with my [MR1](https://github.com/tomverbeure/mr1) RISC-V CPU, [SpinalHDL](https://spinalhdl.github.io/SpinalDoc/)
-is now my hobby RTL language of choice.
-
-It even has a fixed point library!
+is now my hobby RTL language of choice. It even has a fixed point library!
 
 First step is to get [an LED blinking](https://github.com/tomverbeure/rt/blob/2702712aa116c3d1b078ff453b5abaff12b455a1/src/main/scala/rt/Pano.scala#L51-L61).
 
