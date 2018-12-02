@@ -30,12 +30,14 @@ categories: RTL
 * [Start Your SpinalHDL RTL Coding Engines! Or... ?](#start-your-spinalhdl-rtl-coding-engines-or-)
 * [Conversion to 20-bit Floating Point Numbers](#conversion-to-20-bit-floating-point-numbers)
 * [Building the Pipeline](#building-the-pipeline)
-* [SpinalHDL LatencyAnalysis Life Saver](#spinalhdl-latencyanalysis-life-saver)
+* [SpinalHDL LatencyAnalysis Life Saver - Automatic Latency Matching](#spinalhdl-latencyanalysis-life-saver---automatic-latency-matching)
 * [Progression to C Model Match](#progression-to-c-model-match)
 * [Intermediate FPGA Synthesis Stats - A Pleasant Surprise!](#intermediate-fpga-synthesis-stats---a-pleasant-surprise)
 * [A Sphere Casting a Shadow and a Directional Light](#a-sphere-casting-a-shadow-and-a-directional-light)
 * [Selectively Using HW Multipliers](#selectively-using-hw-multipliers)
 * [Camera Movement and Flexibility - Bringing in a CPU](#camera-movement-and-flexibility---bringing-in-a-cpu)
+* [Final Toplevel Pipeline](#final-toplevel-pipeline)
+* [Text Overlay - The Final Step](#text-overlay---the-final-step)
 
 # Introduction
 
@@ -46,28 +48,39 @@ status updates: "Chips are in SFO and being processed by customs!", "First vecto
 
 Once in the lab, it's a race to get that thing doing what it has been designed to do.
 
-And that's where the difference between a telecom silicon vendor and a graphics silicon vendor becomes clear:
-when you DSL chip works, you're celebrating the fact that bits are being successfully transported from one
-side of the chips to another. Nice! But when your graphics chips comes up, there's suddenly
+And that's where the difference between a telecom silicon and a graphics silicon becomes clear:
+when your DSL chip works, you're celebrating the fact that bits are being successfully transported from one
+side of the chips to the other. Nice! 
+
+![DSL Router]({{ "/assets/rt/DSL Router.gif" | absolute_url }})
+
+But when your graphics chips comes up, there's suddenly
 a zombie walking on your screen. Which is awesome!
+
+![Zombie]({{ "/assets/rt/Zombie.png" | absolute_url }})
 
 All of this just to make the point: there's something magic about working on something that puts an image
 on the screen.
 
-So when I reverse engineered the Pano Logic device, getting the VGA interface was the first target. Luckily,
-compared to Ethernet and USD, it's also far easier to get up and running.
+So when I started to reverse engineered the [Pano Logic device](https://github.com/tomverbeure/panologic), 
+getting the VGA interface up and running was the first target. Luckily, it's also 
+[far easier to get going](http://localhost:4000/pano/logic/2018/06/03/pano-logic-project-update.html) 
+than Ethernet and USB.
 
-After [my short RISC-V detour](...), instead of getting back to Ethernet, I wanted get a real application going, and
-since ray tracing has been grabbing a lot of headlines lately, why not check if anything could be done on this
-pedestrian Spartan-3E FPGA that lives in the Pano Logic G1?
+![Pano VGA]({{ "assets/panologic/hello_world.jpg" | absolute_url }})
 
-My first experience with ray tracing was sometime in the early nineties, when I was running [PovRay](...) on
+After [my short RISC-V detour](https://tomverbeure.github.io/risc-v/2018/11/19/A-Bug-Free-RISC-V-Core-without-Simulation.html), 
+instead of getting back to Ethernet, I wanted get a real application going, and
+since ray tracing has been grabbing a lot of headlines lately, I wondered if something could be done.
+
+My first experience with ray tracing was sometime in the early nineties, when I was running [PovRay](http://www.povray.org/) on
 a 33MHz 486 in my college dorm. And when thinking about a subject for my thesis, hardware accelerated ray-triangle
 intersection was high on the list but ultimately rejected.
 
-Lately, ray tracing has become sort of a big thing, so I wondered if anything could be done on my Pano Logic.
+On that 486, you could see individual pixels being rendered one by one, far away from real time, but when you
+do things in hardware, you can pipeline and do things in parallel. 
 
-Because, yes, it's a pretty pedestrian FPGA by today's standards, but the specs are actually pretty decent
+Compared to today's high-end FPGA, the Pano Logic has a fairly pedestrian Spartan-3E, but the specs are actually pretty decent
 when compared to many of today's hobby FPGA boards: 27k LUTs, quite a bit of RAM, and 36 18x18bit hardware multipliers.
 
 Is that enough to do ray tracing? Let's find out...
@@ -83,27 +96,33 @@ The traditional way of doing computer graphics looks like this:
   render the next image in frame buffer B.
 
 This setup has the huge advantage that you decouple render time and monitor refresh rate, and it's used
-in all modern graphics system (with some potential enhancements.)
+in all modern graphics system.
 
 But there are a lot of pixels on a screen, and even for a 640x480 resolution and 24 bits-per-pixel, you need
-7.3Mbits per frame buffer, and you need two of those. So that's 14.5Mbits of memory. The FPGA on the Pano Logic
+7.3M bits per frame buffer, and you need two of those. So that's 14.5Mbits of memory. The FPGA on the Pano Logic
 has only 648Kbit of block RAM.
 
-Luckily, there's a 32MByte of DRAM on the board, which is more than enough. All the SDRAM IO connections
+The Pano box has 32MByte of DRAM on the board, more than enough. All the SDRAM IO connections
 to the FPGA have been mapped out, and Xilinx has an SDRAM memory controller generator, so using that
-should be a breeze. Alas, no. The generator only supports regular DDR SDRAM. It does NOT support the
+should be a breeze, right? 
+
+Alas, no. The generator only supports regular DDR SDRAM. It does not support the
 LPDDR that's used by the Pano. Designing a custom DRAM controller isn't super hard, but it's a major
 project in itself, one that I didn't want to start just yet.
 
-So the SDRAM was out. And so were all traditional graphics rendering methods.
+So using the SDRAM was out. And with that all traditional graphics rendering methods.
 
 When you can't use memory to store your image, you go back to a technique that was used more than 40 years
-ago in the Atari 2600 VCS: you race the beam! The beam is the beam of a CRT monitor that paints the pixel
-onto the phosphor.
+ago in the Atari 2600 VCS: you race the beam! A CRT monitor that paints an image by lighting up the phosphor
+on the screen with an electron beam from top to bottom and from left to right.
 
 Back in those days, memory was extremely expensive, so to save on cost, they dropped the frame buffer and
-replaced it by a line buffer. It was up to the CPU render the next line before the previous one was sent
+replaced it by a line buffer. It was up to the CPU to render the next line before the previous one was sent
 to the screen. If the CPU did not finish in time, the TIA video chip would just send the previous line again.
+
+![Atari 2600 Breakout]({{ "/assets/rt/Breakout2600.png" | absolute_url }})
+
+([AtariAge](https://atariage.com/software_page.php?SoftwareID=889))
 
 We can take this technique to its ultimate conclusion where you not only replace the frame buffer by a line
 buffer, but where you drop the line buffer completely: if you are able to calculate each pixel on-the-fly
@@ -112,22 +131,20 @@ exactly when the video output block wants it, you don't need memory at all!
 Now most graphics rendering techniques don't build the image in pixel scan order: they'll first paint the
 background, then they draw a triangle here and a triangle there, and eventually the whole image comes together.
 
-But ray tracing is not like that: you shoot a ray from a camera through a pixel to the scene and calculate
-the value of that pixel. More contempary ray tracing software choses the pixel in a stochastic order: essentially
+But ray tracing is not like that: you shoot a ray from a virtual camera through a pixel to the scene and calculate
+the value of that pixel. Contempary ray tracing software choses the pixels in a stochastic order: essentially
 randomly distributed across the image. The benefit of this is that you see the whole image at once while it
 slowly refines into a high quality image. But that's totally not necessary: you can just as well chose the
 pixels in scan order.
 
-And if you're then able to calculate one pixel per pixel clock, you end up with a ray tracer that's racing
+And if you're able to calculate one pixel per pixel clock, you end up with a ray tracer that's racing
 the beam!
-
-https://events.ccc.de/congress/2011/Fahrplan/attachments/2004_28c3-4711-Ultimate_Atari_2600_Talk.pdf
 
 # One Pixel per Clock Ray Tracing
 
 Ray tracing algorithms typically render scenes with a lot of triangles. The algorithm injects a ray into
-the scene, figures out the closest intersecting triangle.  If there are hundreds of thousands or more triangles,
-it uses bounding box acceleration structures to reduce the number of ray/triangle intersections.
+the scene, and figures out the closest intersecting triangle.  If there are hundreds of thousands or more triangles,
+it uses hierarchical bounding box acceleration structures to reduce the number of ray/triangle intersections.
 
 Once it has found the closest object, it calculates a base color and then casts a bunch
 of secondary rays into the scene to figure out light spots, shadows, reflections, refractions etc.
@@ -137,7 +154,7 @@ trade-offs.
 
 First of all, if you have only 1 clock to calculate something, you are forced to calculate in parallel whatever
 you can, and if that's not possible, you do it in a rigid pipeline: yes, it can potentially take many cycles
-to calculate one pixel, but you can issue the calculate of a new pixel each clock cycle, so you still end
+to calculate one pixel, but you can issue the calculation of a new pixel each clock cycle, so you still end
 up with one pixel per clock at the output.
 
 It also means that all the geometry of the scene is transformed into math operations that are embedded in the
@@ -147,13 +164,13 @@ intersection, the reflected ray, the sphere normal etc.
 But wait, it gets worse! One of the main benefits of ray tracing are the ease by which it can render reflections.
 It'd be a shame if you couldn't show that off. Unfortunately, reflection is recursive: if you have 2 reflecting
 objects, light rays can essentially bounce between them forever. You'd need an infinite amount of hardware to
-do that in one clock cycle... but even if you limit things to 2 bounces, you're still looking at a rapid expansion
-of math operations, and thus HW resources.
+do that in one clock cycle... but even if you limit reflections to, say, 2 bounces, you're still looking at a rapid 
+expansion of math operations, and thus HW resources.
 
-Or you chose the alternative: only allow 1 reflecting object in the scene.
+Or you chose the alternative: only allow 1 reflecting object in the scene. :-)
 
 Since our FPGA is really quite small, there was a strict limit on what could be done. So the decision was made
-to have a scene with just 1 non-reflecting plane, a reflecting ball.
+to have a scene with just 1 non-reflecting plane and 1 reflecting ball.
 
 # A Floating Point C Model
 
@@ -186,7 +203,7 @@ This was the point where it was time to check if this could actually be built: h
 make calculate this kind of image?
 
 The [code](https://github.com/tomverbeure/rt/blob/ab0af1f9dfa09f676546dfc3bb8bb202aa4a0c36/src/main.c) is still quite simple, but there
-are square roots, reciprocal scare roots, divides, vector normalization, vector multiplications etc.
+are square roots, reciprocal scare roots, divisions, vector normalization, vector multiplications etc.
 
 # From Floating Point to Fixed Point
 
@@ -195,10 +212,8 @@ numbers on an FPGA is [fixed point arithmetic](https://en.wikipedia.org/wiki/Fix
 binary integer arithmetic, but the decimal... well... binary point is somewhere in the middle of the bit vector.
 
 After each operation, it's up to the user to make sure the binary point is adjusted: for an add/subract, no adjustements
-are needed, but pretty much all other operations, you need to shift the result to get the binary point back to where it
-belongs.
-
-When you multiply 2 fixed point numbers with 8 fractional bits, the result will be one with 16 fractional bits.
+are needed, but for pretty much all other operations you need to shift the binary point back to get it back where it
+belongs: when you multiply 2 fixed point numbers with 8 fractional bits, the result will be one with 16 fractional bits.
 So you need to right shift by 8 to get back to 8 fractional bits.
 
 This can all be automated with some specific rules, but some manual tuning may be needed due to resource restrictions.
@@ -215,22 +230,23 @@ That's something you can easily automate.
 But what if operand A is a component of a normalized vector which is never larger than 1? And the operand B
 is always a rather large integer without many meaningful fractional bits?
 
-In that case, it'd be better to drop unused integer bits from the operand A and fraction bits from operand B.
+In that case, it's better to drop unused integer bits from the operand A and fraction bits from operand B.
 
 Like this: 8.16 x 8.16 -> 1.17 x 8.10 = 9.27 -> 8.16
 
-The end result is the same 8.16 fixed point format, but the given that particular nature of the 2 operands,
+The end result is the same 8.16 fixed point format, but the given the particular nature of the 2 operands,
 the second result will have a much better accuracy.
 
 The disadvantage: it requires manual tuning.
 
 In any case, the big take-away is this: fixed point works, but it can be a real pain. It's great when most operands
-are all roughly the same size, but that's not really the case for ray tracing: there are numbers that will always be
-smaller or equal than 1, but there are also calculations with relatively large intermediate results.
+are all roughly within the same range (as is often the case for digital communications processing), but that's not really 
+true for ray tracing: there are numbers that will always be smaller or equal than 1, but there are also calculations 
+with relatively large intermediate results.
 
 Instead of writing a second, fixed point, C model, I did something better: I changed the code to calculate both floating
 and fixed point results for everything. This has the major benefit that the results of all math operations can be
-cross-checked against eachother to see if they start to diverge in some big way.
+cross-checked against each other to see if they start to diverge in some big way.
 
 A disadvantage is that all operations had to be converted into explicit function calls, even for basic C operations.
 
@@ -245,7 +261,7 @@ typedef struct {
 } scalar_t;
 ```
 
-Scalar addition:
+[Scalar addition](https://github.com/tomverbeure/rt/blob/e557ffebede9426f077157861130f942aad60e9f/src/main.c#L177-L189):
 ```C
 scalar_t add_scalar_scalar(scalar_t a, scalar_t b)
 {
@@ -265,6 +281,27 @@ scalar_t add_scalar_scalar(scalar_t a, scalar_t b)
 Notice the `check_divergent` function call. That's the one that checks if the fp32 and fixed point numbers are still more or less
 equal.
 
+[Scalar multiplication](https://github.com/tomverbeure/rt/blob/e557ffebede9426f077157861130f942aad60e9f/src/main.c#L225-L237)
+```C
+scalar_t _mul_scalar_scalar(scalar_t a, scalar_t b, int shift_a, int shift_b, int shift_c)
+{
+    scalar_t r;
+
+    r.fp32  = a.fp32  * b.fp32;
+    r.fixed = ((a.fixed>>shift_a) * (b.fixed>>shift_b)) >> shift_c;
+
+    ++scalar_mul_cntr;
+
+    check_divergent(r);
+
+    return r;
+}
+```
+
+Here you can see how I allow for flexibility in chosing pre- and post-operations shift parameters to get the best
+precision and result.
+
+
 In this version of the code, I'm taking a few liberties with the square root operation, but here's the generated image:
 
 ![fixed_point.png]({{ "/assets/rt/fixed_point.png" | absolute_url }})
@@ -278,7 +315,7 @@ Remember how we need to be able to fit all math operations in the FPGA *in paral
 really needed.
 
 If you paid any attention, you probably noticed the `++scalar_add_cntr;` operation in the scalar addition code snippet
-above. That line is part of usage counters that keep track of all types of scalar operations that are performed to
+above. That line is one of the usage counters that keep track of all types of scalar operations that are performed to
 calculate a single pixel.
 
 Here are all the operations that are being tracked:
@@ -303,8 +340,9 @@ scalar_recip_sqrt_cntr: 2
 That biggest issue here are the number of multiplications: 48 is quite a bit larger than the 36 HW multipliers
 of our FPGA.
 
-The additions shouldn't be a problem at all. Divide is unexplored territory, but square root should be doable with
-some memory lookup. Which is fine: who needs memory anyway when you are racing the beam?
+The additions shouldn't be a problem at all. Hardware division is notoriously resource intensive and unexplored territory, 
+but square root should be doable with some local memory lookup. Which is fine: since we're racing the beam, we don't
+need to use the local RAMs for anything else anyway.
 
 # Scene Math Optimization
 
@@ -332,7 +370,7 @@ horizontal at all times, that's a lot of zeros and fixed numbers and math that c
 When you search in the [code](https://github.com/tomverbeure/rt/blob/e557ffebede9426f077157861130f942aad60e9f/src/main.c)
 for `SCENE_OPT`, you'll find a bunch of these kind of optimizations.
 
-A good example of the plane intersection:
+There's a good example of this in the plane intersection function:
 ```C
 #ifdef SCENE_OPT
     // Assume plane is always pointing upwards and normalized to 1.
@@ -362,18 +400,18 @@ With all the preliminary work completed, it was time to start with the RTL codin
 
 After [the excellent experience](https://tomverbeure.github.io/risc-v/2018/11/19/A-Bug-Free-RISC-V-Core-without-Simulation.html)
 with my [MR1](https://github.com/tomverbeure/mr1) RISC-V CPU, [SpinalHDL](https://spinalhdl.github.io/SpinalDoc/)
-is now my RTL hobby language of choice.
+is now my hobby RTL language of choice.
 
 It even has a fixed point library!
 
-First step is to get [an LED blinking](https://github.com/tomverbeure/rt/blob/2702712aa116c3d1b078ff453b5abaff12b455a1/src/main/scala/rt/Pano.scala).
+First step is to get [an LED blinking](https://github.com/tomverbeure/rt/blob/2702712aa116c3d1b078ff453b5abaff12b455a1/src/main/scala/rt/Pano.scala#L51-L61).
 
 And then the coding starts.
 
 Or that was the initial plan.
 
-But for some reason, I just didn't feel like implementing this whole thing using fixed point. If somebody else else already
-created this whole library, it's not a whole lot of fun.
+But for some reason, I just didn't feel like implementing this whole thing using fixed point. After all, someone else had already
+created this whole library. Where's the fun in that?
 
 What happened was one of the best parts of doing something as a hobby: you can do whatever you want. You can rabbit-hole
 into details that don't matter but are just interesting.
@@ -398,24 +436,22 @@ The resulting [Fpxx library](https://github.com/tomverbeure/math) is a story on 
 
 # Conversion to 20-bit Floating Point Numbers
 
-Since fpxx library was implemented using C++ templates, it was trivial to update the ray tracing C model to use it.
+Since the fpxx library was implemented using C++ templates, it was trivial to update the ray tracing C model to use it.
 
 After some experimentation, the conclusion was that I could still render images with more or less the same quality
 by using a 13 bit mantissa and a 6 bit exponent.  Reducing either one by 1 bit results in serious image corruption.
 Add 1 sign bit, and we have a 20-bit vector for all our numbers.
 
-The fixed point implementation was using 16 integer, and 16 fractional bits. Remember how this required making
-choices when doing multiplications.
-
-By moving to a 13-bit mantissa we now only need 14x14 bit multiplier. This means that we don't need to drop
-any bits when using the 18x18 bit HW multipliers. So that's good!
+The fixed point implementation was using 16 integer, and 16 fractional bits and required making
+choices when doing multiplications. By moving to a 13-bit mantissa only a 14x14 bit multiplier is needed, and
+we don't need to drop any bits when using the 18x18 bit HW multipliers. So that's good!
 
 # Building the Pipeline
 
 The time had finally come to build the whole pipeline.
 
-To make the conversion even easier, some C model code was update with additional intermediate variables to get a
-close match of C model variable names and RTL signals.
+To make the conversion even easier, some C model code was updated with additional intermediate variables to get a
+close match between the C model variable names and RTL signals.
 
 Here's [a good example](https://github.com/tomverbeure/rt/commit/db9fbad12ee4ac026950e32debd1af0cb3b1daa7) of that:
 
@@ -470,97 +506,9 @@ And the corresponding RTL code:
     ...
 ```
 
-# SpinalHDL LatencyAnalysis Life Saver
+# SpinalHDL LatencyAnalysis Life Saver - Automatic Latency Matching
 
-Imagine you're doing the following calculation:
-
-```
-q = a + b + c
-```
-
-However, all your math functional blocks only accept 2 operands. No problem, just split it up:
-
-```
-p = a + b
-q = p + c
-```
-
-That's easy to do when you right C or maybe use high-level synthesis language (HLS).
-
-But when you're right RTL and when each operation take a number of cycles, you need to be
-careful: if you pipeline accepts new inputs each and every clock cycle, you need to make
-sure that the operands for all functional blocks are aligned!
-
-For example: if the adder take 2 clock cycles, the result `p` will emerge
-after 2 clock cycles *and you need to delay `c` by 2 clock cycles to align it to 'p'* before
-you can apply both operands to the adder that calculated 'q'.
-
-My `fpxx` library has tons of flexilibity in terms of pipeline depth. The FpxxAdd block can
-be configured to take between zero and 5 pipeline stages, depending on your clock frequency
-needs. Other blocks have similar levels of configurability.
-
-In addition, larger functional block such as
-[ray/sphere intersection](https://github.com/tomverbeure/rt/blob/29070b46fa30c290d7e530f7700b9ea1ef45a3eb/src/main/scala/rt/Sphere.scala#L17-L402)
-have tons of operations both cascaded sequentially and in parallel.
-
-Even if the latencies through each core math block were fixed, it'd still be a small
-nightmare to ensure that all operations to all blocks were correctly latency
-aligned.
-
-Comes to the rescue: the [SpinalHDL LatencyAnalysis](https://spinalhdl.github.io/SpinalDoc/spinal/lib/utils/#special-utilities)
-function!
-
-It's function is a simple as it is brilliant: given a set of signals that are connected to eachother
-through a string of combinatorial and sequential logic, it returns the minimum number of clock
-cycles to travel through all nodes.
-
-The `fpxx` library has a `op_vld` input `result_vld` output for each core operations, which
-ultimately strings all operations together, from the input of the pipeline to the output.
-
-Now check out this helper function:
-```Scala
-object MatchLatency {
-
-    // Match arrival time of 2 signals with _vld
-    def apply[A <: Data, B <: Data](common_vld: Bool, a_vld : Bool, a : A, b_vld : Bool, b : B) : (Bool, A, B) = {
-
-        val a_latency = LatencyAnalysis(common_vld, a_vld)
-        val b_latency = LatencyAnalysis(common_vld, b_vld)
-
-        if (a_latency > b_latency) {
-            (a_vld, a, Delay(b, cycleCount = a_latency - b_latency) )
-        }
-        else if (b_latency > a_latency) {
-            (b_vld, Delay(a, cycleCount = b_latency - a_latency), b )
-        }
-        else {
-            (a_vld, a, b)
-        }
-    }
-}
-```
-
-This function accepts a common/root valid and 2 valid/value pairs A and B. It calculate the latency
-the common valid to the 2 A and B pairs and then inserts pipeline delays for either the A or the B pair
-so that they are now aligned to eachother.
-
-Here's an example how this is used in the code:
-```Scala
-    val (common_dly_vld, tca_tca_dly, c0r0_c0r0_dly) = MatchLatency(
-                                                io.op_vld,
-                                                tca_tca_vld,   tca_tca,
-                                                c0r0_c0r0_vld, c0r0_c0r0)
-
-```
-
-Thanks to MatchLatency and LatencyAnalysis, `tca_tca_dly` and `c0r0_c0r0_dly` are now latency
-aligned, with a `common_dly_vld` as their common valid signal!
-
-I can change the pipeline depth of each math operation at will, and the the whole pipeline
-adjust automatically.
-
-It's absolutely brilliant and an enormous life saver for a pipeline that has depth of more than
-100 pipeline stage.
+This section was spun off into [its own blog post](/rtl/2018/12/01/SpinalHDL-Automated-Operand-Latency-Matching.html).
 
 # Progression to C Model Match
 
@@ -765,5 +713,46 @@ camera, but it's good enough for a technology demo.
 I wanted to show some text on the screen. I already had a Verilog VGA text generator, so I converted
 that one to SpinalHDL and called it a day.
 
+I chose the old IBM PC font for this.
 
+Some characters, like the 'm' and the 'w' touch the characters on the left and right in some cases.
+That's a bit ugly, so I decided to use a 9 pixel width instead of the standard 8 pixels. But
+now the spacing between other characters is a little bit off...
 
+![IBM PC VGA Font]({{ "/assets/rt/vga8x12_extra_chars.png" | absolute_url }})
+
+# Final Toplevel Pipeline
+
+This is the complete toplevel pipeline:
+
+![Toplevel Pipeline]({{ "/assets/rt/RtBRT-Pipeline Overview.svg" | absolute_url }})
+
+Along the top, you see the steps that are needed to generate the primary rays that are shot
+from the viewer into the scene.
+
+Then from the top to bottom are all the steps to calculate the final pixel.
+
+One thing that wasn't mentioned before is the fact that there's only 1 ray/plane intersection
+block: if you first do the sphere intersection, you can use the result of that operation to
+decide whether you want to calculate the intersection of the primary ray with the plane (when
+the ray does not intersect the sphere) or the intersection of the secondary, sphere reflected
+ray with the plane (when the ray does intersect with the sphere.) That saves quite a bit 
+of hardware!
+
+There are the ray/sphere intersection and ray/plane intersection blocks:
+
+Sphere:
+![Sphere Intersection Pipeline]({{ "/assets/rt/RtBRT-Sphere Intersect.svg" | absolute_url }})
+
+Plane:
+![Plane Intersection Pipeline]({{ "/assets/rt/RtBRT-Plane Intersect.svg" | absolute_url }})
+
+And when flatten all these blocks, you get this floating point monster pipeline:
+
+![Exploded Top View]({{ "/assets/rt/RtBRT-Exploded Top View.svg" | absolute_url }})
+
+Use your browser's zoom function to zoom in on the individual operations!
+
+# References
+
+* [Atari 2600 Technical Talk](https://events.ccc.de/congress/2011/Fahrplan/attachments/2004_28c3-4711-Ultimate_Atari_2600_Talk.pdf)
