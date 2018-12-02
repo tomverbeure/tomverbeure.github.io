@@ -555,10 +555,10 @@ I was ready to fire up the monitor for the first time, and was greeted with this
 
 Not bad huh?!
 
-I had flipped around the Y axis, so you only so that top of the sphere.
+I had flipped around the Y axis, so you only see the top of the sphere.
 
 Plane intersection always passed because I had forgotten to clamp the intersection point to only
-be in front of the camera.
+be in front of the camera. That's why everything was green without sky.
 
 But, hey, something that resembles a circle! Let's fix the bugs...
 
@@ -576,7 +576,7 @@ Another pipelining bug...
 ![Progression 4]({{ "/assets/rt/P4.JPG" | absolute_url }})
 
 Excellent! It's just a coincidence that the plane (green) and the reflected plane (cyan)
-align horizontally: that's because the camera is concidentally at the same level as the
+align horizontally: that's because the camera was placed at the same level as the
 center of the sphere, and the plane is running all the way to infinity.
 
 ![Progression 5]({{ "/assets/rt/P5.JPG" | absolute_url }})
@@ -620,17 +620,17 @@ The logic synthesizes at 61MHz. Plenty for a design that only needs to run at 25
 
 # A Sphere Casting a Shadow and a Directional Light
 
-A bouncing sphere is nice and all, it just didn't feel real: there is no sense of it approaching the
+A bouncing sphere is nice and all, but it just didn't feel real: there is no sense of it approaching the
 plane before it bounces, and the sphere surface is just too flat.
 
 It needs a directional light that shines on the sphere and casts a shadow.
 
 That's trival to implement: we already have a `sphere_intersect` block! All we need to do is
-add a second instance, shoot a ray from the ray/plane intersection point to the light at infinity,
-and check if it intersects the sphere along the way.
+add a second instance of that, shoot a ray from the ray/plane intersection point to the light at infinity,
+and check if the ray intersects the sphere along the way.
 
-Similarly, already have the reflection vector of the eye-ray with the sphere. If we do a dot product
-with that vector with light direction vector and square it a few time, we get a very nice light
+Similarly, we already have the reflection vector of the eye-ray with the sphere. If we do a dot product
+of that vector with the light direction vector and square it a few times, we get a very nice light
 spot on the sphere.
 
 This was quickly added to the C model, and almost just as quickly to the RTL:
