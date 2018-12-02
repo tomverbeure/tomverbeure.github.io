@@ -125,7 +125,7 @@ to the screen. If the CPU did not finish in time, the TIA video chip would just 
 
 ![Atari 2600 Breakout]({{ "/assets/rt/Breakout2600.png" | absolute_url }})
 
-([AtariAge](https://atariage.com/software_page.php?SoftwareID=889))
+(Picture (c) [AtariAge](https://atariage.com/software_page.php?SoftwareID=889))
 
 We can take this technique to its ultimate conclusion where you not only replace the frame buffer by a line
 buffer, but where you drop the line buffer completely: if you are able to calculate each pixel on-the-fly
