@@ -10,8 +10,8 @@ categories: RTL
 * This project uses real-time ray tracing to render a bouncing sphere on a plane.
 * Think of it as a technology demo, the way they were made in the late eighties
   and early nineties for Amiga, PCs, Commodore 64 etc.
-* The techique used is entirely NOT scalable and thus kind of useless. It can't be used for anything that 
-  has move than a handful of objects. 
+* The techique used is entirely NOT scalable and thus kind of useless. It can't be used for anything that
+  has more than a handful of objects.
 * Everything is done using limited precision floating-point. The parameterizable floating-point
   library stands on its own and should be useful for anyone who needs to issue one operation
   per clock but doesn't really care about pipeline latency.
@@ -53,7 +53,7 @@ Once in the lab, it's a race to get that thing doing what it has been designed t
 
 And that's where the difference between a telecom silicon and a graphics silicon becomes clear:
 when your DSL chip works, you're celebrating the fact that bits are being successfully transported from one
-side of the chip to the other. Nice. 
+side of the chip to the other. Nice.
 
 ![DSL Router]({{ "/assets/rt/DSL Router.gif" | absolute_url }})
 
@@ -65,14 +65,14 @@ a zombie walking on your screen. Which is awesome!
 All of this just to make the point: there's something magic about working on something that puts an image
 on the screen.
 
-So when I started to reverse engineered the [Pano Logic device](https://github.com/tomverbeure/panologic), 
-getting the VGA interface up and running was the first target. Luckily, it's also 
-[far easier to get going](/pano/logic/2018/06/04/pano-logic-project-update.html) 
+So when I started to reverse engineer the [Pano Logic device](https://github.com/tomverbeure/panologic),
+getting the VGA interface up and running was the first target. Luckily, it's also
+[far easier to get going](/pano/logic/2018/06/04/pano-logic-project-update.html)
 than Ethernet and USB.
 
 ![Pano VGA]({{ "assets/panologic/hello_world.jpg" | absolute_url }})
 
-After [my short RISC-V detour](/risc-v/2018/11/19/A-Bug-Free-RISC-V-Core-without-Simulation.html), 
+After [my short RISC-V detour](/risc-v/2018/11/19/A-Bug-Free-RISC-V-Core-without-Simulation.html),
 instead of getting back to Ethernet, I wanted get a real application going, and
 since ray tracing has been grabbing a lot of headlines lately, I wondered if something could be done.
 
@@ -81,9 +81,9 @@ a 33MHz 486 in my college dorm. And when thinking about a subject for my thesis,
 intersection was high on the list but ultimately rejected.
 
 On that 486, you could see individual pixels being rendered one by one, far away from real time, but when you
-do things in hardware, you can pipeline and do things in parallel. 
+do things in hardware, you can pipeline and do things in parallel.
 
-Compared to today's high-end FPGA, the Pano Logic has a fairly pedestrian Spartan-3E, but the specs are actually pretty decent
+Compared to today's high-end FPGAs, the Pano Logic has a fairly pedestrian Xilinx Spartan-3E, but the specs are actually pretty decent
 when compared to many of today's hobby FPGA boards: 27k LUTs, quite a bit of RAM, and 36 18x18bit hardware multipliers.
 
 Is that enough to do ray tracing? Let's find out...
@@ -107,7 +107,7 @@ has only 648Kbit of block RAM.
 
 The Pano box has 32MByte of DRAM on the board, more than enough. All the SDRAM IO connections
 to the FPGA have been mapped out, and Xilinx has an SDRAM memory controller generator, so using that
-should be a breeze, right? 
+should be a breeze, right?
 
 Alas, no. The generator only supports regular DDR SDRAM. It does not support the
 LPDDR that's used by the Pano. Designing a custom DRAM controller isn't super hard, but it's a major
@@ -116,7 +116,7 @@ project in itself, one that I didn't want to start just yet.
 So using the SDRAM was out. And with that all traditional graphics rendering methods.
 
 When you can't use memory to store your image, you go back to a technique that was used more than 40 years
-ago in the Atari 2600 VCS: you race the beam! A CRT monitor that paints an image by lighting up the phosphor
+ago in the Atari 2600 VCS: you race the beam! A CRT monitor paints an image by lighting up the phosphor
 on the screen with an electron beam from top to bottom and from left to right.
 
 Back in those days, memory was extremely expensive, so to save on cost, they dropped the frame buffer and
@@ -167,7 +167,7 @@ intersection, the reflected ray, the sphere normal etc.
 But wait, it gets worse! One of the main benefits of ray tracing are the ease by which it can render reflections.
 It'd be a shame if you couldn't show that off. Unfortunately, reflection is recursive: if you have 2 reflecting
 objects, light rays can essentially bounce between them forever. You'd need an infinite amount of hardware to
-do that in one clock cycle... but even if you limit reflections to, say, 2 bounces, you're still looking at a rapid 
+do that in one clock cycle... but even if you limit reflections to, say, 2 bounces, you're still looking at a rapid
 expansion of math operations, and thus HW resources.
 
 Or you chose the alternative: only allow 1 reflecting object in the scene. :-)
@@ -243,8 +243,8 @@ the second result will have a much better accuracy.
 The disadvantage: it requires manual tuning.
 
 In any case, the big take-away is this: fixed point works, but it can be a real pain. It's great when most operands
-are all roughly within the same range (as is often the case for digital communications processing), but that's not really 
-true for ray tracing: there are numbers that will always be smaller or equal than 1, but there are also calculations 
+are all roughly within the same range (as is often the case for digital communications processing), but that's not really
+true for ray tracing: there are numbers that will always be smaller or equal than 1, but there are also calculations
 with relatively large intermediate results.
 
 Instead of writing a second, fixed point, C model, I did something better: I changed the code to calculate both floating
@@ -343,7 +343,7 @@ scalar_recip_sqrt_cntr: 2
 That biggest issue here are the number of multiplications: 48 is quite a bit larger than the 36 HW multipliers
 of our FPGA.
 
-The additions shouldn't be a problem at all. Hardware division is notoriously resource intensive and unexplored territory, 
+The additions shouldn't be a problem at all. Hardware division is notoriously resource intensive and unexplored territory,
 but square root should be doable with some local memory lookup. Which is fine: since we're racing the beam, we don't
 need to use the local RAMs for anything else anyway.
 
@@ -618,7 +618,7 @@ Notice how the shadow on the plane is also visible on the sphere. This is what m
 rendering technique!
 
 The additional features bumped the core logic stats up from a comfortable 66% to a much tighter 92%. The
-number of HW multipliers doubled as well. 
+number of HW multipliers doubled as well.
 
 ![Xilinx ISE Shadow and Light Stats]({{ "/assets/rt/Xilinx ISE Shadow and Light Stats.png" | absolute_url }})
 
@@ -634,17 +634,17 @@ that's what I did instead.
 
 It requires just a tiny bit of work in SpinalHDL:
 
-* First you [define a black box](https://github.com/tomverbeure/math/blob/master/src/main/scala/math/MULT18X18SIO.scala) of 
+* First you [define a black box](https://github.com/tomverbeure/math/blob/master/src/main/scala/math/MULT18X18SIO.scala) of
   the primitive that you want to add.
 
 * And then you simply treat that black box as [any other component](https://github.com/tomverbeure/math/blob/2d9fbf27218d7574083fee5c417021c707ce4d8c/src/main/scala/math/FpxxMul.scala#L62-L82).
 
-Since I want to be able to mix HW and 'soft' multipliers, built from regular logic elements, I added the option for each FpxxMul 
+Since I want to be able to mix HW and 'soft' multipliers, built from regular logic elements, I added the option for each FpxxMul
 component to use one or the other.
 
 One issue is that absense of a Verilog simulation model for the HW multiplier. Writing one myself would
 have been the best option, but I decided to have one global variable that allows me to disable
-all HW multipliers. 
+all HW multipliers.
 
 When running simulation, I disable them. When creating a synthesis netlist, I enable them.
 
@@ -660,8 +660,8 @@ case class FpxxMulConfig(
 }
 ```
 
-I then have some global instances of this configuration class. 
-One with [HW multiplier enabled](https://github.com/tomverbeure/rt/blob/29070b46fa30c290d7e530f7700b9ea1ef45a3eb/src/main/scala/rt/RT.scala#L55), 
+I then have some global instances of this configuration class.
+One with [HW multiplier enabled](https://github.com/tomverbeure/rt/blob/29070b46fa30c290d7e530f7700b9ea1ef45a3eb/src/main/scala/rt/RT.scala#L55),
 and [one without](https://github.com/tomverbeure/rt/blob/29070b46fa30c290d7e530f7700b9ea1ef45a3eb/src/main/scala/rt/RT.scala#L56).
 
 And, finally, [hwMulGlobal](https://github.com/tomverbeure/rt/blob/29070b46fa30c290d7e530f7700b9ea1ef45a3eb/src/main/scala/rt/RT.scala#L50-L63)
@@ -681,7 +681,7 @@ object Constants {
 }
 ```
 
-After adding the 2 rotation matrix operations (see below), logic element usage was at 99%. After 
+After adding the 2 rotation matrix operations (see below), logic element usage was at 99%. After
 enabling HW multipliers, I went down to around 80% or so!
 
 # Camera Movement and Flexibility - Bringing in a CPU
@@ -697,7 +697,7 @@ rotation angles. It also requires something that updates the position and angles
 
 It's basically something you'd do on with a CPU!
 
-Adding the rotation was once again trivial. First added to the C model, then 
+Adding the rotation was once again trivial. First added to the C model, then
 [in hardware](https://github.com/tomverbeure/rt/commit/1080c236a264b0b9895e5380bdcf4389d6652e04).
 
 And since my previous project was a small RISC-V project, integrating that was very easy as well.
@@ -739,7 +739,7 @@ One thing that wasn't mentioned before is the fact that there's only 1 ray/plane
 block: if you first do the sphere intersection, you can use the result of that operation to
 decide whether you want to calculate the intersection of the primary ray with the plane (when
 the ray does not intersect the sphere) or the intersection of the secondary, sphere reflected
-ray with the plane (when the ray does intersect with the sphere.) That saves quite a bit 
+ray with the plane (when the ray does intersect with the sphere.) That saves quite a bit
 of hardware!
 
 There are the ray/sphere intersection and ray/plane intersection blocks:
@@ -782,7 +782,7 @@ it's still passing by a mile: target frequency 25MHz, achieved frequency some 38
 
 ![Worst Case Path 3]({{ "/assets/rt/Worst Case Path 3.png" | absolute_url }})
 
-The red circled items above show how the Xilinx ISE placer has made decisions with 
+The red circled items above show how the Xilinx ISE placer has made decisions with
 large routing delays. But there's nothing wrong with that: timing is met after all...
 
 I wanted to see if I'd get better placement (and timing) results if I tightened the clock speed
@@ -811,8 +811,8 @@ Sadly, that's too much of our little FPGA:
 Ray tracing, floating point arithmetic, giving my RISC-V something useful
 to do, more SpinalHDL learning and pushing the Pano Logic Spartan-3E to its limits.
 
-The end result is pretty much useless: there is no practical application where this kind 
-of ray tracing would make sense. As soon as you add more (reflective) geometry to the scene, 
+The end result is pretty much useless: there is no practical application where this kind
+of ray tracing would make sense. As soon as you add more (reflective) geometry to the scene,
 the amount of logic explodes.
 
 But it was a lot of fun!
