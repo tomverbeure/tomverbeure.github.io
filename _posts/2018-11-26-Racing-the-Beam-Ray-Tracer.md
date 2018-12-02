@@ -107,13 +107,23 @@ There are 2 versions: the first one has a VGA video interface, later versions ha
 The VGA version uses the Xilinx Spartan-3E 1600. The DVI version a very powerful Spartan-6 LX150.
 
 Both are very easy to open up and reuse for other applications, but
-**only the Spartan-3E FPGA is supported by the free Xilinx ISE software.**
+~~only the Spartan-3E FPGA is supported by the free Xilinx ISE software.~~
 
-Consequently, only the Spartan-3E PCB has been almost completely reverse engineered by yours truly.
-The Spartan-6 version requires a very expensive (thousands of dollars per year) license.
+~~Consequently, only the Spartan-3E PCB has been almost completely reverse engineered by yours truly.
+The Spartan-6 version requires a very expensive (thousands of dollars per year) license.~~
 
 **If you want to recreate this project verbatim, make sure that you buy one on eBay that has a VGA port!**
 
+**Update:**
+
+it has been [pointed out](https://twitter.com/udifink/status/1069142909864296448) that one particular 
+free version 
+of [Xilinx ISE on Windows 10](https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/design-tools/14_7-windows.html) 
+now supports the Spartan-6 LX150! I haven't confirmed this myself, but will do so soon.
+
+A Spartan-6 LX150 is huge by hobby standards, with 147k logic cells, 4.8Mbits of block RAM and 180 DSP slices.
+
+This opens up a whole world of reverse engineering to get that one to work. 
 
 # Racing the Beam - Graphics without a Frame Buffer
 
