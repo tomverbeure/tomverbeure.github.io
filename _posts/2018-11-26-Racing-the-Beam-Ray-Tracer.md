@@ -649,7 +649,7 @@ number of HW multipliers doubled as well.
 
 # SpinalHDL - Selectively Using HW Multipliers
 
-It's usually pretty simply to add hints to the synthesis tool about how to implement certain
+It's usually pretty simple to add hints to the synthesis tool about how to implement certain
 HW blocks, and I expected the same for forcing Xilinx ISE to use HW multipliers.
 
 But one way or the other, I wasn't able to get that to work.
@@ -667,7 +667,7 @@ It requires just a tiny bit of work in SpinalHDL:
 Since I want to be able to mix HW and 'soft' multipliers, built from regular logic elements, I added the option for each FpxxMul
 component to use one or the other.
 
-One issue is that absense of a Verilog simulation model for the HW multiplier. Writing one myself would
+One issue is the absence of a Verilog simulation model for the HW multiplier. Writing one myself would
 have been the best option, but I decided to have one global variable that allows me to disable
 all HW multipliers.
 
@@ -707,12 +707,12 @@ object Constants {
 ```
 
 After adding the 2 rotation matrix operations (see below), logic element usage was at 99%. After
-enabling HW multipliers, I went down to around 80% or so!
+enabling HW multipliers, it went down to around 80% or so!
 
 # Camera Movement and Flexibility - Bringing in a CPU
 
 Everything up to this point was implemented completely in hardware. The camera had a fixed
-location, and the its orientation was static as well.
+location, and its orientation was static as well.
 
 Ideally, you'd like to be able to move the camera around and point in any direction, left and
 right, and up and down.
@@ -720,12 +720,12 @@ right, and up and down.
 That requires 2 rotations that must be performed for each ray. It requires sine and cosine of the
 rotation angles. It also requires something that updates the position and angles once per frame.
 
-It's basically something you'd do on with a CPU!
+It's basically something you'd do on with a CPU.
 
 Adding the rotation was once again trivial. First added to the C model, then
 [in hardware](https://github.com/tomverbeure/rt/commit/1080c236a264b0b9895e5380bdcf4389d6652e04).
 
-And since my previous project was a small RISC-V project, integrating that was very easy as well.
+And since my previous project was a small RISC-V CPU in SpinalHDL, integrating that was very easy as well.
 
 Once the CPU was in place, I could remove the hardware that calculated the bouncing ball (gaining
 some logic elements in the process), but now the sphere position, the camera position and the
@@ -743,11 +743,11 @@ that one to SpinalHDL and called it a day.
 
 I chose the old IBM PC font for this.
 
+![IBM PC VGA Font]({{ "/assets/rt/vga8x12_extra_chars.png" | absolute_url }})
+
 Some characters, like the 'm' and the 'w' touch the characters on the left and right in some cases.
 That's a bit ugly, so I decided to use a 9 pixel width instead of the standard 8 pixels. But
 now the spacing between other characters is a little bit off...
-
-![IBM PC VGA Font]({{ "/assets/rt/vga8x12_extra_chars.png" | absolute_url }})
 
 # Final Toplevel Pipeline
 
@@ -767,7 +767,7 @@ the ray does not intersect the sphere) or the intersection of the secondary, sph
 ray with the plane (when the ray does intersect with the sphere.) That saves quite a bit
 of hardware!
 
-There are the ray/sphere intersection and ray/plane intersection blocks:
+These are the ray/sphere intersection and ray/plane intersection blocks:
 
 Sphere:
 ![Sphere Intersection Pipeline]({{ "/assets/rt/RtBRT-Sphere Intersect.svg" | absolute_url }})
@@ -793,7 +793,7 @@ to 99% by adding some additional features, but I was ready to move on to some ne
 One feature that's relatively easy to implement would be to render a textured bitmap on top
 of the plane.
 
-There are still 4 multipliers left as well.
+There are still 4 multipliers left unused as well.
 
 RAM usage is split between CPU RAM, and a special table for the FpxxDiv, and lookup tables for
 the FpxxSqrt and the FpxxRSqrt.
