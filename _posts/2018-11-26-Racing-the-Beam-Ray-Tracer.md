@@ -53,7 +53,7 @@ Once in the lab, it's a race to get that thing doing what it has been designed t
 
 And that's where the difference between a telecom silicon and a graphics silicon becomes clear:
 when your DSL chip works, you're celebrating the fact that bits are being successfully transported from one
-side of the chips to the other. Nice! 
+side of the chip to the other. Nice. 
 
 ![DSL Router]({{ "/assets/rt/DSL Router.gif" | absolute_url }})
 
@@ -67,7 +67,7 @@ on the screen.
 
 So when I started to reverse engineered the [Pano Logic device](https://github.com/tomverbeure/panologic), 
 getting the VGA interface up and running was the first target. Luckily, it's also 
-[far easier to get going](http://localhost:4000/pano/logic/2018/06/03/pano-logic-project-update.html) 
+[far easier to get going](/pano/logic/2018/06/03/pano-logic-project-update.html) 
 than Ethernet and USB.
 
 ![Pano VGA]({{ "assets/panologic/hello_world.jpg" | absolute_url }})
