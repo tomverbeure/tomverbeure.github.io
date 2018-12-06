@@ -9,7 +9,12 @@ categories: RTL
 
 * [Introduction](#introduction)
 * [Designing a CPU the Traditional Way](#designing-a-cpu-the-traditional-way)
-* [The VexRiscV Plugin Architecture](#the-vexriscv-plugin-architecture)
+* [A Quick Rehash of SpinalHDL](#a-quick-rehash-of-spinalhdl)
+* [The VexRiscV Pipeline Plugin Architecture](#the-vexriscv-pipeline-plugin-architecture)
+* [The Barrel Shifter and Multiplier Plugins](#barrel-shifter-and-multiplier-plugins)
+* [Additional Goodies](#additional-goodies)
+* [Disadvantages](#disadvantages)
+* [Conclusion](#conclusion)
 
 
 # Introduction
@@ -132,7 +137,236 @@ stage, while choosing the last option for a very fast one.
 
 Which raises the question: is there a better way?
 
-# The VexRiscV Plugin Architecture
+# A Quick Rehash of SpinalHDL
 
+If you don't feel like reading my [SpinalHDL blog post](/rtl/2018/08/12/SpinalHDL.html), let me repeat the most
+important aspect:
 
+It's a Scala library with hardware primitives that can be connected together.
+
+A traditional language like Verilog works as follows:
+
+```Hardware described in Verilog -> Verilog Parser -> Hardware Primitives```
+
+The ability to describe hardware is entirely determined by the features of the Verilog language. If
+the language doesn't support certain options, you have to resort to tricks to make them happen.
+
+A really simple example are module ports: your CPU may have an optional JTAG debug interface. It's
+needed in some configurations, but not needed in others.
+
+Verilog doesn't provide any core language features to have optional ports: there is no `if generate` 
+equivalent to do that. So either you ignore the jtag ports on the configuration that doesn't have them.
+Or you use ugliness like this to exclude those ports:
+```
+module cpu(
+    ...
+`ifdef JTAG
+    input  jtag_tck,
+    input  jtag_tms,
+    input  jtag_tdi,
+    output jtag_tdo,
+`endif
+    ...
+```
+
+With something like SpinalHDL, it goes like this:
+
+```Scala program to wire together hardware primitives -> Execute -> Hardware Primitives```
+
+You have full flexibility to wire together those hardware primitives anyway you want.
+
+If you have a configuration that doesn't need JTAG ports, then you just don't call the Scala function
+that creates those IO ports.
+
+This is [nicely illustrated](https://github.com/tomverbeure/mr1/blob/352927f0dc217bf421cbe4fddf9956afd9277ad6/src/main/scala/mr1/Decode.scala#L18)
+in my MR1 RISC-V core:
+
+```
+    val rvfi = if (config.hasFormal) RVFI(config) else null
+```
+
+To formally prove the CPU core, an additional IO port is need with an struct that contains a bunch of RVFI signals.
+But for synthesis or simulation, this IO port is useless.
+
+The `if (config.hasFormal) ... else` code is regular Scala. The `RVFI(config)` object is the SpinalHDL Bundle
+class that describes a set of signals.
+
+The way to construct hardware is limited by your imagination. You are not bound by the limitations of the Verilog
+language. The VexRiscV code takes that approached to the extreme.
+
+# The VexRiscV Pipeline Plugin Architecture
+
+The VexRiscV code architecture is built around a set of pipeline stages to which functional objects can be
+added at will by means of plugins.
+
+You start with a [generic Pipeline](https://github.com/SpinalHDL/VexRiscv/blob/6334f430fe1bed302733c6ea6c44f8b514f3e2c6/src/main/scala/vexriscv/Pipeline.scala#L12-L15)
+that has `stages` and `plugins`.
+
+```
+trait Pipeline {
+  type T <: Pipeline
+  val plugins = ArrayBuffer[Plugin[T]]()
+  var stages = ArrayBuffer[Stage]()
+  ...
+```
+
+There is nothing CPU-related about this.
+
+A Pipeline object has multiple stages. Items (called `Stageable`) can be passed along from one stage to the next.
+Plugins tie in to the whole pipeline. They can add logic to each stage. They can use one of these
+stageables as input for a particular stage of the pipeline, and they can insert new stageables into the
+pipeline for the next stage.
+
+The Pipeline object automatically takes care of the management of these stageables. If a plugin requires
+stageable OP_A in stage EXECUTE, and OP_A was inserted into the pipeline by a different plugin in the
+DECODE stage, then the Pipeline object will make sure that OP_A gets passed along the pipeline to
+the DECODE stage.
+
+If the plugin generates a stageable RESULT in the EXECUTE stage and then needs result in the WRITEBACK
+stage, then the pipeline stage will once again ensure that it gets there, no matter how many 
+intermediate stages there are between EXECUTE and WRITEBACK.
+
+In the case of the VexRiscV, the pipeline stages are defined [here](https://github.com/SpinalHDL/VexRiscv/blob/6334f430fe1bed302733c6ea6c44f8b514f3e2c6/src/main/scala/vexriscv/VexRiscv.scala#L86-L90):
+
+```
+class VexRiscv(val config : VexRiscvConfig) extends Component with Pipeline{
+  type  T = VexRiscv
+  import config._
+
+  //Define stages
+  def newStage(): Stage = { val s = new Stage; stages += s; s }
+  val decode    = newStage()
+  val execute   = newStage()
+  val memory    = ifGen(config.withMemoryStage)    (newStage())
+  val writeBack = ifGen(config.withWriteBackStage) (newStage())
+
+...
+```
+
+You can see that the VexRiscV is a subclass of Component (a SpinalHDL hardware primitive container) with
+Pipeline characteristics.
+
+There is always a decode and execute stage, but the memory and writeBack stage are optional, depending
+on the desired configuration.
+
+With the CPU defined with these kind of stages, it's now up to plugins to add logic to the pipeline!
+
+# The Barrel Shifter and Multiplier Plugins
+
+The VexRiscV has multiple options to implement the RISC-V shift left and shift right instruction.
+They are all implemented in the [`ShiftPlugins.scala`](https://github.com/SpinalHDL/VexRiscv/blob/master/src/main/scala/vexriscv/plugin/ShiftPlugins.scala) plugin.
+
+The [`LightShifterPlugin`](https://github.com/SpinalHDL/VexRiscv/blob/6334f430fe1bed302733c6ea6c44f8b514f3e2c6/src/main/scala/vexriscv/plugin/ShiftPlugins.scala#L93-L181)
+implements an interative shifter that shifts left or right one bit at a time, for low performance but also
+low resource usage.
+
+The [`FullBarrelShifterPlugin`](https://github.com/SpinalHDL/VexRiscv/blob/6334f430fe1bed302733c6ea6c44f8b514f3e2c6/src/main/scala/vexriscv/plugin/ShiftPlugins.scala#L9-L82)
+implements a traditional barrel shifter:
+
+Depending on the shift direction, it first reverses the input, then it performs variable number of right shift,
+and then it optionally reverses the output again.
+
+```
+class FullBarrelShifterPlugin(earlyInjection : Boolean = false) extends Plugin[VexRiscv]{
+...
+```
+
+At the top of the plugin, we can see the `earlyInjection` configuration: this determines if
+whether or not the final reverse operation is placed in the same pipeline stage as the initial
+reverse and barrel shift, or if it's placed in the next stage. Placing it in the next 
+stage increases area (you need to pass the intermediate result through the pipeline, which
+costs additional flip-flops), but it also reduces the logic depth, and thus potentially
+breaks a timing path.
+
+Let's see how this is implemented. Let's start with the 
+[initial reverse and shift](https://github.com/SpinalHDL/VexRiscv/blob/6334f430fe1bed302733c6ea6c44f8b514f3e2c6/src/main/scala/vexriscv/plugin/ShiftPlugins.scala#L62-L67):
+```
+    execute plug new Area{
+      import execute._
+      val amplitude  = input(SRC2)(4 downto 0).asUInt
+      val reversed   = Mux(input(SHIFT_CTRL) === ShiftCtrlEnum.SLL, Reverse(input(SRC1)), input(SRC1))
+      insert(SHIFT_RIGHT) := (Cat(input(SHIFT_CTRL) === ShiftCtrlEnum.SRA & reversed.msb, reversed).asSInt >> amplitude)(31 downto 0).asBits
+    }
+```
+First we tell that the blob of logic (grouped into an 'Area') should be placed in the EXECUTE stage.
+
+The shift amplitude is fetched from the pipeline with `input(SRC)`. The shift direction is fetched with `input(SHIFT_CTRL)`.
+Meanwhile, the result is inserted in the pipeline with `insert(SHIFT_RIGHT)`.
+
+The [second part](https://github.com/SpinalHDL/VexRiscv/blob/6334f430fe1bed302733c6ea6c44f8b514f3e2c6/src/main/scala/vexriscv/plugin/ShiftPlugins.scala#L69-L79), the 
+reversing back of the `SHIFT_RIGHT` result looks like this:
+```
+    val injectionStage = if(earlyInjection) execute else memory
+    injectionStage plug new Area{
+      import injectionStage._
+      switch(input(SHIFT_CTRL)){
+        is(ShiftCtrlEnum.SLL){
+          output(REGFILE_WRITE_DATA) := Reverse(input(SHIFT_RIGHT))
+        }
+        is(ShiftCtrlEnum.SRL,ShiftCtrlEnum.SRA){
+          output(REGFILE_WRITE_DATA) := input(SHIFT_RIGHT)
+        }
+      }
+```
+The first line is key here: based on that configuration parameter `earlyInjection`, the if-statement
+places the following blob of logic either in the EXECUTE stage or the MEMORY stage!
+
+Once again, `input(SHIFT_CTRL)` is fetched from the pipeline to determine whether a shift needs to be made.
+And `input(SHIFT_RIGHT)` is used to generate `REGFILE_WRITE_DATA` which is then inserted in the pipeline.
+
+And here's the beautiful part: if `earlyInjection` is true, `input(SHIFT_CTRL)` and `input(SHIFT_RIGHT)` will
+translate to plain combinatorial assignment operation to the data that was inserted with `insert(SHIFT_CTRL)` and
+`insert(SHIFG_RIGHT)` earlier. However, if `earlyInjection` is false, the Pipeline object will 
+correctly insert a register stage as needed.
+
+The multiplier is implemented similarly with [MulPlugin.scala](https://github.com/SpinalHDL/VexRiscv/blob/master/src/main/scala/vexriscv/plugin/MulPlugin.scala):
+
+[4 sub-multiplications](https://github.com/SpinalHDL/VexRiscv/blob/6334f430fe1bed302733c6ea6c44f8b514f3e2c6/src/main/scala/vexriscv/plugin/MulPlugin.scala#L74-L77) 
+are performed in the [EXECUTE stage](https://github.com/SpinalHDL/VexRiscv/blob/6334f430fe1bed302733c6ea6c44f8b514f3e2c6/src/main/scala/vexriscv/plugin/MulPlugin.scala#L46). Some 
+partial results are added in the [MEMORY stage](https://github.com/SpinalHDL/VexRiscv/blob/6334f430fe1bed302733c6ea6c44f8b514f3e2c6/src/main/scala/vexriscv/plugin/MulPlugin.scala#L81-L84). And 
+the final result is created in the [WRITEBACK stage](https://github.com/SpinalHDL/VexRiscv/blob/6334f430fe1bed302733c6ea6c44f8b514f3e2c6/src/main/scala/vexriscv/plugin/MulPlugin.scala#L87-L101).
+
+The code organization looks like this:
+
+![Complex Multiplier New]({{ "/assets/vexriscv/VexRiscV-drawings-mul_complex_2_new.svg" | absolute_url }})
+
+All the multiplication code is logically organized in the same file. It's super easy to replace one 
+implementation by a different one, or leave it out altogether.
+
+# Additional Goodies
+
+You may have noticed that both the FullBarrelShifterPlugin and the MultPlugin end with an `insert(REGFILE_WRITE_DATA)` command.
+That's fine: this will be dealt with automatically. (I haven't figured out exactly where!)
+
+The instruction decoder, DecodeSimplePlugin, is a piece of magic. It contains a logic optimizer to generate
+the simplest possible decoding logic.
+
+There is support for `riscv-formal` to formally prove the generated CPU, though I haven't tried this.
+
+You can spend hours exploring various aspects of the CPU. 
+
+# Disadvantages
+
+I can think of 2 major disadvantages:
+
+The learning curve is very, very steep for a traditional RTL designer. That's mostly because Scala
+is a rich language, and SpinalHDL/VexRiscV make use of most of this richness.
+
+But the biggest one to this whole system is the fact that the generated Verilog is a flat file. 
+That makes it very difficult to debug and understand.
+
+# Conclusion
+
+Irrespective of whether one will use the VexRiscV and SpinalHDLm, I think the implementation is
+a complete departure from the traditional way of designing RTL. I found going through the code
+and figuring out how it all worked fascinating and even entertaining.
+
+The VexRiscV is not only amazing in the way its designed, it's also very high performance for
+a low amount of resources, with a new infinite amount of configuration options.
+
+Even if you're not committed to using SpinalHDL, one could still use it by adding the generated
+Verilog to your project. That's what I did [here](https://github.com/tomverbeure/rv32soc/tree/master/vexriscv).
+
+Since I've switched to SpinalHDL for my personal project, the choice is almost obvious:
+unless there's a good reason to use my own MR1 core, I'll use the VexRiscV.
 
