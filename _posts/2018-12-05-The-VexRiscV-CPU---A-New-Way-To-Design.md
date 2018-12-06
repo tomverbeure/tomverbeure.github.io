@@ -350,8 +350,11 @@ implementation by a different one, or leave it out altogether.
 
 # Additional Goodies
 
-You may have noticed that both the FullBarrelShifterPlugin and the MultPlugin end with an `insert(REGFILE_WRITE_DATA)` command.
-That's fine: this will be dealt with automatically. (I haven't figured out exactly where!)
+You may have noticed that both the FullBarrelShifterPlugin and the MultPlugin end with an `output(REGFILE_WRITE_DATA)` command.
+That's fine: this will be dealt with automatically in a simple way. By default, a pipeline stage will simply pass through
+a stageable from the previous stage. This value gets overwritten if a plugin desires to do so. If multiple plugins
+overwrite the same stageable in the simple stage, it's still not a problem because only 1 instruction is active
+per stage, and plugins are naturally only supposed to overwrite a stageable when they have been activated.
 
 The instruction decoder, DecodeSimplePlugin, is a piece of magic. It contains a logic optimizer to generate
 the simplest possible decoding logic.
