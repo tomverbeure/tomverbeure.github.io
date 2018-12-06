@@ -38,10 +38,14 @@ such as Verilog, SystemVerilog and VHDL.
 The VexRiscV code demonstrates how one can write RTL that is at the same time as
 efficient as the most optimized Verilog, yet at the same time extremely configurable.
 
+It is no surprise that the VexRiscV won the first prize of the RISC-V Summit
+softCore contest.
+
 That said: understanding the VexRiscV code base is not for the faint of heart. It leverages
 all the features of a traditional objected programming language, Scala, to make the
 magic happen. And because it does not follow the standard practices by which a CPU
 is designed, it took me a while to really get it.
+
 
 This goal of this article to explain why the VexRiscV design is so important and
 innovative.
