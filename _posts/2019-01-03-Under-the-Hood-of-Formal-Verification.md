@@ -471,6 +471,87 @@ The first quick sketch on our napkin looks like this:
 
 But the traditional FSM that we know and love only has one state at a time. And we've learned
 earlier that a single 'a' can result in multiple 'c's. And we also know that multiple sequences
-can be evaluated in parallel.
+can be evaluated in parallel. 
+
+Something will have to be done to make all of that work. But let's first make the diagram a bit 
+more rigorous by annotating the different state transitions.
+
+There are 3 different external inputs, a,b, and c, good for 8 different combinations. Let's number
+them that way. And for each state, let's also annotate the outgoing transitions with the input
+combinations that will trigger each transition.
+
+You get something like this:
+
+[ ![basic FSM]({{ "/assets/temporal_assertions/a_seq_b_12_seq_c-Annotated_FSM.svg" | absolute_url }}) ]({{ "/assets/temporal_assertions/a_seq_b_12_seq_c-Annotated_FSM.svg" | absolute_url }})
+
+To move from the first to the second state, 'a' must be 1. This corresponds to input combinations 1,3,5, and 7.
+
+On the right side, you see 2 transitions out of the "First B hit" stage that get triggered by the same input
+combinations 6 or 7. That's a problem that will need to be solved.
+
+Whenever the FSM is in a certain state and none of the input combinations matches one of the outgoing
+transitions, the FSM aborts, meaning that there was no match was possible for that sequence.
+
+The two most basic matching sequences are simple.
+
+A followed by one B followed by one C:
+
+[ ![One B, One C FSM]({{ "/assets/temporal_assertions/a_seq_b_12_seq_c-One_B_One_C.svg" | absolute_url }}) ]({{ "/assets/temporal_assertions/a_seq_b_12_seq_c-One_B_One_C.svg" | absolute_url }})
+
+A followed by two Bs followed by one C:
+
+[ ![Two B, One C FSM]({{ "/assets/temporal_assertions/a_seq_b_12_seq_c-Two_B_One_C.svg" | absolute_url }}) ]({{ "/assets/temporal_assertions/a_seq_b_12_seq_c-Two_B_One_C.svg" | absolute_url }})
+
+But here is the problem child:
+
+[ ![Two B, Two C FSM]({{ "/assets/temporal_assertions/a_seq_b_12_seq_c-Two_B_Two_C.svg" | absolute_url }}) ]({{ "/assets/temporal_assertions/a_seq_b_12_seq_c-Two_B_Two_C.svg" | absolute_url }})
+
+This is what they call a Non-Deterministic Finite State Machine.
+
+The name 'non-deterministic' is really misleading: there is really nothing non-deterministic about it (that
+would imply that some random factor was at play.) What they really mean to say is that you can have 
+multiple states at the same time.
+
+# From Non-Deterministic to Deterministic FSM
+
+The solution to our multiple concurrent state problem turns out to be really simple: all non-deterministic
+FSMs can be transformed into a deterministic one! And the algorithm is pretty straightforward too.
+
+Just google "NFA to DFA conversion" and you'll find plenty of tutorials and examples. (NFA for 
+*Non-deterministic Finite Automaton*.)
+
+For our case, I used a tool called ["JFLAP" ](http://www.jflap.org) which, among other things, supports
+graphical FSM entry and as well as automated conversion from NFA to DFA.
+
+The end result is this:
+
+[ ![Two B, Two C FSM_DFA]({{ "/assets/temporal_assertions/a_seq_b_12_seq_c-Two_B_Two_C_DFA.svg" | absolute_url }}) ]({{ "/assets/temporal_assertions/a_seq_b_12_seq_c-Two_B_Two_C_DFA.svg" | absolute_url }})
+
+During the conversion, a new state was created that carries the situtation where C follows the
+first B *and* B follows the first B. There are now 2 state that result in a match, and there
+are no overlapping outgoing state transitions.
+
+Multiple state problem solved!
+
+# What about Parallel Sequence Evaluation?
+
+While we have now solved the case of multiple matches per sequence, there is still the issue of
+running multiple sequences concurrently.
+
+The solution can be found by expanding the original basic FSM: just like states could diverge after
+"First B hit", we can also diverge at the very first "Wait for A" stage: if we want to check for
+a new A for every new clock cycle, just add a loop to itself for all possible input combinations!
+
+Like this:
+
+[ ![Concurrent Sequences]({{ "/assets/temporal_assertions/a_seq_b_12_seq_c-Concurrent_Sequences.svg" | absolute_url }}) ]({{ "/assets/temporal_assertions/a_seq_b_12_seq_c-Concurrent_Sequences.svg" | absolute_url }})
+
+I did not create a nicely draw FSM diagram of it, but this is what came out of JFLAP after converting
+that to a deterministic FSM:
+
+[ ![Concurrent Sequences DFA]({{ "/assets/temporal_assertions/a_seq_b_12_seq_c-Concurrent_Sequences_DFA.png" | absolute_url }}) ]({{ "/assets/temporal_assertions/a_seq_b_12_seq_c-Concurrent_Sequences_DFA.png" | absolute_url }})
+
+The non-deterministic FSM had 4 states. The deterministic version has 16 states. That's probably
+not a conincidence.
 
 
