@@ -1,51 +1,49 @@
 ---
 layout: post
-title:  Why Formal Verification?
+title: Under the hood of Formal Verification
 date:   2019-01-03 17:00:00 -0700
 categories: RTL
 ---
 
-# Table of Contents
-
-# Why Formal Verification
+# Why Formal Verification?
 
 Design verification has always been much more important for digital hardware than for software.
-Most software has a very linear behavior where one instruction gets executed after the other and
-behavior is purely data depending: given the same input, you'll usually get the same output. Things
-get a bit more difficult when threads are involved, but even there the amount of things going on
-in parallel can be counted on one hand.
 
-Meanwhile, in digital hardware land, almost everything happens in parallel. Millions of flip
-flops are toggling at the same time, and often interacting with the same limited resource:
-arbiters can only serve one request at a time, RAMs typically have at most 2 read and write
+Software has a very linear behavior where one instruction gets executed after the other and
+behavior is purely data depending: given the same input, you should get the same output. Things
+get a bit more difficult when multiple threads are involved, but even there the amount of things 
+going on in parallel can be counted on one hand.
+
+Meanwhile, in digital hardware land, almost everything happens in parallel. Thousands or millions 
+of flip flops are toggling at the same time, and often interacting with the same limited resource:
+arbiters can only serve one request at a time, RAMs typically have at most 2 read and/or write
 ports etc.
 
 So not only do you have the data dependent behavior of software, but you also have an extremely 
-strong sensitivity to timing. A bus arbiter to access external DRAM might have 8 inputs, and your
-simulation might stress cases where up to 7 of those inputs are requesting access to memory at
-the same time and things are working great, but, wouldn't you know it, in that extremely rare
-case where 8 inputs are active at the same cycle, a bug is triggered, and your design fails. 
+strong sensitivity to timing. A bus arbiter that grants access an external DRAM might have 8 inputs, 
+and your simulation might stress cases where up to 7 of those inputs are requesting access to memory 
+during the same clock cycle and things are working great. But, wouldn't you know it, in that extremely 
+rare case where 8 inputs are active at the same cycle, a bug is triggered, and your design fails. 
 
-In a production environment, that situation happens about once every two days, even if the arbiter
+In a production environment, that situation might happens about once every two days, even if the arbiter
 is running at 1GHz. In other words: it's something that will only happen once every 172E12 clock
 cycles!
 
-The reason might be a vector that countains the number of active inputs at any point in time which
-was sized with 3 bits, good for 0 to 7 active agents, instead of 4 bits. One of those dreaded 
-off-by-one bugs.
-
+The reason of this bug might be a vector that countains the number of active requestors at any point 
+in time which was sized with 3 bits, good for 0 to 7 concurrent active agents, instead of 4 bits. One 
+of those dreaded off-by-one bugs...
 
 Good verification engineers are worth their weight in gold: they will identify a case like this up front. 
-They will add a case in the test plan. They will add a cover point to the code. And they'll go 
-over the coverage reports to make sure that said cover point has been triggered during one of the
+They will add a test case in the test plan. They will add a cover point to the code. And they'll go 
+through the coverage reports to make sure that said cover point has been triggered during one of the
 simulations.
 
 They will create a few targeted vectors that trigger the problem case, and they will guide the random
-stimuli generator with constraints such that high input activity cases are more likely.
+stimuli generator with constraints that guide a test case towards such high input activity cases.
 
-Without a human explicitly identifying this problem case, not many traditional tools will this kind
+Without a human explicitly identifying this problem case, not many traditional tools will detect this kind
 of vector overflow as an issue: at best, your RTL linting tool might warn that 8 one-bit
-signals added together will require a 4 bit result. But that real warning will offen appear in a sea
+signals added together will require a 4 bit result. But that real warning will often appear in a sea
 of harmless false positives.
 
 And, of course, the problem sketched here is actually a very simply one. One that triggers a bug when
@@ -58,30 +56,135 @@ There must be a better way, and, luckily, there is.
 
 The solution is formal verification.
 
-* [Introduction](#introduction)
+# What Is Formal Verification?
 
-# Introduction
+With formal verification, instead of simulating your design and hoping for the best, you provide 
+constraints are supposed to be true or false at any point in time. And then you use a solver to
+prove that, under no circumstances, these constraints are violated. If there is a way to violate
+one or more constraints, the solver will generate a waveform that shows exactly how the error
+case can be triggered. It is then up to the designer to fix that bug, either by changing the
+design or by changing the constraints.
 
-It has been said that writing things down is often one of the best ways to force oneselves
-to structure thoughts and learnings, and to gain a deeper understanding in the processes.
+That's the elevator pitch.
 
-After having played with formal verification to prove the correctness of my small and
-very crappy MR1 RISC-V CPU, I wanted to understand what it was that made everything work.
-I started looking into the source code of the various tools that were used. There were 
-things that were immediately obvious, there were many other that were not so obvious
-at all. In the process I also learned about and experimented with more advanced forms
-of formal verification that what is available today. 
+In practice, there's quite a bit more to it. There are different ways and techniques. There are
+limitations in the tools. There are fundamental limitations as well, where from a pure 
+mathematical point of view it's simply impossible to prove design correctness because it would
+take too long, because formal proofs are an NP complete problem.
 
-The process of figuring things out was not linear at all. I often jump between completely
-unrelated projects. It's one of the fun parts of a hobby after all. But even when
-specifically looking at formal, there were dead ends where I just couldn't figure out
-what was going on, which were then picked up later after first dealing with other stuff.
+Despite this limitation, formal verfication can be extremely powerfull. And the knowledge that design
+correctness is proven with 100% certainty, instead of just assumed due the amount of random
+design vectors that have been thrown at it, is irresistible.
 
-In this blog post, I'm trying to structure what I've learned. It's mostly for my own
-benefit: some parts were revised a couple of times because things became clearer as
-I was writing it down.
+In addition to proving the correctness of a design, formal verification tools can also be used
+to come up with wave forms that take a design from initial state to a desired state, by using
+`cover` statements. This can be extremely helpful at the start of project as an alternative
+to writing a directed test bench: in stead of explicitly guiding a design under test to 
+a desired outcome, you let the formal tool figure things out by itself.
 
-But if it helps others getting a better understand as well: so much the better!
+# Open Source Formal Verification with SymbiYosys
+
+Formal verification is nothing new: commercial tools have existed for decades. But an easy to
+use open source alternative that can load a Verilog design with some constraints did not 
+exist.
+
+That was until the release of [SymbiYosys](https://symbiyosys.readthedocs.io/en/latest/). Written
+by open source All-Star Clifford Wolf, SymbiYosys is a middleware that links Verilog design which 
+contains narrow set of formal commands to a SAT solver. SymbiYosys itself is a script around Yosys.
+
+Open source SymbiYosys only offers a small set of what is available commercially, but it is still 
+a huge step forward: it covers the essential basics which can serve as a foundation on which 
+more complex flows can be built.
+
+Specically, SymbiYosys' formal verification features are restricted to proving purely boolean
+equations only, with some very limited temporal extensions, whereas full featured tools support
+a rich set of primitives such as temporal sequences and implications. 
+
+In other words, the statement only allows checking things that happen in the current cycle, not
+what happened over a sequence of clock cycles.
+
+That doesn't mean that you can't verify sequences, but you need to design additional logic to do so.
+
+# An Example that Shows the Limitations
+
+Here is a concrete example not only of how the formal `cover` statement can be used to create
+a test case with minimal effort, but also how SymbiYosys is currently limited in some of the common
+capabilities.
+
+I'm in the process of designing a block that converts CPU reads and writes on an APB bus into ULPI 
+transactions. (ULPI is a standard interface to control USB PHY chips. It's similar in nature to MII 
+interfaces for Ethernet PHYs.)
+
+To transmit a packet, the intended use case is the following:
+
+* Write all packet bytes to a transmit FIFO.
+* When done, write to a `TX_START` action bit.
+* Wait until the FIFO is completely empty, which indicates that the packet has
+  been transmitted.
+
+One could write a traditional testbench to simulate such a case, but that's pretty boring.
+
+It's much faster to use the formal `cover` statement to do this for you!
+
+The [statement](https://github.com/tomverbeure/panologic-g2/blob/28f85927199f1782b7230842710981dd5cb2e95d/spinal/src/main/scala/pano/UlpiCtrl.scala#L447-L449)
+does exactly that when written in SpinalHDL (the Verilog equivalent is very similar):
+
+```scala
+    cover(!initstate() && reset_
+                && tx_data_fifo_level_reached
+                && (ulpi_ctrl_regs.apb_regs.u_tx_data_fifo.io.pushOccupancy === 0)
+```
+
+That's it!
+
+The cover statement has 3 terms that must be satisfied to get a meaningful result:
+
+    1. Boilerplate to ensure that you don't get some false positive during reset
+    2. the transmit data FIFO much have reached a fill level of at least 10 *at some point*
+    3. the transmit data FIFO must be empty
+
+When run through SymbiYosys, this very simple 3-line statement will generate a VCD waveform 
+of ~25 clock cycles that will do every necessary to satisfy the condition inside the parenthesis
+of the cover statement. The result looks like this:
+
+![UlpiCtrl Waveforms]({{ "/assets/temporal_assertions/UlpiCtrl_waves.png" | absolute_url }})
+
+It's truly a thing of magic!
+
+I did not need to write an APB bus master. I did not have to write a for-loop to issue 20 APB write to the tx_data FIFO write
+register. Neither did I have to issue a write to the TX_START register, or write a polling loop to check that the
+FIFO was empty.
+
+None of this was necessary because the only way to satisfy the cover condition is by doing those steps anyway, so
+the formal tool had no other choice but to come up with those operations itself!
+
+But there *is* an issue with this example: the second terms of the boolean equation is not something that's part
+of the real design, but it's helper logic that was addes specifically to make this cover statement work:
+
+```scala
+    val tx_data_fifo_level_reached = RegInit(False) setWhen(ulpi_ctrl_regs.apb_regs.u_tx_data_fifo.io.pushOccupancy === 20)
+```
+
+`tx_data_fifo_level_reached` is a flip-flop that starts out at 0 and that goes 1 *and stays 1* when the tx data FIFO reaches the
+desired fill level for the first time.
+
+In this particular case, it's not a huge deal to add this statement, but nevertheless, it's a hack to work around the fact
+that `cover` only supports pure boolean equations. As soon as temporal behavior needs to be check, you need
+to improvise.
+
+And those improvisations can get ugly pretty quickly. What if you want to write a cover case where you want to check
+2 or more packets to be transmitted, using exactly the same operations that were mentioned above. Now you'll
+need to implement some counter that goes up each time a level of 20 is reached. But maybe you want to transmit
+20 bytes for the first packet and 1 byte for the second.
+
+This would be totally acceptable if there were no better solutions, but, of course, better solution do exist.
+They're just not available for open source tools.
+
+# Goal of this Post
+
+THe goal of this blog post is not 
+
+
 
 # Components of the SymbiYosys Formal Flow
 
@@ -90,8 +193,6 @@ has been the emergence of formal design verification in the form
 of [SymbiYosys](https://symbiyosys.readthedocs.io/en/latest/). It's just one of the many tools
 written by open source All-Star Clifford Wolf.
 
-At its core, SymbiYosys is a middleware that links Verilog design which contains narrow set of formal 
-commands to a SAT solver. SymbiYosys itself is a script around Yosys.
 
 Let's quickly go over the various components:
 
@@ -227,84 +328,6 @@ The [manual](http://www.clifford.at/yosys/cmd_write_smt2.html) of the `write_smt
 detailed description of the generated commands.
 
 
-# Limitations of the current formal verification features
-
-Great as they already are, compared to commercial tools, the open source version of 
-Yosys is still severly limited in terms of supported features.
-
-That's because the assume, cover, and assert property statements only accept a boolean expression,
-whereas advanced tools support SystemVerilog temporal sequences.
-
-In other words, the statement only allow checking things that happen in the current cycle, not
-what happened over a sequence of clock cycles.
-
-That doesn't mean that you can't verify sequences, but you need to design additional logic to do so.
-
-Here's a very concrete example:
-
-I recently designed a block that converts CPU reads and writes on an APB bus into ULPI transactions. (ULPI
-is a standard interface to control USB PHY chips. It's similar in nature to MII interfaces for Ethernet
-PHYs.)
-
-To transmit a packet, the intended use case is the following:
-
-* Write all packet bytes to a transmit FIFO.
-* When done, write to a TX_START action bit.
-* Wait until the FIFO is completely empty, which indicates that the packet has
-  been transmitted.
-
-One could write a traditional testbench to simulate such a case, but that's pretty boring.
-
-It's much faster to use the formal `cover` statement to do this for you!
-
-The [statement](https://github.com/tomverbeure/panologic-g2/blob/b6a174c3a6f69bd2ec3c80cf6d149dd2fedaf3ba/spinal/src/main/scala/pano/UlpiCtrl.scala#L446-L449) 
-looks like this in SpinalHDL:
-
-```scala
-    cover(!initstate() && reset_
-                && tx_data_fifo_level_reached
-                && (ulpi_ctrl_regs.apb_regs.u_tx_data_fifo.io.pushOccupancy === 0)
-```
-
-That's it!
-
-The cover statement has 4 terms:
-
-    1. Boilerplate to ensure that you don't get some false positive during reset
-    2. the transmit data FIFO much have reached a fill level of at least 20 values *at some point*
-    3. the transmit data FIFO must be empty at this time on the push side
-
-This very simple 4-line statement will generate a VCD waveform of ~45 clock cycles that will do every necessary
-to satisfy the condition inside the cover parenthesis. It's truly a thing of magic!
-
-I did not need to write an APB bus master. I did not have to write a for-loop to issue 20 APB write to the tx_data FIFO write
-register. Neither did I have to issue a write to the TX_START register, or write a polling loop to check that the
-FIFO was empty.
-
-None of this was necessary because the only way to satisfy the cover condition is by doing those steps anyway, so
-the formal tool had no other choice but to come up with those operations itself!
-
-But there *is* an issue with this example: the second terms of the boolean equation is not something that's part
-of the real design, but it's helper logic that was addes specifically to make this cover statement work:
-
-```scala
-    val tx_data_fifo_level_reached = RegInit(False) setWhen(ulpi_ctrl_regs.apb_regs.u_tx_data_fifo.io.pushOccupancy === 20)
-```
-
-`tx_data_fifo_level_reached` is a flip-flop that starts out at 0 and that goes 1 *and stays 1* when the tx data FIFO reaches the
-desired fill level for the first time.
-
-In this particular case, it's not a huge deal to add this statement, but nevertheless, it's a hack to work around the fact
-that `cover` only supports pure boolean equations. As soon as temporal behavior needs to be check, you need
-to improvise.
-
-And those improvisations can get ugly pretty quickly. What if you want to write a cover case where you want to check
-2 or more packets to be transmitted, using exactly the same operations that were mentioned above. Now you'll
-need to implement some counter that goes up each time a level of 20 is reached. But maybe you want to transmit
-20 bytes for the first packet and 1 byte for the second.
-
-This would be totally acceptable if there were no better solutions, but, of course, better solution do exist.
-They're just not available for open source tools.
 
 # SystemVerilog Temporal Assertions
 
@@ -432,4 +455,29 @@ This sequence triggers when a is immediately followed by 3 times b.
 ```
 
 
+
+* [Introduction](#introduction)
+
+# Introduction
+
+It has been said that writing things down is often one of the best ways to force oneselves
+to structure thoughts and learnings, and to gain a deeper understanding in the processes.
+
+After having played with formal verification to prove the correctness of my small and
+very crappy MR1 RISC-V CPU, I wanted to understand what it was that made everything work.
+I started looking into the source code of the various tools that were used. There were 
+things that were immediately obvious, there were many other that were not so obvious
+at all. In the process I also learned about and experimented with more advanced forms
+of formal verification that what is available today. 
+
+The process of figuring things out was not linear at all. I often jump between completely
+unrelated projects. It's one of the fun parts of a hobby after all. But even when
+specifically looking at formal, there were dead ends where I just couldn't figure out
+what was going on, which were then picked up later after first dealing with other stuff.
+
+In this blog post, I'm trying to structure what I've learned. It's mostly for my own
+benefit: some parts were revised a couple of times because things became clearer as
+I was writing it down.
+
+But if it helps others getting a better understand as well: so much the better!
 
