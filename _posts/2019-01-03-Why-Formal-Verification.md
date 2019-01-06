@@ -406,83 +406,55 @@ This sequence results in a match when the following happens:
 * after that 'b' evaluates to 1 for one *or* for two clock cycles
 * after that, 'c' evaluates to 1
 
+Here are some examples of matching waveforms:
 
-This sequence triggers when b goes high exactly 3 cycles after a. Here's a possible implementation:
+[ ![a_seq_b12_seq_C]({{ "/assets/temporal_assertions/a_seq_b_12_seq_c-waves.svg" | absolute_url }}) ]({{ "/assets/temporal_assertions/a_seq_b_12_seq_c-waves.svg" | absolute_url }})
+
+The first 2 are exactly as one would expect: 'a' followed by one or two 'b' followed by 'c'.
+
+The third one shows something important: a single sequence can result in multiple triggers! 
+It matches a case where first 'c' follows both a single 'b', and the second 'c' follows two 'b's.
+
+The fourth waveform shows that sequences can run in parallel. The first two successful ("OK!") 
+matches were initiated by the first 'a' pulse, while the third successful match was initiated
+by the second 'a' pulse. However, the second 'a' pulse started while the first sequence was
+still evaluating.
+
+# A Working (but Ultimately Useless) Implementation
+
+Let's cook up some RTL code that matches this kind of sequence.
 
 ```Verilog
-    assign a_vec[3:0] = { a_dly[2:0], a };
+    assign a_vec[2:0] = { a_dly[1:0], a };
     always @(posedge clk) begin
         a_dly[2:0] <= a_vec[2:0];
     end
 
-    assign trigger = a_vec[3] && b;
-```
-Easy!
-
-A slightly more complicated sequence triggers when b goes high between 3 and 5
-cycles after a:
-
-```Verilog
-sequence b_after_a
-    a ##[3:5] b
-endsequence
-```
-And the implementation:
-
-```Verilog
-    assign a_vec[5:0] = { a_dly[4:0], a };
+    assign b_vec[1:0] = { b_dly[0], b };
     always @(posedge clk) begin
-        a_dly[4:0] <= a_vec[4:0];
+        b_dly[1:0] <= b_vec[1:0];
     end
 
-    assign trigger = |a_vec[5:3] && b;
-```
+    assign match_seq_a_b = (a[1] && b[0]) || (a[2] && |b[1:0]);
 
-How about repetitions?
-
-```Verilog
-sequence b_after_a
-    a ##1 b[*3]
-endsequence
-```
-
-This sequence triggers when a is immediately followed by 3 times b.
-
-```Verilog
-    assign a_vec[3:0] = { a_dly[2:0], a };
-    assign b_vec[2:0] = { b_dly[1:0], b };
-    always @(posedge clk) begin
-        a_dly[3:0] <= a_vec[3:0];
-        b_dly[2:0] <= b_vec[2:0];
+    always @*(posedge clk) begin
+        match_seq_a_b_dly <= match_seq_a_b;
     end
 
-    assign trigger = a_vec[3] && (&b_vec[2:0]);
+    assign match_seq_ab_c <= match_seq_a_b_dly && c;
 ```
 
+I haven't tested this, but it should probably work! I'm using delay lines and detect individual
+cases. And this works great because with a delay line, I can have events and detect matches in parallel.
 
+The problem is: this kind of solution is limited to very simply cases only. The main issue is
+that SystemVerilog sequences can be nested and they can be infinite. 
 
-* [Introduction](#introduction)
+You can do this: `seq_a ## seq_b` or `seq_a[*1:5] ## seq_b`.
 
-# Introduction
+You can also do this: `seq_a ##[3:$] seq_b`.
 
-It has been said that writing things down is often one of the best ways to force oneselves
-to structure thoughts and learnings, and to gain a deeper understanding in the processes.
+Detecting infinite length sequences by using delay lines is just not very practical.
 
-After having played with formal verification to prove the correctness of my small and
-very crappy MR1 RISC-V CPU, I wanted to understand what it was that made everything work.
-I started looking into the source code of the various tools that were used. There were
-things that were immediately obvious, there were many other that were not so obvious
-at all. In the process I also learned about and experimented with more advanced forms
-of formal verification that what is available today.
-
-The process of figuring things out was not linear at all. I often jump between completely
-unrelated projects. It's one of the fun parts of a hobby after all. But even when
-specifically looking at formal, there were dead ends where I just couldn't figure out
-what was going on, which were then picked up later after first dealing with other stuff.
-
-In this blog post, I'm trying to structure what I've learned. It's mostly for my own
-benefit: some parts were revised a couple of times because things became clearer as
-I was writing it down.
-
-But if it helps others getting a better understand as well: so much the better!
+# Finite State Machines to the Rescue
 
