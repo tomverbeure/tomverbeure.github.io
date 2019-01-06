@@ -450,11 +450,27 @@ cases. And this works great because with a delay line, I can have events and det
 The problem is: this kind of solution is limited to very simply cases only. The main issue is
 that SystemVerilog sequences can be nested and they can be infinite. 
 
-You can do this: `seq_a ## seq_b` or `seq_a[*1:5] ## seq_b`.
+You can do this: `seq_a ## seq_b` or `seq_a[*1:5] ## seq_b`, which would get complicated
+real quick.
 
 You can also do this: `seq_a ##[3:$] seq_b`.
 
 Detecting infinite length sequences by using delay lines is just not very practical.
 
 # Finite State Machines to the Rescue
+
+Let's quickly forget the previous solution and move on to what was really obvious from the start:
+we have something that progresses from one state to the next based on some external condition.
+These kind of sequences these kind of state machine just have to be done with some kind of FSM.
+
+The first quick sketch on our napkin looks like this:
+
+[ ![basic FSM]({{ "/assets/temporal_assertions/a_seq_b_12_seq_c-Basic_FSM.svg" | absolute_url }}) ]({{ "/assets/temporal_assertions/a_seq_b_12_seq_c-Basic_FSM.svg" | absolute_url }})
+
+'a', one or two 'b's, and then a 'c'. Simple.
+
+But the traditional FSM that we know and love only has one state at a time. And we've learned
+earlier that a single 'a' can result in multiple 'c's. And we also know that multiple sequences
+can be evaluated in parallel.
+
 
