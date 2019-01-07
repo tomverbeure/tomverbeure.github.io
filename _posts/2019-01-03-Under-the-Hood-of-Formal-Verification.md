@@ -25,38 +25,40 @@ categories: RTL
 
 # Why Formal Verification?
 
-Design verification has always been much more important for digital hardware than for software.
+*(If you're reading this blog post, chances are high that you can just skip this section...)*
 
-Software has a very linear behavior where one instruction gets executed after the other and
-behavior is purely data depending: given the same input, you should get the same output. Things
+Design verification has always been more important and harder for digital hardware than for software.
+
+Software has a very linear progression where one instruction gets executed after the other and
+behavior is purely data dependent: given the same input, you should get the same output. Things
 get a bit more difficult when multiple threads are involved, but even there the amount of things
 going on in parallel can be counted on one hand.
 
-Meanwhile, in digital hardware land, almost everything happens in parallel. Thousands or millions
-of flip flops are toggling at the same time, and often interacting with the same limited resource:
+Meanwhile in digital hardware land, almost everything happens in parallel. Thousands or millions
+of flip flops are toggling at the same time and often interacting with the same limited resource:
 arbiters can only serve one request at a time, RAMs typically have at most 2 read and/or write
 ports etc.
 
 So not only do you have the data dependent behavior of software, but you also have an extremely
 strong sensitivity to timing. A bus arbiter that grants access an external DRAM might have 8 inputs,
 and your simulation might stress cases where up to 7 of those inputs are requesting access to memory
-during the same clock cycle and things are working great. But, wouldn't you know it, in that extremely
+during the same clock cycle and things are working great. But in that extremely
 rare case where 8 inputs are active at the same cycle, a bug is triggered, and your design fails.
 
 In a production environment, that situation might happens about once every two days, even if the arbiter
 is running at 1GHz. In other words: it's something that will only happen once every 172E12 clock
 cycles!
 
-The reason of this bug might be a vector that countains the number of active requestors at any point
+The reason of this bug might be a vector that contains the number of active requestors at any point
 in time which was sized with 3 bits, good for 0 to 7 concurrent active agents, instead of 4 bits. One
 of those dreaded off-by-one bugs...
 
-Good verification engineers are worth their weight in gold: they will identify a case like this up front.
-They will add a test case in the test plan. They will add a cover point to the code. And they'll go
+Competent verification engineers are worth their weight in gold: they will identify a case like this up front.
+They will add a test case in the test plan. They will add a cover point in the code. And they'll go
 through the coverage reports to make sure that said cover point has been triggered during one of the
 simulations.
 
-They will create a few targeted vectors that trigger the problem case, and they will guide the random
+If necessary, they will create a few targeted vectors that trigger the problem case, and they will guide the random
 stimuli generator with constraints that guide a test case towards such high input activity cases.
 
 Without a human explicitly identifying this problem case, not many traditional tools will detect this kind
@@ -77,8 +79,8 @@ The solution is formal verification.
 # What Is Formal Verification?
 
 With formal verification, instead of simulating your design and hoping for the best, you provide
-constraints are supposed to be true or false at any point in time. And then you use a solver to
-prove that, under no circumstances, these constraints are violated. If there is a way to violate
+constraints that are supposed to be true or false at any point in time. And you use a solver to
+prove that, under no circumstances, these constraints are ever violated. If there is a way to violate
 one or more constraints, the solver will generate a waveform that shows exactly how the error
 case can be triggered. It is then up to the designer to fix that bug, either by changing the
 design or by changing the constraints.
@@ -88,9 +90,9 @@ That's the elevator pitch.
 In practice, there's quite a bit more to it. There are different ways and techniques. There are
 limitations in the tools. There are fundamental limitations as well, where from a pure
 mathematical point of view it's simply impossible to prove design correctness because it would
-take too long, because formal proofs are an NP complete problem.
+take too long. Formal proofs are an NP complete problem after all.
 
-Despite this limitation, formal verfication can be extremely powerfull. And the knowledge that design
+Despite this limitation, formal verfication can be extremely powerfull. The knowledge that design
 correctness is proven with 100% certainty, instead of just assumed due the amount of random
 design vectors that have been thrown at it, is irresistible.
 
@@ -107,29 +109,31 @@ use open source alternative that can load a Verilog design with some constraints
 exist.
 
 That was until the release of [SymbiYosys](https://symbiyosys.readthedocs.io/en/latest/). Written
-by open source All-Star Clifford Wolf, SymbiYosys is links your Verilog design which formal commands
-to a SAT solver. SymbiYosys itself is a script around [Yosys](http://www.clifford.at/yosys/).
+by open source All-Star Clifford Wolf, SymbiYosys links your Verilog design which formal commands
+to a SAT solver. SymbiYosys itself is a script around [Yosys](http://www.clifford.at/yosys/), 
+the widely used open source logic synthesis tool.
 
 Open source SymbiYosys only offers a small set of what is available commercially, but it is still
 a enormous step forward: it covers the essential basics which can serve as a foundation on which
 more complex flows can be built.
 
 Specifically, SymbiYosys' formal verification features are restricted to proving purely boolean
-equations only, with some very limited temporal extensions, whereas full featured tools support
-a rich set of primitives such as temporal sequences and implications.
+equations only (with some limited temporal additions such as `$past` and `$stable`) whereas full 
+featured tools support a rich set of primitives such as temporal sequences and implications.
 
-In other words, the statement only allows checking things that happen in the current cycle, not
+In other words, the formal statements only allow checking things that happen in the current cycle, not
 what happened over a sequence of clock cycles.
 
 That doesn't mean that you can't verify sequences, but you need to design additional logic to do so.
 
 # An Example with a Workaround
 
-Here is a concrete example not only of how the formal `cover` statement can be used to create
-a test case with minimal effort, but also how SymbiYosys is currently limited in some of the common
+Here is a real example not only of how the formal `cover` statement can be used to create
+a test case with minimal effort, but also how SymbiYosys is currently limited in terms of 
 capabilities and how to work around it:
 
-I'm in the process of designing a block that converts CPU reads and writes on an APB bus into ULPI
+I'm in the process of designing [`UlpiCtrl`](https://github.com/tomverbeure/panologic-g2/blob/ulpi/spinal/src/main/scala/pano/UlpiCtrl.scala), 
+a block that converts CPU reads and writes on an APB bus into ULPI
 transactions. (ULPI is a standard interface to control USB PHY chips. It's similar in nature to MII
 interfaces for Ethernet PHYs.)
 
@@ -141,7 +145,7 @@ To transmit a packet, the intended use case is the following:
   been transmitted.
 
 One could write a traditional testbench to simulate such a case, but that's pretty boring.
-It's much faster to use the formal `cover` statement to do this for you!
+It's much faster to use the formal `cover` statement to do this for you.
 
 This [statement](https://github.com/tomverbeure/panologic-g2/blob/28f85927199f1782b7230842710981dd5cb2e95d/spinal/src/main/scala/pano/UlpiCtrl.scala#L447-L449),
 written in SpinalHDL, does exactly that:
@@ -152,8 +156,6 @@ written in SpinalHDL, does exactly that:
                 && (ulpi_ctrl_regs.apb_regs.u_tx_data_fifo.io.pushOccupancy === 0)
 ```
 
-That's it!
-
 The cover statement has 3 terms that must be satisfied to get a meaningful result:
 
 1.  Boilerplate to ensure that you don't get some false positive during reset:
@@ -161,11 +163,11 @@ The cover statement has 3 terms that must be satisfied to get a meaningful resul
     cover(!initstate() && reset_
 ```
 
-1. the transmit data FIFO much have reached a fill level of at least 10 *at some point*:
+1. the transmit data FIFO much have reached a fill level of at least 10 *at some point* in the past:
 ```
                 && tx_data_fifo_level_reached
 ```
-1. the transmit data FIFO must be empty
+1. the transmit data FIFO must currently be empty
 ```
                 && (ulpi_ctrl_regs.apb_regs.u_tx_data_fifo.io.pushOccupancy === 0)
 ```
@@ -178,21 +180,21 @@ of the cover statement. The result looks like this (click to enlarge):
 
 It's truly a thing of magic!
 
-There are 10 TX DATA write operations, there's 1 TX START write operation, and the case ends when the
-FIFO reached a level of 0.
+There are 10 TX DATA write operations, there's 1 TX START write operation, and the waveform ends when the
+FIFO reaches a level of 0.
 
 One can see how the write to TX START happened in the middle of a sequence of TX DATA writes instead of
-at the very end. That was certainly not the intention! But we never constrained the design this way either.
+at the very end. That was certainly not the intention, but we never constrained the design to avoid this either.
 
 The most important point is that I did not need to write an APB bus master.  I did not have to write a
-for-loop to issue 10 APB write to the tx_data FIFO write register. Neither did I have to issue a write to
+for-loop to issue 10 APB writes to the tx_data FIFO write register. Neither did I have to issue a write to
 the TX_START register, or write a polling loop to check that the FIFO was empty.
 
-None of this was necessary because the only way to satisfy the cover condition is by doing those steps anyway, so
-the formal tool had no other choice but to come up with those operations itself!
+None of this was necessary because the only way to satisfy the cover condition above is by doing those steps anyway. 
+The formal tool had no other choice but to come up with those operations itself!
 
 But there *is* a minor issue with this example: the second term of the boolean equation is not something that's part
-of the real design: it's helper logic that was added specifically to make this cover statement work:
+of the real design. It is helper logic that was added specifically to make this cover statement work:
 
 ```scala
     val tx_data_fifo_level_reached = RegInit(False)
@@ -218,8 +220,8 @@ They're just not available for open source tools.
 
 # Components of the SymbiYosys Formal Flow
 
-Before diving deep into the missing advanced features, let's first have a quick look at what makes SymbiYosys
-tick, and check out its different components:
+Before diving deep into the missing features, let's first have a quick look at what makes SymbiYosys
+tick and check out its different components:
 
 * SAT solver
 
@@ -229,7 +231,7 @@ tick, and check out its different components:
     can contain state elements that can be assigned new values that become active the next cycle.
     These map directly to flip-flops.
 
-    The SAT solver can prove that, all while observing the constraints of the design, a particlar
+    All while observing the constraints of the design, the SAT solver can prove that a particlar
     rule will always be satisfied, or it can figure out which inputs need to be applied to a boolean network
     to make a particular equation true.
 
@@ -242,8 +244,9 @@ tick, and check out its different components:
     frontends to read in new designs (Verilog, blif, json, Synopsys liberty, ...) that ultimately
     compile the design to an RTLIL (RTL Intermediate Language).
 
-    It has a ton of transformational passes that convert one RTLIL design into another. These are passes are
-    optional and are selected based on what's needed: when synthesizing to an FPGA, one might use a pass
+    It has a ton of transformational passes that convert one RTLIL design representation into another. 
+    These passes are optional and are selected based on what's needed: when synthesizing to an FPGA, 
+    one might use a pass
     that specifically targets LUTs, with a few advanced optimization passes thrown in as well. But for
     other uses, such as formal verification, one might avoid logic optimization completely.
 
@@ -252,7 +255,7 @@ tick, and check out its different components:
 
     Yosys is under very active development. New optimization passes are being added all the time,
     technology libraries are being created or improved. Bugs are being fixed in frontends, error
-    message become more descriptive.
+    message become more descriptive, etc.
 
 * SymbiYosys
 
@@ -334,8 +337,6 @@ stat
 write_smt2 -wires design_smt2.smt2
 ```
 
-It's not exactly clear why there are 2 steps instead of having just 1 script, but it doesn't really matter.
-
 The [SMT2 language specification](http://smtlib.cs.uiowa.edu/papers/smt-lib-reference-v2.6-r2017-07-18.pdf)
 is a 45 page document with tons of different commands, but the file that's generated by SymbiYosys uses exactly
 3 of those: `declare-sort`,`declare-fun` and `define-fun`.
@@ -346,8 +347,8 @@ that generating an SMT2 file is a pretty lightweight operation: the original Ver
 into a limited set of boolean operations which are then easily converted to some SMT2 equivalent. 
 
 
-The [manual](http://www.clifford.at/yosys/cmd_write_smt2.html) of the `write_smt2` command has a
-detailed description of the structure of the generated SMT2 file.
+For those who are interested, the [manual](http://www.clifford.at/yosys/cmd_write_smt2.html) of the `write_smt2` 
+command has a detailed description of the structure of the generated SMT2 file.
 
 When looking at formal specific features in the Yosys Verilog frontend, the list is very short indeed:
 some [Verilog lexer definitions](https://github.com/YosysHQ/yosys/blob/f589ce86bac3169281a077248af328f6758ff0eb/frontends/verilog/verilog_lexer.l#L192-L196),
