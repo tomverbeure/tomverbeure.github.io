@@ -5,6 +5,24 @@ date:   2019-01-03 17:00:00 -0700
 categories: RTL
 ---
 
+# Table of Contents
+
+* [Why Formal Verification?](#why-formal-verification)
+* [What Is Formal Verification?](#what-is-formal-verification)
+* [Open Source Formal Verification with SymbiYosys](#open-source-formal-verification-with-symbiyosys)
+* [An Example with a Workaround](#an-example-with-a-workaround)
+* [Components of the SymbiYosys Formal Flow](#components-of-the-symbiyosys-formal-flow)
+* [Synthesizing a Design with Formal Verification Statements](#synthesizing-a-design-with-formal-verification-statements)
+* [SystemVerilog Assertions](#systemverilog-assertions)
+* [A Simple but Non-Trivial Sequence](#a-simple-but-non-trivial-sequence)
+* [A Working (but Ultimately Useless) Implementation](#a-working-but-ultimately-useless-implementation)
+* [Finite State Machines to the Rescue](#finite-state-machines-to-the-rescue)
+* [From Non-Deterministic to Deterministic FSM](#from-non-deterministic-to-deterministic-fsm)
+* [Handling Parallel Sequence Evaluation](#handling-parallel-sequence-evaluation)
+* [Intermediate Conclusion](#intermediate-conclusion)
+* [Full Featured Formal Support in Yosys Already Exists](#full-featured-formal-support-in-yosys-already-exists)
+* [Call to Action](#call-to-action)
+
 # Why Formal Verification?
 
 Design verification has always been much more important for digital hardware than for software.
@@ -105,11 +123,11 @@ what happened over a sequence of clock cycles.
 
 That doesn't mean that you can't verify sequences, but you need to design additional logic to do so.
 
-# An Example that Shows the Limitations
+# An Example with a Workaround
 
 Here is a concrete example not only of how the formal `cover` statement can be used to create
 a test case with minimal effort, but also how SymbiYosys is currently limited in some of the common
-capabilities:
+capabilities and how to work around it:
 
 I'm in the process of designing a block that converts CPU reads and writes on an APB bus into ULPI
 transactions. (ULPI is a standard interface to control USB PHY chips. It's similar in nature to MII
@@ -533,7 +551,7 @@ are no overlapping outgoing state transitions.
 
 Multiple state problem solved!
 
-# What about Parallel Sequence Evaluation?
+# Handling Parallel Sequence Evaluation
 
 While we have now solved the case of multiple matches per sequence, there is still the issue of
 running multiple sequences concurrently.
@@ -551,7 +569,128 @@ that to a deterministic FSM:
 
 [ ![Concurrent Sequences DFA]({{ "/assets/temporal_assertions/a_seq_b_12_seq_c-Concurrent_Sequences_DFA.png" | absolute_url }}) ]({{ "/assets/temporal_assertions/a_seq_b_12_seq_c-Concurrent_Sequences_DFA.png" | absolute_url }})
 
-The non-deterministic FSM had 4 states. The deterministic version has 16 states. That's probably
-not a conincidence.
+The number of deterministic states has gone up from 5 to 16. It is well known that NFA to DFA conversion
+can potentially result in a serious explosion of states.
 
+# Intermediate Conclusion
+
+We have a conceptual solution! With a bit of graph manipulation we can convert temporal sequences 
+into a regular FSM that can be synthesized to any kind of logic that we want. 
+
+Not only SMT2, but even gates: for problems that are currently intractable for formal verification 
+(because it'd take way too long to prove), we could synthesize the design and the assertions to an 
+FPGA and continuously monitor if the assertions are true at all times, even after days of running.
+
+There is no partical implementation, of course, but that's a matter of somebody just doing the work.
+
+The question is how?
+
+It turns out that this is harder for Verilog than for a language like SpinalHDL or MiGen.
+
+For the SpinalHDL, one could develop a framework, similar but not identical to SystemVerilog, that
+can be used to build up sequences and other features. Once in place, those sequences could immediately
+be converted into an FSM, be made non-deterministic, and output as Verilog with the boolean-only
+assertion, assume and cover statements that are currently already supported by SymbiYosys and SpinalHDL.
+
+For Verilog, one would have to expand the current Verilog parser to support the SystemVerilog syntax.
+And then, in Yosys, implement all the FSM handling. 
+
+Or would you?
+
+Actually, no! The second part of the work has already been done!
+
+# Full Featured Formal Support in Yosys Already Exists
+
+Until now, I've mentioned "open source" formal verification support in Yosys. What I forgot to say
+was that Yosys also supports the closed source SystemVerilog parser and elaboration library from 
+a company called Verific.
+
+You need to pay for a license for this library (price unknown, but probably not cheap), but the
+Yosys code that uses the library is just as free and open source as all the rest. It's just
+another Yosys frontend that can be found [here](https://github.com/YosysHQ/yosys/tree/master/frontends/verific).
+
+The code is split into just 2 main files. 
+
+[verific.cc](https://github.com/YosysHQ/yosys/blob/master/frontends/verific/verific.cc)
+is the main driver that converts an elaborated SystemVerilog design into RTLIL just like all the 
+other frontends. It's a lot of code, but it's not particularly complex.
+
+[verificsva.cc](https://github.com/YosysHQ/yosys/blob/master/frontends/verific/verificsva.cc)
+handles everything that's specific to SystemVerilog assertions. And it contains exaclty
+what, by now, you can expect it to contain: sequence (possible nested), it will build one grand
+non-deterministic FSM. It will convert that FSM into a deterministic version. And it will 
+connect the match signal, now a boolean equation that is an output of the FSM, to an assert, 
+assume or cover cell in the RTLIL just like it did with boolean equations for the Verilog
+frontend.
+
+In the previous section I mentioned that we have a conceptual solution but no practical
+implementation. Here we have a full practical implementation, and it's quite a bit more
+complex than our conceptual example!
+
+A good example is how the Verific version has state machines with 2 types of transitions from
+one state to the next: 'edges' are only taken one a clock edge, just like we expect from a
+traditional FSM, but 'links' are transitions when a combinatorial equation evaluates to
+true. As a result, the initial FSM can travel through many states in one clock cycle!
+
+This kind of representation make it possible to implement SystemVerilog sequences in an easier way, 
+but it requires an additional intermediate step that normalizes the NFA-with-links-and-edges
+to an NFA-with-edges-only, before the latter is then fed into the NFA to DFA algorithm.
+
+Here's a non-exhaustive list with a bunch of interesting sections of the code that might help
+aspiring codes with understand what's happening (a process that's still ongoing for me!)
+
+* [import()](https://github.com/YosysHQ/yosys/blob/a2c51d50fb5a94967a204913404b71c7af0b59e2/frontends/verific/verificsva.cc#L1658)
+
+    The main entry point that starts the processing of a SystemVerilog sequence
+
+    It distinguishes between [regular boolean equation assertion](https://github.com/YosysHQ/yosys/blob/a2c51d50fb5a94967a204913404b71c7af0b59e2/frontends/verific/verificsva.cc#L1678-L1684)
+    processing (similar to the open source Verilog Yosys frontend) and the advanced temporal
+    properties.
+
+* [parse_sequence()](https://github.com/YosysHQ/yosys/blob/a2c51d50fb5a94967a204913404b71c7af0b59e2/frontends/verific/verificsva.cc#L1232)
+
+    This is the most interesting part, where various SVA sequence operators are converted
+    into FSM states.
+
+    For example, the code [here](https://github.com/YosysHQ/yosys/blob/a2c51d50fb5a94967a204913404b71c7af0b59e2/frontends/verific/verificsva.cc#L1267-L13180)
+    handles the regular `a ##[2:3] b` type sequence concatenation operator.
+
+    You can see [here](https://github.com/YosysHQ/yosys/blob/a2c51d50fb5a94967a204913404b71c7af0b59e2/frontends/verific/verificsva.cc#L1291-L1294)
+    how it simply adds an additional FSM node and edge for the minimum request number of 
+    wait cycles, which is then followed by [here](https://github.com/YosysHQ/yosys/blob/a2c51d50fb5a94967a204913404b71c7af0b59e2/frontends/verific/verificsva.cc#L1303-L1309)
+    by the optional additional wait cycles. Those new FSM nodes are also created, but
+    instead of just an edge between them, the code adds an edge *and* a link. In other words:
+    those FSM nodes can be skipped or not, a perfect example of a non-deterministic FSM.
+
+* [node_to_unode()](https://github.com/YosysHQ/yosys/blob/a2c51d50fb5a94967a204913404b71c7af0b59e2/frontends/verific/verificsva.cc#L392)
+
+    Converts the NFA with edges and links to an NFA with just links
+
+* [create_dnode()](https://github.com/YosysHQ/yosys/blob/a2c51d50fb5a94967a204913404b71c7af0b59e2/frontends/verific/verificsva.cc#L449)
+
+    Converts the NFA to a DFA.
+
+If one were to implement an open source Verilog parser that supports sequences, one would 'only'
+have to implement the parser and AST construction code. The whole FSM handling can be a
+relatively straightforward adaptation of the code here.
+
+# Call to Action
+
+Almost all components to create a kick-ass open source formal verification tool are there.
+What's missing is a parser that process SystemVerilog sequences.
+
+Adding complete SystemVerilog support to the existing open source Verilog parser is a huge task 
+but it's not necessary to immediately support all SystemVerilog features (even the Verific frontend 
+still have a number of missing pieces). Just like Verilog parser has seen gradually addition of
+regular SystemVerilog features (`logic`, `interface`, and, yes, `assert`, `cover` and `assume`)
+sequence support could be added in stages as well.
+
+Support for SpinalHDL, MiGen and other Verilog generating frameworks could be added as well.
+They would require a rewrite of the FSM handling code of `verificsva.cc`, but it's not 
+overly complex. 
+
+The first language that implements support for sequences will have a major advantage over the rest.
+
+The possibilities are very exciting. I want able to contribute to this area in the future and 
+hope that others want to do so as well.
 
