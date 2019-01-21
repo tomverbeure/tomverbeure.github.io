@@ -19,17 +19,24 @@ This JTAG programmer is "USB certired". How very reassuring!
 
 # Find the JTAG Connector on your G1 or G2
 
-Not very complicated: I've done that for you in the picture below. Left is the Pano Logic G1. Right
-is the G2.
+Not very complicated: I've done that for you in the pictures below. 
+
+On the G1, there are 2 identical looking 6-pin connectors. The one next
+to the large capacitors and the audio connectors is for SPI flash programming.
+The JTAG connector is located right next to the board-to-board connector:
+
+![G1 JTAG Adapter]({{ "/assets/panologic-g2/jtag/2-G1 JTAG Adapter.JPG" | absolute_url }})
+
+It's easier for the G2: there is only one connector with 6 pins:
 
 ![JTAG Connector Location for G1 and G2]({{ "/assets/panologic-g2/jtag/3-G1 vs G2.JPG" | absolute_url }})
 
-The G1 has conventional-sized connector pins. The G2 has really tiny ones. Both connectors have 6 pins.
+The G1 has conventional-sized connector pins. The G2 has really tiny ones. 
 
 # JTAG Pin Order and JTAG Adapter
 
 The order of the pins doesn't seem to follow some Xilinx standard order, but it is 
-the same for the G1 and G2. The orientation is the same for the G1 and G2 as well.
+the same for the G1 and G2. 
 
 1. VREF
 2. TDI
@@ -38,11 +45,10 @@ the same for the G1 and G2. The orientation is the same for the G1 and G2 as wel
 5. TCK
 6. GND
 
-The GND pin is the one located closest to the FPGA.
+For the G1, the GND pin is located closest to the FPGA. For the G2, it's the opposite: 
+the GND pin is on the farthest away from the FPGA.
 
-![G1 JTAG Adapter]({{ "/assets/panologic-g2/jtag/2-G1 JTAG Adapter.JPG" | absolute_url }})
-
-Note the little adapter that I created for the G1. The JTAG programmer comes with wires that can
+I created a litter adaptor for the G1. The JTAG programmer comes with wires that can
 be plugged in directly into the G1 pins. However, to make the board work, you also need to 
 plug in the auxiliary board, which is located right above the JTAG connector. It works, but
 it's a bit cramped.
