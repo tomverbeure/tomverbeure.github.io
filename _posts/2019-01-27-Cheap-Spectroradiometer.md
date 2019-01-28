@@ -1,12 +1,25 @@
 ---
 layout: post
-title: AS7265X Bringup
+title: Cheap Spectroradiometer
 date:   2019-01-27 18:00:00 -0700
 categories: 
 ---
 
 * Install [I2C Star](https://github.com/daniel-thompson/i2c-star)
+
+...
+
 * Install i2ctools
+
+    This contains a bunch of small helper tools that make it possible to
+    access I2C devices that are connected to I2C master on your
+    Linux system.
+    
+
+```
+sudo apt-get install i2c-tools
+```
+
 * Build quick prototype
 * Test I2C Star operational
 
