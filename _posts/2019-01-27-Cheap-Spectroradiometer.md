@@ -103,4 +103,17 @@ SUCCESS!
 ```sudo apt-get install libi2c-dev```
 
 
+References:
+* https://aty.sdsu.edu/explain/optics/rendering.html
+* https://sensing.konicaminolta.asia/product/spectroradiometer-cs-2000/
+* https://en.wikipedia.org/wiki/CIE_1931_color_space
+* https://medium.com/hipster-color-science/a-beginners-guide-to-colorimetry-401f1830b65a
+* http://www.cvrl.org/
 
+    Concrete data of color matching functions etc.
+
+* https://www.fourmilab.ch/documents/specrend/
+
+    Color rendering of Spectra
+
+    Includes C program to convert from a spectrum to XYZ coordinate.
