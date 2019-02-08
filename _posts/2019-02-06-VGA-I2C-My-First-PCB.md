@@ -29,6 +29,8 @@ information about contrast, brightness, and a whole bunch of other parameters.
 
 But nothing prevents us from adding an I2C slave of our own choice: a GPIO expander.
 
+The current Pano Man implementation uses RISC-V CPU that does nothing more than initialize the audio CODEC, after which it ingloriously goes into an endless `while(1) {}` loop. When using an I2C GPIO expander, it bitbangs I2C transactions on the bus to fetch the button status and forwards it the correct PacMan hardware registers. A much better use of CPU performance that would once have been sufficient to service multi-user mainframes!
+
 # The Plan
 
 I've always been impressed by hobbyists like [Greg Davill](https://twitter.com/GregDavill) who are able to crank out
