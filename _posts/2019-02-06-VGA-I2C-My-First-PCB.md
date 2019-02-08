@@ -154,7 +154,9 @@ The PCB isn't perfect:
 
 * I forgot to add mounting holes
 * It's a bit more practical and space efficient to have the VGA connectors side by side instead of on opposite ends of the PCB
-* the LEDs aren't very bright. I need to look into that... maybe.
+* the LEDs aren't programmed correctly just yet.
+* There are 14 pullup resistors, one for each GPIO input. Those are not redundant: the GPIO expander chip has built-in pullups that can be enabled by programming a register. I can leave those empty, which will cut down on assembly time for newer boards.
+* No attention was paid *at all* to impedance matching for the VGA wires. But I haven't seen any adverse impact on the image quality: the frequency of the signal is probably too low to matter.
 
 But everything is functional.
 
