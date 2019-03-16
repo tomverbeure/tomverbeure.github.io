@@ -124,3 +124,9 @@ If you don't know what values need to be used for a particular SpinalHDL release
 [VexRiscv](https://github.com/spinalHDL/VexRiscv) release. That one is almost always in sync with the latest SpinalHDL
 release.
 
+# VexRiscv
+
+Run DhystoneBench for multiple CPU cores:
+```
+sbt "testOnly vexriscv.DhrystoneBench"
+```
