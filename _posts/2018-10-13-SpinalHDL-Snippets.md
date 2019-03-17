@@ -130,3 +130,17 @@ Run DhystoneBench for multiple CPU cores:
 ```
 sbt "testOnly vexriscv.DhrystoneBench"
 ```
+
+# To Delete Absolutely Everything
+
+`sbt` has various places where it stores cached content. Sometimes, when, for example upgrading to a new version
+of SpinalHDL, things don't work well.
+
+The best way to proceed, then, is to remove all old Scala traces from your system.
+
+Executed from within your project, this should do it:
+```
+sbt clean
+rm -fr ~/.ivy2
+rm -fr ~/.sbt
+```
