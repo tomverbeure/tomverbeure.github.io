@@ -194,12 +194,50 @@ So I go into a little more details.
 
 * Install [PiAware flight tracking software](https://flightaware.com/adsb/piaware/install)
 
+    PiAware is a package by FlightAware that takes care of everything to connect to the SDR dongle, decode ADS-B and MLAT information,
+    and make the data available in a format to send it to ADS-B data aggregators (including FlightAware, of course.)
+
+    After installation of PiAware and rebooting, your Raspberry Pi will be transmitting ADS-B data to the FlightAware
+    servers, but not yet to ADS-B Exchange.
+
     * Open a terminal
-    * <Follow steps on page until and including reboot>
-* Using the scripts
-    * https://www.adsbexchange.com/how-to-feed/
-    * Follow instructions on the screen 
-    * When everything is done, all should be working
-* Checking that everything is ok
-    * Go to http://www.adsbexchange.com/myip
+    * Follow the [installation steps](https://flightaware.com/adsb/piaware/install)
+
+```
+wget http://flightaware.com/adsb/piaware/files/packages/pool/piaware/p/piaware-support/piaware-repository_3.7.1_all.deb
+sudo dpkg -i piaware-repository_3.7.1_all.deb
+sudo apt-get update
+sudo apt-get install piaware
+sudo apt-get install dump1090-fa
+sudo reboot
+```
+
+* Install the ADS-B Scripts
+
+    Execute the commands below.
+    When running the `setup.sh` script, you will be asked the GPS coordinates of your ADS-B receiver. It is important
+    that those coordinates are filled in accurately because they will be used during MLAT triangulation!
+
+```
+sudo apt update
+sudo apt install git socat
+git clone https://github.com/adsbxchange/adsb-exchange.git
+cd adsb-exchange
+chmod +x setup.sh
+sudo ./setup.sh
+```
+
+* Check that everything is working properly
+
+    Go to [`http://www.adsbexchange.com/myip`](http://www.adsbexchange.com/myip).
+
+    If all went well, you should see something like this:
+
+    ![Feed Status]({{ "/assets/adsb/feed_status.png" | absolute_url }})
+
+    Data from 18 airplanes was picked up at the time of taking the screenshot.
+
+    ADS-B data is being sent to port 30005 of the ADS-B Exchange servers, and MLAT data is sent to power 31090.
+
+
 
