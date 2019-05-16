@@ -5,7 +5,10 @@ date:   2019-05-11 10:00:00 -0700
 categories:
 ---
 
-* [Introduction](#Introduction)
+* [Introduction](#introduction)
+* [Tracking Local Airplanes](#tracking-local-airplanes)
+* [The Hardware](#the-hardware)
+* [Software Installation](#software-installation)
 
 # Introduction
 
@@ -17,22 +20,31 @@ delays etc.
 
 Have you ever wondered where their data comes from?
 
-Most of it comes from [ADS-B](https://en.wikipedia.org/wiki/Automatic_dependent_surveillance_%E2%80%93_broadcast): a system
-whereby (almost) each airplane in the sky broadcasts information about its location, altitude, speed, call sign, airplane type and
+Most of it comes from [ADS-B](https://en.wikipedia.org/wiki/Automatic_dependent_surveillance_%E2%80%93_broadcast) 
+and [MLAT](https://flightaware.com/adsb/mlat/).
+
+ADS-B is a system whereby airplanes broadcast information about their location, altitude, speed, call sign, airplane type and
 tons of other pieces of information.
 
-The cool thing is that this is all broadcast in the open, unencrypted, and the data can be received and decoded with a
-trivially simple and cheap SDR setup.
+This broadcast is in the open, unencrypted, and the data can be received and decoded with a trivially simple and cheap SDR setup.
+
+Per [FAA mandate](https://www.faa.gov/nextgen/equipadsb/), almost all airplanes are required to have an ADS-B transmitter by 
+Jan 1, 2020. However, commercial airliners have been outfitted with ADS-B equipment for years.
+
+MLAT is a fallback for those planes that don't have ADS-B: they still have the traditional transponder that broadcasts identification 
+and altitude data. This transponder information can also be received by the same SDR setup, and tagged with a timestamp. When this data 
+is received by multiple stations, the location of the plane can still be determined through triangulation based on the time difference of 
+arrival.
 
 It's one thing to have planes transmit this data, it's another to aggregate this data for general consumption. 
 
-Flightradar24 and others encourage people all over the world to set up ADS-B feeders: permanent SDR receiver stations that send the
-received ADS-B data to them, where the data gets sanitized and stored in a database. It's basically all crowd sourced.
+Flightradar24 and others encourage euthousiasts all over the world to set up ADS-B feeders: permanent SDR receiver stations that send the
+received ADS-B data to them, where the data gets sanitized and stored in a database. It's one large crowd-sourcing operation.
 
 In addition to the map view, they provide APIs to query real-time or historical flight data, usually for per-use fee.
 
 At least, that's the case for commerical operators. There's also a non-commerical alternative: [ADS-B Exchange](https://adsbexchange.com).
-Not only do they provide an API with free access for non-commercial purposes, they also make it a point to not remove
+Not only does ADS-B Exchange provide an API with free access for non-commercial purposes, they also make it a point to not remove
 information that commercial providers might filter away, such as certain military flights.
 
 Just like the commerical operators, ADS-B Exchange relies on volunteers all over the world to continuously feed them with
@@ -40,14 +52,16 @@ the latest data.
 
 # Tracking Local Airplanes
 
-For the past 2 years, I've been keeping track of airplane traffic over our neighborhood. This kind of data
-makes it possible to analyze trends (number of flight per day, shifting traffic patterns etc.)
+So what's a possible use of this data?
 
-The make screen is just a list of airplanes for a particular day:
+For the past 2 years, I've been keeping track of airplane traffic over my neighborhood. This kind of data
+makes it possible to analyze trends (number of flights per day, shifting traffic patterns etc.)
+
+The main screen is just a list of airplanes for a particular day:
 
 ![Airplane List]({{ "/assets/adsb/airplane_list.png" | absolute_url }})
 
-For each airplane, you can see its trajectory. Here's a plane that arrives at SFO:
+For each airplane, you can see its trajectory overlaid on a map. Here's a plane that arrives at SFO:
 
 ![Airplane Track]({{ "/assets/adsb/airplane_track.png" | absolute_url }})
 
@@ -55,66 +69,9 @@ You can also plot all the airplanes of a particular day on the map. Here's a bus
 
 ![Airplane Day Map]({{ "/assets/adsb/airplane_day_map.png" | absolute_url }})
 
-The website runs on a cheap [Linode VPS](https://linode.com) using PostgreSQL with the PostGIS extension. 
+The website runs on a cheap [Linode VPS](https://linode.com) using PostgreSQL with the PostGIS spatial database extension. 
 
-Having never written SQL more complex than simple SELECT statements, one of the fun parts was learning how to write 
-a single query that could find all the planes for a particular day which at some point of their trajectory were within 
-a certain distance of our neighborhood.
-
-I have no doubt that there must be much better ways than the way I did it, but the code actually seems to work:
-
-```SQL
-SELECT closest_point_query.plane_track_id AS plane_track_id,
-    ST_Distance(closest_point_query.closest_point, ST_SetSRID(ST_MakePoint(#{lon}, #{lat}),4326), TRUE)/1000 AS distance,
-    ST_Z(closest_point_query.closest_point) AS altitude,
-    ST_M(closest_point_query.closest_point) AS time,
-    ST_M(closest_point_query.closest_point_with_speed) AS speed,
-    ST_AsText(closest_point_query.closest_point) AS closest_point
-
-FROM (
-    -- Find closest interpolated point on the track
-    SELECT create_line_query.plane_track_id,
-        (ST_LineInterpolatePoint(
-            create_line_query.line_with_time,
-            ST_LineLocatePoint(create_line_query.line_with_time, ST_SetSRID(ST_MakePoint(#{lon}, #{lat}),4326))
-        )) AS closest_point,
-        (ST_LineInterpolatePoint(
-            create_line_query.line_with_speed,
-            ST_LineLocatePoint(create_line_query.line_with_time, ST_SetSRID(ST_MakePoint(#{lon}, #{lat}),4326))
-        )) AS closest_point_with_speed
-    FROM (
-        -- Convert points of a track into a line string, one that include time as M nd another one that include speed as M
-        SELECT ptp.plane_track_id,
-        (ST_MakeLine(
-            ST_SetSRID(
-            ST_MakePoint(
-                ST_X(ST_AsText(ptp.coordinate)),
-                ST_Y(ST_AsText(ptp.coordinate)),
-                ST_Z(ST_AsText(ptp.coordinate)),
-                EXTRACT(EPOCH FROM time)),4326
-            ) ORDER BY time
-        )) AS line_with_time,
-        (ST_MakeLine(
-            ST_SetSRID(
-            ST_MakePoint(
-                ST_X(ST_AsText(ptp.coordinate)),
-                ST_Y(ST_AsText(ptp.coordinate)),
-                ST_Z(ST_AsText(ptp.coordinate)),
-                ptp.speed),4326
-            ) ORDER BY time
-        )) AS line_with_speed
-        FROM plane_track_points AS ptp INNER JOIN plane_tracks AS pt ON (ptp.plane_track_id = pt.id)
-        WHERE pt.created_at < '#{end_time_str}' AND pt.last_pos_time >= '#{start_time_str}'
-        GROUP BY ptp.plane_track_id
-    ) AS create_line_query
-) AS closest_point_query
-WHERE     ST_Z(closest_point_query.closest_point) < #{altitude} 
-      AND ST_Z(closest_point_query.closest_point) > 500
-      AND ST_Distance(closest_point_query.closest_point, ST_SetSRID(ST_MakePoint(#{lon}, #{lat}),4326), TRUE)/1000 < #{distance}
-ORDER by time
-```
-
-There were 2 ways to get the airplane data for this application:
+While developing this application, there were 2 ways to get the airplane data for this application:
 
 * Stick an antenna on the roof and record the ADS-B data straight from all the planes in the neighborhood: a good
   antenna with unobstructed views can get a range of more than 100 miles!
@@ -122,8 +79,12 @@ There were 2 ways to get the airplane data for this application:
 
 The API route is much more reliable, because it doesn't have a single point of failure. So that's the way it was implemented.
 
-Keeping the ADS-B Exchange website and API up and running is a very costly affair, so we set up an automated monthly donation to
-cover a (very tiny) fraction of their total hosting costs.
+The ADS-B Exchange website is a non-profit operation that runs tons of servers to receive a continuous stream of data points
+from all over the world, process it, store into a database, display data on a map, and drive the API. It is a very
+costly affiar.
+
+Since I'm using the API at a steady rate, I set up an automated monthly donation to cover a very tiny fraction of their total hosting 
+costs.
 
 But since crowd sourcing the data is such an important aspect of the whole operation, all API users are asked to set up a feeder
 as well.
@@ -132,50 +93,107 @@ In the remainder of this blog post, I'll go through the steps that I had to go t
 
 # The Hardware
 
-* Raspberry Pi 3B.
-  Almost all installations are using a Raspberry Pi 3B. This is not really necessary, but it has built-in Wifi
-  and since there's a good chance that you will mount everything somewhere outside, that makes it easy to connect
-  to your home network.
-* SDR USB Device
-  An SDR (Software Defined Radio) device makes it possible acquire RF signals, sample them to the digital domain, and then
-  hand it over to your CPU to decode the acquired data. You can use it to process tons of different signals, FM radio, GPS,
-  ADS-B, and many more. Cheap SDR devices (~$20) cover a pretty large freqency range, from 500 kHz to 1.7 GHz. If you want to
-  experiment with SDR, this is perfect to start with.
-  One disadvantage of this wide range is that an uninteresting signal on one frequency band may impact the quality of reception
-  on another.
-  If you have a very specific application which has a signal on a specific frequency, it's very useful to place an analog
-  band pass filter between the antenna and the SDR device that only passes signals in the band of interest.
-  Since I'm only interested in ADS-B, I bought the [FlightAware Pro Stick Plus](https://www.amazon.com/gp/product/B01M7REJJW):
-  it's the same price as any other cheap RTL dongle, but it has a built-in analog filter which greatly improved the ADS-B
-  performance!
-* Antenna
+* [Raspberry Pi 3B(+)](https://www.amazon.com/gp/product/B01LPLPBS8) - $36 
+
+  ![Raspberry Pi 3B+]({{ "/assets/adsb/raspberry_pi.jpg" | absolute_url }})
+
+  Most new installations are using a Raspberry Pi 3B. An earlier version works too, but this one has built-in Wifi.
+  Since there's a good chance that you will mount it somewhere outside, the Wifi makes it easy to connect to your home network.
+
+* Micro SD Card (8GB+) - $4
+
+  ![micro SD Card]({{ "/assets/adsb/micro_sd_card.jpg" | absolute_url }})
+
+  Your Raspberry Pi will need to run Linux. A full-featured Raspbian Linux installation will take close to 6GB of storage
+  so 8GB will be the minimum capacity of the micro SD card.
+
+
+* SDR USB Device - [FlightAware Pro Stick Plus](https://www.amazon.com/gp/product/B01M7REJJW) - $20
+
+  ![FlightAware Pro Stick Plus]({{ "/assets/adsb/FlightAware_ProStick_Plus.jpg" | absolute_url }})
+
+  An SDR (Software Defined Radio) device makes it possible acquire RF signals, sample a particular band to the digital domain, 
+  and then hand it over to your CPU to decode the acquired data. You can use it to process tons of different signals, FM radio, GPS,
+  ADS-B, and many more. 
+
+  Cheap all-round SDR devices (~$20) cover a pretty large frequency range, from 500 kHz to 1.7 GHz. If you want to
+  experiment with SDR, they are perfect to start with. One disadvantage of this wide range is that an uninteresting signal on 
+  one frequency band may impact the quality of reception on another.
+
+  If you have a very specific application which has a signal on a specific frequency, it's very useful to have an analog
+  band pass filter between the antenna and the SDR receiver that only passes signals in the band of interest. There are
+  [discrete analog filters](https://www.amazon.com/ADS-B-1090MHz-Band-pass-SMA-Filter/dp/B010GBQXK8) that do exactly that.
+
+  ![ADSB Bandpass Filter]({{ "/assets/adsb/adsb_bandpass_filter.jpg" | absolute_url }})
+
+  However, if you know up front that you're only interested in ADS-B, you can buy the 
+  [FlightAware Pro Stick Plus](https://flightaware.com/adsb/prostick/) USB dongle: it has the same price as any other cheap 
+  unfiltered RTL dongle, but it has the analog filter built in!
+
+* [Antenna](https://www.amazon.com/gp/product/B00WZL6WPO) - $40
+
+  You can find [tiny antennas](https://www.amazon.com/1090Mhz-Antenna-Connector-2-5dbi-Adapter/dp/B013S8B234), often with a magnet 
+  in the base, that are perfectly fine for receiving nearby airplanes. These antennas can also be used for other SDR experiments.
+
+  My goal was to have a permanent high-quality setup. You can find plenty of website that tell you how to make a decent
+  antenna yourself, but for esthetic reasons and plain laziness, I choose [66cm/26" antenna by FlightAware](https://www.amazon.com/gp/product/B00WZL6WPO).
+  It's pretty cheap and gets excellent reviews.
   
+* [Cable](https://www.amazon.com/gp/product/B07J54LCL7) - $16
 
+  ![Cable]({{ "/assets/adsb/cable.png" | absolute_url }})
 
+  You need to connect your antenna to your SDR dongle!
 
+  Different antennas and SDR dongles have different cables, so be careful.
 
-* Buy a Raspberry Pi
+  The FlightAware SDR dongle has a SMA F connector. The antenna has an N-type connector. So I needed an 
+  [N Male to SMA Male cable](https://www.amazon.com/gp/product/B07J54LCL7).
+
+Everything together, the full setup cost around $116. You can easily reduce by $50 by switching to the tiny antenna.
+
+# Software Installation
+
+The [ADS-B Exchange website](https://www.adsbexchange.com/how-to-feed/) has a page dedicated to setting up a feeder but it's
+written with the assumption that the reader already knows what he or she is doing.
+
+So I go into a little more details.
+
 * Install Raspbian
-    * Download Raspbian here: https://www.raspberrypi.org/downloads/raspbian/
-        * I uses Raspbian Stretch with desktop and recommended software (1.9GB)
-        * I downloaded verions 2019-04-08, which was the latest at that time.
+
+    Raspbian is the Raspberry Pi specific Linux distribution. Using a PC or Mac with a SD card interface, Raspbian must be flashed 
+    onto the micro SD card.
+
+    * Download Raspbian from the [Raspberry Pi website](https://www.raspberrypi.org/downloads/raspbian/).
+        * I selected the zip file of *Raspbian Stretch with desktop and recommended software* (1.9GB).
+        * At the time, version 2019-04-08 was the most recent one.
         * Unzip after download. You will now have a .img file of ~5.4GB.
-    * Download and Install Etcher to flash your SDCard (https://www.balena.io/etcher/)
-    * Use Etcher to flash the .img file to an SDCard. 
-        * This will erase all the existing content!
-        * On my MacBook with a very fast Class 10 micro SD Card, this took about 3min for programming and validation. (10min on a much slower
-          SD Card.) If running PiAware is all you'll ever do on this Raspberry Pi, there's little need for a fast SD card...
+    * Download and install [Etcher](https://www.balena.io/etcher/), a tool to flash an SD card with a new disk image.
+    * Use Etcher to flash the .img file to an SD card. 
+        * This will erase all the existing content on the SD card!
+
 * Configure Raspberry Pi
-    * Insert flashed SDCard
-    * Connect USB keyboard and mouse
-    * Connect to monitor with HDMI cable
-    * Power up, follow instructions on the screen to set up, update latest software etc.
-        * Installing the latest updated and languages can take quite a bit of time!
-    * Eventually, your Raspberry Pi will ask to reboot.
-    * Enable SSH
-        * Raspberry Icon -> Preferences -> Raspberry Pi Configuration -> Interfaces -> SSH: Enable
-        * Enable SSH without a screen: https://howchoo.com/g/ote0ywmzywj/how-to-enable-ssh-on-raspbian-without-a-screen
-* Install PiAware flight tracking software (https://flightaware.com/adsb/piaware/install)
+
+    The Raspbian that you just flashed contains a full featured windowed desktop. The easieast way to proceed is to configure everything
+    through this desktop, so that's what I did. However, it requires an HDMI monitor, mouse, and keyboard.
+
+    * Insert flashed SD card.
+    * Connect USB keyboard and mouse.
+    * Connect to monitor with HDMI cable.
+    * Power up. You should see a desktop after about 1 minute.
+    * Follow installation instructions on the screen to set up password, keyboard, Wifi, timezone etc.
+    * When asked to update to latest software, say yet. Go get some coffee, it will take a good 10 minutes to update.
+    * Eventually, your Raspberry Pi will ask to reboot. Do so.
+
+* Enable SSH
+
+    Right now, your Raspberry Pi is a little desktop computer, but when it's installed somewhere in your attic or on the
+    side of your house, you'll have to access it through SSH. By default, SSH is not enabled.
+
+    To enable: Click Raspberry Icon -> Preferences -> Raspberry Pi Configuration -> Interfaces -> SSH: Enable
+
+* Install [PiAware flight tracking software](https://flightaware.com/adsb/piaware/install)
+
     * Open a terminal
     * <Follow steps on page until and including reboot>
 * Using the scripts
