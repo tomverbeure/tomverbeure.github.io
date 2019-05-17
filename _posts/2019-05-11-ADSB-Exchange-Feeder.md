@@ -28,24 +28,25 @@ tons of other pieces of information.
 
 This broadcast is in the open, unencrypted, and the data can be received and decoded with a trivially simple and cheap SDR setup.
 
-Per [FAA mandate](https://www.faa.gov/nextgen/equipadsb/), almost all airplanes are required to have an ADS-B transmitter by 
-Jan 1, 2020. However, commercial airliners have been outfitted with ADS-B equipment for years.
+Per [FAA mandate](https://www.faa.gov/nextgen/equipadsb/), aircraft that currently operate inside airspace requiring a transponder are expected to have an ADS-B transponder installed by Jan 1, 2020. 
 
-MLAT is a fallback for those planes that don't have ADS-B: they still have the traditional transponder that broadcasts identification 
-and altitude data. This transponder information can also be received by the same SDR setup, and tagged with a timestamp. When this data 
-is received by multiple stations, the location of the plane can still be determined through triangulation based on the time difference of 
+MLAT can be used to track planes that don't have ADS-B: If they have a Mode-S transponder that broadcasts identification 
+and altitude data.  This transponder information can also be received by the same SDR setup, and tagged with a timestamp. When this data 
+is received by multiple stations, the location of the plane can be determined through multilateration based on the time difference of 
 arrival.
 
-It's one thing to have planes transmit this data, it's another to aggregate this data for general consumption. 
+Aggregation of ADS-B data is a complex task due to the size and sheer number of messages produced by aircraft each day.
 
-Flightradar24 and others encourage euthousiasts all over the world to set up ADS-B feeders: permanent SDR receiver stations that send the
-received ADS-B data to them, where the data gets sanitized and stored in a database. It's one large crowd-sourcing operation.
+Flightradar24 and others encourage enthusisasts to set up ADS-B feeders or permanent SDR receiver stations that send the
+received ADS-B data to them, where the data gets sanitized and stored in a database to be sold commericially to buyers in industries from manufacturing to finance, and even governments. It's one large crowd-sourcing operation used to profit from aircraft spotting enthusiasts.
 
-In addition to the map view, they provide APIs to query real-time or historical flight data, usually for per-use fee.
+In addition to a basic map view, these flight aggregation for-profit operations provide APIs to query, near real-time or historical flight data, for a per-use fee.  Commercial operations such as Flightradar24 and others profit from enthusiast data in other ways, if an owner or operator of an aircraft does not want to be tracked on thier site, they contact each site and pay a monthly fee to have thier data removed completely or obscured.
 
-At least, that's the case for commerical operators. There's also a non-commerical alternative: [ADS-B Exchange](https://adsbexchange.com).
-Not only does ADS-B Exchange provide an API with free access for non-commercial purposes, they also make it a point to not remove
-information that commercial providers might filter away, such as certain military flights.
+Aircraft owners can also request to be put on a block list by the FAA. Once an owner is on the block list, then FR24 etc are required to remove that aircraft from view.  There are also commerical operations engague in obfusication such as, [FLTPlan] (https://www.fltplan.com/BlockedTail.htm)
+
+There' is one non-commerical alternative: [ADS-B Exchange](https://adsbexchange.com).
+
+ADS-B Exchange provides an API with free access for non-commercial purposes and does not filter or remove any aircraft, such as miltiary, private, and corporate aircraft.
 
 Just like the commerical operators, ADS-B Exchange relies on volunteers all over the world to continuously feed them with
 the latest data.
@@ -74,20 +75,18 @@ The website runs on a cheap [Linode VPS](https://linode.com) using PostgreSQL wi
 While developing this application, there were 2 ways to get the airplane data for this application:
 
 * Stick an antenna on the roof and record the ADS-B data straight from all the planes in the neighborhood: a good
-  antenna with unobstructed views can get a range of more than 100 miles!
+  antenna with unobstructed views can get a range of more than 200 nautical miles!
 * Use the ADS-B Exchange API
 
 The API route is much more reliable, because it doesn't have a single point of failure. So that's the way it was implemented.
 
-The ADS-B Exchange website is a non-profit operation that runs tons of servers to receive a continuous stream of data points
+The ADS-B Exchange website is a volunteer operation that runs 100+ servers to receive a continuous stream of data points
 from all over the world, process it, store into a database, display data on a map, and drive the API. It is a very
-costly affiar.
+complex and costly affiar.
 
-Since I'm using the API at a steady rate, I set up an automated monthly donation to cover a very tiny fraction of their total hosting 
-costs.
+Since I'm using the API at a steady rate, I set up an automated monthly donation to cover a very tiny fraction of their total hosting costs. [ADSBX Donate](https://adsbexchange.com/donate/)
 
-But since crowd sourcing the data is such an important aspect of the whole operation, all API users are asked to set up a feeder
-as well.
+Since crowd sourcing the data is such an important aspect of the whole operation, all API users are asked to set up a feeder.
 
 In the remainder of this blog post, I'll go through the steps that I had to go through to make this happen.
 
@@ -98,14 +97,14 @@ In the remainder of this blog post, I'll go through the steps that I had to go t
   ![Raspberry Pi 3B+]({{ "/assets/adsb/raspberry_pi.jpg" | absolute_url }})
 
   Most new installations are using a Raspberry Pi 3B. An earlier version works too, but this one has built-in Wifi.
-  Since there's a good chance that you will mount it somewhere outside, the Wifi makes it easy to connect to your home network.
+  Since there's a good chance that you will mount it somewhere outside, the Wifi makes it easy to connect to your home network.  2.4Ghz WiFi has greater range than 5Ghz - therfor 2.4Ghz is reccomended.
 
 * Micro SD Card (8GB+) - $4
 
   ![micro SD Card]({{ "/assets/adsb/micro_sd_card.jpg" | absolute_url }})
 
   Your Raspberry Pi will need to run Linux. A full-featured Raspbian Linux installation will take close to 6GB of storage
-  so 8GB will be the minimum capacity of the micro SD card.
+  so 8GB will be the minimum capacity of the micro SD card.  Running a graphic user interface on a Pi is not reccomended long term, but it can be done.
 
 
 * SDR USB Device - [FlightAware Pro Stick Plus](https://www.amazon.com/gp/product/B01M7REJJW) - $20
@@ -128,9 +127,11 @@ In the remainder of this blog post, I'll go through the steps that I had to go t
 
   However, if you know up front that you're only interested in ADS-B, you can buy the 
   [FlightAware Pro Stick Plus](https://flightaware.com/adsb/prostick/) USB dongle: it has the same price as any other cheap 
-  unfiltered RTL dongle, but it has the analog filter built in!
+  unfiltered RTL dongle, but it has the analog filter and amplifier built in!
 
 * [Antenna](https://www.amazon.com/gp/product/B00WZL6WPO) - $40
+
+ Feeders based in the United States may be interested in a 1090/978 combo antenna that can be used with 2 SDR to decode ADSB on 1090 and UAT on 978. https://store.adsbexchange.com/products/5-5dbi-1090-978-antenna  Not if you are going to use teh FlightAware filter - you must make sure it is both 1090 and 978.
 
   You can find [tiny antennas](https://www.amazon.com/1090Mhz-Antenna-Connector-2-5dbi-Adapter/dp/B013S8B234), often with a magnet 
   in the base, that are perfectly fine for receiving nearby airplanes. These antennas can also be used for other SDR experiments.
@@ -225,6 +226,33 @@ git clone https://github.com/adsbxchange/adsb-exchange.git
 cd adsb-exchange
 chmod +x setup.sh
 sudo ./setup.sh
+```
+
+* Enable NTP to keep the clock in sync. This is very important for MLAT accuracy.
+
+```
+sudo systemctl enable systemd-timesyncd
+sudo systemctl start systemd-timesyncd
+sudo timedatectl set-ntp 1
+```
+
+Verify time is set to sync.
+
+```
+timedatectl
+```
+
+Output should resemble below with NTP synchronized: yes and Network time on: yes.
+
+```
+      Local time: Fri 2019-05-17 05:43:41 UTC
+  Universal time: Fri 2019-05-17 05:43:41 UTC
+        RTC time: n/a
+       Time zone: Etc/UTC (UTC, +0000)
+ Network time on: yes
+NTP synchronized: yes
+ RTC in local TZ: no
+
 ```
 
 * Check that everything is working properly
