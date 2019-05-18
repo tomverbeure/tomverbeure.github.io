@@ -14,7 +14,7 @@ categories:
 
 # Introduction
 
-You're probably seen those websites like [flightradar24.com](https://www.flightradar24.com/37.35,-122.03/10)
+You're probably seen websites like [flightradar24.com](https://www.flightradar24.com/37.35,-122.03/10)
 that display all the airplanes on a live map, provide information about flight
 delays etc.
 
@@ -26,15 +26,15 @@ Most of it comes from [ADS-B](https://en.wikipedia.org/wiki/Automatic_dependent_
 and [MLAT](https://flightaware.com/adsb/mlat/).
 
 ADS-B is a system whereby airplanes broadcast information about their location, altitude, speed, call sign, airplane type and
-tons of other pieces of information.
+other pieces of information.
 
 This broadcast is in the open, unencrypted, and the data can be received and decoded with a trivially simple and cheap 
-SDR (Software Defined Radio) setup.
+SDR ([Software Defined Radio](https://en.wikipedia.org/wiki/Software-defined_radio)) setup.
 
 Per [FAA mandate](https://www.faa.gov/nextgen/equipadsb/), aircraft that currently operate inside airspace that requires a transponder 
 are expected to have an ADS-B transponder installed by Jan 1, 2020. 
 
-MLAT can be used to track planes that don't have ADS-B but that have a Mode-S transponder that broadcasts identification 
+MLAT can be used to track planes that don't have ADS-B yet but that have a Mode-S transponder that broadcasts identification 
 and altitude data.  This transponder information can be received by the same SDR setup, and tagged with a timestamp. When this data 
 is received by multiple stations, the location of the plane can be determined through 
 [multilateration](https://en.wikipedia.org/wiki/Multilateration) based on the time difference of 
@@ -43,8 +43,8 @@ arrival.
 Aggregation of ADS-B data is a complex task due to the size and sheer number of messages produced each day: while airborn,
 an ADS-B equipped aircraft will typically transmit 2 messages per second!
 
-Flightradar24 and others encourage enthusisasts to set up so-called *ADS-B feeders*: permanent SDR receiver stations that send the
-received ADS-B data to them, where the data gets sanitized and stored in a database to be sold commercially to buyers in industries 
+Flightradar24 and others encourage enthusiasts to set up so-called *ADS-B feeders*: permanent SDR receiver stations that send the
+received ADS-B data to them, where the data gets sanitized and stored in a database, to be sold commercially to buyers in industries 
 from manufacturing to finance, and even governments. It's one large crowd-sourcing operation used to profit from aircraft spotting enthusiasts.
 
 In addition to a basic map view, these for-profit flight aggregation operations provide APIs to query flight data, near real-time or historical, 
@@ -62,8 +62,8 @@ Just like the commerical operators, ADS-B Exchange relies on volunteers all over
 the latest data.
 
 The ADS-B Exchange website is a volunteer operation that runs 100+ servers to receive a continuous stream of data points
-from all over the world, process it, store into a database, display data on a map, and drive the API. It is a very
-complex and costly affair.
+from all over the world, process it, store into a database, [display data on a map](http://global.adsbexchange.com/VirtualRadar), 
+and drive the [API](https://www.adsbexchange.com/data/). It is a very complex and costly affair.
 
 # Tracking Local Airplanes
 
@@ -75,15 +75,18 @@ identify noisy airplane and file complaints.
 
 The main screen is just a list of airplanes for a particular day:
 
-![Airplane List]({{ "/assets/adsb/airplane_list.png" | absolute_url }})
+[ ![Airplane List]({{ "/assets/adsb/airplane_list.png" | absolute_url }})]({{ "/assets/adsb/airplane_list.png" | absolute_url }})
+*(Click on the image to enlarge)*
 
 For each airplane, you can see its trajectory overlaid on a map. Here's a plane that arrives at SFO:
 
-![Airplane Track]({{ "/assets/adsb/airplane_track.png" | absolute_url }})
+[ ![Airplane Track]({{ "/assets/adsb/airplane_track.png" | absolute_url }})]({{ "/assets/adsb/airplane_track.png" | absolute_url }})
+*(Click on the image to enlarge)*
 
 You can also plot all the airplanes of a particular day on the map. Here's a busy day of planes arriving at SJC:
 
-![Airplane Day Map]({{ "/assets/adsb/airplane_day_map.png" | absolute_url }})
+[ ![Airplane Day Map]({{ "/assets/adsb/airplane_day_map.png" | absolute_url }})]({{ "/assets/adsb/airplane_day_map.png" | absolute_url }})
+*(Click on the image to enlarge)*
 
 The website runs on a cheap [Linode VPS](https://linode.com) using [PostgreSQL ](https://www.postgresql.org/)
 with the [PostGIS](https://postgis.net/) spatial database extension. 
@@ -135,7 +138,7 @@ smarter choice. A Raspberry Pi is perfect for this!
   and then hand it over to your CPU to decode the acquired raw data into something meaningful. You can use it to process 
   tons of different signals: FM radio, GPS, ADS-B, and many more. 
 
-  Cheap all-round SDR devices (~$20) cover a pretty large frequency range, from 500 kHz to 1.7 GHz. If you want to
+  Cheap allround SDR devices (~$20) cover a pretty large frequency range, from 500 kHz to 1.7 GHz. If you want to
   experiment with SDR, they are perfect to start with. One disadvantage of this wide range is that an uninteresting signal on 
   one frequency band may impact the quality of reception on another.
 
@@ -275,7 +278,7 @@ sudo ./setup.sh
     syncs your Pi to a reference clock that is accessible through the Internet. Changes are that NTP is
     already enabled by default, but it doesn't hurt to check.
 
-    * Run `timedatectl`. The output should look like that printout below, with "NTP synchronized: yes"
+    * Run `timedatectl`. The output should look like the printout below, with "NTP synchronized: yes"
       and "Network time on: yes".
 
 ```
@@ -290,7 +293,7 @@ NTP synchronized: yes
 
 * Enable NTP 
 
-    If NTP was *not* enabled, enable it by executing the commands below:`
+    If NTP was *not* enabled, enable it by executing the commands below:
 
 ```
 sudo systemctl enable systemd-timesyncd
@@ -309,6 +312,25 @@ sudo timedatectl set-ntp 1
     Data from 18 airplanes was picked up at the time of taking the screenshot.
 
     ADS-B data is being sent to port 30005 of the ADS-B Exchange servers, and MLAT data is sent to power 31090.
+
+* Claim Your PiAware Feeder Station (Optional)
+
+    After completing this whole setup, no only are you sending ADS-B data to ADS-B Exchange, you are also
+    doing so to FlightAware, the developers of the PiAware package.
+
+    FlightAware provides all kinds of additional data and services, some of them only for paying users.
+
+    When you operate an ADS-B feeder that sends data to FlightAware, you can register your feeder. In
+    return, your account will be upgraded for free from Basic to 
+    [Enterprise](https://flightaware.com/commercial/premium/) level (which normally costs
+    $90/month.)
+
+    An particularly nice benefit of registering is the statistics page, which shows all kinds of 
+    information that are related to your feeder: from the number of planes you've reported per
+    day to histograms of the distance of reported planes.
+
+    You can claim your receiver here: [https://flightaware.com/adsb/piaware/claim](https://flightaware.com/adsb/piaware/claim).
+    
 
 # Local Live View
 
