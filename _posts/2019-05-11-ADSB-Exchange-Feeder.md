@@ -346,12 +346,12 @@ is this [article](https://learn.pimoroni.com/tutorial/raspberry-pi/finding-your-
 Once you know the IP address, you can ask the browser on your regular PC or laptop to point to the PiAware Skyview
 page: `http://<IP ADDRESS>:8080`.
 
-You will be great by the following page:
+You will be greeted by a page that looks like this:
 
 [ ![SkyView Big Antenna]({{ "/assets/adsb/skyview_big_antenna.png" | absolute_url }}) ]({{ "/assets/adsb/skyview_big_antenna.png" | absolute_url }})
 *(Click on the image to enlarge)*
 
-On this quite late Friday evening, my antenna, located in the South Bay, picked up 83 aircrafts, some of 
+On this quiet late Friday evening, my antenna, located in the South Bay, picked up 83 aircraft, some of 
 them as far a Lake Tahoe and Visalia, each a good 150 miles away! 
 Your, ahem, mileage may vary depending on antenna size and installation, obstruction
 from nearby trees or buildings, mountains etc.
@@ -359,7 +359,7 @@ from nearby trees or buildings, mountains etc.
 By clicking on a plane, you'll get to see all the recorded data points and detailed information. 
 
 Since this is live view without database backend, planes will disappear from the map when no new
-data have been received for one minute.
+data has been received for one minute.
 
 # Conclusion
 
