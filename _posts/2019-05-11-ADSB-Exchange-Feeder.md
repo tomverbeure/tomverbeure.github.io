@@ -14,7 +14,7 @@ categories:
 
 # Introduction
 
-You're probably seen websites like [flightradar24.com](https://www.flightradar24.com/37.35,-122.03/10)
+You've probably seen websites like [flightradar24.com](https://www.flightradar24.com/37.35,-122.03/10)
 that display all the airplanes on a live map, provide information about flight
 delays etc.
 
