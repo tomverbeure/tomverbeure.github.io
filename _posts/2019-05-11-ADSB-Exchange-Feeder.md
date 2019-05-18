@@ -373,5 +373,5 @@ There are tons of resources out there.
 
 But if you want to contribute to a good cause of free data, setting up a feeder is an excellent idea.
 
-Have fun!
+James Stanford from ADSB Exchange helped me with proof reading and corrected things that I got wrong. Thanks!
 
