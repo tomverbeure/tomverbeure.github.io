@@ -40,7 +40,7 @@ is received by multiple stations, the location of the plane can be determined th
 [multilateration](https://en.wikipedia.org/wiki/Multilateration) based on the time difference of 
 arrival.
 
-Aggregation of ADS-B data is a complex task due to the size and sheer number of messages produced each day: while airborn,
+Aggregation of ADS-B data is a complex task due to the size and sheer number of messages produced each day: while airborne,
 an ADS-B equipped aircraft will typically transmit 2 messages per second!
 
 Flightradar24 and others encourage enthusiasts to set up so-called *ADS-B feeders*: permanent SDR receiver stations that send the
@@ -51,11 +51,11 @@ In addition to a basic map view, these for-profit flight aggregation operations 
 for a per-use fee. They also profit from enthusiast data in other ways: if an owner or operator of an aircraft does not want to be 
 tracked on their site, they contact each site and pay a monthly fee to have their data removed completely or obscured. Aircraft owners can 
 also request to be put on a block list by the FAA. Once an owner is on the block list, FR24 etc are required to remove that aircraft from 
-view.  Commerical operations succh as [FLTPlan](https://www.fltplan.com/BlockedTail.htm) have similar obfuscation programs.
+view.  Commercial operations such as [FLTPlan](https://www.fltplan.com/BlockedTail.htm) have similar obfuscation programs.
 
-There is one non-commerical alternative: [ADS-B Exchange](https://adsbexchange.com).
+There is one non-commercial alternative: [ADS-B Exchange](https://adsbexchange.com).
 
-ADS-B Exchange provides an API with free access for non-commercial purposes and does not filter or remove any aircraft, such as miltiary, 
+ADS-B Exchange provides an API with free access for non-commercial purposes and does not filter or remove any aircraft, such as military, 
 private, and corporate aircraft.
 
 Just like the commerical operators, ADS-B Exchange relies on volunteers all over the world to continuously feed them with
@@ -119,8 +119,8 @@ smarter choice. A Raspberry Pi is perfect for this!
 
   ![Raspberry Pi 3B+]({{ "/assets/adsb/raspberry_pi.jpg" | absolute_url }})
 
-  Most new installations are using a Raspberry Pi 3B or 3B+. An earlier version works too, but this one has built-in Wifi.
-  If you mount it somewhere outside, the Wifi makes it easy to connect to your home network. 2.4GHz WiFi has greater range than 
+  Most new installations are using a Raspberry Pi 3B or 3B+. An earlier version works too, but this one has built-in WiFi.
+  If you mount it somewhere outside, the WiFi makes it easy to connect to your home network. 2.4GHz WiFi has greater range than 
   5GHz, so 2.4GHz is recommended.
 
 * Micro SD Card (8GB+) - $4
@@ -138,7 +138,7 @@ smarter choice. A Raspberry Pi is perfect for this!
   and then hand it over to your CPU to decode the acquired raw data into something meaningful. You can use it to process 
   tons of different signals: FM radio, GPS, ADS-B, and many more. 
 
-  Cheap allround SDR devices (~$20) cover a pretty large frequency range, from 500 kHz to 1.7 GHz. If you want to
+  Cheap all-round SDR devices (~$20) cover a pretty large frequency range, from 500 kHz to 1.7 GHz. If you want to
   experiment with SDR, they are perfect to start with. One disadvantage of this wide range is that an uninteresting signal on 
   one frequency band may impact the quality of reception on another.
 
@@ -222,7 +222,7 @@ So I go into a little more detail.
     * Connect monitor with HDMI cable.
     * Power up. 
     * You should see a desktop after about 1 minute.
-    * Follow the installation instructions on the screen to set up password, keyboard, Wifi, timezone etc.
+    * Follow the installation instructions on the screen to set up password, keyboard, WiFi, time zone etc.
     * When asked to update to latest software, say yes. Go get some coffee, it will take a good 10 minutes to update.
     * Eventually, your Raspberry Pi will ask to reboot. Do so.
 
