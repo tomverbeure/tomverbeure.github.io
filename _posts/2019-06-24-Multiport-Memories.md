@@ -1,0 +1,174 @@
+---
+layout: post
+title: Building Multiport Memories with Block RAMs
+date:   2019-06-24 10:00:00 -0700
+categories:
+---
+
+* [Introduction](#introduction)
+
+# Introduction
+
+On-chip memories are one of the key ingredients of digital design. 
+
+In an ASIC design environment, you are typically offered a library of various configurations:
+single read/write port, single read/single write ports, sometimes dual read/write ports.
+
+Once you go beyond that, you enter the realm of custom RAMs: whatever it is that
+you need gets hand crafted by your RAM design team. An expensive proposition, so you better 
+have a really good reason to need one!
+
+It's unusual to have a conceptual RAM like the one below, with 2 independent write ports
+and 2 independent read ports, readily available.
+
+![Highlevel View]({{ "/assets/multiport_memories/xor_memory-Highlevel_View.svg" | absolute_url }})
+
+In FPGA land, things are more limited: you get to use what your FPGA provides, and that is that.
+
+If we ignore RAMs that are constructed out of repurposed LUTs and registers, most FPGAs
+have so-called block RAMs (BRAMs) that have at least a single read and a single, separate,
+write port. (FPGAs from Intel and Xilinx usually have 2 read/write ports, but the Lattice iCE40 
+only has one read and one write port.)
+
+Unfortunately, not all design problems can map to the standard BRAMs of the FPGA of your
+choice.
+
+The register file of a simple CPU will almost certainly require at least 2 read ports and 
+1 write port, a number that will multiply for multiple issue CPU architectures. And all those
+ports need to be serviced at the same time.
+
+In this blog post, I go over the some common ways in which multiple read and write port
+memories can be constructed out of standard BRAMs. I then describe some really interesting
+way in which they can be designed without any major restrictions other than the number
+of BRAMs in your FPGA.
+
+All RAMs will have the following behavior:
+
+* synchronous reads only: a read operation will return the result one clock cycle later
+* a reads and writes to the same address during the same clock cycle return the newly written value
+* multiple writes through different ports to the same address result in undefined behavior, even
+  if the same value is written on both ports.
+
+Translated to an example waveform:
+
+![RAM Behavior Waveform]({{ "/assets/multiport_memories/ram_behavior.svg" | absolute_url }})
+
+
+This blog post is heavily based on the 
+[Composing Multi-Ported Memories on FPGAs](http://people.csail.mit.edu/ml/pubs/trets_multiport.pdf)
+paper by Charles Eric LaForest, Zimo Li, Tristan O’Rourke, Ming G. Liu, and J. Gregory Steffan.
+Images from this paper have been used with permission.
+
+
+# Flip-Flops as Storage Elements 
+
+The trivial solution to create memories with multiple read and write ports is not use any RAMs at
+all, and use flip-flops instead.
+
+It's a solution that is often used when implementing registers files of CPUs that have more than one write
+port. 
+
+On a RISC-V CPU with 32 32-bit registers, it will cost you 1024 FFs. 
+
+For M write ports and N read ports, you'll also need M-to-1 multiplexer and an N-to-1 multiplexer 
+for each storage bit. And a truckload of wiring wiring to connect everything together!
+
+This doesn't have to be a problem: the [SWeRV](https://tomverbeure.github.io/2019/03/13/SweRV.html) CPU
+has a dual-issue pipeline that can retire 2 instructions per clock cycles, and thus requires a register
+file with 4 read ports and 2 write ports.
+
+This translates into 1024 FFs, 1024 2-to-1 write and 1024 4-to-1 read MUXes, yet if you look at the
+ASIC layout, the register file only takes about XXX % of the total CPU core area.
+
+The important caveat is that the SWeRV was designed for an ASIC process, where metal layers are
+plentiful and dense rats nets of wires are usually not a problem.
+
+Translate this design to an FPGA, which often have routing wires as a constrained resource, and you'll
+run into trouble very quickly! Not only will the memory be difficult to place and route, it may
+also quickly become a critical path of your overall design.
+
+* Note that 4 read and 2 write ports isn't particularly high for a CPU. The 512 x 64 bits register file
+of the ancient Alpha 21464 CPU had 16 read and 8 write ports, which an area cost that was 5x
+the area of the 64KB data cache! *
+
+# Multiple-Read, Single-Write RAMs
+
+RAMs with multiple read port and only a single write port are very common in small CPUs that
+can only retire one instruction per second: you have multiple read ports to gather the operands
+for an instruction, yet you only need 1 write port to write back the result of the instruction.
+
+The implementation on FPGA is simple: use you 2 BRAMs, where each BRAM has 1 read port and 1
+write port. And you connect the write ports together.
+
+As long as you don't read and write to the same address during the same clock cycle, you're golden.
+
+Otherwise, you'll have to dig into the documentation of your FPGA device and figure out exactly
+how it will behave. On some FPGAs, the data that is read will be the one from the previous cycle,
+on others, you will immediately get the value that was written during the same cycles. On some,
+the result will be undefined, on others, you can specify the behavior when you generate the
+BRAM instance. It's a bit of a mess.
+
+Note: the coincident read/write problem is not specific to having multiple read ports: it's
+something to be aware of whenver you use dual-ported memories.
+
+Personally, whenever I used dual-ported memories, I simply try to avoid coincident read/writes at
+the architectural level. Either by making them impossible on principle, or by imposing a requirement
+on the user to never do such a thing. (Don't hold it that way!)
+
+The VexRiscv CPU is a good example of a design that avoids the coincident read/write problem by 
+making them impossible at the architecture level.
+
+# Banking
+
+With banking, you split one large memory into multiple smaller ones, where each memory stores
+only its fraction of the total memory storage.
+
+For example, if you need 2 write ports, you could store the data for all even addresses to 
+bank M0 and the data for all odd addresses to bank M1.
+
+As long as you can guarantee that the 2 concurrent writes will consist of a write to an even
+and a write to an odd address, you will reach a peak write bandwidth of 2 writes per clock
+cycles.
+
+The problem with this, of course, is that this can't always be guaranteed.
+
+When you have 2 writes that go to the same bank, you will get a so-called *bank conflict*, and you
+may be forced to serialize the 2 writes over 2 clock cycles and stall the pipeline. 
+
+You can reduce the chance of a banking conflict by increasing the number of banks: it doesn't have to equal 
+to the number of write ports. For uniformly spread write addresses, the higher the number of banks will lower 
+the chance of a bank conflict.
+
+When the writes come in bursts with idle cycles in between, you could add a FIFO to buffer serialized 
+writes and avoid stalls, but then you'd also need to logic to check that reads don't fetch data that's
+stored in that pending-write FIFO. 
+
+In a CPU that supports out-of-order issue, you could also try to schedule instructions such that
+coincident writes to the same bank are avoided as much as possible. Or you might even create an
+optimizing compiler that orders instructions such that banking conflicts are reduced.
+
+Either way, things will get complex very quickly. And sometimes your design is such that stalling
+the write pipeline is impossible, yet banking conflicts can't be avoided.
+
+A different solution is required.
+
+* Note: banking isn't only a potential solution for multiple write ports, but for multiple read ports as well. 
+  [This blog post](https://devblogs.nvidia.com/using-shared-memory-cuda-cc/) has a section on bank conflicts
+  in the shared memories of Nvidia GPUs. *
+
+# Live Value Table 
+
+# XOR-Based Approach
+
+# References
+
+* [Multi-Ported Memories for FPGAs](http://fpgacpu.ca/multiport/)
+
+    Overview of research in this field
+
+* [Efficient Multi-Ported Memories for FPGAs](http://www.eecg.toronto.edu/~steffan/papers/laforest_fpga10.pdf) (LaForest, 2010)
+* [Multi-Ported Memories for FPGAs via XOR](http://fpgacpu.ca/multiport/FPGA2012-LaForest-XOR-Paper.pdf) (LaForest, 2012)
+* [Composing Multi-Ported Memories on FPGAs](http://people.csail.mit.edu/ml/pubs/trets_multiport.pdf) (LaForest, 2014)
+* [A Scalable Unsegmented Multiport Memory for FPGA-Based Systems](https://www.hindawi.com/journals/ijrc/2015/826283/) (Kevin R. Townsend, 2015)
+
+* [Banked Multiported Register Files for High-Frequency Superscalar Microprocessors](https://pdfs.semanticscholar.org/d3f7/adf7eb46fbb405dcb3cd77fc87cbddb2341c.pdf) (Tseng, 2003)
