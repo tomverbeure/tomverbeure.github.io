@@ -6,6 +6,8 @@ categories:
 ---
 
 * [Introduction](#introduction)
+* [Multiple-Read, Single-Write RAMs](#multiple-read-single-write-rams)
+* [Flip-Flop RAMs](#flip-flop-rams) 
 
 # Introduction
 
@@ -45,6 +47,8 @@ of BRAMs in your FPGA.
 All RAMs will have the following behavior:
 
 * synchronous reads only: a read operation will return the result one clock cycle later
+* single direction ports only. Most of the topics discussed here can be expanded to bidirectional
+  ports as well, but it would expand the scope of this post too much.
 * a reads and writes to the same address during the same clock cycle return the newly written value
 * multiple writes through different ports to the same address result in undefined behavior, even
   if the same value is written on both ports.
@@ -54,13 +58,43 @@ Translated to an example waveform:
 ![RAM Behavior Waveform]({{ "/assets/multiport_memories/ram_behavior.svg" | absolute_url }})
 
 
-This blog post is heavily based on the 
+This blog post is *heavily* based on the 
 [Composing Multi-Ported Memories on FPGAs](http://people.csail.mit.edu/ml/pubs/trets_multiport.pdf)
-paper by Charles Eric LaForest, Zimo Li, Tristan O’Rourke, Ming G. Liu, and J. Gregory Steffan.
+paper by [Eric LaForest](https://twitter.com/elaforest), Zimo Li, Tristan O’Rourke, Ming G. Liu, and J. Gregory Steffan.
 Images from this paper have been used with permission.
 
+# Multiple-Read, Single-Write RAMs
 
-# Flip-Flops as Storage Elements 
+Register files or RAMs with multiple read ports and only a single write port are very common in small CPUs 
+that can only retire one instruction per second: multiple read ports to gather the operands
+for an instruction, yet you only need 1 write port to write back the result of the instruction.
+
+The implementation on FPGA is simple: you use 1 BRAMs per read port and you connect the write ports
+of all BRAMs together.
+
+![3 Read - 1 Write]({{ "/assets/multiport_memories/xor_memory-3r_1w.svg" | absolute_url }})
+
+Coincident reads and writes to the same address can often be dealt with by the memory generator
+of your FPGA. For example, the Intel Stratix 10 has the 
+[Coherent Read](https://www.intel.com/content/www/us/en/programmable/documentation/vgo1439451000304.html#jrz1522207840091)
+feature.
+
+If not, you may have to design forwarding logic yourself. In the words of the paper:
+
+> Forwarding logic bypasses a BRAM such that, if a write and a read
+operation access the same location during the same cycle, the read will return the new
+write value instead of the old stored value. To remain compatible with the expected
+behavior of a one-cycle read-after-write latency, we register the write addresses and
+data to delay them by one cycle. 
+
+The coincident read/write problem is not specific to having multiple read ports: it's
+something to be aware of whenever you use dual-ported memories.
+
+Personally, whenever I use dual-ported memories, I simply try to avoid coincident read/writes. 
+Either by making them impossible at the architectural level, or by imposing a requirement
+on the user to never do such a thing. (Don't hold it that way!)
+
+# Flip-Flop RAMs 
 
 The trivial solution to create memories with multiple read and write ports is not use any RAMs at
 all, and use flip-flops instead.
@@ -90,33 +124,6 @@ also quickly become a critical path of your overall design.
 * Note that 4 read and 2 write ports isn't particularly high for a CPU. The 512 x 64 bits register file
 of the ancient Alpha 21464 CPU had 16 read and 8 write ports, which an area cost that was 5x
 the area of the 64KB data cache! *
-
-# Multiple-Read, Single-Write RAMs
-
-RAMs with multiple read port and only a single write port are very common in small CPUs that
-can only retire one instruction per second: you have multiple read ports to gather the operands
-for an instruction, yet you only need 1 write port to write back the result of the instruction.
-
-The implementation on FPGA is simple: use you 2 BRAMs, where each BRAM has 1 read port and 1
-write port. And you connect the write ports together.
-
-As long as you don't read and write to the same address during the same clock cycle, you're golden.
-
-Otherwise, you'll have to dig into the documentation of your FPGA device and figure out exactly
-how it will behave. On some FPGAs, the data that is read will be the one from the previous cycle,
-on others, you will immediately get the value that was written during the same cycles. On some,
-the result will be undefined, on others, you can specify the behavior when you generate the
-BRAM instance. It's a bit of a mess.
-
-Note: the coincident read/write problem is not specific to having multiple read ports: it's
-something to be aware of whenver you use dual-ported memories.
-
-Personally, whenever I used dual-ported memories, I simply try to avoid coincident read/writes at
-the architectural level. Either by making them impossible on principle, or by imposing a requirement
-on the user to never do such a thing. (Don't hold it that way!)
-
-The VexRiscv CPU is a good example of a design that avoids the coincident read/write problem by 
-making them impossible at the architecture level.
 
 # Banking
 
