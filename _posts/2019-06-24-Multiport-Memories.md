@@ -104,7 +104,7 @@ port.
 
 On a RISC-V CPU with 32 32-bit registers, it will cost you 1024 FFs. 
 
-For M write ports and N read ports, you'll also need M-to-1 multiplexer and an N-to-1 multiplexer 
+For M write ports and N read ports, you'll also need an M-to-1 multiplexer and an N-to-1 multiplexer 
 for each storage bit. And a truckload of wiring wiring to connect everything together!
 
 This doesn't have to be a problem: the [SWeRV](https://tomverbeure.github.io/2019/03/13/SweRV.html) CPU
@@ -112,7 +112,9 @@ has a dual-issue pipeline that can retire 2 instructions per clock cycles, and t
 file with 4 read ports and 2 write ports.
 
 This translates into 1024 FFs, 1024 2-to-1 write and 1024 4-to-1 read MUXes, yet if you look at the
-ASIC layout, the register file only takes about XXX % of the total CPU core area.
+ASIC layout, the register file, the orange region below marked *ARF*, only takes about 9% of the total CPU core area.
+
+![SweRV Core Physical Design]({{ "/assets/swerv/slides/13 - SweRV - SweRV Core Phyiscal Design.png" | absolute_url }})
 
 The important caveat is that the SWeRV was designed for an ASIC process, where metal layers are
 plentiful and dense rats nets of wires are usually not a problem.
