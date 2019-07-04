@@ -166,7 +166,7 @@ All of them can be found in my [yosys_deconstructed](https://github.com/tomverbe
 In the text below, I'll always be using `my_design` as the example design on which I'm operating, but keep in mind that
 the graphs or generated code may come from some different example.
 
-## Loading the Whole Design
+## Loading the Design
 
 Before calling `synth_ice40`, you need a design to synthesize. To do that, you can use one
 of the many Yosys design front-ends. The most common one is the Verilog language front-end.
@@ -196,7 +196,9 @@ by running Verilator in linting mode.)
 
 The result for `read_verilog` is a loose collection of design modules on which no consistency checking has been performed.
 For example, if one module instantiates a submodule and connects a port that doesn't exist on the submodule, no error
-will be reported. This will happen later in the process...
+will be reported. Similarly, the ports of instantiated modules haven't even been annotated with a port direction.
+
+This will happen later in the process.
 
 Here is a very simple design, [`simple_design.v`](https://github.com/tomverbeure/yosys_deconstructed/blob/master/simple_design.v):
 
@@ -228,7 +230,7 @@ easier to understand that contents of the RTLIL representation:
 ![read_verilog]({{ "./assets/yosys_deconstructed/simple_design.0.read_verilog.svg" | absolute_url }})
 
 
-# "begin": Loading and Checking the Whole Design
+# "begin": Completing and Checking the Full Design
 
 ```
 begin:
@@ -236,32 +238,51 @@ begin:
 	...
 ```
 
-
 It's very common for a design to instantiate FPGA-specific functional blocks such as PLLs, IO pads, memories, DSPs and more.
 
-The definition of these primitives can be found in some kind of library file. 
+For example, `my_design.v` instantiates [the `SB_IO` IO pad](https://github.com/tomverbeure/yosys_deconstructed/blob/fd74189b2827c623114e30373c2bc4e688c8f67e/my_design.v#L42-L53):
+
+```
+    ...
+	SB_IO u_sb_in (
+		.PACKAGE_PIN(sb_in),
+		.LATCH_INPUT_VALUE(1'b1),
+		.CLOCK_ENABLE(1'b0),
+		.INPUT_CLK(clk),
+		.OUTPUT_CLK(clk),
+		.OUTPUT_ENABLE(1'b0),
+		.D_OUT_0(1'b0),
+		.D_OUT_1(1'b0),
+		.D_IN_0(sb_in_from_pad),
+		.D_IN_1()
+	);
+    ...
+```
+
+The definition of these primitives can be found in a library file. 
 
 There are often different file types for the same library. Most common is a Verilog simulation model and a Liberty (.lib) file 
 for synthesis.
 
-In addition, different library files can be used during different stages of the process: when reading in the whole design,
-the cell library may contain all FPGA primitives that can be instantiated in the FPGA, including those that can't be
-automatically instantiated during techmapping (the process of converting the logic onto FPGA specific primitives.) The
-mapping library will then only contain those cells that should be used during the techmapping phase.
+Different library files can be used during different stages of the process: when reading in the whole design,
+the simulation library may contain all FPGA primitives that can be instantiated in the FPGA, including those that can not be
+automatically instantiated during technology mapping. 
+Meanwhile, the mapping library will only contain those cells that should be used during the techmapping phase.
 
-In this case, we are reading the `cells_sim.v` file. It contains cells that are compatible with the SiliconBlue cell library.
-SiliconBlue Technologies was a startup that was specialized on low power FPGAs.Lattice Semiconductor acquired them in
-2011 and transformed their technology into the Lattice iCE40 FPGA product line.
+In this case, we are reading the [cells_sim.v](https://github.com/YosysHQ/yosys/blob/master/techlibs/ice40/cells_sim.v) library file. 
 
-Some of the `cells_sim.v` are blackboxes that map directly to a hard cell in the FPGA for which there isn't even
+It contains cells that are compatible with the SiliconBlue cell library. SiliconBlue Technologies was a startup that was specialized 
+in low power FPGAs. Lattice Semiconductor acquired them in 2011 and their technology became the basis of the Lattice iCE40 FPGA product line.
+
+Some of the `cells_sim.v` cells are blackboxes that map directly to a hard cell in the FPGA for which there isn't even
 simulation behavior: PLLs, oscillators, RGB LED driver, I2C and SPI unit, ... They are annotated with the `(* blackbox *)`
 Verilog attribute, which instructs Yosys to ignore these modules going forward and just keep them as-is during the
 coming processing passes.
 
-Most of the cells, however, have a simulation model attached to them, allowing the designer to verify a design with special cells
-in simulation as well.
+Most of the cells, however, have a simulation model attached to them, allowing the designer to verify a design with these cells
+in simulation.
 
-However, in this case, the simulation model doesn't matter: `read_verilog` gets called with the `-lib` parameter. This 
+For our purposes though, the simulation model doesn't matter: `read_verilog` gets called with the `-lib` parameter. This 
 tells Yosys to treat all modules in the Verilog file as black boxes except those that explicitly have the attribute 
 `whitebox` or `lib_whitebox`.
 
@@ -273,23 +294,95 @@ begin:
 ```
 
 When instantiating Verilog module, you can often specify module parameters. These parameters can influence the
-way the RTL operates. A good example can be seen below:
+way the RTL operates at instantiation. 
 
-<XXX>
+A good example can be seen below:
 
-When the same module is instantiated in the design multiple times with different parameter values, the hierarchy
-command will create unique versions of these modules, one for each unique set of parameters.
 
-You can see this here in the RTLIL version of the module:
+```Verilog
+module sub_design(clk, in, out);
 
-<XXX>
+	parameter INSERT_FF = 0;
+
+	input clk;
+
+	input in;
+	output out;
+
+	generate if (INSERT_FF) begin
+		reg out_ff;
+		always @(posedge clk) 
+			out_ff <= in;
+		assign out = out_ff;
+	end else begin
+		assign out = in;
+	end endgenerate
+
+endmodule
+```
+
+Depending on the value of the `INSERT_FF` parameter, an instance of the `sub_design` module will either
+feed `in` straigth through to `out`, or it will insert a flip-flop in between.
+
+The `hierarchy` command will create unique versions of these modules, one for each unique set of parameters.
+
+You can see this here in the RTLIL versions of the module.
+
+[Here](https://github.com/tomverbeure/yosys_deconstructed/blob/fd74189b2827c623114e30373c2bc4e688c8f67e/my_design.1.begin.1.hier.il#L183-L192)'s
+the RTLIL for version without FF:
+
+```
+module \sub_design
+  parameter \INSERT_FF
+  attribute \src "my_design.v:6"
+  wire input 1 \clk
+  attribute \src "my_design.v:8"
+  wire input 2 \in
+  attribute \src "my_design.v:9"
+  wire output 3 \out
+  connect \out \in
+end
+```
+
+And [here](https://github.com/tomverbeure/yosys_deconstructed/blob/fd74189b2827c623114e30373c2bc4e688c8f67e/my_design.1.begin.1.hier.il#L3-L23)'s
+the version with FF:
+
+```
+attribute \src "my_design.v:2"
+module $paramod\sub_design\INSERT_FF=1
+  parameter \INSERT_FF
+  attribute \src "my_design.v:13"
+  wire $0\out_ff[0:0]
+  attribute \src "my_design.v:6"
+  wire input 1 \clk
+  attribute \src "my_design.v:8"
+  wire input 2 \in
+  attribute \src "my_design.v:9"
+  wire output 3 \out
+  attribute \src "my_design.v:12"
+  wire \out_ff
+  attribute \src "my_design.v:13"
+  process $proc$my_design.v:13$4
+    assign { } { }
+    assign $0\out_ff[0:0] \in
+    sync posedge \clk
+      update \out_ff $0\out_ff[0:0]
+  end
+  connect \out \out_ff
+end
+```
 
 The optional `-check` parameter will verify that the design is now complete: all modules are defined, either as an RTL
 design, or as a black box.
 
 Finally, the `-auto-top` option will identify which module of the design is the top-level module. A top-level module is
 a module that is not instantiated in any other module. When there are multiple top-level modules (which really
-doesn't happen), Yosys uses a score based heuristic and selects the one with the highest score.
+doesn't happen), Yosys uses a score based heuristic to determine which module is the most likely to be the top-level.
+
+Compare the graphs [before]({{"./assets/yosys_deconstructed/my_design.0.read_verilog.svg" | absolute_url }})
+and [after]({{"./assets/yosys_deconstructed/my_design.1.begin.1.hier.svg" | absolute_url }}) applying the `hierarchy`
+command and notice how, for example, the `sub_design` instances now understand which ports are inputs and outputs.
+
 
 ```
 begin:
@@ -297,13 +390,21 @@ begin:
 	proc
 ```
 
-The final of importing a new design is the first one in a long series of RTLIL transformation steps. 
+The final step of importing a new design is the first one in a long series of RTLIL transformation steps. 
 
-After reading in Verilog, the RTLIL still contains higher level object called a `RTLIL:Process`. These contain
+After reading in Verilog, the RTLIL still contains higher level `RTLIL:Process` objects. These contain
 sub-objects related to case statements, flip-flops with resets, initialization values etc.
 
 The `proc` statement goes through a number of sub-steps that replace all these concepts into multiplexers, 
 flip-flops, and latches. It also identifies asynchronous resets, and removes dead code.
+
+After going through `proc`, the [`simple_design` RTLIL](https://github.com/tomverbeure/yosys_deconstructed/blob/master/simple_design.1.begin.1.proc.il) 
+now looks like this:
+
+![proc]({{ "./assets/yosys_deconstructed/simple_design.1.begin.1.proc.svg" | absolute_url }})
+
+The higher level `PROC` has been replaced with `$adff`, a generic register with asynchronous reset.
+
 
 # Flatten
 
@@ -314,15 +415,10 @@ flatten:
 	deminout
 ```
 
-Right now, our design database is still fully hierarchical. Now is the time to remove all that hierachy into one
-flat blob of logic and cells. Modules with the `blackbox` attribute aren't touched. (It's possible to apply different
-synthesis recipes to different parts of your design. One way to do this is to manually attach the `blackbox` attribute
-to a submodule if you don't want to it be touched.)
+Until now, our design database is still fully hierarchical, but it's time to remove all that and convert everything into one
+flat blob of logic and cells. Modules with the `blackbox` attribute aren't touched. 
 
-The `tribuf` command converts $mux cells with a 'z' input into tristate buffers. This makes it possible to 
-instantiate tristate output pads in a design in a generic way, without explicitly instantiating a technology-specific
-tristate capable IO pad. The '-logic` option converts internal-only tri-state buffers into regular logic: internal
-tri-state buffers were once common in ASICs, but have disappeared by the end of the nineties.
+After flattening, `my_design` looks like [this]({{"./assets/yosys_deconstructed/my_design.2.flatten.0.flatten.svg" | absolute_url }}).
 
-Finally, the `deminout` command goes over all inout ports and replaces them by input-only or output-only ports 
+The `tribuf` and `deminout` commands make some simplifications related to tristate and bidirectional buffers. Let's ignore those here.
 
