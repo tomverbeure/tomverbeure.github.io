@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Yosys Deconstructed - A Walk through the Yosys Synthesis Flow
+title: Yosys Deconstructed - A Walk through the Yosys Synthesis Flow - Part 1
 date:   2019-07-02 10:00:00 -0700
 categories:
 ---
@@ -12,6 +12,7 @@ categories:
 * [Loading the Design](#loading-the-design)
 * ["begin": Completing and Checking the Full Design](#begin-completing-and-checking-the-full-design)
 * ["flatten": From Hierarchy to Blob of Cells](#flatten-from-hierarchy-to-blob-of-cells)
+* [End of Part 1](#end-of-part-1)
 
 ## Introduction
 
@@ -212,7 +213,6 @@ by running Verilator in linting mode.)
 The result for `read_verilog` is a loose collection of design modules on which no consistency checking has been performed.
 For example, if one module instantiates a submodule and connects a port that doesn't exist on the submodule, no error
 will be reported. Similarly, the ports of instantiated modules haven't even been annotated with a port direction.
-
 This will happen later in the process.
 
 Here is a very simple design, [`add_ff_design.v`](https://github.com/tomverbeure/yosys_deconstructed/blob/master/add_ff_design.v),
@@ -413,7 +413,7 @@ And here's what the graph looks like after running `hierarchy`:
 
 Much better!
 
-The instances have a port name and a port direction. An the module name of each instance also includes
+The instances have a port name and a port direction. And the module name of each instance also includes
 the `INSERT_FF=1` parameter to indicate that one instance is not like the other. 
 
 
@@ -473,7 +473,7 @@ flatten:
     ...
 ```
 
-In this day and age, tri-state buffer are only used anymore for IO pads, but there was a time when it was common to have on-chip 
+In this day and age, tri-state buffers are only used for IO pads, but there was a time when it was common to have on-chip 
 tri-state busses with multiple drivers per data line: instead of a potentially large MUX-tree for concentrate all the potential 
 sources of a CPU read bus, there was such a wire with multiple drivers. This saved area, especially for large MUX trees.
 
@@ -508,8 +508,8 @@ module tribuf_design(clk, en_a, a, en_b, b, z0, z1, z2);
 endmodule
 ```
 
-Since the ICE40 FPGA doesn't have internal tri-state busses, they need to be replaced by a MUX. And the tri-stated
-IO pad must be recoginized as such and replaced by a tri-state buffer.
+Since the ICE40 FPGA architecture doesn't support internal tri-state busses, they need to be replaced by a MUX. 
+And the tri-stated IO pad must be recoginized as such and replaced by a tri-state buffer.
 
 That's exaclty what the `tribuf -logic` command does!
 
@@ -551,8 +551,8 @@ flatten:
 	deminout
 ```
 
-The final step of this phase is the `deminout` command, which, if possible, replaces an `inout` port into either
-and `input` or `output` port.
+The final step of this phase is the `deminout` command, which, under limited circumstances, replaces 
+an `inout` port into either and `input` or `output` port.
 
 Yosys has only limited support of `inout` ports and their usage should be avoided.
 
@@ -590,11 +590,18 @@ module \tribuf_design
 
 `z2` has been changed from an `inout` to an `output` port.
 
-This transformation only happens under pretty strict circumstance. It's usefulness isn't very clear to me.
+This transformation only happens under pretty strict circumstances. It's usefulness isn't very clear to me.
 
-# Coarse: Technology Independent Optimizations
+## End of Part 1
 
+We've arrived the end the first import phase of a synthesis flow. 
 
+The design has been parsed and converted into a collection of well known primitives that can be
+mapped onto hardware.
 
+We are now ready for the second major phase: all kinds of technology independent conversions that will help
+us later on with mapping the primitives onto the real hardware.
+
+In part 2 of this series, I will take a look at this second phase.
 
 
