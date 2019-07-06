@@ -95,5 +95,65 @@ that changed with [this recent commit](https://github.com/YosysHQ/yosys/commit/2
 which introduced support for automatic iCE40 DSP inference (a feature that is supported on the UltraPlus members of the
 iCE40 family.)
 
+Right now,  Yosys doesn't have DSP support for any other FPGA family.
+
+Let's have a close look at the individual steps!
+
+```
+	opt_expr
+	opt_clean
+    ...
+```
+
+Let's the `opt_expr` help do the talking: 
+
+> This pass performs const folding on internal cell types with constant inputs.
+It also performs some simple expression rewriting.
+
+The [`add_const_design.v`](https://github.com/tomverbeure/yosys_deconstructed/blob/master/add_const_design.v)
+shows a case where this optimization kicks in:
+
+```Verilog
+	always @(posedge clk)
+		z <= a + b + (1'b1 - 1'b1);
+```
+
+Before `opt_expr`:
+
+![add_const before opt_expr]({{"./assets/yosys_deconstructed/add_const_design.2.flatten.2.deminout.svg" | absolute_url }})
+
+What's interesting about the graph above is that the `1'b1 - 1'b1` expression was already reduced to 4'b0000.
+Tracing back, it turns out that this optimization was already performed at the very beginning, during the
+initial `read_verilog add_const_design.v` step!
+
+And here's the design after `opt_expr`:
+
+![add_const after opt_expr]({{"./assets/yosys_deconstructed/add_const_design.3.coarse.0.opt_expr.svg" | absolute_url }})
+
+The `$pos` cell extracts a vector slice from an existing vector. In this case, it feeds through all 4 input bits
+to the 4 bits output (you can see this by looking at the RTIL.) That's redundant, of course. And, indeed, when
+the next step runs `opt_clean`, we get this:
+
+![add_const after opt_clean]({{"./assets/yosys_deconstructed/add_const_design.3.coarse.1.opt_clean.svg" | absolute_url }})
 
 
+
+	check
+	opt
+	wreduce
+	peepopt
+	opt_clean
+>>> different
+	share
+	techmap -map +/cmp2lut.v -D LUT_WIDTH=4
+	opt_expr
+	opt_clean
+	ice40_dsp       <--- if -dsp !
+	alumacc
+<<<
+	opt
+	fsm
+	opt -fast
+	memory -nomap
+	opt_clean
+```
