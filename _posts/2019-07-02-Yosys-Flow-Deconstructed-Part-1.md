@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Yosys Deconstructed - A Walk through the Yosys Synthesis Flow - Part 1
+title: Yosys Deconstructed - A Walk through the Yosys Synthesis Flow - Part 1 - Getting the Design Ready
 date:   2019-07-02 10:00:00 -0700
 categories:
 ---
