@@ -33,12 +33,12 @@ of re-running multiple optimization steps (including `opt_expr`!) in a while loo
 can be performed anymore.
 
 The sequence of all the `coarse` commands seems to be less exact science and more of recipe that seems
-to be get good results. (Not that there's anything wrong with that!) 
+to be get good results. (Not that there's anything wrong with that!)
 
 In this blog post, I'm looking specifically at the iCE40 synthesis flow, but Yosys supports a lot of other
 technology targets (with varying levels of maturity).
 
-All other flows use a generic `synth` command insteasd of one that's dedicated for iCE40. When using 
+All other flows use a generic `synth` command insteasd of one that's dedicated for iCE40. When using
 the default parameters, the `coarse` phases for the iCE40 and the common command differ as follows:
 
 `./techlibs/ice40/synth_ice40.cc`:
@@ -100,12 +100,13 @@ Right now,  Yosys doesn't have DSP support for any other FPGA family.
 Let's have a close look at the individual steps!
 
 ```
+coarse:
 	opt_expr
 	opt_clean
     ...
 ```
 
-Let's the `opt_expr` help do the talking: 
+Let's the `opt_expr` help do the talking:
 
 > This pass performs const folding on internal cell types with constant inputs.
 It also performs some simple expression rewriting.
@@ -137,8 +138,23 @@ the next step runs `opt_clean`, we get this:
 ![add_const after opt_clean]({{"./assets/yosys_deconstructed/add_const_design.3.coarse.1.opt_clean.svg" | absolute_url }})
 
 
-
+```
+coarse:
+	...
 	check
+    ...
+```
+
+The `check` step doesn't do any transformations but just checks for some common issues:
+
+* combinatorial loops
+* multiple drivers on the same wire
+* used wires without a driver
+
+There are a common checks in most synthesis flows.
+
+
+
 	opt
 	wreduce
 	peepopt
