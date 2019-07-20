@@ -10,40 +10,43 @@ categories:
 ## Introduction
 
 We left Part 1 of this series with a sea of cells that are a very close representation of the
-RTL that was fed originally into Yosys.
+Verilog RTL that was fed into Yosys.
 
-No meaningful optimizations were performed and all functional blocks, other than hand-instantiated primitives,
+No meaningful optimizations were performed and, other than hand-instantiated primitives, all functional blocks
 are generic and relatively high-level. Operators are working on the signals and vectors that were
-declared in the RTL. For example, an addition of 2 vectors is still represented by a single addition
+declared in the RTL. 
+
+For example, an addition of 2 vectors is still represented by a single addition
 operator instead of lower level individual cells.
 
-Many operations can, and sometimes must, be performed at this higher abstraction level before
+Many operations can, and sometimes must, be performed at this level of abstraction before
 moving on the next step where the first technology-specific manipulations will be started.
 
-All this operations are done during the `coarse` phase.
+These operations are done during the `coarse` phase.
 
 ## Coarse: Technology Independent Optimizations
 
 The `coarse` phase has 17 steps. 4 of those are `opt_clean`, which just removes cells and wires that aren't
-used anymore: Yosys encourages that cleaning up is done as a separate pass after real work has been done. It
+used anymore: Yosys encourages that cleaning up is done as a separate pass after real work has been completed. It
 probably makes those 'real' passes easier to implement as well.
 
-Some commands are repeated multiple times, such as `opt_expr`, and `opt`, and even `opt` itself is sequence
+Some commands, such as `opt_expr`, and `opt`, are repeated multiple times. Even `opt` itself is sequence
 of re-running multiple optimization steps (including `opt_expr`!) in a while loop, until no more modifications
 can be performed anymore.
 
-The sequence of all the `coarse` commands seems to be less exact science and more of recipe that seems
-to be get good results. (Not that there's anything wrong with that!)
+The ordering of all the `coarse` commands seems to be less exact science and more a recipe that has been
+shown to get good results. (Not that there's anything wrong with that!)
 
-In this blog post, I'm looking specifically at the iCE40 synthesis flow, but Yosys supports a lot of other
+In this series of blog posts, I'm looking specifically at the iCE40 synthesis flow, but Yosys supports a lot of other
 technology targets (with varying levels of maturity).
 
-All other flows use a generic `synth` command insteasd of one that's dedicated for iCE40. When using
+All other flows use a generic `synth` command, but iCE40 has a technology specific version. When using
 the default parameters, the `coarse` phases for the iCE40 and the common command differ as follows:
 
-`./techlibs/ice40/synth_ice40.cc`:
+[`./techlibs/ice40/synth_ice40.cc`](https://github.com/YosysHQ/yosys/blob/10524064e94b9fe21483092e2733b1b71ae60b4e/techlibs/ice40/synth_ice40.cc#L256-L276):
 
 ```
+coarse:
 	opt_expr
 	opt_clean
 	check
@@ -66,8 +69,9 @@ the default parameters, the `coarse` phases for the iCE40 and the common command
 	opt_clean
 ```
 
-`./techlibs/common/synth.cc`:
+[`./techlibs/common/synth.cc`](https://github.com/YosysHQ/yosys/blob/10524064e94b9fe21483092e2733b1b71ae60b4e/techlibs/common/synth.cc#L205-L230):
 ```
+coarse:
 	opt_expr
 	opt_clean
 	check
@@ -87,8 +91,8 @@ the default parameters, the `coarse` phases for the iCE40 and the common command
 	opt_clean
 ```
 
-Of note is that fact that the `share` command is now done first, before doing some other transformations, instead
-of the other way around.
+Of note is that fact that the `share` command is done first for ICE40, before doing some other transformations, 
+instead of the other way around for the generic version.
 
 For the longest time, `synth_ice40` command invoked the `coarse` phase of the generic `synth` command, but
 that changed with [this recent commit](https://github.com/YosysHQ/yosys/commit/218e9051bbdbbd00620a21e6918e6a4b9bc07867)
@@ -124,7 +128,7 @@ Before `opt_expr`:
 ![add_const before opt_expr]({{"./assets/yosys_deconstructed/add_const_design.2.flatten.2.deminout.svg" | absolute_url }})
 
 What's interesting about the graph above is that the `1'b1 - 1'b1` expression was already reduced to 4'b0000.
-Tracing back, it turns out that this optimization was already performed at the very beginning, during the
+Tracing back, it turns out that this optimization was already performed at the very beginning during the
 initial `read_verilog add_const_design.v` step!
 
 And here's the design after `opt_expr`:
