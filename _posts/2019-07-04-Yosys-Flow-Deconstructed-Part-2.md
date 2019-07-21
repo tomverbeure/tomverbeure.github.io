@@ -353,7 +353,31 @@ command, it reduces to this:
 We've already discussed `opt_expr` earlier. It's interesting that it is called again so quickly after the
 previous invocation, especially since it's part of the loop that follows!
 
+`opt_merge` finds and merges common expressions. Have a look at this code:
 
+```Verilog
+    always @(posedge clk, negedge reset_)
+        if (!reset_) begin
+            z0 <= 8'd0;
+            z1 <= 8'd0;
+        end
+        else begin
+            z0 <= a + b + 1'b1;
+            z1 <= a + b + 1'b1;
+        end
+```
+
+This code seems wasteful in having 2 instances of `a + b`, but I personally find myself writing code this way quite often:
+the 2 instances may be separated quite a bit in more complex code, and declaring a common sub-expression explicitly can
+make the code less readable. I simply count on the synthesis tool to be smart about it.
+
+Before `opt_merge`, `a + b` is calculated twice:
+
+![merge_design before merge]({{"./assets/yosys_deconstructed/merge_design.3.coarse.3.opt_expr.svg" | absolute_url }})
+
+After `opt_merge`, there is only one such instance:
+
+![merge_design after merge]({{"./assets/yosys_deconstructed/merge_design.3.coarse.4.opt_merge.svg" | absolute_url }})
 
 
 
