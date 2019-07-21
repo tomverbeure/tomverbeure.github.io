@@ -1,0 +1,61 @@
+
+<html>
+    <head>
+        <title>CVT Calculator</title>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+    </head>
+    <body>
+        <script>
+            function check_integer(value, result_id) {
+                var n = Number(value)
+                if (Number.isInteger(n)){
+                    $(result_id).text("Ok");
+                }
+                else{
+                    $(result_id).text("Enter integer!");
+                }
+            }
+            
+        </script>
+        <h1>CVT Calculator</h1>
+        <h2>Input Parameters</h2>
+            <form id="parameters">
+                <table>
+                    <tr>
+                        <td><label>Horizontal Pixels</label></td>
+                        <td><input id="horiz_pixels" type="text" value="640" /></td>
+                        <td><label id="horiz_valid">Ok</label></td>
+                    </tr>
+                    <tr>
+                        <td><label>Vertical Pixels</label></td>
+                        <td><input id="vert_pixels" type="text" value="480" /></td>
+                        <td><label id="vert_valid">Ok</label></td>
+                    </tr>
+                    <tr>
+                        <td><label>Refersh Rate (Hz)</label></td>
+                        <td><input id="refresh_rate" type="text" value="60" /></td>
+                        <td><label id="refresh_valid">Ok</label></td>
+                    </tr>
+                    <tr>
+                        <td><label>Margins</label></td>
+                        <td><select name="margins"><option value="y">Yes</option><option value="n" selected>No</option></select></select>
+                    </tr>
+                    <tr>
+                        <td><label>Interlaced</label></td>
+                        <td><select name="interlaced"><option value="y">Yes</option><option value="n" selected>No</option></select></select>
+                    </tr>
+                    <tr>
+                        <td><label>Reduced Blanking</label></td>
+                        <td><select name="reduced_blanking"><option value="y">Yes</option><option value="n" selected>No</option></select></select>
+                    </tr>
+                </table>
+            <script type="text/javascript">
+                $('#horiz_pixels').change( function(){ check_integer($('#horiz_pixels').attr("value"), '#horiz_valid'); })
+                $('#vert_pixels') .change( function(){ check_integer($('#vert_pixels').attr("value"), '#vert_valid'); })
+                $('#refresh_rate').change( function(){ check_integer($('#refresh_rate').attr("value"), '#refresh_valid'); })
+            </script>
+            </form>
+
+    </body>
+</html>
+
