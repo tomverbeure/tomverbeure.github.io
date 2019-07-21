@@ -10,11 +10,134 @@
                 var n = Number(value)
                 if (Number.isInteger(n)){
                     $(result_id).text("Ok");
+                    return true;
                 }
                 else{
                     $(result_id).text("Enter integer!");
+                    return false;
                 }
             }
+
+            // Derived from https://github.com/kevinlekiller/cvt_modeline_calculator_12/blob/master/cvt12.c
+
+
+            // Definition of Constants
+            var CLOCK_STEP              = 0.25;         // Default parameter
+            var H_SYNC_PER              = 0.08;
+            var MIN_V_PORCH_RND         = 3;
+            var MIN_VBPORCH             = 6;
+            var MIN_VSYNC_BP            = 550;
+            var RB_H_BLANK              = 160;
+            var RB_H_SYNC               = 32;
+            var RB_MIN_V_BLANK          = 460;
+            var RB_V_FPORCH             = 3;
+            var MARGIN_PER              = 1.8;
+
+            var CELL_GRAN               = 8;
+            var CELL_GRAN_RND;
+
+            var IP_FREQ_RQD;
+            var V_FIELD_RATE_RQD;
+            var MARGINS_RQD;
+
+            var H_PIXELS;
+            var H_PIXELS_RND;
+            var LEFT_MARGIN;
+            var RIGHT_MARGIN;
+            var TOTAL_ACTIVE_PIXELS;
+            var V_LINES;
+            var V_LINES_RND;
+            var TOP_MARGIN;
+            var BOT_MARGIN;
+
+            var INTERLACE;
+
+            var ASPECT_RATIO;
+            var V_SYNC_RND;
+
+            var H_PERIOD_EST;
+            var V_SYNC_BP;
+            var V_BACK_PORCH;
+
+
+            //var ACT_FIELD_RATE          = ...
+            //var ACT_FRAME_RATE          = ...
+            //var ACT_H_FREQ              = ...
+            //var ACT_PIXEL_FREQ          = ...
+            //var ACT_VBI_LINES           = ...
+            //var BOT_MARGIN              = ...
+            //var CELL_GRAN_RND           = ...
+
+            //var C_PRIME = ...;
+            //var M_PRIME = ...;
+
+            function calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, reduced_blanking){
+
+                // Input parameters
+                H_PIXELS            = horiz_pixels;
+                V_LINES             = vert_pixels;
+                IP_FREQ_RQD         = refresh_rate;
+                MARGINS_RQD         = margins;
+                INT_RQD             = interlaced;
+
+                // 5.2 Computation of Common Parameters
+                V_FIELD_RATE_RQD    = INT_RQD ? IP_FREQ_RQD * 2 : IP_FREQ_RQD;
+
+                CELL_GRAN_RND       = Math.floor(CELL_GRAN);
+
+                H_PIXELS_RND        = Math.floor(H_PIXELS / CELL_GRAN_RND) * CELL_GRAN_RND;
+
+                LEFT_MARGIN         = MARGINS_RQD ? (Math.floor((H_PIXELS_RND * MARGIN_PER / 100) / CELL_GRAN_RND) * CELL_GRAN_RND) : 0;
+                RIGHT_MARGIN        = LEFT_MARGIN;
+
+                TOTAL_ACTIVE_PIXELS = H_PIXELS_RND + LEFT_MARGIN + RIGHT_MARGIN;
+                
+                V_LINES_RND         = INT_RQD ? Math.floor(V_LINES / 2) : Math.floor(V_LINES);
+
+                TOP_MARGIN          = MARGINS_RQD ? Math.floor(V_LINES_RND * MARGIN_PER / 100) : 0;
+                BOT_MARGIN          = TOP_MARGIN;
+
+                INTERLACE           = INT_RQD ? 0.5 : 0;
+
+                // Calculate Aspect Ratio
+                var ver_pixels = INT_RQD ? 2 * V_LINES_RND : V_LINES_RND;
+                var hor_pixels_4_3   = CELL_GRAN_RND * Math.round(ver_pixels *  4 /  3) / CELL_GRAN_RND;
+                var hor_pixels_16_9  = CELL_GRAN_RND * Math.round(ver_pixels * 16 /  9) / CELL_GRAN_RND;
+                var hor_pixels_16_10 = CELL_GRAN_RND * Math.round(ver_pixels * 16 / 10) / CELL_GRAN_RND;
+                var hor_pixels_5_4   = CELL_GRAN_RND * Math.round(ver_pixels *  5 /  4) / CELL_GRAN_RND;
+                var hor_pixels_15_9  = CELL_GRAN_RND * Math.round(ver_pixels * 15 /  9) / CELL_GRAN_RND;
+
+                ASPECT_RATIO = (hor_pixels_4_3   == H_PIXELS_RND) ? "4:3"   : 
+                               (hor_pixels_16_9  == H_PIXELS_RND) ? "16:9"  : 
+                               (hor_pixels_16_10 == H_PIXELS_RND) ? "16:10" : 
+                               (hor_pixels_5_4   == H_PIXELS_RND) ? "5:4"   : 
+                               (hor_pixels_15_9  == H_PIXELS_RND) ? "15:9"  : 
+                                                                    "Unknown";
+                console.log("ASPECT_RATIO: " + ASPECT_RATIO);
+
+                // V_SYNC_RND depends on aspect ratio and reduced blanking
+                if      (reduced_blanking == "rb_v2") V_SYNC_RND = 8;
+                else if (ASPECT_RATIO == "4:3")       V_SYNC_RND = 4;
+                else if (ASPECT_RATIO == "16:9")      V_SYNC_RND = 5;
+                else if (ASPECT_RATIO == "16:10")     V_SYNC_RND = 6;
+                else if (ASPECT_RATIO == "5:4")       V_SYNC_RND = 7;
+                else if (ASPECT_RATIO == "15:9")      V_SYNC_RND = 7;
+                else                                  V_SYNC_RND = 10;
+
+                if (reduced_blanking == "n"){
+                    // 5.3 Computation of CRT Timing Parameters
+                    H_PERIOD_EST = ((1 / V_FIELD_RATE_RQD) - MIN_VSYNC_BP / 1000000.0) / (V_LINES_RND + (2 * TOP_MARGIN) + MIN_V_PORCH_RND + INTERLACE) * 1000000.0;
+                    V_SYNC_BP = Math.floor(MIN_VSYNC_BP / H_PERIOD_EST) + 1;
+                    if (V_SYNC_BP < V_SYNC_RND + MIN_V_BPORCH){
+                        V_SYNC_BP = V_SYNC_RND + MIN_V_BPORCH;
+                    }
+                }
+                else{
+                }
+
+                console.log("H_PERIOD_EST: " + H_PERIOD_EST);
+            }
+
             
         </script>
         <h1>CVT Calculator</h1>
@@ -38,24 +161,52 @@
                     </tr>
                     <tr>
                         <td><label>Margins</label></td>
-                        <td><select name="margins"><option value="y">Yes</option><option value="n" selected>No</option></select></select>
+                        <td><select id="margins" name="margins"><option value="y">Yes</option><option value="n" selected>No</option></select>
                     </tr>
                     <tr>
                         <td><label>Interlaced</label></td>
-                        <td><select name="interlaced"><option value="y">Yes</option><option value="n" selected>No</option></select></select>
+                        <td><select id="interlaced" name="interlaced"><option value="y">Yes</option><option value="n" selected>No</option></select>
                     </tr>
                     <tr>
                         <td><label>Reduced Blanking</label></td>
-                        <td><select name="reduced_blanking"><option value="y">Yes</option><option value="n" selected>No</option></select></select>
+                        <td><select id="reduced_blanking" name="reduced_blanking">
+                                <option value="No" selected>No</option>
+                                <option value="rb_v1">RB</option>
+                                <option value="rb_v2">RB v2</option>
+                            </select>
                     </tr>
                 </table>
-            <script type="text/javascript">
-                $('#horiz_pixels').change( function(){ check_integer($('#horiz_pixels').attr("value"), '#horiz_valid'); })
-                $('#vert_pixels') .change( function(){ check_integer($('#vert_pixels').attr("value"), '#vert_valid'); })
-                $('#refresh_rate').change( function(){ check_integer($('#refresh_rate').attr("value"), '#refresh_valid'); })
-            </script>
             </form>
 
+            <script type="text/javascript">
+                $('#horiz_pixels').change( function(){ check_integer($('#horiz_pixels').attr("value"), '#horiz_valid');   update_status(); })
+                $('#vert_pixels') .change( function(){ check_integer($('#vert_pixels').attr("value"), '#vert_valid');     update_status(); })
+                $('#refresh_rate').change( function(){ check_integer($('#refresh_rate').attr("value"), '#refresh_valid'); update_status(); })
+                $('#margins')         .change( function(){ update_status(); })
+                $('#interlaced')      .change( function(){ update_status(); })
+                $('#reduced_blanking').change( function(){ update_status(); })
+            </script>
+        <h2>Status</h2>
+
+            <script type="text/javascript">
+
+
+                function check_values(){
+                }
+
+                function update_status(){
+                    var horiz_pixels        = Number($('#horiz_pixels').attr("value"));
+                    var vert_pixels         = Number($('#vert_pixels').attr("value"));
+                    var refresh_rate        = Number($('#refresh_rate').attr("value"));
+                    var margins             = $('#margins').attr("value") == "y";
+                    var interlaced          = $('#interlaced').attr("value") == "y";
+                    var reduced_blanking    = $('#reduced_blanking').attr("value");
+
+                    calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, reduced_blanking);
+                }
+
+                
+            </script>
     </body>
 </html>
 
