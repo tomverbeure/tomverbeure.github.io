@@ -18,20 +18,18 @@
                 }
             }
 
-            // Derived from https://github.com/kevinlekiller/cvt_modeline_calculator_12/blob/master/cvt12.c
-
-
-            // Definition of Constants
             var CLOCK_STEP              = 0.25;         // Default parameter
             var H_SYNC_PER              = 0.08;
             var MIN_V_PORCH_RND         = 3;
-            var MIN_VBPORCH             = 6;
+            var MIN_V_BPORCH            = 6;
             var MIN_VSYNC_BP            = 550;
             var RB_H_BLANK              = 160;
             var RB_H_SYNC               = 32;
             var RB_MIN_V_BLANK          = 460;
             var RB_V_FPORCH             = 3;
             var MARGIN_PER              = 1.8;
+            var C_PRIME                 = 30;
+            var M_PRIME                 = 300;
 
             var CELL_GRAN               = 8;
             var CELL_GRAN_RND;
@@ -58,18 +56,15 @@
             var H_PERIOD_EST;
             var V_SYNC_BP;
             var V_BACK_PORCH;
-
-
-            //var ACT_FIELD_RATE          = ...
-            //var ACT_FRAME_RATE          = ...
-            //var ACT_H_FREQ              = ...
-            //var ACT_PIXEL_FREQ          = ...
-            //var ACT_VBI_LINES           = ...
-            //var BOT_MARGIN              = ...
-            //var CELL_GRAN_RND           = ...
-
-            //var C_PRIME = ...;
-            //var M_PRIME = ...;
+            var TOTAL_V_LINES;
+            var IDEAL_DUTY_CYCLE;
+            var H_BLANK;
+            var TOTAL_PIXELS;
+            var ACT_PIXEL_FREQ;
+            var ACT_H_FREQ;
+            var ACT_FIELD_RATE;
+            var ACT_FRAME_RATE;
+            var V_BLANK;
 
             function calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, reduced_blanking){
 
@@ -80,10 +75,10 @@
                 MARGINS_RQD         = margins;
                 INT_RQD             = interlaced;
 
+                CELL_GRAN_RND       = Math.floor(CELL_GRAN);
+
                 // 5.2 Computation of Common Parameters
                 V_FIELD_RATE_RQD    = INT_RQD ? IP_FREQ_RQD * 2 : IP_FREQ_RQD;
-
-                CELL_GRAN_RND       = Math.floor(CELL_GRAN);
 
                 H_PIXELS_RND        = Math.floor(H_PIXELS / CELL_GRAN_RND) * CELL_GRAN_RND;
 
@@ -106,12 +101,19 @@
                 var hor_pixels_16_10 = CELL_GRAN_RND * Math.round(ver_pixels * 16 / 10) / CELL_GRAN_RND;
                 var hor_pixels_5_4   = CELL_GRAN_RND * Math.round(ver_pixels *  5 /  4) / CELL_GRAN_RND;
                 var hor_pixels_15_9  = CELL_GRAN_RND * Math.round(ver_pixels * 15 /  9) / CELL_GRAN_RND;
+                var hor_pixels_43_18 = CELL_GRAN_RND * Math.round(ver_pixels * 43 / 18) / CELL_GRAN_RND;
+                var hor_pixels_64_27 = CELL_GRAN_RND * Math.round(ver_pixels * 64 / 27) / CELL_GRAN_RND;
+                var hor_pixels_12_5  = CELL_GRAN_RND * Math.round(ver_pixels * 12 /  5) / CELL_GRAN_RND;
 
                 ASPECT_RATIO = (hor_pixels_4_3   == H_PIXELS_RND) ? "4:3"   : 
                                (hor_pixels_16_9  == H_PIXELS_RND) ? "16:9"  : 
                                (hor_pixels_16_10 == H_PIXELS_RND) ? "16:10" : 
                                (hor_pixels_5_4   == H_PIXELS_RND) ? "5:4"   : 
                                (hor_pixels_15_9  == H_PIXELS_RND) ? "15:9"  : 
+                               // Following aspect ratios are not defined by the spec...
+                               (hor_pixels_43_18 == H_PIXELS_RND) ? "43:18" : 
+                               (hor_pixels_64_27 == H_PIXELS_RND) ? "64:27" : 
+                               (hor_pixels_12_5  == H_PIXELS_RND) ? "12:5"  : 
                                                                     "Unknown";
                 console.log("ASPECT_RATIO: " + ASPECT_RATIO);
 
@@ -127,15 +129,53 @@
                 if (reduced_blanking == "n"){
                     // 5.3 Computation of CRT Timing Parameters
                     H_PERIOD_EST = ((1 / V_FIELD_RATE_RQD) - MIN_VSYNC_BP / 1000000.0) / (V_LINES_RND + (2 * TOP_MARGIN) + MIN_V_PORCH_RND + INTERLACE) * 1000000.0;
+
                     V_SYNC_BP = Math.floor(MIN_VSYNC_BP / H_PERIOD_EST) + 1;
-                    if (V_SYNC_BP < V_SYNC_RND + MIN_V_BPORCH){
+                    if (V_SYNC_BP < (V_SYNC_RND + MIN_V_BPORCH)){
                         V_SYNC_BP = V_SYNC_RND + MIN_V_BPORCH;
                     }
+
+                    V_BACK_PORCH = V_SYNC_BP - V_SYNC_RND;
+
+                    TOTAL_V_LINES = V_LINES_RND + TOP_MARGIN + BOT_MARGIN + V_SYNC_BP + INTERLACE + MIN_V_PORCH_RND;
+
+                    IDEAL_DUTY_CYCLE = C_PRIME - (M_PRIME * H_PERIOD_EST/1000);
+
+                    if (IDEAL_DUTY_CYCLE < 20){
+                        H_BLANK = Math.floor(TOTAL_ACTIVE_PIXELS * 20 / (100-20) / (2 * CELL_GRAN_RND)) * (2 * CELL_GRAN_RND);
+                    }
+                    else{
+                        H_BLANK = Math.floor(TOTAL_ACTIVE_PIXELS * IDEAL_DUTY_CYCLE / (100 - IDEAL_DUTY_CYCLE) / (2 * CELL_GRAN_RND)) * (2 * CELL_GRAN_RND);
+                    }
+
+                    TOTAL_PIXELS = TOTAL_ACTIVE_PIXELS + H_BLANK;
+
+                    ACT_PIXEL_FREQ = CLOCK_STEP * Math.floor(TOTAL_PIXELS / H_PERIOD_EST / CLOCK_STEP);
+
+                    ACT_H_FREQ = 1000 * ACT_PIXEL_FREQ / TOTAL_PIXELS;
+
+                    ACT_FIELD_RATE = 1000 * ACT_H_FREQ / TOTAL_V_LINES;
+
+                    ACT_FRAME_RATE = INT_RQD ? ACT_FIELD_RATE / 2 : ACT_FIELD_RATE;
+
+                    V_BLANK = V_SYNC_BP + MIN_V_PORCH_RND;
                 }
                 else{
                 }
 
-                console.log("H_PERIOD_EST: " + H_PERIOD_EST);
+                console.log("ACT_FRAME_RATE: " + ACT_FRAME_RATE);
+                console.log("ACT_FIELD_RATE: " + ACT_FIELD_RATE);
+                console.log("");
+                console.log("PIXEL FREQ:     " + ACT_PIXEL_FREQ);
+                console.log("");
+                console.log("H TOTAL:        " + TOTAL_PIXELS);
+                console.log("H WIDTH:        " + TOTAL_ACTIVE_PIXELS);
+                console.log("H FREQ:         " + ACT_H_FREQ);
+                console.log("");
+                console.log("V TOTAL:        " + TOTAL_V_LINES);
+                console.log("V HEIGHT:       " + V_LINES_RND);
+                console.log("V FREQ:         " + ACT_FRAME_RATE);
+                console.log("---------------------------");
             }
 
             
@@ -170,7 +210,7 @@
                     <tr>
                         <td><label>Reduced Blanking</label></td>
                         <td><select id="reduced_blanking" name="reduced_blanking">
-                                <option value="No" selected>No</option>
+                                <option value="n" selected>No</option>
                                 <option value="rb_v1">RB</option>
                                 <option value="rb_v2">RB v2</option>
                             </select>
@@ -187,9 +227,89 @@
                 $('#reduced_blanking').change( function(){ update_status(); })
             </script>
         <h2>Status</h2>
+            <table>
+                <tr>
+                    <th></th>
+                    <th>CVT</th>
+                    <th>CVT-RB</th>
+                    <th>CVT-RBv2</th>
+                    <th></th>
+                </tr>
+                <tr>
+                    <td><label>Aspect Ratio</label></td>
+                    <td><label id="cvt-aspect_ratio"></label></td>
+                    <td><label id="cvt_rb-aspect_ratio"></label></td>
+                    <td><label id="cvt_rb2-aspect_ratio"></label></td>
+                    <td><label>MHz</label></td>
+                </tr>
+                <tr>
+                    <td><label>Pixel Clock</label></td>
+                    <td><label id="cvt-pclock"></label></td>
+                    <td><label id="cvt_rb-pclock"></label></td>
+                    <td><label id="cvt_rb2-pclock"></label></td>
+                    <td><label>MHz</label></td>
+                </tr>
+                <tr>
+                    <td><label>H Total</label></td>
+                    <td><label id="cvt-htotal"></label></td>
+                    <td><label id="cvt_rb-htotal"></label></td>
+                    <td><label id="cvt_rb2-htotal"></label></td>
+                    <td><label>Pixels</label></td>
+                </tr>
+                <tr>
+                    <td><label>H Pixels</label></td>
+                    <td><label id="cvt-hpixels"></label></td>
+                    <td><label id="cvt_rb-hpixels"></label></td>
+                    <td><label id="cvt_rb2-hpixels"></label></td>
+                    <td><label>Pixels</label></td>
+                </tr>
+                <tr>
+                    <td><label>H Blank</label></td>
+                    <td><label id="cvt-hblank"></label></td>
+                    <td><label id="cvt_rb-hblank"></label></td>
+                    <td><label id="cvt_rb2-hblank"></label></td>
+                    <td><label>Pixels</label></td>
+                </tr>
+                <tr>
+                    <td><label>H Freq</label></td>
+                    <td><label id="cvt-hfreq"></label></td>
+                    <td><label id="cvt_rb-hfreq"></label></td>
+                    <td><label id="cvt_rb2-hfreq"></label></td>
+                    <td><label>kHz</label></td>
+                </tr>
+
+                <tr>
+                    <td><label>V Total</label></td>
+                    <td><label id="cvt-vtotal"></label></td>
+                    <td><label id="cvt_rb-vtotal"></label></td>
+                    <td><label id="cvt_rb2-vtotal"></label></td>
+                    <td><label>Pixels</label></td>
+                </tr>
+                <tr>
+                    <td><label>V Pixels</label></td>
+                    <td><label id="cvt-vpixels"></label></td>
+                    <td><label id="cvt_rb-vpixels"></label></td>
+                    <td><label id="cvt_rb2-vpixels"></label></td>
+                    <td><label>Pixels</label></td>
+                </tr>
+                <tr>
+                    <td><label>V Blank</label></td>
+                    <td><label id="cvt-vblank"></label></td>
+                    <td><label id="cvt_rb-vblank"></label></td>
+                    <td><label id="cvt_rb2-vblank"></label></td>
+                    <td><label>Pixels</label></td>
+                </tr>
+                <tr>
+                    <td><label>V Freq</label></td>
+                    <td><label id="cvt-vfreq"></label></td>
+                    <td><label id="cvt_rb-vfreq"></label></td>
+                    <td><label id="cvt_rb2-vfreq"></label></td>
+                    <td><label>Hz</label></td>
+                </tr>
+            </table>
+
 
             <script type="text/javascript">
-
 
                 function check_values(){
                 }
@@ -203,8 +323,23 @@
                     var reduced_blanking    = $('#reduced_blanking').attr("value");
 
                     calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, reduced_blanking);
+
+                    $("#cvt-aspect_ratio").text(ASPECT_RATIO);
+
+                    $("#cvt-pclock").text(ACT_PIXEL_FREQ);
+
+                    $("#cvt-htotal").text(TOTAL_PIXELS);
+                    $("#cvt-hpixels").text(TOTAL_ACTIVE_PIXELS);
+                    $("#cvt-hblank").text(H_BLANK);
+                    $("#cvt-hfreq").text(Math.round(ACT_H_FREQ*1000)/1000);
+
+                    $("#cvt-vtotal").text(TOTAL_V_LINES);
+                    $("#cvt-vpixels").text(V_LINES_RND);
+                    $("#cvt-vblank").text(V_BLANK);
+                    $("#cvt-vfreq").text(Math.round(ACT_FRAME_RATE*1000)/1000);
                 }
 
+                window.onload = update_status();
                 
             </script>
     </body>
