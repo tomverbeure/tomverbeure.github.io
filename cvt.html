@@ -143,8 +143,6 @@
                                (hor_pixels_64_27 == H_PIXELS_RND) ? "64:27" : 
                                (hor_pixels_12_5  == H_PIXELS_RND) ? "12:5"  : 
                                                                     "Unknown";
-                console.log("ASPECT_RATIO: " + ASPECT_RATIO);
-
                 // V_SYNC_RND depends on aspect ratio and reduced blanking
                 if      (reduced_blanking == "rb_v2") V_SYNC_RND = 8;
                 else if (ASPECT_RATIO == "4:3")       V_SYNC_RND = 4;
@@ -177,8 +175,11 @@
                     else{
                         H_BLANK = Math.floor(TOTAL_ACTIVE_PIXELS * IDEAL_DUTY_CYCLE / (100 - IDEAL_DUTY_CYCLE) / (2 * CELL_GRAN_RND)) * (2 * CELL_GRAN_RND);
                     }
-
                     TOTAL_PIXELS = TOTAL_ACTIVE_PIXELS + H_BLANK;
+
+                    H_SYNC = Math.floor(H_SYNC_PER * TOTAL_PIXELS / CELL_GRAN_RND) * CELL_GRAN_RND;
+                    H_BACK_PORCH = H_BLANK / 2;
+                    H_FRONT_PORCH = H_BLANK - H_SYNC - H_BACK_PORCH;
 
                     ACT_PIXEL_FREQ = CLOCK_STEP * Math.floor(TOTAL_PIXELS / H_PERIOD_EST / CLOCK_STEP);
 
@@ -202,11 +203,19 @@
                         V_BLANK = ACT_VBI_LINES;
                         V_FRONT_PORCH = ACT_VBI_LINES - V_SYNC_RND - 6;
                         V_BACK_PORCH  = 6;
+
+                        H_SYNC = 32;
+                        H_BACK_PORCH = 40; 
+                        H_FRONT_PORCH = H_BLANK - H_SYNC - H_BACK_PORCH;
                     }
                     else{
                         V_BLANK = ACT_VBI_LINES;
                         V_FRONT_PORCH = 3;
                         V_BACK_PORCH  = ACT_VBI_LINES - V_FRONT_PORCH - V_SYNC_RND;
+
+                        H_SYNC = 32;
+                        H_BACK_PORCH = 80; 
+                        H_FRONT_PORCH = H_BLANK - H_SYNC - H_BACK_PORCH;
                     }
                 }
 
@@ -298,6 +307,27 @@
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr>
+                    <td><label>H Front Porch</label></td>
+                    <td><label id="cvt-hfront"></label></td>
+                    <td><label id="cvt_rb-hfront"></label></td>
+                    <td><label id="cvt_rb2-hfront"></label></td>
+                    <td><label>Pixels</label></td>
+                </tr>
+                <tr>
+                    <td><label>H Sync</label></td>
+                    <td><label id="cvt-hsync"></label></td>
+                    <td><label id="cvt_rb-hsync"></label></td>
+                    <td><label id="cvt_rb2-hsync"></label></td>
+                    <td><label>Pixels</label></td>
+                </tr>
+                <tr>
+                    <td><label>H Back Porch</label></td>
+                    <td><label id="cvt-hback"></label></td>
+                    <td><label id="cvt_rb-hback"></label></td>
+                    <td><label id="cvt_rb2-hback"></label></td>
+                    <td><label>Pixels</label></td>
+                </tr>
+                <tr>
                     <td><label>H Freq</label></td>
                     <td><label id="cvt-hfreq"></label></td>
                     <td><label id="cvt_rb-hfreq"></label></td>
@@ -378,6 +408,9 @@
                     $("#cvt-htotal").text(TOTAL_PIXELS);
                     $("#cvt-hpixels").text(TOTAL_ACTIVE_PIXELS);
                     $("#cvt-hblank").text(H_BLANK);
+                    $("#cvt-hfront").text(H_FRONT_PORCH);
+                    $("#cvt-hsync").text(H_SYNC);
+                    $("#cvt-hback").text(H_BACK_PORCH);
                     $("#cvt-hfreq").text(Math.round(ACT_H_FREQ*1000)/1000);
 
                     $("#cvt-vtotal").text(TOTAL_V_LINES);
@@ -397,6 +430,9 @@
                     $("#cvt_rb-htotal").text(TOTAL_PIXELS);
                     $("#cvt_rb-hpixels").text(TOTAL_ACTIVE_PIXELS);
                     $("#cvt_rb-hblank").text(H_BLANK);
+                    $("#cvt_rb-hfront").text(H_FRONT_PORCH);
+                    $("#cvt_rb-hsync").text(H_SYNC);
+                    $("#cvt_rb-hback").text(H_BACK_PORCH);
                     $("#cvt_rb-hfreq").text(Math.round(ACT_H_FREQ*1000)/1000);
 
                     $("#cvt_rb-vtotal").text(TOTAL_V_LINES);
@@ -416,6 +452,9 @@
                     $("#cvt_rb2-htotal").text(TOTAL_PIXELS);
                     $("#cvt_rb2-hpixels").text(TOTAL_ACTIVE_PIXELS);
                     $("#cvt_rb2-hblank").text(H_BLANK);
+                    $("#cvt_rb2-hfront").text(H_FRONT_PORCH);
+                    $("#cvt_rb2-hsync").text(H_SYNC);
+                    $("#cvt_rb2-hback").text(H_BACK_PORCH);
                     $("#cvt_rb2-hfreq").text(Math.round(ACT_H_FREQ*1000)/1000);
 
                     $("#cvt_rb2-vtotal").text(TOTAL_V_LINES);
