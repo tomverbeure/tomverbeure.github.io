@@ -18,10 +18,10 @@
                 }
             }
 
-            var CLOCK_STEP              = 0.25;         // Default parameter
+            var CLOCK_STEP;
             var H_SYNC_PER              = 0.08;
             var MIN_V_PORCH_RND         = 3;
-            var MIN_V_BPORCH            = 6;
+            var MIN_V_BPORCH;
             var MIN_VSYNC_BP            = 550;
             var RB_H_BLANK              = 160;
             var RB_H_SYNC               = 32;
@@ -66,7 +66,26 @@
             var ACT_FRAME_RATE;
             var V_BLANK;
 
-            function calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, reduced_blanking){
+            function calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, reduced_blanking, video_optimized){
+
+                if (reduced_blanking == "n" || reduced_blanking == "rb"){
+                    CLOCK_STEP          = 0.25;
+                    MIN_V_BPORCH        = 6;
+                    RB_H_BLANK          = 160;
+                    RB_H_SYNC           = 32;
+                    RB_MIN_V_BLANK      = 460;
+                    RB_V_FPORCH         = 3;
+                    REFRESH_MULTIPLIER  = 1;
+                }
+                else if (reduced_blanking == "rb_v2"){
+                    CLOCK_STEP          = 0.001;
+                    MIN_V_BPORCH        = 6;
+                    RB_H_BLANK          = 80;
+                    RB_H_SYNC           = 32;
+                    RB_MIN_V_BLANK      = 460;
+                    RB_V_FPORCH         = 1;
+                    REFRESH_MULTIPLIER  = video_optimized ? 1000/1001 : 1;
+                }
 
                 // Input parameters
                 H_PIXELS            = horiz_pixels;
@@ -151,17 +170,30 @@
                     TOTAL_PIXELS = TOTAL_ACTIVE_PIXELS + H_BLANK;
 
                     ACT_PIXEL_FREQ = CLOCK_STEP * Math.floor(TOTAL_PIXELS / H_PERIOD_EST / CLOCK_STEP);
-
-                    ACT_H_FREQ = 1000 * ACT_PIXEL_FREQ / TOTAL_PIXELS;
-
-                    ACT_FIELD_RATE = 1000 * ACT_H_FREQ / TOTAL_V_LINES;
-
-                    ACT_FRAME_RATE = INT_RQD ? ACT_FIELD_RATE / 2 : ACT_FIELD_RATE;
-
-                    V_BLANK = V_SYNC_BP + MIN_V_PORCH_RND;
                 }
                 else{
+                    H_PERIOD_EST = ((1000000 / V_FIELD_RATE_RQD) - RB_MIN_V_BLANK) / (V_LINES_RND + TOP_MARGIN + BOT_MARGIN);
+                    H_BLANK = RB_H_BLANK;
+
+                    VBI_LINES = Math.floor(RB_MIN_V_BLANK / H_PERIOD_EST) + 1;
+
+                    RB_MIN_VBI = RB_V_FPORCH + V_SYNC_RND + MIN_V_BPORCH;
+                    ACT_VBI_LINES = (VBI_LINES < RB_MIN_VBI) ? RB_MIN_VBI : VBI_LINES;
+
+                    TOTAL_V_LINES = ACT_VBI_LINES + V_LINES_RND + TOP_MARGIN + BOT_MARGIN + INTERLACE;
+
+                    TOTAL_PIXELS = RB_H_BLANK + TOTAL_ACTIVE_PIXELS;
+
+                    ACT_PIXEL_FREQ = CLOCK_STEP * Math.floor((V_FIELD_RATE_RQD * TOTAL_V_LINES * TOTAL_PIXELS / 1000000 * REFRESH_MULTIPLIER) / CLOCK_STEP);
                 }
+
+                ACT_H_FREQ = 1000 * ACT_PIXEL_FREQ / TOTAL_PIXELS;
+
+                ACT_FIELD_RATE = 1000 * ACT_H_FREQ / TOTAL_V_LINES;
+
+                ACT_FRAME_RATE = INT_RQD ? ACT_FIELD_RATE / 2 : ACT_FIELD_RATE;
+
+                V_BLANK = V_SYNC_BP + MIN_V_PORCH_RND;
 
                 console.log("ACT_FRAME_RATE: " + ACT_FRAME_RATE);
                 console.log("ACT_FIELD_RATE: " + ACT_FIELD_RATE);
@@ -207,14 +239,6 @@
                         <td><label>Interlaced</label></td>
                         <td><select id="interlaced" name="interlaced"><option value="y">Yes</option><option value="n" selected>No</option></select>
                     </tr>
-                    <tr>
-                        <td><label>Reduced Blanking</label></td>
-                        <td><select id="reduced_blanking" name="reduced_blanking">
-                                <option value="n" selected>No</option>
-                                <option value="rb_v1">RB</option>
-                                <option value="rb_v2">RB v2</option>
-                            </select>
-                    </tr>
                 </table>
             </form>
 
@@ -224,7 +248,6 @@
                 $('#refresh_rate').change( function(){ check_integer($('#refresh_rate').attr("value"), '#refresh_valid'); update_status(); })
                 $('#margins')         .change( function(){ update_status(); })
                 $('#interlaced')      .change( function(){ update_status(); })
-                $('#reduced_blanking').change( function(){ update_status(); })
             </script>
         <h2>Status</h2>
             <table>
@@ -240,7 +263,6 @@
                     <td><label id="cvt-aspect_ratio"></label></td>
                     <td><label id="cvt_rb-aspect_ratio"></label></td>
                     <td><label id="cvt_rb2-aspect_ratio"></label></td>
-                    <td><label>MHz</label></td>
                 </tr>
                 <tr>
                     <td><label>Pixel Clock</label></td>
@@ -320,13 +342,12 @@
                     var refresh_rate        = Number($('#refresh_rate').attr("value"));
                     var margins             = $('#margins').attr("value") == "y";
                     var interlaced          = $('#interlaced').attr("value") == "y";
-                    var reduced_blanking    = $('#reduced_blanking').attr("value");
 
-                    calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, reduced_blanking);
+                    calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, "n", false);
 
                     $("#cvt-aspect_ratio").text(ASPECT_RATIO);
 
-                    $("#cvt-pclock").text(ACT_PIXEL_FREQ);
+                    $("#cvt-pclock").text(Math.round(ACT_PIXEL_FREQ*1000)/1000);
 
                     $("#cvt-htotal").text(TOTAL_PIXELS);
                     $("#cvt-hpixels").text(TOTAL_ACTIVE_PIXELS);
@@ -337,6 +358,38 @@
                     $("#cvt-vpixels").text(V_LINES_RND);
                     $("#cvt-vblank").text(V_BLANK);
                     $("#cvt-vfreq").text(Math.round(ACT_FRAME_RATE*1000)/1000);
+
+                    calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, "rb", false);
+
+                    $("#cvt_rb-aspect_ratio").text(ASPECT_RATIO);
+
+                    $("#cvt_rb-pclock").text(Math.round(ACT_PIXEL_FREQ*1000)/1000);
+
+                    $("#cvt_rb-htotal").text(TOTAL_PIXELS);
+                    $("#cvt_rb-hpixels").text(TOTAL_ACTIVE_PIXELS);
+                    $("#cvt_rb-hblank").text(H_BLANK);
+                    $("#cvt_rb-hfreq").text(Math.round(ACT_H_FREQ*1000)/1000);
+
+                    $("#cvt_rb-vtotal").text(TOTAL_V_LINES);
+                    $("#cvt_rb-vpixels").text(V_LINES_RND);
+                    $("#cvt_rb-vblank").text(V_BLANK);
+                    $("#cvt_rb-vfreq").text(Math.round(ACT_FRAME_RATE*1000)/1000);
+
+                    calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, "rb_v2", false);
+
+                    $("#cvt_rb2-aspect_ratio").text(ASPECT_RATIO);
+
+                    $("#cvt_rb2-pclock").text(Math.round(ACT_PIXEL_FREQ*1000)/1000);
+
+                    $("#cvt_rb2-htotal").text(TOTAL_PIXELS);
+                    $("#cvt_rb2-hpixels").text(TOTAL_ACTIVE_PIXELS);
+                    $("#cvt_rb2-hblank").text(H_BLANK);
+                    $("#cvt_rb2-hfreq").text(Math.round(ACT_H_FREQ*1000)/1000);
+
+                    $("#cvt_rb2-vtotal").text(TOTAL_V_LINES);
+                    $("#cvt_rb2-vpixels").text(V_LINES_RND);
+                    $("#cvt_rb2-vblank").text(V_BLANK);
+                    $("#cvt_rb2-vfreq").text(Math.round(ACT_FRAME_RATE*1000)/1000);
                 }
 
                 window.onload = update_status();
