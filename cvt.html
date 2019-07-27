@@ -337,7 +337,7 @@
                     <td><label id="cvt-hfront"></label></td>
                     <td><label id="cvt_rb-hfront"></label></td>
                     <td><label id="cvt_rb2-hfront"></label></td>
-                    <td><label id="custom-hfront"></label></td>
+                    <td></td>
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr>
@@ -345,7 +345,7 @@
                     <td><label id="cvt-hsync"></label></td>
                     <td><label id="cvt_rb-hsync"></label></td>
                     <td><label id="cvt_rb2-hsync"></label></td>
-                    <td><label id="custom-hsync"></label></td>
+                    <td></td>
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr>
@@ -353,7 +353,7 @@
                     <td><label id="cvt-hback"></label></td>
                     <td><label id="cvt_rb-hback"></label></td>
                     <td><label id="cvt_rb2-hback"></label></td>
-                    <td><label id="custom-hback"></label></td>
+                    <td></td>
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr>
@@ -402,7 +402,7 @@
                     <td><label id="cvt-vfront"></label></td>
                     <td><label id="cvt_rb-vfront"></label></td>
                     <td><label id="cvt_rb2-vfront"></label></td>
-                    <td><label id="custom-vfront"></label></td>
+                    <td></td>
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr>
@@ -410,7 +410,7 @@
                     <td><label id="cvt-vsync"></label></td>
                     <td><label id="cvt_rb-vsync"></label></td>
                     <td><label id="cvt_rb2-vsync"></label></td>
-                    <td><label id="custom-vsync"></label></td>
+                    <td></td>
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr>
@@ -418,7 +418,7 @@
                     <td><label id="cvt-vback"></label></td>
                     <td><label id="cvt_rb-vback"></label></td>
                     <td><label id="cvt_rb2-vback"></label></td>
-                    <td><label id="custom-vback"></label></td>
+                    <td></td>
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr>
@@ -469,61 +469,63 @@
 
                     var standards = [ "cvt", "cvt_rb", "cvt_rb2", "custom" ];
                     standards.forEach(function(standard, index){
+
                         if (standard != "custom"){
                             calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, standard, false);
 
-                            link_bw = Math.round(ACT_PIXEL_FREQ * bpc * color_fmt_multiplier * 1000)/1000;
+                            hactive         = TOTAL_ACTIVE_PIXELS;
+                            hblank          = H_BLANK;
+                            htotal          = TOTAL_PIXELS;
 
-                            prefix = "#" + standard;
-                            $(prefix + "-aspect_ratio").text(ASPECT_RATIO);
+                            vactive         = V_LINES_RND;
+                            vblank          = V_BLANK;
+                            vtotal          = TOTAL_V_LINES;
 
-                            $(prefix + "-pclock").text(Math.round(ACT_PIXEL_FREQ*1000)/1000);
-
-                            $(prefix + "-htotal").text(TOTAL_PIXELS);
-                            $(prefix + "-hpixels").text(TOTAL_ACTIVE_PIXELS);
-                            $(prefix + "-hblank").text(H_BLANK);
-                            $(prefix + "-hfront").text(H_FRONT_PORCH);
-                            $(prefix + "-hsync").text(H_SYNC);
-                            $(prefix + "-hback").text(H_BACK_PORCH);
-                            $(prefix + "-hfreq").text(Math.round(ACT_H_FREQ*1000)/1000);
-                            $(prefix + "-hperiod").text(Math.round(1/ACT_H_FREQ*1000));
-
-                            $(prefix + "-vtotal").text(TOTAL_V_LINES);
-                            $(prefix + "-vpixels").text(V_LINES_RND);
-                            $(prefix + "-vblank").text(V_BLANK);
-                            $(prefix + "-vfront").text(V_FRONT_PORCH);
-                            $(prefix + "-vsync").text(V_SYNC_RND);
-                            $(prefix + "-vback").text(V_BACK_PORCH);
-                            $(prefix + "-vfreq").text(Math.round(ACT_FRAME_RATE*1000)/1000);
-                            $(prefix + "-vperiod").text(Math.round(1/ACT_FRAME_RATE*1000000)/1000);
-                            $(prefix + "-link_bw").text(link_bw);
+                            pclock          = ACT_PIXEL_FREQ * 1000000;
                         }
-                        else{
+                        else {
+                            hactive         = horiz_pixels;
                             hblank          = Number($('#custom-hblank').val());
                             htotal          = horiz_pixels + hblank;
+
+                            vactive         = vert_pixels;
                             vblank          = Number($('#custom-vblank').val());
                             vtotal          = vert_pixels + vblank;
+
                             pclock          = htotal * vtotal * refresh_rate;
-
-                            hfreq           = pclock / htotal;
-
-                            link_bw = Math.round(pclock * bpc * color_fmt_multiplier / 1000000);
-
-                            $("#custom-pclock").text(Math.round(pclock/1000000));
-
-                            $("#custom-htotal").text(htotal);
-                            $("#custom-hpixels").text(horiz_pixels);
-                            $("#custom-hfreq").text(Math.round(hfreq/1000));
-                            $("#custom-hperiod").text(Math.round(1/hfreq*1000000));
-
-                            $("#custom-vtotal").text(vtotal);
-                            $("#custom-vpixels").text(vert_pixels);
-                            $("#custom-vblank").text(vblank);
-                            $("#custom-vfreq").text(refresh_rate);
-                            $("#custom-vperiod").text(Math.round(1/refresh_rate*1000000)/1000);
-                            $("#custom-link_bw").text(link_bw);
                         }
 
+                        hfreq           = pclock / htotal;
+                        vfreq           = pclock / (vtotal * htotal);
+
+                        hperiod         = 1/hfreq;
+                        vperiod         = 1/vfreq;
+
+                        link_bw         = Math.round(pclock * bpc * color_fmt_multiplier / 1000000);
+
+                        prefix = "#" + standard;
+                        $(prefix + "-aspect_ratio").text(ASPECT_RATIO);
+
+                        $(prefix + "-pclock").text(Math.round(pclock/1000000));
+
+                        $(prefix + "-htotal").text(htotal);
+                        $(prefix + "-hpixels").text(hactive);
+                        $(prefix + "-hblank").text(hblank);
+                        $(prefix + "-hfront").text(H_FRONT_PORCH);
+                        $(prefix + "-hsync").text(H_SYNC);
+                        $(prefix + "-hback").text(H_BACK_PORCH);
+                        $(prefix + "-hfreq").text(Math.round(hfreq/1000));
+                        $(prefix + "-hperiod").text(Math.round(hperiod*1000000000)/1000);
+
+                        $(prefix + "-vtotal").text(vtotal);
+                        $(prefix + "-vpixels").text(vactive);
+                        $(prefix + "-vblank").text(vblank);
+                        $(prefix + "-vfront").text(V_FRONT_PORCH);
+                        $(prefix + "-vsync").text(V_SYNC_RND);
+                        $(prefix + "-vback").text(V_BACK_PORCH);
+                        $(prefix + "-vfreq").text(Math.round(vfreq*1000)/1000);
+                        $(prefix + "-vperiod").text(Math.round(vperiod*1000000)/1000);
+                        $(prefix + "-link_bw").text(link_bw);
                     });
 
                 }
