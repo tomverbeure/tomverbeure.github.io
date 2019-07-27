@@ -1,7 +1,7 @@
 
 <html>
     <head>
-        <title>CVT Calculator</title>
+        <title>Video Timings Calculator</title>
         <script src="assets/javascript/jquery-3.4.1.min.js" type="text/javascript"></script>
     </head>
     <body>
@@ -68,7 +68,7 @@
 
             function calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, reduced_blanking, video_optimized){
 
-                if (reduced_blanking == "n"){ 
+                if (reduced_blanking == "cvt"){
                     CLOCK_STEP          = 0.25;
                     MIN_V_BPORCH        = 6;
                     RB_H_BLANK          = 160;
@@ -77,7 +77,7 @@
                     RB_V_FPORCH         = 3;
                     REFRESH_MULTIPLIER  = 1;
                 }
-                else if (reduced_blanking == "rb"){
+                else if (reduced_blanking == "cvt_rb"){
                     CLOCK_STEP          = 0.25;
                     MIN_V_BPORCH        = 6;
                     RB_H_BLANK          = 160;
@@ -86,7 +86,7 @@
                     RB_V_FPORCH         = 3;
                     REFRESH_MULTIPLIER  = 1;
                 }
-                else if (reduced_blanking == "rb_v2"){
+                else if (reduced_blanking == "cvt_rb2"){
                     CLOCK_STEP          = 0.001;
                     MIN_V_BPORCH        = 6;
                     RB_H_BLANK          = 80;
@@ -114,7 +114,7 @@
                 RIGHT_MARGIN        = LEFT_MARGIN;
 
                 TOTAL_ACTIVE_PIXELS = H_PIXELS_RND + LEFT_MARGIN + RIGHT_MARGIN;
-                
+
                 V_LINES_RND         = INT_RQD ? Math.floor(V_LINES / 2) : Math.floor(V_LINES);
 
                 TOP_MARGIN          = MARGINS_RQD ? Math.floor(V_LINES_RND * MARGIN_PER / 100) : 0;
@@ -133,18 +133,18 @@
                 var hor_pixels_64_27 = CELL_GRAN_RND * Math.round(ver_pixels * 64 / 27) / CELL_GRAN_RND;
                 var hor_pixels_12_5  = CELL_GRAN_RND * Math.round(ver_pixels * 12 /  5) / CELL_GRAN_RND;
 
-                ASPECT_RATIO = (hor_pixels_4_3   == H_PIXELS_RND) ? "4:3"   : 
-                               (hor_pixels_16_9  == H_PIXELS_RND) ? "16:9"  : 
-                               (hor_pixels_16_10 == H_PIXELS_RND) ? "16:10" : 
-                               (hor_pixels_5_4   == H_PIXELS_RND) ? "5:4"   : 
-                               (hor_pixels_15_9  == H_PIXELS_RND) ? "15:9"  : 
+                ASPECT_RATIO = (hor_pixels_4_3   == H_PIXELS_RND) ? "4:3"   :
+                               (hor_pixels_16_9  == H_PIXELS_RND) ? "16:9"  :
+                               (hor_pixels_16_10 == H_PIXELS_RND) ? "16:10" :
+                               (hor_pixels_5_4   == H_PIXELS_RND) ? "5:4"   :
+                               (hor_pixels_15_9  == H_PIXELS_RND) ? "15:9"  :
                                // Following aspect ratios are not defined by the spec...
-                               (hor_pixels_43_18 == H_PIXELS_RND) ? "43:18" : 
-                               (hor_pixels_64_27 == H_PIXELS_RND) ? "64:27" : 
-                               (hor_pixels_12_5  == H_PIXELS_RND) ? "12:5"  : 
+                               (hor_pixels_43_18 == H_PIXELS_RND) ? "43:18" :
+                               (hor_pixels_64_27 == H_PIXELS_RND) ? "64:27" :
+                               (hor_pixels_12_5  == H_PIXELS_RND) ? "12:5"  :
                                                                     "Unknown";
                 // V_SYNC_RND depends on aspect ratio and reduced blanking
-                if      (reduced_blanking == "rb_v2") V_SYNC_RND = 8;
+                if      (reduced_blanking == "cvt_rb2") V_SYNC_RND = 8;
                 else if (ASPECT_RATIO == "4:3")       V_SYNC_RND = 4;
                 else if (ASPECT_RATIO == "16:9")      V_SYNC_RND = 5;
                 else if (ASPECT_RATIO == "16:10")     V_SYNC_RND = 6;
@@ -152,7 +152,7 @@
                 else if (ASPECT_RATIO == "15:9")      V_SYNC_RND = 7;
                 else                                  V_SYNC_RND = 10;
 
-                if (reduced_blanking == "n"){
+                if (reduced_blanking == "cvt"){
                     // 5.3 Computation of CRT Timing Parameters
                     H_PERIOD_EST = ((1 / V_FIELD_RATE_RQD) - MIN_VSYNC_BP / 1000000.0) / (V_LINES_RND + (2 * TOP_MARGIN) + MIN_V_PORCH_RND + INTERLACE) * 1000000.0;
 
@@ -199,13 +199,13 @@
 
                     ACT_PIXEL_FREQ = CLOCK_STEP * Math.floor((V_FIELD_RATE_RQD * TOTAL_V_LINES * TOTAL_PIXELS / 1000000 * REFRESH_MULTIPLIER) / CLOCK_STEP);
 
-                    if (reduced_blanking == "rb_v2"){
+                    if (reduced_blanking == "cvt_rb2"){
                         V_BLANK = ACT_VBI_LINES;
                         V_FRONT_PORCH = ACT_VBI_LINES - V_SYNC_RND - 6;
                         V_BACK_PORCH  = 6;
 
                         H_SYNC = 32;
-                        H_BACK_PORCH = 40; 
+                        H_BACK_PORCH = 40;
                         H_FRONT_PORCH = H_BLANK - H_SYNC - H_BACK_PORCH;
                     }
                     else{
@@ -214,7 +214,7 @@
                         V_BACK_PORCH  = ACT_VBI_LINES - V_FRONT_PORCH - V_SYNC_RND;
 
                         H_SYNC = 32;
-                        H_BACK_PORCH = 80; 
+                        H_BACK_PORCH = 80;
                         H_FRONT_PORCH = H_BLANK - H_SYNC - H_BACK_PORCH;
                     }
                 }
@@ -224,9 +224,9 @@
                 ACT_FRAME_RATE = INT_RQD ? ACT_FIELD_RATE / 2 : ACT_FIELD_RATE;
             }
 
-            
+
         </script>
-        <h1>CVT Calculator</h1>
+        <h1>Video Timings Calculator</h1>
         <h2>Input Parameters</h2>
             <form id="parameters">
                 <table>
@@ -462,117 +462,74 @@
                     var bpc                 = Number($('#bpc').val());
                     var color_fmt           = $('#color_fmt').val();
 
-                    var color_fmt_multiplier = (color_fmt == "rgb444") ? 3   : 
+                    var color_fmt_multiplier = (color_fmt == "rgb444") ? 3   :
                                                (color_fmt == "yuv444") ? 3   :
                                                (color_fmt == "yuv422") ? 2   :
                                                (color_fmt == "yuv420") ? 1.5 : 0;
 
-                    calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, "n", false);
-                    link_bw = Math.round(ACT_PIXEL_FREQ * bpc * color_fmt_multiplier * 1000)/1000;
+                    var standards = [ "cvt", "cvt_rb", "cvt_rb2", "custom" ];
+                    standards.forEach(function(standard, index){
+                        if (standard != "custom"){
+                            calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, standard, false);
 
-                    $("#cvt-aspect_ratio").text(ASPECT_RATIO);
+                            link_bw = Math.round(ACT_PIXEL_FREQ * bpc * color_fmt_multiplier * 1000)/1000;
 
-                    $("#cvt-pclock").text(Math.round(ACT_PIXEL_FREQ*1000)/1000);
+                            prefix = "#" + standard;
+                            $(prefix + "-aspect_ratio").text(ASPECT_RATIO);
 
-                    $("#cvt-htotal").text(TOTAL_PIXELS);
-                    $("#cvt-hpixels").text(TOTAL_ACTIVE_PIXELS);
-                    $("#cvt-hblank").text(H_BLANK);
-                    $("#cvt-hfront").text(H_FRONT_PORCH);
-                    $("#cvt-hsync").text(H_SYNC);
-                    $("#cvt-hback").text(H_BACK_PORCH);
-                    $("#cvt-hfreq").text(Math.round(ACT_H_FREQ*1000)/1000);
-                    $("#cvt-hperiod").text(Math.round(1/ACT_H_FREQ*1000));
+                            $(prefix + "-pclock").text(Math.round(ACT_PIXEL_FREQ*1000)/1000);
 
-                    $("#cvt-vtotal").text(TOTAL_V_LINES);
-                    $("#cvt-vpixels").text(V_LINES_RND);
-                    $("#cvt-vblank").text(V_BLANK);
-                    $("#cvt-vfront").text(V_FRONT_PORCH);
-                    $("#cvt-vsync").text(V_SYNC_RND);
-                    $("#cvt-vback").text(V_BACK_PORCH);
-                    $("#cvt-vfreq").text(Math.round(ACT_FRAME_RATE*1000)/1000);
-                    $("#cvt-vperiod").text(Math.round(1/ACT_FRAME_RATE*1000000)/1000);
-                    $("#cvt-link_bw").text(link_bw);
+                            $(prefix + "-htotal").text(TOTAL_PIXELS);
+                            $(prefix + "-hpixels").text(TOTAL_ACTIVE_PIXELS);
+                            $(prefix + "-hblank").text(H_BLANK);
+                            $(prefix + "-hfront").text(H_FRONT_PORCH);
+                            $(prefix + "-hsync").text(H_SYNC);
+                            $(prefix + "-hback").text(H_BACK_PORCH);
+                            $(prefix + "-hfreq").text(Math.round(ACT_H_FREQ*1000)/1000);
+                            $(prefix + "-hperiod").text(Math.round(1/ACT_H_FREQ*1000));
 
-                    calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, "rb", false);
-                    link_bw = Math.round(ACT_PIXEL_FREQ * bpc * color_fmt_multiplier * 1000)/1000;
+                            $(prefix + "-vtotal").text(TOTAL_V_LINES);
+                            $(prefix + "-vpixels").text(V_LINES_RND);
+                            $(prefix + "-vblank").text(V_BLANK);
+                            $(prefix + "-vfront").text(V_FRONT_PORCH);
+                            $(prefix + "-vsync").text(V_SYNC_RND);
+                            $(prefix + "-vback").text(V_BACK_PORCH);
+                            $(prefix + "-vfreq").text(Math.round(ACT_FRAME_RATE*1000)/1000);
+                            $(prefix + "-vperiod").text(Math.round(1/ACT_FRAME_RATE*1000000)/1000);
+                            $(prefix + "-link_bw").text(link_bw);
+                        }
+                        else{
+                            hblank          = Number($('#custom-hblank').val());
+                            htotal          = horiz_pixels + hblank;
+                            vblank          = Number($('#custom-vblank').val());
+                            vtotal          = vert_pixels + vblank;
+                            pclock          = htotal * vtotal * refresh_rate;
 
-                    $("#cvt_rb-aspect_ratio").text(ASPECT_RATIO);
+                            hfreq           = pclock / htotal;
 
-                    $("#cvt_rb-pclock").text(Math.round(ACT_PIXEL_FREQ*1000)/1000);
+                            link_bw = Math.round(pclock * bpc * color_fmt_multiplier / 1000000);
 
-                    $("#cvt_rb-htotal").text(TOTAL_PIXELS);
-                    $("#cvt_rb-hpixels").text(TOTAL_ACTIVE_PIXELS);
-                    $("#cvt_rb-hblank").text(H_BLANK);
-                    $("#cvt_rb-hfront").text(H_FRONT_PORCH);
-                    $("#cvt_rb-hsync").text(H_SYNC);
-                    $("#cvt_rb-hback").text(H_BACK_PORCH);
-                    $("#cvt_rb-hfreq").text(Math.round(ACT_H_FREQ*1000)/1000);
-                    $("#cvt_rb-hperiod").text(Math.round(1/ACT_H_FREQ*1000));
+                            $("#custom-pclock").text(Math.round(pclock/1000000));
 
-                    $("#cvt_rb-vtotal").text(TOTAL_V_LINES);
-                    $("#cvt_rb-vpixels").text(V_LINES_RND);
-                    $("#cvt_rb-vblank").text(V_BLANK);
-                    $("#cvt_rb-vfront").text(V_FRONT_PORCH);
-                    $("#cvt_rb-vsync").text(V_SYNC_RND);
-                    $("#cvt_rb-vback").text(V_BACK_PORCH);
-                    $("#cvt_rb-vfreq").text(Math.round(ACT_FRAME_RATE*1000)/1000);
-                    $("#cvt_rb-vperiod").text(Math.round(1/ACT_FRAME_RATE*1000000)/1000);
-                    $("#cvt_rb-link_bw").text(link_bw);
+                            $("#custom-htotal").text(htotal);
+                            $("#custom-hpixels").text(horiz_pixels);
+                            $("#custom-hfreq").text(Math.round(hfreq/1000));
+                            $("#custom-hperiod").text(Math.round(1/hfreq*1000000));
 
-                    calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, "rb_v2", false);
-                    link_bw = Math.round(ACT_PIXEL_FREQ * bpc * color_fmt_multiplier * 1000)/1000;
+                            $("#custom-vtotal").text(vtotal);
+                            $("#custom-vpixels").text(vert_pixels);
+                            $("#custom-vblank").text(vblank);
+                            $("#custom-vfreq").text(refresh_rate);
+                            $("#custom-vperiod").text(Math.round(1/refresh_rate*1000000)/1000);
+                            $("#custom-link_bw").text(link_bw);
+                        }
 
-                    $("#cvt_rb2-aspect_ratio").text(ASPECT_RATIO);
-
-                    $("#cvt_rb2-pclock").text(Math.round(ACT_PIXEL_FREQ*1000)/1000);
-
-                    $("#cvt_rb2-htotal").text(TOTAL_PIXELS);
-                    $("#cvt_rb2-hpixels").text(TOTAL_ACTIVE_PIXELS);
-                    $("#cvt_rb2-hblank").text(H_BLANK);
-                    $("#cvt_rb2-hfront").text(H_FRONT_PORCH);
-                    $("#cvt_rb2-hsync").text(H_SYNC);
-                    $("#cvt_rb2-hback").text(H_BACK_PORCH);
-                    $("#cvt_rb2-hfreq").text(Math.round(ACT_H_FREQ*1000)/1000);
-                    $("#cvt_rb2-hperiod").text(Math.round(1/ACT_H_FREQ*1000));
-
-                    $("#cvt_rb2-vtotal").text(TOTAL_V_LINES);
-                    $("#cvt_rb2-vpixels").text(V_LINES_RND);
-                    $("#cvt_rb2-vblank").text(V_BLANK);
-                    $("#cvt_rb2-vfront").text(V_FRONT_PORCH);
-                    $("#cvt_rb2-vsync").text(V_SYNC_RND);
-                    $("#cvt_rb2-vback").text(V_BACK_PORCH);
-                    $("#cvt_rb2-vfreq").text(Math.round(ACT_FRAME_RATE*1000)/1000);
-                    $("#cvt_rb2-vperiod").text(Math.round(1/ACT_FRAME_RATE*1000000)/1000);
-                    $("#cvt_rb2-link_bw").text(link_bw);
-
-                    hblank          = Number($('#custom-hblank').val());
-                    htotal          = horiz_pixels + hblank;
-                    vblank          = Number($('#custom-vblank').val());
-                    vtotal          = vert_pixels + vblank;
-                    pclock          = htotal * vtotal * refresh_rate;
-
-                    hfreq           = pclock / htotal;
-
-                    link_bw = Math.round(pclock * bpc * color_fmt_multiplier / 1000000);
-
-                    $("#custom-pclock").text(Math.round(pclock/1000000));
-
-                    $("#custom-htotal").text(htotal);
-                    $("#custom-hpixels").text(horiz_pixels);
-                    $("#custom-hfreq").text(Math.round(hfreq/1000));
-                    $("#custom-hperiod").text(Math.round(1/hfreq*1000000));
-
-                    $("#custom-vtotal").text(vtotal);
-                    $("#custom-vpixels").text(vert_pixels);
-                    $("#custom-vblank").text(vblank);
-                    $("#custom-vfreq").text(refresh_rate);
-                    $("#custom-vperiod").text(Math.round(1/refresh_rate*1000000)/1000);
-                    $("#custom-link_bw").text(link_bw);
+                    });
 
                 }
 
                 window.onload = update_status();
-                
+
             </script>
     </body>
 </html>
