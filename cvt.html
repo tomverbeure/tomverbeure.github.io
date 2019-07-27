@@ -2,7 +2,7 @@
 <html>
     <head>
         <title>CVT Calculator</title>
-        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+        <script src="assets/javascript/jquery-3.4.1.min.js" type="text/javascript"></script>
     </head>
     <body>
         <script>
@@ -257,11 +257,11 @@
             </form>
 
             <script type="text/javascript">
-                $('#horiz_pixels').change( function(){ check_integer($('#horiz_pixels').attr("value"), '#horiz_valid');   update_status(); })
-                $('#vert_pixels') .change( function(){ check_integer($('#vert_pixels').attr("value"), '#vert_valid');     update_status(); })
-                $('#refresh_rate').change( function(){ check_integer($('#refresh_rate').attr("value"), '#refresh_valid'); update_status(); })
-                $('#margins')     .change( function(){ update_status(); })
-                $('#interlaced')  .change( function(){ update_status(); })
+                $('#horiz_pixels').change( function(){ console.log("h"); check_integer($('#horiz_pixels').val(), '#horiz_valid');   update_status(); })
+                $('#vert_pixels') .change( function(){ console.log("v"); check_integer($('#vert_pixels') .val(), '#vert_valid');    update_status(); })
+                $('#refresh_rate').change( function(){ console.log("r"); check_integer($('#refresh_rate').val(), '#refresh_valid'); update_status(); })
+                $('#margins')     .change( function(){ console.log("m"); update_status(); })
+                $('#interlaced')  .change( function(){ console.log("i"); update_status(); })
             </script>
         <h2>Timings</h2>
             <table>
@@ -393,11 +393,11 @@
                 }
 
                 function update_status(){
-                    var horiz_pixels        = Number($('#horiz_pixels').attr("value"));
-                    var vert_pixels         = Number($('#vert_pixels').attr("value"));
-                    var refresh_rate        = Number($('#refresh_rate').attr("value"));
-                    var margins             = $('#margins').attr("value") == "y";
-                    var interlaced          = $('#interlaced').attr("value") == "y";
+                    var horiz_pixels        = Number($('#horiz_pixels').val());
+                    var vert_pixels         = Number($('#vert_pixels'). val());
+                    var refresh_rate        = Number($('#refresh_rate').val());
+                    var margins             = $('#margins').val()    == "y";
+                    var interlaced          = $('#interlaced').val() == "y";
 
                     calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, "n", false);
 
