@@ -6,6 +6,20 @@
     </head>
     <body>
         <script>
+
+            var predefined_modes = [
+                    { name: "4K / 144"              , horiz_pixels : 3840, vert_pixels : 2160, refresh_rate: 144 },
+                    { name: "4K / 120"              , horiz_pixels : 3840, vert_pixels : 2160, refresh_rate: 120 },
+                    { name: "4K / 60"               , horiz_pixels : 3840, vert_pixels : 2160, refresh_rate:  60 },
+                    { name: "3440x1440 / 200"       , horiz_pixels : 3440, vert_pixels : 1440, refresh_rate: 200 },
+                    { name: "3440x1440 / 165"       , horiz_pixels : 3440, vert_pixels : 1440, refresh_rate: 165 },
+                    { name: "3440x1440 / 60"        , horiz_pixels : 3440, vert_pixels : 1440, refresh_rate:  60 },
+                    { name: "1440p / 165"           , horiz_pixels : 2560, vert_pixels : 1440, refresh_rate: 165 },
+                    { name: "1440p / 60"            , horiz_pixels : 2560, vert_pixels : 1440, refresh_rate:  60 },
+                    { name: "1080p / 144"           , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate: 144 },
+                    { name: "1080p / 60"            , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate:  60 },
+                ];
+
             function check_integer(value, result_id) {
                 var n = Number(value)
                 if (Number.isInteger(n)){
@@ -231,6 +245,10 @@
             <form id="parameters">
                 <table>
                     <tr>
+                        <td><label>Predefined Mode</label></td>
+                        <td><select id="predefined_mode" name="predefined_mode"><option>None</option></select></td>
+                    </tr>
+                    <tr>
                         <td><label>Horizontal Pixels</label></td>
                         <td><input id="horiz_pixels" type="text" value="640" /></td>
                         <td><label id="horiz_valid">Ok</label></td>
@@ -273,6 +291,7 @@
             </form>
 
             <script type="text/javascript">
+                $('#predefined_mode').change( function(){ fill_predefined_parameters($('#predefined_mode').val());   update_status(); })
                 $('#horiz_pixels').change( function(){ check_integer($('#horiz_pixels').val(), '#horiz_valid');   update_status(); })
                 $('#vert_pixels') .change( function(){ check_integer($('#vert_pixels') .val(), '#vert_valid');    update_status(); })
                 $('#refresh_rate').change( function(){ check_integer($('#refresh_rate').val(), '#refresh_valid'); update_status(); })
@@ -453,6 +472,16 @@
                 $('#custom-hblank').change( function(){  update_status(); });
                 $('#custom-vblank').change( function(){  update_status(); });
 
+                function fill_predefined_parameters(mode_name){
+                    predefined_modes.forEach(function(mode, index){
+                        if (mode['name'] == mode_name){
+                            $('#horiz_pixels').val(mode['horiz_pixels']);
+                            $('#vert_pixels').val(mode['vert_pixels']);
+                            $('#refresh_rate').val(mode['refresh_rate']);
+                        }
+                    });
+                }
+
                 function update_status(){
                     var horiz_pixels        = Number($('#horiz_pixels').val());
                     var vert_pixels         = Number($('#vert_pixels'). val());
@@ -530,7 +559,19 @@
 
                 }
 
-                window.onload = update_status();
+                function onload_init(){
+
+                    predefined_modes.forEach(function(mode, index){
+                        $('#predefined_mode').append($('<option>', {
+                            value: mode['name'],
+                            text:  mode['name']
+                            }));
+                    });
+
+                    update_status();
+                }
+
+                window.onload = onload_init();
 
             </script>
     </body>
