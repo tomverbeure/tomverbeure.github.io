@@ -241,7 +241,7 @@
                         <td><label id="vert_valid">Ok</label></td>
                     </tr>
                     <tr>
-                        <td><label>Refersh Rate (Hz)</label></td>
+                        <td><label>Refresh Rate (Hz)</label></td>
                         <td><input id="refresh_rate" type="text" value="60" /></td>
                         <td><label id="refresh_valid">Ok</label></td>
                     </tr>
@@ -253,23 +253,44 @@
                         <td><label>Interlaced</label></td>
                         <td><select id="interlaced" name="interlaced"><option value="y">Yes</option><option value="n" selected>No</option></select>
                     </tr>
+                    <tr>
+                        <td><label>Bits per Component</label></td>
+                        <td><select id="bpc" name="bpc">
+                                <option value="8" selected>8</option>
+                                <option value="10">10</option>
+                                <option value="12">12</option>
+                                <option value="16">16</option></select>
+                    </tr>
+                    <tr>
+                        <td><label>Color Format</label></td>
+                        <td><select id="color_fmt" name="color_fmt">
+                                <option value="rgb444" selected>RGB 4:4:4</option>
+                                <option value="yuv444">YUV 4:4:4</option>
+                                <option value="yuv422">YUV 4:2:2</option>
+                                <option value="yuv420">YUV 4:2:0</option></select>
+                    </tr>
                 </table>
             </form>
 
             <script type="text/javascript">
-                $('#horiz_pixels').change( function(){ console.log("h"); check_integer($('#horiz_pixels').val(), '#horiz_valid');   update_status(); })
-                $('#vert_pixels') .change( function(){ console.log("v"); check_integer($('#vert_pixels') .val(), '#vert_valid');    update_status(); })
-                $('#refresh_rate').change( function(){ console.log("r"); check_integer($('#refresh_rate').val(), '#refresh_valid'); update_status(); })
-                $('#margins')     .change( function(){ console.log("m"); update_status(); })
-                $('#interlaced')  .change( function(){ console.log("i"); update_status(); })
+                $('#horiz_pixels').change( function(){ check_integer($('#horiz_pixels').val(), '#horiz_valid');   update_status(); })
+                $('#vert_pixels') .change( function(){ check_integer($('#vert_pixels') .val(), '#vert_valid');    update_status(); })
+                $('#refresh_rate').change( function(){ check_integer($('#refresh_rate').val(), '#refresh_valid'); update_status(); })
+                $('#margins')     .change( function(){ update_status(); })
+                $('#interlaced')  .change( function(){ update_status(); })
+                $('#bpc')         .change( function(){ update_status(); })
+                $('#color_fmt')   .change( function(){ update_status(); })
             </script>
         <h2>Timings</h2>
+
+            <form id="timings">
             <table>
                 <tr>
                     <th></th>
                     <th>CVT</th>
                     <th>CVT-RB</th>
                     <th>CVT-RBv2</th>
+                    <th>Custom</th>
                     <th></th>
                 </tr>
                 <tr>
@@ -277,12 +298,14 @@
                     <td><label id="cvt-aspect_ratio"></label></td>
                     <td><label id="cvt_rb-aspect_ratio"></label></td>
                     <td><label id="cvt_rb2-aspect_ratio"></label></td>
+                    <td><label id="custom-aspect_ratio"></label></td>
                 </tr>
                 <tr>
                     <td><label>Pixel Clock</label></td>
                     <td><label id="cvt-pclock"></label></td>
                     <td><label id="cvt_rb-pclock"></label></td>
                     <td><label id="cvt_rb2-pclock"></label></td>
+                    <td><label id="custom-pclock"></label></td>
                     <td><label>MHz</label></td>
                 </tr>
                 <tr>
@@ -290,6 +313,7 @@
                     <td><label id="cvt-htotal"></label></td>
                     <td><label id="cvt_rb-htotal"></label></td>
                     <td><label id="cvt_rb2-htotal"></label></td>
+                    <td><label id="custom-htotal"></label></td>
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr>
@@ -297,6 +321,7 @@
                     <td><label id="cvt-hpixels"></label></td>
                     <td><label id="cvt_rb-hpixels"></label></td>
                     <td><label id="cvt_rb2-hpixels"></label></td>
+                    <td><label id="custom-hpixels"></label></td>
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr>
@@ -304,6 +329,7 @@
                     <td><label id="cvt-hblank"></label></td>
                     <td><label id="cvt_rb-hblank"></label></td>
                     <td><label id="cvt_rb2-hblank"></label></td>
+                    <td><input id="custom-hblank" type="text" value="80" /></td>
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr>
@@ -311,6 +337,7 @@
                     <td><label id="cvt-hfront"></label></td>
                     <td><label id="cvt_rb-hfront"></label></td>
                     <td><label id="cvt_rb2-hfront"></label></td>
+                    <td><label id="custom-hfront"></label></td>
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr>
@@ -318,6 +345,7 @@
                     <td><label id="cvt-hsync"></label></td>
                     <td><label id="cvt_rb-hsync"></label></td>
                     <td><label id="cvt_rb2-hsync"></label></td>
+                    <td><label id="custom-hsync"></label></td>
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr>
@@ -325,6 +353,7 @@
                     <td><label id="cvt-hback"></label></td>
                     <td><label id="cvt_rb-hback"></label></td>
                     <td><label id="cvt_rb2-hback"></label></td>
+                    <td><label id="custom-hback"></label></td>
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr>
@@ -332,7 +361,16 @@
                     <td><label id="cvt-hfreq"></label></td>
                     <td><label id="cvt_rb-hfreq"></label></td>
                     <td><label id="cvt_rb2-hfreq"></label></td>
+                    <td><label id="custom-hfreq"></label></td>
                     <td><label>kHz</label></td>
+                </tr>
+                <tr>
+                    <td><label>H Period</label></td>
+                    <td><label id="cvt-hperiod"></label></td>
+                    <td><label id="cvt_rb-hperiod"></label></td>
+                    <td><label id="cvt_rb2-hperiod"></label></td>
+                    <td><label id="custom-hperiod"></label></td>
+                    <td><label>us</label></td>
                 </tr>
 
                 <tr>
@@ -340,6 +378,7 @@
                     <td><label id="cvt-vtotal"></label></td>
                     <td><label id="cvt_rb-vtotal"></label></td>
                     <td><label id="cvt_rb2-vtotal"></label></td>
+                    <td><label id="custom-vtotal"></label></td>
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr>
@@ -347,6 +386,7 @@
                     <td><label id="cvt-vpixels"></label></td>
                     <td><label id="cvt_rb-vpixels"></label></td>
                     <td><label id="cvt_rb2-vpixels"></label></td>
+                    <td><label id="custom-vpixels"></label></td>
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr>
@@ -354,6 +394,7 @@
                     <td><label id="cvt-vblank"></label></td>
                     <td><label id="cvt_rb-vblank"></label></td>
                     <td><label id="cvt_rb2-vblank"></label></td>
+                    <td><input id="custom-vblank" type="text" value="6" /></td>
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr>
@@ -361,6 +402,7 @@
                     <td><label id="cvt-vfront"></label></td>
                     <td><label id="cvt_rb-vfront"></label></td>
                     <td><label id="cvt_rb2-vfront"></label></td>
+                    <td><label id="custom-vfront"></label></td>
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr>
@@ -368,6 +410,7 @@
                     <td><label id="cvt-vsync"></label></td>
                     <td><label id="cvt_rb-vsync"></label></td>
                     <td><label id="cvt_rb2-vsync"></label></td>
+                    <td><label id="custom-vsync"></label></td>
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr>
@@ -375,6 +418,7 @@
                     <td><label id="cvt-vback"></label></td>
                     <td><label id="cvt_rb-vback"></label></td>
                     <td><label id="cvt_rb2-vback"></label></td>
+                    <td><label id="custom-vback"></label></td>
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr>
@@ -382,15 +426,32 @@
                     <td><label id="cvt-vfreq"></label></td>
                     <td><label id="cvt_rb-vfreq"></label></td>
                     <td><label id="cvt_rb2-vfreq"></label></td>
+                    <td><label id="custom-vfreq"></label></td>
                     <td><label>Hz</label></td>
                 </tr>
+                <tr>
+                    <td><label>V Period</label></td>
+                    <td><label id="cvt-vperiod"></label></td>
+                    <td><label id="cvt_rb-vperiod"></label></td>
+                    <td><label id="cvt_rb2-vperiod"></label></td>
+                    <td><label id="custom-vperiod"></label></td>
+                    <td><label>ms</label></td>
+                </tr>
+                <tr>
+                    <td><label>Required Link BW</label></td>
+                    <td><label id="cvt-link_bw"></label></td>
+                    <td><label id="cvt_rb-link_bw"></label></td>
+                    <td><label id="cvt_rb2-link_bw"></label></td>
+                    <td><label id="custom-link_bw"></label></td>
+                    <td><label>Mbit/s</label></td>
+                </tr>
             </table>
-
+            </form>
 
             <script type="text/javascript">
 
-                function check_values(){
-                }
+                $('#custom-hblank').change( function(){  update_status(); });
+                $('#custom-vblank').change( function(){  update_status(); });
 
                 function update_status(){
                     var horiz_pixels        = Number($('#horiz_pixels').val());
@@ -398,8 +459,16 @@
                     var refresh_rate        = Number($('#refresh_rate').val());
                     var margins             = $('#margins').val()    == "y";
                     var interlaced          = $('#interlaced').val() == "y";
+                    var bpc                 = Number($('#bpc').val());
+                    var color_fmt           = $('#color_fmt').val();
+
+                    var color_fmt_multiplier = (color_fmt == "rgb444") ? 3   : 
+                                               (color_fmt == "yuv444") ? 3   :
+                                               (color_fmt == "yuv422") ? 2   :
+                                               (color_fmt == "yuv420") ? 1.5 : 0;
 
                     calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, "n", false);
+                    link_bw = Math.round(ACT_PIXEL_FREQ * bpc * color_fmt_multiplier * 1000)/1000;
 
                     $("#cvt-aspect_ratio").text(ASPECT_RATIO);
 
@@ -412,6 +481,7 @@
                     $("#cvt-hsync").text(H_SYNC);
                     $("#cvt-hback").text(H_BACK_PORCH);
                     $("#cvt-hfreq").text(Math.round(ACT_H_FREQ*1000)/1000);
+                    $("#cvt-hperiod").text(Math.round(1/ACT_H_FREQ*1000));
 
                     $("#cvt-vtotal").text(TOTAL_V_LINES);
                     $("#cvt-vpixels").text(V_LINES_RND);
@@ -420,8 +490,11 @@
                     $("#cvt-vsync").text(V_SYNC_RND);
                     $("#cvt-vback").text(V_BACK_PORCH);
                     $("#cvt-vfreq").text(Math.round(ACT_FRAME_RATE*1000)/1000);
+                    $("#cvt-vperiod").text(Math.round(1/ACT_FRAME_RATE*1000000)/1000);
+                    $("#cvt-link_bw").text(link_bw);
 
                     calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, "rb", false);
+                    link_bw = Math.round(ACT_PIXEL_FREQ * bpc * color_fmt_multiplier * 1000)/1000;
 
                     $("#cvt_rb-aspect_ratio").text(ASPECT_RATIO);
 
@@ -434,6 +507,7 @@
                     $("#cvt_rb-hsync").text(H_SYNC);
                     $("#cvt_rb-hback").text(H_BACK_PORCH);
                     $("#cvt_rb-hfreq").text(Math.round(ACT_H_FREQ*1000)/1000);
+                    $("#cvt_rb-hperiod").text(Math.round(1/ACT_H_FREQ*1000));
 
                     $("#cvt_rb-vtotal").text(TOTAL_V_LINES);
                     $("#cvt_rb-vpixels").text(V_LINES_RND);
@@ -442,8 +516,11 @@
                     $("#cvt_rb-vsync").text(V_SYNC_RND);
                     $("#cvt_rb-vback").text(V_BACK_PORCH);
                     $("#cvt_rb-vfreq").text(Math.round(ACT_FRAME_RATE*1000)/1000);
+                    $("#cvt_rb-vperiod").text(Math.round(1/ACT_FRAME_RATE*1000000)/1000);
+                    $("#cvt_rb-link_bw").text(link_bw);
 
                     calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, "rb_v2", false);
+                    link_bw = Math.round(ACT_PIXEL_FREQ * bpc * color_fmt_multiplier * 1000)/1000;
 
                     $("#cvt_rb2-aspect_ratio").text(ASPECT_RATIO);
 
@@ -456,6 +533,7 @@
                     $("#cvt_rb2-hsync").text(H_SYNC);
                     $("#cvt_rb2-hback").text(H_BACK_PORCH);
                     $("#cvt_rb2-hfreq").text(Math.round(ACT_H_FREQ*1000)/1000);
+                    $("#cvt_rb2-hperiod").text(Math.round(1/ACT_H_FREQ*1000));
 
                     $("#cvt_rb2-vtotal").text(TOTAL_V_LINES);
                     $("#cvt_rb2-vpixels").text(V_LINES_RND);
@@ -464,6 +542,33 @@
                     $("#cvt_rb2-vsync").text(V_SYNC_RND);
                     $("#cvt_rb2-vback").text(V_BACK_PORCH);
                     $("#cvt_rb2-vfreq").text(Math.round(ACT_FRAME_RATE*1000)/1000);
+                    $("#cvt_rb2-vperiod").text(Math.round(1/ACT_FRAME_RATE*1000000)/1000);
+                    $("#cvt_rb2-link_bw").text(link_bw);
+
+                    hblank          = Number($('#custom-hblank').val());
+                    htotal          = horiz_pixels + hblank;
+                    vblank          = Number($('#custom-vblank').val());
+                    vtotal          = vert_pixels + vblank;
+                    pclock          = htotal * vtotal * refresh_rate;
+
+                    hfreq           = pclock / htotal;
+
+                    link_bw = Math.round(pclock * bpc * color_fmt_multiplier / 1000000);
+
+                    $("#custom-pclock").text(Math.round(pclock/1000000));
+
+                    $("#custom-htotal").text(htotal);
+                    $("#custom-hpixels").text(horiz_pixels);
+                    $("#custom-hfreq").text(Math.round(hfreq/1000));
+                    $("#custom-hperiod").text(Math.round(1/hfreq*1000000));
+
+                    $("#custom-vtotal").text(vtotal);
+                    $("#custom-vpixels").text(vert_pixels);
+                    $("#custom-vblank").text(vblank);
+                    $("#custom-vfreq").text(refresh_rate);
+                    $("#custom-vperiod").text(Math.round(1/refresh_rate*1000000)/1000);
+                    $("#custom-link_bw").text(link_bw);
+
                 }
 
                 window.onload = update_status();
