@@ -8,6 +8,11 @@
         <script>
 
             var predefined_modes = [
+                    { name: "8K / 120"              , horiz_pixels : 7680, vert_pixels : 3840, refresh_rate: 120 },
+                    { name: "8K / 60"               , horiz_pixels : 7680, vert_pixels : 3840, refresh_rate:  60 },
+                    { name: "5K / 144"              , horiz_pixels : 5120, vert_pixels : 2880, refresh_rate: 144 },
+                    { name: "5K / 120"              , horiz_pixels : 5120, vert_pixels : 2880, refresh_rate: 120 },
+                    { name: "5K / 60"               , horiz_pixels : 5120, vert_pixels : 2880, refresh_rate:  60 },
                     { name: "4K / 144"              , horiz_pixels : 3840, vert_pixels : 2160, refresh_rate: 144 },
                     { name: "4K / 120"              , horiz_pixels : 3840, vert_pixels : 2160, refresh_rate: 120 },
                     { name: "4K / 60"               , horiz_pixels : 3840, vert_pixels : 2160, refresh_rate:  60 },
@@ -464,6 +469,46 @@
                     <td><label id="custom-link_bw"></label></td>
                     <td><label>Mbit/s</label></td>
                 </tr>
+                <tr>
+                    <td><label>DisplayPort 2.0</label></td>
+                    <td><label id="cvt-dp_2"></label></td>
+                    <td><label id="cvt_rb-dp_2"></label></td>
+                    <td><label id="cvt_rb2-dp_2"></label></td>
+                    <td><label id="custom-dp_2"></label></td>
+                    <td><label>Max 77575 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>DisplayPort HBR3</label></td>
+                    <td><label id="cvt-dp_hbr3"></label></td>
+                    <td><label id="cvt_rb-dp_hbr3"></label></td>
+                    <td><label id="cvt_rb2-dp_hbr3"></label></td>
+                    <td><label id="custom-dp_hbr3"></label></td>
+                    <td><label>Max 25920 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>DisplayPort HBR2</label></td>
+                    <td><label id="cvt-dp_hbr2"></label></td>
+                    <td><label id="cvt_rb-dp_hbr2"></label></td>
+                    <td><label id="cvt_rb2-dp_hbr2"></label></td>
+                    <td><label id="custom-dp_hbr2"></label></td>
+                    <td><label>Max 17280 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>DisplayPort HBR</label></td>
+                    <td><label id="cvt-dp_hbr"></label></td>
+                    <td><label id="cvt_rb-dp_hbr"></label></td>
+                    <td><label id="cvt_rb2-dp_hbr"></label></td>
+                    <td><label id="custom-dp_hbr"></label></td>
+                    <td><label>Max 8640 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>DisplayPort RBR</label></td>
+                    <td><label id="cvt-dp_rbr"></label></td>
+                    <td><label id="cvt_rb-dp_rbr"></label></td>
+                    <td><label id="cvt_rb2-dp_rbr"></label></td>
+                    <td><label id="custom-dp_rbr"></label></td>
+                    <td><label>Max 5240 Mbit/s</label></td>
+                </tr>
             </table>
             </form>
 
@@ -530,7 +575,19 @@
                         hperiod         = 1/hfreq;
                         vperiod         = 1/vfreq;
 
-                        link_bw         = Math.round(pclock * bpc * color_fmt_multiplier / 1000000);
+                        link_bw         = pclock * bpc * color_fmt_multiplier;
+
+                        dp_2_bw         =  20000000000*4/132*128;
+                        dp_hbr3_bw      =   8100000000*4/10*8;
+                        dp_hbr2_bw      =   5400000000*4/10*8;
+                        dp_hbr_bw       =   2700000000*4/10*8;
+                        dp_rbr_bw       =   1640000000*4/10*8;
+
+                        dp_2_ok         = (link_bw < dp_2_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_hbr3_ok      = (link_bw < dp_hbr3_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_hbr2_ok      = (link_bw < dp_hbr2_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_hbr_ok       = (link_bw < dp_hbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_rbr_ok       = (link_bw < dp_rbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
 
                         prefix = "#" + standard;
                         $(prefix + "-aspect_ratio").text(ASPECT_RATIO);
@@ -554,7 +611,14 @@
                         $(prefix + "-vback").text(V_BACK_PORCH);
                         $(prefix + "-vfreq").text(Math.round(vfreq*1000)/1000);
                         $(prefix + "-vperiod").text(Math.round(vperiod*1000000)/1000);
-                        $(prefix + "-link_bw").text(link_bw);
+
+                        $(prefix + "-link_bw").text(Math.round(link_bw/1000000));
+
+                        $(prefix + "-dp_2").html(dp_2_ok);
+                        $(prefix + "-dp_hbr3").html(dp_hbr3_ok);
+                        $(prefix + "-dp_hbr2").html(dp_hbr2_ok);
+                        $(prefix + "-dp_hbr").html(dp_hbr_ok);
+                        $(prefix + "-dp_rbr").html(dp_rbr_ok);
                     });
 
                 }
