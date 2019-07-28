@@ -18,10 +18,15 @@
                     { name: "4K / 60"               , horiz_pixels : 3840, vert_pixels : 2160, refresh_rate:  60 },
                     { name: "3440x1440 / 200"       , horiz_pixels : 3440, vert_pixels : 1440, refresh_rate: 200 },
                     { name: "3440x1440 / 165"       , horiz_pixels : 3440, vert_pixels : 1440, refresh_rate: 165 },
+                    { name: "3440x1440 / 120"       , horiz_pixels : 3440, vert_pixels : 1440, refresh_rate: 120 },
                     { name: "3440x1440 / 60"        , horiz_pixels : 3440, vert_pixels : 1440, refresh_rate:  60 },
                     { name: "1440p / 165"           , horiz_pixels : 2560, vert_pixels : 1440, refresh_rate: 165 },
+                    { name: "1440p / 120"           , horiz_pixels : 2560, vert_pixels : 1440, refresh_rate: 120 },
                     { name: "1440p / 60"            , horiz_pixels : 2560, vert_pixels : 1440, refresh_rate:  60 },
+                    { name: "1080p / 360"           , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate: 360 },
+                    { name: "1080p / 240"           , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate: 240 },
                     { name: "1080p / 144"           , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate: 144 },
+                    { name: "1080p / 120"           , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate: 120 },
                     { name: "1080p / 60"            , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate:  60 },
                 ];
 
@@ -475,7 +480,7 @@
                     <td><label id="cvt_rb-dp_2"></label></td>
                     <td><label id="cvt_rb2-dp_2"></label></td>
                     <td><label id="custom-dp_2"></label></td>
-                    <td><label>Max 77575 Mbit/s</label></td>
+                    <td><label>Max BW 77,575 Mbit/s</label></td>
                 </tr>
                 <tr>
                     <td><label>DisplayPort HBR3</label></td>
@@ -483,7 +488,7 @@
                     <td><label id="cvt_rb-dp_hbr3"></label></td>
                     <td><label id="cvt_rb2-dp_hbr3"></label></td>
                     <td><label id="custom-dp_hbr3"></label></td>
-                    <td><label>Max 25920 Mbit/s</label></td>
+                    <td><label>Max BW 25,920 Mbit/s</label></td>
                 </tr>
                 <tr>
                     <td><label>DisplayPort HBR2</label></td>
@@ -491,7 +496,7 @@
                     <td><label id="cvt_rb-dp_hbr2"></label></td>
                     <td><label id="cvt_rb2-dp_hbr2"></label></td>
                     <td><label id="custom-dp_hbr2"></label></td>
-                    <td><label>Max 17280 Mbit/s</label></td>
+                    <td><label>Max BW 17,280 Mbit/s</label></td>
                 </tr>
                 <tr>
                     <td><label>DisplayPort HBR</label></td>
@@ -499,7 +504,7 @@
                     <td><label id="cvt_rb-dp_hbr"></label></td>
                     <td><label id="cvt_rb2-dp_hbr"></label></td>
                     <td><label id="custom-dp_hbr"></label></td>
-                    <td><label>Max 8640 Mbit/s</label></td>
+                    <td><label>Max BW 8,640 Mbit/s</label></td>
                 </tr>
                 <tr>
                     <td><label>DisplayPort RBR</label></td>
@@ -507,7 +512,55 @@
                     <td><label id="cvt_rb-dp_rbr"></label></td>
                     <td><label id="cvt_rb2-dp_rbr"></label></td>
                     <td><label id="custom-dp_rbr"></label></td>
-                    <td><label>Max 5240 Mbit/s</label></td>
+                    <td><label>Max BW 5,240 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>HDMI 2.1</label></td>
+                    <td><label id="cvt-hdmi2_1"></label></td>
+                    <td><label id="cvt_rb-hdmi2_1"></label></td>
+                    <td><label id="cvt_rb2-hdmi2_1"></label></td>
+                    <td><label id="custom-hdmi2_1"></label></td>
+                    <td><label>Max BW 42,667 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>HDMI 2.0 (600 MHz)</label></td>
+                    <td><label id="cvt-hdmi2_0"></label></td>
+                    <td><label id="cvt_rb-hdmi2_0"></label></td>
+                    <td><label id="cvt_rb2-hdmi2_0"></label></td>
+                    <td><label id="custom-hdmi2_0"></label></td>
+                    <td><label>Max BW 14,400 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>HDMI 1.3/1.4 (340 MHz)</label></td>
+                    <td><label id="cvt-hdmi1_3"></label></td>
+                    <td><label id="cvt_rb-hdmi1_3"></label></td>
+                    <td><label id="cvt_rb2-hdmi1_3"></label></td>
+                    <td><label id="custom-hdmi1_3"></label></td>
+                    <td><label>Max BW 8,160 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>HDMI 1.0/1.1/1.2 (165 MHz)</label></td>
+                    <td><label id="cvt-hdmi1_0"></label></td>
+                    <td><label id="cvt_rb-hdmi1_0"></label></td>
+                    <td><label id="cvt_rb2-hdmi1_0"></label></td>
+                    <td><label id="custom-hdmi1_0"></label></td>
+                    <td><label>Max BW 3,960 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>DVI-DL (330 MHz)</label></td>
+                    <td><label id="cvt-dvi_dl"></label></td>
+                    <td><label id="cvt_rb-dvi_dl"></label></td>
+                    <td><label id="cvt_rb2-dvi_dl"></label></td>
+                    <td><label id="custom-dvi_dl"></label></td>
+                    <td><label>Max BW 7,920 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>DVI-D</label></td>
+                    <td><label id="cvt-dvi_d"></label></td>
+                    <td><label id="cvt_rb-dvi_d"></label></td>
+                    <td><label id="cvt_rb2-dvi_d"></label></td>
+                    <td><label id="custom-dvi_d"></label></td>
+                    <td><label>Max BW 3960 Mbit/s</label></td>
                 </tr>
             </table>
             </form>
@@ -583,11 +636,41 @@
                         dp_hbr_bw       =   2700000000*4/10*8;
                         dp_rbr_bw       =   1640000000*4/10*8;
 
+                        dvi_d_bw        =    165000000*24;
+                        dvi_dl_bw       =    330000000*24;
+
+                        hdmi_1_0_bw     =    165000000*24;
+                        hdmi_1_3_bw     =    340000000*24;
+                        hdmi_2_0_bw     =    600000000*24;
+                        hdmi_2_1_bw     =  12000000000*4*16/18;
+
                         dp_2_ok         = (link_bw < dp_2_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                         dp_hbr3_ok      = (link_bw < dp_hbr3_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                         dp_hbr2_ok      = (link_bw < dp_hbr2_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                         dp_hbr_ok       = (link_bw < dp_hbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                         dp_rbr_ok       = (link_bw < dp_rbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+
+                        dvi_d_ok        = bpc != 8 ?               "<font color=\"red\">8 bpc only</font>" :
+                                          (link_bw < dvi_d_bw)   ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dvi_dl_ok       = bpc != 8 ?               "<font color=\"red\">8 bpc only</font>" :
+                                          (link_bw < dvi_dl_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+
+                        hdmi_1_0_ok     = (link_bw < hdmi_1_0_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_1_3_ok     = (link_bw < hdmi_1_3_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_2_0_ok     = (link_bw < hdmi_2_0_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_2_1_ok     = (link_bw < hdmi_2_1_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+
+                        dp_2_ok         = dp_2_ok    + " (" + Math.round(link_bw/dp_2_bw*100) + "%)"
+                        dp_hbr3_ok      = dp_hbr3_ok + " (" + Math.round(link_bw/dp_hbr3_bw*100) + "%)"
+                        dp_hbr2_ok      = dp_hbr2_ok + " (" + Math.round(link_bw/dp_hbr2_bw*100) + "%)"
+                        dp_hbr_ok       = dp_hbr_ok  + " (" + Math.round(link_bw/dp_hbr_bw*100) + "%)"
+                        dp_rbr_ok       = dp_rbr_ok  + " (" + Math.round(link_bw/dp_rbr_bw*100) + "%)"
+                        dvi_d_ok        = bpc == 8 ? dvi_d_ok   + " (" + Math.round(link_bw/dvi_d_bw*100) + "%)" : dvi_d_ok
+                        dvi_dl_ok       = bpc == 8 ? dvi_dl_ok  + " (" + Math.round(link_bw/dvi_dl_bw*100) + "%)" : dvi_dl_ok
+                        hdmi_1_0_ok     = hdmi_1_0_ok    + " (" + Math.round(link_bw/hdmi_1_0_bw*100) + "%)"
+                        hdmi_1_3_ok     = hdmi_1_3_ok    + " (" + Math.round(link_bw/hdmi_1_3_bw*100) + "%)"
+                        hdmi_2_0_ok     = hdmi_2_0_ok    + " (" + Math.round(link_bw/hdmi_2_0_bw*100) + "%)"
+                        hdmi_2_1_ok     = hdmi_2_1_ok    + " (" + Math.round(link_bw/hdmi_2_1_bw*100) + "%)"
 
                         prefix = "#" + standard;
                         $(prefix + "-aspect_ratio").text(ASPECT_RATIO);
@@ -619,6 +702,14 @@
                         $(prefix + "-dp_hbr2").html(dp_hbr2_ok);
                         $(prefix + "-dp_hbr").html(dp_hbr_ok);
                         $(prefix + "-dp_rbr").html(dp_rbr_ok);
+
+                        $(prefix + "-dvi_d").html(dvi_d_ok);
+                        $(prefix + "-dvi_dl").html(dvi_dl_ok);
+
+                        $(prefix + "-hdmi1_0").html(hdmi_1_0_ok);
+                        $(prefix + "-hdmi1_3").html(hdmi_1_3_ok);
+                        $(prefix + "-hdmi2_0").html(hdmi_2_0_ok);
+                        $(prefix + "-hdmi2_1").html(hdmi_2_1_ok);
                     });
 
                 }
