@@ -675,7 +675,7 @@
                         prefix = "#" + standard;
                         $(prefix + "-aspect_ratio").text(ASPECT_RATIO);
 
-                        $(prefix + "-pclock").text(Math.round(pclock/1000000));
+                        $(prefix + "-pclock").text(Math.round(pclock/1000)/1000);
 
                         $(prefix + "-htotal").text(htotal);
                         $(prefix + "-hpixels").text(hactive);
@@ -683,7 +683,7 @@
                         $(prefix + "-hfront").text(H_FRONT_PORCH);
                         $(prefix + "-hsync").text(H_SYNC);
                         $(prefix + "-hback").text(H_BACK_PORCH);
-                        $(prefix + "-hfreq").text(Math.round(hfreq/1000));
+                        $(prefix + "-hfreq").text(Math.round(hfreq)/1000);
                         $(prefix + "-hperiod").text(Math.round(hperiod*1000000000)/1000);
 
                         $(prefix + "-vtotal").text(vtotal);
