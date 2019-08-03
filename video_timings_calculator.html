@@ -23,11 +23,15 @@
                     { name: "1440p / 165"           , horiz_pixels : 2560, vert_pixels : 1440, refresh_rate: 165 },
                     { name: "1440p / 120"           , horiz_pixels : 2560, vert_pixels : 1440, refresh_rate: 120 },
                     { name: "1440p / 60"            , horiz_pixels : 2560, vert_pixels : 1440, refresh_rate:  60 },
-                    { name: "1080p / 360"           , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate: 360 },
+                    { name: "1920x1200 / 60"        , horiz_pixels : 1920, vert_pixels : 1200, refresh_rate:  60 },
                     { name: "1080p / 240"           , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate: 240 },
                     { name: "1080p / 144"           , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate: 144 },
                     { name: "1080p / 120"           , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate: 120 },
                     { name: "1080p / 60"            , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate:  60 },
+                    { name: "720p / 60"             , horiz_pixels : 1280, vert_pixels :  720, refresh_rate:  60 },
+                    { name: "640x480 / 60"          , horiz_pixels :  640, vert_pixels :  480, refresh_rate:  60 },
+                    { name: "320x200 / 60"          , horiz_pixels :  320, vert_pixels :  200, refresh_rate:  60 },
+                    { name: "160x100 / 60"          , horiz_pixels :  160, vert_pixels :  100, refresh_rate:  60 },
                 ];
 
             function check_integer(value, result_id) {
@@ -467,11 +471,19 @@
                     <td><label>ms</label></td>
                 </tr>
                 <tr>
-                    <td><label>Required Link BW</label></td>
-                    <td><label id="cvt-link_bw"></label></td>
-                    <td><label id="cvt_rb-link_bw"></label></td>
-                    <td><label id="cvt_rb2-link_bw"></label></td>
-                    <td><label id="custom-link_bw"></label></td>
+                    <td><label>Total BW</label></td>
+                    <td><label id="cvt-total_bw"></label></td>
+                    <td><label id="cvt_rb-total_bw"></label></td>
+                    <td><label id="cvt_rb2-total_bw"></label></td>
+                    <td><label id="custom-total_bw"></label></td>
+                    <td><label>Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>Active BW</label></td>
+                    <td><label id="cvt-active_bw"></label></td>
+                    <td><label id="cvt_rb-active_bw"></label></td>
+                    <td><label id="cvt_rb2-active_bw"></label></td>
+                    <td><label id="custom-active_bw"></label></td>
                     <td><label>Mbit/s</label></td>
                 </tr>
                 <tr>
@@ -562,6 +574,30 @@
                     <td><label id="custom-dvi_d"></label></td>
                     <td><label>Max BW 3960 Mbit/s</label></td>
                 </tr>
+                <tr>
+                    <td><label>RFC4175/100M Ethernet</label></td>
+                    <td><label id="cvt-rfc4175_eth100m"></label></td>
+                    <td><label id="cvt_rb-rfc4175_eth100m"></label></td>
+                    <td><label id="cvt_rb2-rfc4175_eth100m"></label></td>
+                    <td><label id="custom-rfc4175_eth100m"></label></td>
+                    <td><label id="max_rfc4175_eth100m"></label></td>
+                </tr>
+                <tr>
+                    <td><label>RFC4175/1 GigE</label></td>
+                    <td><label id="cvt-rfc4175_eth1g"></label></td>
+                    <td><label id="cvt_rb-rfc4175_eth1g"></label></td>
+                    <td><label id="cvt_rb2-rfc4175_eth1g"></label></td>
+                    <td><label id="custom-rfc4175_eth1g"></label></td>
+                    <td><label id="max_rfc4175_eth1g"></label></td>
+                </tr>
+                <tr>
+                    <td><label>RFC4175/10 GigE</label></td>
+                    <td><label id="cvt-rfc4175_eth10g"></label></td>
+                    <td><label id="cvt_rb-rfc4175_eth10g"></label></td>
+                    <td><label id="cvt_rb2-rfc4175_eth10g"></label></td>
+                    <td><label id="custom-rfc4175_eth10g"></label></td>
+                    <td><label id="max_rfc4175_eth10g"></label></td>
+                </tr>
             </table>
             </form>
 
@@ -628,7 +664,8 @@
                         hperiod         = 1/hfreq;
                         vperiod         = 1/vfreq;
 
-                        link_bw         = pclock * bpc * color_fmt_multiplier;
+                        total_bw        = pclock * bpc * color_fmt_multiplier;
+                        active_bw       = vfreq * bpc * vactive * hactive * color_fmt_multiplier;
 
                         dp_2_bw         =  20000000000*4/132*128;
                         dp_hbr3_bw      =   8100000000*4/10*8;
@@ -644,33 +681,52 @@
                         hdmi_2_0_bw     =    600000000*24;
                         hdmi_2_1_bw     =  12000000000*4*16/18;
 
-                        dp_2_ok         = (link_bw < dp_2_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        dp_hbr3_ok      = (link_bw < dp_hbr3_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        dp_hbr2_ok      = (link_bw < dp_hbr2_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        dp_hbr_ok       = (link_bw < dp_hbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        dp_rbr_ok       = (link_bw < dp_rbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        ethernet_mtu1500 = 1500/1542;   // includes inter-packet gap
+
+                        rfc4175_overhead = 20 +         // IP header
+                                            8 +         // UDP header
+                                           12 +         // Minimal RTP header
+                                           13;          // RFC 4175 additional header
+
+                        rfc4175_eth100m_bw  = 100000000   * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500;
+                        rfc4175_eth1g_bw    = 1000000000  * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500;
+                        rfc4175_eth10g_bw   = 10000000000 * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500;
+
+                        dp_2_ok         = (total_bw < dp_2_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_hbr3_ok      = (total_bw < dp_hbr3_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_hbr2_ok      = (total_bw < dp_hbr2_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_hbr_ok       = (total_bw < dp_hbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_rbr_ok       = (total_bw < dp_rbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
 
                         dvi_d_ok        = bpc != 8 ?               "<font color=\"red\">8 bpc only</font>" :
-                                          (link_bw < dvi_d_bw)   ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                                          (total_bw < dvi_d_bw)   ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                         dvi_dl_ok       = bpc != 8 ?               "<font color=\"red\">8 bpc only</font>" :
-                                          (link_bw < dvi_dl_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                                          (total_bw < dvi_dl_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
 
-                        hdmi_1_0_ok     = (link_bw < hdmi_1_0_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        hdmi_1_3_ok     = (link_bw < hdmi_1_3_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        hdmi_2_0_ok     = (link_bw < hdmi_2_0_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        hdmi_2_1_ok     = (link_bw < hdmi_2_1_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_1_0_ok     = (total_bw < hdmi_1_0_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_1_3_ok     = (total_bw < hdmi_1_3_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_2_0_ok     = (total_bw < hdmi_2_0_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_2_1_ok     = (total_bw < hdmi_2_1_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
 
-                        dp_2_ok         = dp_2_ok    + " (" + Math.round(link_bw/dp_2_bw*100) + "%)"
-                        dp_hbr3_ok      = dp_hbr3_ok + " (" + Math.round(link_bw/dp_hbr3_bw*100) + "%)"
-                        dp_hbr2_ok      = dp_hbr2_ok + " (" + Math.round(link_bw/dp_hbr2_bw*100) + "%)"
-                        dp_hbr_ok       = dp_hbr_ok  + " (" + Math.round(link_bw/dp_hbr_bw*100) + "%)"
-                        dp_rbr_ok       = dp_rbr_ok  + " (" + Math.round(link_bw/dp_rbr_bw*100) + "%)"
-                        dvi_d_ok        = bpc == 8 ? dvi_d_ok   + " (" + Math.round(link_bw/dvi_d_bw*100) + "%)" : dvi_d_ok
-                        dvi_dl_ok       = bpc == 8 ? dvi_dl_ok  + " (" + Math.round(link_bw/dvi_dl_bw*100) + "%)" : dvi_dl_ok
-                        hdmi_1_0_ok     = hdmi_1_0_ok    + " (" + Math.round(link_bw/hdmi_1_0_bw*100) + "%)"
-                        hdmi_1_3_ok     = hdmi_1_3_ok    + " (" + Math.round(link_bw/hdmi_1_3_bw*100) + "%)"
-                        hdmi_2_0_ok     = hdmi_2_0_ok    + " (" + Math.round(link_bw/hdmi_2_0_bw*100) + "%)"
-                        hdmi_2_1_ok     = hdmi_2_1_ok    + " (" + Math.round(link_bw/hdmi_2_1_bw*100) + "%)"
+                        rfc4175_eth100m_ok = (active_bw < rfc4175_eth100m_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        rfc4175_eth1g_ok   = (active_bw < rfc4175_eth1g_bw)   ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        rfc4175_eth10g_ok  = (active_bw < rfc4175_eth10g_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+
+                        dp_2_ok         = dp_2_ok    + " (" + Math.round(total_bw/dp_2_bw*100) + "%)"
+                        dp_hbr3_ok      = dp_hbr3_ok + " (" + Math.round(total_bw/dp_hbr3_bw*100) + "%)"
+                        dp_hbr2_ok      = dp_hbr2_ok + " (" + Math.round(total_bw/dp_hbr2_bw*100) + "%)"
+                        dp_hbr_ok       = dp_hbr_ok  + " (" + Math.round(total_bw/dp_hbr_bw*100) + "%)"
+                        dp_rbr_ok       = dp_rbr_ok  + " (" + Math.round(total_bw/dp_rbr_bw*100) + "%)"
+                        dvi_d_ok        = bpc == 8 ? dvi_d_ok   + " (" + Math.round(total_bw/dvi_d_bw*100) + "%)" : dvi_d_ok
+                        dvi_dl_ok       = bpc == 8 ? dvi_dl_ok  + " (" + Math.round(total_bw/dvi_dl_bw*100) + "%)" : dvi_dl_ok
+                        hdmi_1_0_ok     = hdmi_1_0_ok    + " (" + Math.round(total_bw/hdmi_1_0_bw*100) + "%)"
+                        hdmi_1_3_ok     = hdmi_1_3_ok    + " (" + Math.round(total_bw/hdmi_1_3_bw*100) + "%)"
+                        hdmi_2_0_ok     = hdmi_2_0_ok    + " (" + Math.round(total_bw/hdmi_2_0_bw*100) + "%)"
+                        hdmi_2_1_ok     = hdmi_2_1_ok    + " (" + Math.round(total_bw/hdmi_2_1_bw*100) + "%)"
+
+                        rfc4175_eth100m_ok = rfc4175_eth100m_ok + " (" + Math.round(active_bw/rfc4175_eth100m_bw*100) + "%)"
+                        rfc4175_eth1g_ok   = rfc4175_eth1g_ok   + " (" + Math.round(active_bw/rfc4175_eth1g_bw*100) + "%)"
+                        rfc4175_eth10g_ok  = rfc4175_eth10g_ok   + " (" + Math.round(active_bw/rfc4175_eth10g_bw*100) + "%)"
 
                         prefix = "#" + standard;
                         $(prefix + "-aspect_ratio").text(ASPECT_RATIO);
@@ -695,7 +751,8 @@
                         $(prefix + "-vfreq").text(Math.round(vfreq*1000)/1000);
                         $(prefix + "-vperiod").text(Math.round(vperiod*1000000)/1000);
 
-                        $(prefix + "-link_bw").text(Math.round(link_bw/1000000));
+                        $(prefix + "-total_bw").text(Math.round(total_bw/1000000));
+                        $(prefix + "-active_bw").text(Math.round(active_bw/1000000));
 
                         $(prefix + "-dp_2").html(dp_2_ok);
                         $(prefix + "-dp_hbr3").html(dp_hbr3_ok);
@@ -710,7 +767,15 @@
                         $(prefix + "-hdmi1_3").html(hdmi_1_3_ok);
                         $(prefix + "-hdmi2_0").html(hdmi_2_0_ok);
                         $(prefix + "-hdmi2_1").html(hdmi_2_1_ok);
+
+                        $(prefix + "-rfc4175_eth100m").html(rfc4175_eth100m_ok);
+                        $(prefix + "-rfc4175_eth1g").html(rfc4175_eth1g_ok);
+                        $(prefix + "-rfc4175_eth10g").html(rfc4175_eth10g_ok);
                     });
+
+                    $("#max_rfc4175_eth100m").html("Max BW " + Math.round(rfc4175_eth100m_bw/1000000) + " Mbit/s");
+                    $("#max_rfc4175_eth1g").html("Max BW " + Math.round(rfc4175_eth1g_bw/1000000) + " Mbit/s");
+                    $("#max_rfc4175_eth10g").html("Max BW " + Math.round(rfc4175_eth10g_bw/1000000) + " Mbit/s");
 
                 }
 
