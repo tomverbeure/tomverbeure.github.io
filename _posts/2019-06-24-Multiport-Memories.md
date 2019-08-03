@@ -149,6 +149,12 @@ You can reduce the chance of a banking conflict by increasing the number of bank
 to the number of write ports. For uniformly spread write addresses, a higher number of banks will lower
 the chance of a bank conflict.
 
+The memory below has 2 write ports, 1 read port, and 4 banks. Notice how the read data output
+multiplexer is controlled the 2 LSBs of `rd0_addr`, and how there is a signal for each write port
+to stall the transaction.
+
+![Banked Memory]({{ "/assets/multiport_memories/xor_memory-banked_mem_2w_1r_4b.svg" | absolute_url }})
+
 Alternatively, when the writes come in bursts with idle cycles in between, you could add a FIFO to buffer
 serialized writes and avoid stalls, but then you'd also need to logic to check that reads don't fetch data
 that's temporarily stored in that pending-write FIFO.
@@ -165,7 +171,6 @@ Either way, things will get complex very quickly. And sometimes your design is s
 the write pipeline is impossible, yet banking conflicts can't be avoided.
 
 A different solution is needed.
-
 
 # Live Value Table
 
