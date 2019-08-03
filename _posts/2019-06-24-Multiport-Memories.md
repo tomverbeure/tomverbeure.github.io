@@ -16,40 +16,40 @@ On-chip memories are one of the key ingredients of digital design.
 In an ASIC design environment, you are typically offered a library of various configurations:
 single read/write port, single read/single write ports, sometimes dual read/write ports.
 
-Once you go beyond that, you enter the realm of custom RAMs: whatever it is that
-you need gets hand crafted by your RAM design team. An expensive proposition, so you better 
+Once you go beyond that, you enter the realm of custom RAMs: whatever you need gets hand crafted 
+by your RAM design team. An expensive proposition, so you better 
 have a really good reason to need one!
 
-It's unusual to have a conceptual RAM like the one below, with 2 independent write ports
-and 2 independent read ports, readily available.
+It's unusual to have a conceptual RAM like the one below readily available: one with 2 independent write ports
+and 2 independent read ports.
 
 ![Highlevel View]({{ "/assets/multiport_memories/xor_memory-Highlevel_View.svg" | absolute_url }})
 
-In FPGA land, things are more limited: you get to use what your FPGA provides, and that is that.
+In FPGA land, things are more limited: you get to use what the FPGA provides and that is that.
 
 If we ignore RAMs that are constructed out of repurposed LUTs and registers, most FPGAs
 have so-called block RAMs (BRAMs) that have at least a single read and a single, separate,
-write port. (FPGAs from Intel and Xilinx usually have 2 read/write ports, but the Lattice iCE40 
-only has one read and one write port.)
+write port. FPGAs from Intel and Xilinx usually have 2 full read/write ports, but the Lattice 
+iCE40, popular in the open source world, only has one read and one write port.
 
 Unfortunately, not all design problems can map to the standard BRAMs of the FPGA of your
 choice.
 
 The register file of a simple CPU will almost certainly require at least 2 read ports and 
-1 write port, a number that will multiply for multiple issue CPU architectures. And all those
+1 write port, a number that increases for multiple issue CPU architectures. And all those
 ports need to be serviced at the same time.
 
 In this blog post, I go over the some common ways in which multiple read and write port
-memories can be constructed out of standard BRAMs. I then describe some really interesting
+memories can be constructed out of standard BRAMs. I then describe a really interesting
 way in which they can be designed without any major restrictions other than the number
 of BRAMs in your FPGA.
 
 All RAMs will have the following behavior:
 
 * synchronous reads only: a read operation will return the result one clock cycle later
-* single direction ports only. Most of the topics discussed here can be expanded to bidirectional
+* single direction ports only: most of the techniques discussed here can be expanded to bidirectional
   ports as well, but it would expand the scope of this post too much.
-* a reads and writes to the same address during the same clock cycle return the newly written value
+* reads and writes to the same address during the same clock cycle return the newly written value
 * multiple writes through different ports to the same address result in undefined behavior, even
   if the same value is written on both ports.
 
@@ -61,7 +61,9 @@ Translated to an example waveform:
 This blog post is *heavily* based on the 
 [Composing Multi-Ported Memories on FPGAs](http://people.csail.mit.edu/ml/pubs/trets_multiport.pdf)
 paper by [Eric LaForest](https://twitter.com/elaforest), Zimo Li, Tristan O’Rourke, Ming G. Liu, and J. Gregory Steffan.
-Images from this paper have been used with permission.
+Images from this paper have been used with permission. Eric's website has a [whole section](http://fpgacpu.ca/multiport/index.html)
+dedicated to just this topic!
+
 
 # Multiple-Read, Single-Write RAMs
 
