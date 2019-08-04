@@ -174,6 +174,39 @@ A different solution is needed.
 
 # Live Value Table
 
+The Live Value Table approach is an extension of the technique that's used for the single-write, multi-read
+RAM. Instead of using one RAM per read port, you also now have one RAM per write port. And when
+you have multiple read and multiple write ports, the number of RAMs is simply the multiplication of the
+two.
+
+Like this:
+
+![LVT 2r 2w without select]({{ "/assets/multiport_memories/xor_memory-lvt_2r_2w_without_select.svg" | absolute_url }})
+
+Looks easy enough... except for the 2 red question marks! How do you know which RAM contains the
+last written value for a particular address? Or also: which RAM *write port* was last used
+to update a particular value?
+
+That's where the live value table come in: it is itself a RAM with the same number of write and read ports,
+and with the same address capacity of the full RAM, but with a data width that is only as large as
+*log2(nr_write_ports)*, 1 in our case with 2 write ports. 
+**It stores the number of the write port which has last issued a write to a
+given address**. When a read is issued, the output of this extra RAM goes directly to the
+select input of the multipler.
+
+How does that help us?
+
+We can implement this additional multi-port RAM with discrete FFs and multiplexers only. But since
+the number of data bus is only 1 bit wide, the amount of logic is only a small fraction of what would
+be required if you'd implement the complete RAM with discrete gates!
+
+![LVT 2r 2w select]({{ "/assets/multiport_memories/xor_memory-lvt_2r_2w_with_select.svg" | absolute_url }})
+
+The LVT approach is great when the size of your multi-port RAM is too large to implement with discrete gates,
+but primarily because the width of the data bus is too wide while the number of addresses is reasonable.
+
+It's also a straightforward and easy to understand.
+
 # XOR-Based Approach
 
 # References
