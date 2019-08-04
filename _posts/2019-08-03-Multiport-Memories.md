@@ -367,7 +367,12 @@ This raises the question: which one to use for which case?
 
 The paper on which this blog post is based goes deep into this, comparing logic gate use, RAM use, and Fmax.
 
-The answer is: it depends. Any one of the 3 methods has use cases where they come out on top, depending on
+In some cases, the different can be very signficant. Here's a case where the XOR-based implementation
+is clearly the best choice... if you have plenty of block RAMs to spare.
+
+![lvt_xor_8192_w2r4.png]({{ "/assets/multiport_memories/lvt_xor_8192_w2r4.png" | absolute_url }})
+
+But the real answer is: it depends. Any one of the 3 methods has use cases where they come out on top, depending on
 the data bus width, number of addresses, number of read ports, number of write ports, and desired Fmax.
 
 Here's just one of the graphs that compares the different implementations when using an Intel/Altera Stratix IV FPGA.
