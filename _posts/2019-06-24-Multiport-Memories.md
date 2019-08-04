@@ -8,6 +8,10 @@ categories:
 * [Introduction](#introduction)
 * [Multiple-Read, Single-Write RAMs](#multiple-read-single-write-rams)
 * [Flip-Flop RAMs](#flip-flop-rams)
+* [Banked Multi-Port RAMs](#banked-multi-port-rams)
+* [Live Value Table Multi-Port RAMs](#live-value-table-multi-port-rams)
+* [XOR-Based Multi-Port RAMs](#xor-based-multi-port-rams)
+* [A XOR-Based Multi-Port RAM Implementation](#a-xor-based-multi-port-ram-implementation)
 
 # Introduction
 
@@ -130,7 +134,7 @@ Note though that 4 read and 2 write ports isn't particularly high for a modern C
 register file of the ancient Alpha 21464 CPU had 16 read and 8 write ports, with an area cost that was 5x
 the area of the 64KB data cache!
 
-# Banking
+# Banked Multi-Port RAMs
 
 With banking, you split one large memory into multiple smaller ones. Each memory bank stores
 only its fraction of the total memory.
@@ -172,9 +176,9 @@ the write pipeline is impossible, yet banking conflicts can't be avoided.
 
 A different solution is needed.
 
-# Live Value Table
+# Live Value Table Multi-Port RAMs
 
-The Live Value Table approach is an extension of the technique that's used for the single-write, multi-read
+The Live Value Table (LVT) approach is an extension of the technique that's used for the single-write, multi-read
 RAM. Instead of using one RAM per read port, you also now have one RAM per write port. And when
 you have multiple read and multiple write ports, the number of RAMs is simply the multiplication of the
 two.
@@ -207,7 +211,94 @@ but primarily because the width of the data bus is too wide while the number of 
 
 It's also a straightforward and easy to understand.
 
-# XOR-Based Approach
+The total number of block RAMs is:
+
+*nr_block_rams = nr_write_ports * nr_read_ports*
+
+# XOR-Based Multi-Port RAMs
+
+Until now, whenever there were multiple sources from which a read port to get its data, there was
+multiplexer to select the correct source.
+
+XOR-based multi-port RAMs use a different approach. They make use of the following properties of the
+boolean XOR operation:
+
+```
+A xor B xor B = A
+```
+
+Lets say, we have 2 memory locations, M1 and M2 with values OLD1 and OLD2 resp.
+
+We replace M1 with value (NEW xor OLD2).
+
+If we now read the locations of M1 and M2 and XOR then, we get: (NEW xor OLD2) xor OLD2 = NEW.
+
+In other words, by replacing just to 1 memory location, M1, we can recover the last written
+value by reading from both RAMs.
+
+XOR-based multi-port RAMs are using this exact principle. Instead of writing the incoming
+value straight to the memories that are associated with a write port, we first read the
+value from the memories that are associated with the *other* write port, we then XOR that
+with the new value and only then write it.
+
+In the diagrams below, you see how that works for a RAM with 2 write ports and 1 read port.
+
+Unlike the LVT-base RAM, we are only using block RAMs to store everything. On the right side of
+the dotted vertical line, you see the RAMs that you'd also have with the LVT method. The
+RAMs on the left of this line are additional RAMs that are exclusive to the XOR-based
+method. They are the alternative to the helper RAM built out of discrete gates that contained
+the live value data.
+
+For the sake of argument, we assume that the RAMs start out all initialized to zero. (This
+is not a requirement! It just makes it easier to understand.)
+
+When you'd read the data from address 0x02, you'd get a value of `0x000 xor 0x0000 = 0x0000`.
+
+![XOR RAM Init]({{ "/assets/multiport_memories/xor_memory-Init_State.svg" | absolute_url }})
+
+We now write a value of 0x1111 to address 0x02 through port 0, we first read the value from
+port 1 (0x0000), XOR that with the incoming value of 0x1111, and write the result (also 0x1111) to the RAMs of
+port 0:
+
+![XOR RAM W0 0x1111]({{ "/assets/multiport_memories/xor_memory-W0_0x1111.svg" | absolute_url }})
+
+Finally, if you now write a value of 0x2222 to address 0x02 through port 1, we read the value from
+port 0 (0x1111), XOR it with the incoming value of 0x2222, and write the result (0x3333) to the
+RAMs of port 1:
+
+![XOR RAM W1 0x2222]({{ "/assets/multiport_memories/xor_memory-W1_0x2222.svg" | absolute_url }})
+
+
+You'll notice above that if you read back the new values of address 0x02 (0x1111 and 0x2222)
+and XOR them, you get 0x2222, which is the value that was last written through port 1.
+
+This technique can easily be expanded to more read or write ports. In the diagram below, you
+see the configuration for 2 write ports and 2 read ports. Notice how, just like with the LVT
+example, we have now 4 RAMs on the right side of the dotted line. The RAMs on the left
+side remain the same, but they would expand quickly if you'd increase the number of write
+ports.
+
+![XOR RAM 2w_2r]({{ "/assets/multiport_memories/xor_memory-2_read_ports.svg" | absolute_url }})
+
+The total number of block RAMs used by the XOR technique is: 
+
+*nr_block_rams = nr_write_ports * ((nr_write_ports-1) + nr_read_ports)*.
+
+The number of block RAMs goes up quickly with the number of write ports. Here we just go
+from 2 to 3 write ports:
+
+![XOR RAM 2w_3r]({{ "/assets/multiport_memories/xor_memory-xor_2r_3w.svg" | absolute_url }})
+
+
+An important caveat with the XOR-based approach is the fact that you first need to read a value
+from a RAM before you can store the new value.
+
+If we want to retain the RAM behavior that were laid out the introduction (a read latency of 1
+clock cycle and concurrent read/write resulting in the newly written value being read), then 
+we need to add some bypass paths to make that work.
+
+# A XOR-Based Multi-Port RAM Implementation
+
 
 # References
 
