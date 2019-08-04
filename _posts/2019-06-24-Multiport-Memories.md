@@ -12,6 +12,8 @@ categories:
 * [Live Value Table Multi-Port RAMs](#live-value-table-multi-port-rams)
 * [XOR-Based Multi-Port RAMs](#xor-based-multi-port-rams)
 * [A XOR-Based Multi-Port RAM Implementation](#a-xor-based-multi-port-ram-implementation)
+* [Which Type To Use?](#which-type-to-use)
+* [Conclusion](#conclusion)
 
 # Introduction
 
@@ -65,7 +67,7 @@ Translated to an example waveform:
 This blog post is *heavily* based on the
 [Composing Multi-Ported Memories on FPGAs](http://people.csail.mit.edu/ml/pubs/trets_multiport.pdf)
 paper by [Eric LaForest](https://twitter.com/elaforest), Zimo Li, Tristan O’Rourke, Ming G. Liu, and J. Gregory Steffan.
-Images from this paper have been used with permission. Eric's website has a [whole section](http://fpgacpu.ca/multiport/index.html)
+Images from this paper have been used with permission of the author. Eric's website has a [whole section](http://fpgacpu.ca/multiport/index.html)
 dedicated to just this topic!
 
 
@@ -285,10 +287,15 @@ The total number of block RAMs used by the XOR technique is:
 *nr_block_rams = nr_write_ports * ((nr_write_ports-1) + nr_read_ports)*.
 
 The number of block RAMs goes up quickly with the number of write ports. Here we just go
+        val rd_eq_wr = io.wr_addr === io.rd_addr
+
+        val bypass_ena_p1 = RegNext(io.wr_ena && rd_eq_wr)
+        val wr_data_p1    = RegNextWhen(io.wr_data, io.wr_ena && io.rd_ena && rd_eq_wr)
+
+        io.rd_data := bypass_ena_p1 ? wr_data_p1 | rd_data_mem
 from 2 to 3 write ports:
 
 ![XOR RAM 2w_3r]({{ "/assets/multiport_memories/xor_memory-xor_2r_3w.svg" | absolute_url }})
-
 
 An important caveat with the XOR-based approach is the fact that you first need to read a value
 from a RAM before you can store the new value.
@@ -299,16 +306,93 @@ we need to add some bypass paths to make that work.
 
 # A XOR-Based Multi-Port RAM Implementation
 
+An implementation is always useful to get a really good feel about something, so I wrote the RTL
+for a XOR-based RAM with 2 write ports and 1 read port.
+
+I used [SpinalHDL](https://spinalhdl.github.io/SpinalDoc-RTD/), which I've written about before,
+but it's pretty trivial to port this to Verilog. Or you could use the Verilog that's generated
+by my SpinalHDL project.
+
+I assumed that there was no built-in support for concurrent read/write RAMs, which means I had
+to write the logic myself for the writeFirst case (that's the case where a concurrent read/write
+results in the read returning the newly written data.)
+
+The base RAM is then a [simple one with 1 write port and 1 read port](https://github.com/tomverbeure/multi_port_mem/blob/e9d456f019913c94d2aa2839e199fed50840d09b/spinal/src/main/scala/multi_port_mem/MultiPortMem.scala#L56-L90).
+
+And there's the [bypass path](https://github.com/tomverbeure/multi_port_mem/blob/e9d456f019913c94d2aa2839e199fed50840d09b/spinal/src/main/scala/multi_port_mem/MultiPortMem.scala#L83-L88):
+
+```Verilog
+        val rd_eq_wr = io.wr_addr === io.rd_addr
+
+        val bypass_ena_p1 = RegNext(io.wr_ena && rd_eq_wr)
+        val wr_data_p1    = RegNextWhen(io.wr_data, io.wr_ena && io.rd_ena && rd_eq_wr)
+
+        io.rd_data := bypass_ena_p1 ? wr_data_p1 | rd_data_mem
+```
+
+The [2-write port version](https://github.com/tomverbeure/multi_port_mem/blob/e9d456f019913c94d2aa2839e199fed50840d09b/spinal/src/main/scala/multi_port_mem/MultiPortMem.scala#L132-L228) 
+builds on this simple RAM.
+
+Due to the pipelining where you first need to read before doing a write, this one also has 
+[its own bypass logic](https://github.com/tomverbeure/multi_port_mem/blob/e9d456f019913c94d2aa2839e199fed50840d09b/spinal/src/main/scala/multi_port_mem/MultiPortMem.scala#L218-L226):
+
+```Verilog
+        val rd0_eq_wr0      = io.wr0.addr === io.rd0.addr
+        val bypass0_ena_p1  = RegNext(io.wr0.ena && rd0_eq_wr0)
+
+        val rd0_eq_wr1      = io.wr1.addr === io.rd0.addr
+        val bypass1_ena_p1  = RegNext(io.wr1.ena && rd0_eq_wr1)
+
+        io.rd0.data :=  bypass0_ena_p1 ? wr0_data_p1 |
+                       (bypass1_ena_p1 ? wr1_data_p1 |
+                                         bank0_rd0_xor_data_p1 ^ bank1_rd0_xor_data_p1)
+
+```
+
+You can simulate this RAM by issuing the following command:
+
+```
+sbt "runMain multi_port_mem.MultiPortMemSim"
+```
+
+# Which Type to Use?
+
+For general purpose multi-ported memories, we have now 3 different techniques:
+
+* Discrete gates
+* LVT-base RAM
+* XOR-base RAM
+
+This raises the question: which one to use for which case?
+
+The paper on which this blog post is based goes deep into this, comparing logic gate use, RAM use, and Fmax.
+
+The answer is: it depends. Any one of the 3 methods has use cases where they come out on top, depending on
+the data bus width, number of addresses, number of read ports, number of write ports, and desired Fmax.
+
+Here's just one of the graphs that compares the different implementations when using an Intel/Altera Stratix IV FPGA.
+
+![LE vs LVT vs XOR]({{ "/assets/multiport_memories/le_vs_lvt_vs_xor.png" | absolute_url }})
+
+The paper contains many more tables and graphs. It even compares Altera vs Xilinx as well. It wouldn't make sense
+to just copy everything. Go to the source!
+
+# Conclusion
+
+Memories with generic multiple write ports are rarely used in digital hardware designs but maybe one day, 
+you'll run into a case where you absolutely need them. If you don't have custom RAM design team to help
+you out, the techniques presented here may help you out.
+
+And if, like me, you'll never need them, I hope that you found it interesting enough to give them a closer look.
+
 
 # References
 
 * [Multi-Ported Memories for FPGAs](http://fpgacpu.ca/multiport/)
 
-    Overview of research in this field
+    Overview of research in this field.
 
-* [Efficient Multi-Ported Memories for FPGAs](http://www.eecg.toronto.edu/~steffan/papers/laforest_fpga10.pdf) (LaForest, 2010)
-* [Multi-Ported Memories for FPGAs via XOR](http://fpgacpu.ca/multiport/FPGA2012-LaForest-XOR-Paper.pdf) (LaForest, 2012)
 * [Composing Multi-Ported Memories on FPGAs](http://people.csail.mit.edu/ml/pubs/trets_multiport.pdf) (LaForest, 2014)
-* [A Scalable Unsegmented Multiport Memory for FPGA-Based Systems](https://www.hindawi.com/journals/ijrc/2015/826283/) (Kevin R. Townsend, 2015)
 
-* [Banked Multiported Register Files for High-Frequency Superscalar Microprocessors](https://pdfs.semanticscholar.org/d3f7/adf7eb46fbb405dcb3cd77fc87cbddb2341c.pdf) (Tseng, 2003)
+    Paper on which this blog post is based.
+
