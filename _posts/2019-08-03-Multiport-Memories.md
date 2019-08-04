@@ -107,13 +107,13 @@ on the user to never do such a thing. (Don't hold it that way!)
 The trivial solution to create memories with multiple read and write ports is not use any RAMs at
 all, and use flip-flops instead.
 
-It's a solution that is often used when implementing registers files of CPUs that have more than one write
+It's a solution that is often used when implementing register files of CPUs that have more than one write
 port.
 
 On a RISC-V CPU with 32 32-bit registers, it will cost you 1024 FFs.
 
 For M write ports and N read ports, you'll also need an M-to-1 multiplexer and an N-to-1 multiplexer
-for each storage bit. And a truckload of wiring wiring to connect everything together!
+for each storage bit. And a truckload of wiring to connect everything together!
 
 This doesn't have to be a problem: the [SWeRV](https://tomverbeure.github.io/2019/03/13/SweRV.html) CPU
 has a dual-issue pipeline that can retire 2 instructions per clock cycles. And since instructions
@@ -147,9 +147,9 @@ bank M0 and the data for all odd addresses to bank M1.
 As long as you can guarantee that the 2 concurrent writes will consist of a write to an even address
 and a write to an odd address, you will reach a peak write bandwidth of 2 writes per clock cycle.
 
-The problem with this is that this can't always be guaranteed: 2 writes that go to the same bank
+The problem is that this can't always be guaranteed: 2 writes that go to the same bank
 will result in a so-called *bank conflict*, and you will be forced to serialize the 2 writes over
-2 clock cycles and stall the pipeline.
+2 clock cycles and stall the pipeline for at least one of the write ports.
 
 You can reduce the chance of a banking conflict by increasing the number of banks. They don't have to equal
 to the number of write ports. For uniformly spread write addresses, a higher number of banks will lower
@@ -171,7 +171,8 @@ optimizing compiler that orders instructions such that banking conflicts are red
 
 Banking is not only a potential solution for multiple write ports, but for multiple read ports as well.
 [This blog post](https://devblogs.nvidia.com/using-shared-memory-cuda-cc/) on shared memories in Nvidia
-GPUs has a section on bank conflicts and how to avoid them.
+GPUs has a section on bank conflicts and how to avoid them. In fact, just google 'bank conflict' and
+you've find a lot of information on this topic.
 
 Either way, things will get complex very quickly. And sometimes your design is such that stalling
 the write pipeline is impossible, yet banking conflicts can't be avoided.
@@ -193,7 +194,7 @@ Looks easy enough... except for the 2 red question marks! How do you know which 
 last written value for a particular address? Or also: which RAM *write port* was last used
 to update a particular value?
 
-That's where the live value table come in: it is itself a RAM with the same number of write and read ports,
+That's where the live value table comes in: it is itself a RAM with the same number of write and read ports,
 and with the same address capacity of the full RAM, but with a data width that is only as large as
 *log2(nr_write_ports)*, 1 in our case with 2 write ports. 
 **It stores the number of the write port which has last issued a write to a
@@ -222,39 +223,43 @@ The total number of block RAMs is:
 Until now, whenever there were multiple sources from which a read port to get its data, there was
 multiplexer to select the correct source.
 
-XOR-based multi-port RAMs use a different approach. They make use of the following properties of the
+XOR-based multi-port RAMs use a different approach. They make use of the following property of the
 boolean XOR operation:
 
 ```
 A xor B xor B = A
 ```
 
-Lets say, we have 2 memory locations, M1 and M2 with values OLD1 and OLD2 resp.
+Let's say that we have 2 registers, M1 and M2 with values OLD1 and OLD2 resp.
 
-We replace M1 with value (NEW xor OLD2).
+We update M1 with value (NEW xor OLD2).
 
-If we now read the locations of M1 and M2 and XOR then, we get: (NEW xor OLD2) xor OLD2 = NEW.
+If we now read the contents of M1 and M2 and XOR them, we get: (NEW xor OLD2) xor OLD2 = NEW.
 
-In other words, by replacing just to 1 memory location, M1, we can recover the last written
-value by reading from both RAMs.
+In other words, by updating just to 1 register, M1, we can recover the last written
+value by reading the values of both registers and XOR-ing them!
 
 XOR-based multi-port RAMs are using this exact principle. Instead of writing the incoming
 value straight to the memories that are associated with a write port, we first read the
-value from the memories that are associated with the *other* write port, we then XOR that
+values from the memories that are associated with the *other* write ports, we then XOR those values
 with the new value and only then write it.
 
 In the diagrams below, you see how that works for a RAM with 2 write ports and 1 read port.
 
-Unlike the LVT-base RAM, we are only using block RAMs to store everything. On the right side of
-the dotted vertical line, you see the RAMs that you'd also have with the LVT method. The
+Unlike the LVT-base RAM, we are using block RAMs for everything. There is no storage array
+built out of FFs.
+
+On the right side of the dotted vertical line, you see the RAMs that you'd also have with the LVT method. The
 RAMs on the left of this line are additional RAMs that are exclusive to the XOR-based
 method. They are the alternative to the helper RAM built out of discrete gates that contained
 the live value data.
 
+Once RAMs have been written, all RAMs associated with the same write port will contain the same data.
+
 For the sake of argument, we assume that the RAMs start out all initialized to zero. (This
 is not a requirement! It just makes it easier to understand.)
 
-When you'd read the data from address 0x02, you'd get a value of `0x000 xor 0x0000 = 0x0000`.
+When you'd read the data from address 0x02, you'd get a value of `0x0000 xor 0x0000 = 0x0000`.
 
 ![XOR RAM Init]({{ "/assets/multiport_memories/xor_memory-Init_State.svg" | absolute_url }})
 
@@ -271,8 +276,8 @@ RAMs of port 1:
 ![XOR RAM W1 0x2222]({{ "/assets/multiport_memories/xor_memory-W1_0x2222.svg" | absolute_url }})
 
 
-You'll notice above that if you read back the new values of address 0x02 (0x1111 and 0x2222)
-and XOR them, you get 0x2222, which is the value that was last written through port 1.
+You'll notice above that if you read back the new values of address 0x02 (0x1111 and 0x3333)
+and XOR them, you get 0x2222, the value that was last written through port 1.
 
 This technique can easily be expanded to more read or write ports. In the diagram below, you
 see the configuration for 2 write ports and 2 read ports. Notice how, just like with the LVT
@@ -287,12 +292,6 @@ The total number of block RAMs used by the XOR technique is:
 *nr_block_rams = nr_write_ports * ((nr_write_ports-1) + nr_read_ports)*.
 
 The number of block RAMs goes up quickly with the number of write ports. Here we just go
-        val rd_eq_wr = io.wr_addr === io.rd_addr
-
-        val bypass_ena_p1 = RegNext(io.wr_ena && rd_eq_wr)
-        val wr_data_p1    = RegNextWhen(io.wr_data, io.wr_ena && io.rd_ena && rd_eq_wr)
-
-        io.rd_data := bypass_ena_p1 ? wr_data_p1 | rd_data_mem
 from 2 to 3 write ports:
 
 ![XOR RAM 2w_3r]({{ "/assets/multiport_memories/xor_memory-xor_2r_3w.svg" | absolute_url }})
