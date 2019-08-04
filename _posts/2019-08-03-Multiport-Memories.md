@@ -157,7 +157,8 @@ the chance of a bank conflict.
 
 The memory below has 2 write ports, 1 read port, and 4 banks. Notice how the read data output
 multiplexer is controlled the 2 LSBs of `rd0_addr`, and how there is a signal for each write port
-to stall the transaction.
+to stall the transaction. Not shown: the logic to decide when to stall, and which port to stall. (Though
+that doesn't have to be complicated.)
 
 ![Banked Memory]({{ "/assets/multiport_memories/xor_memory-banked_mem_2w_1r_4b.svg" | absolute_url }})
 
