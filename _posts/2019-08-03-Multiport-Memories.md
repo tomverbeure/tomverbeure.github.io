@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Building Multiport Memories with Block RAMs
-date:   2019-06-24 10:00:00 -0700
+date:   2019-08-03 10:00:00 -0700
 categories:
 ---
 
