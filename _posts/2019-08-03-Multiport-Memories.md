@@ -8,6 +8,7 @@ categories:
 * [Introduction](#introduction)
 * [Multiple-Read, Single-Write RAMs](#multiple-read-single-write-rams)
 * [Flip-Flop RAMs](#flip-flop-rams)
+* [Multipumped Multi-Port RAMs](#multipumped-multi-port-rams)
 * [Banked Multi-Port RAMs](#banked-multi-port-rams)
 * [Live Value Table Multi-Port RAMs](#live-value-table-multi-port-rams)
 * [XOR-Based Multi-Port RAMs](#xor-based-multi-port-rams)
@@ -136,6 +137,24 @@ Note though that 4 read and 2 write ports isn't particularly high for a modern C
 register file of the ancient Alpha 21464 CPU had 16 read and 8 write ports, with an area cost that was 5x
 the area of the 64KB data cache!
 
+# Multipumped Multi-Port RAMs
+
+It's often the case that the random logic of your design runs at a much lower clock speed than the
+maximum achievable block RAM clock speed of the FPGA.
+
+You can use this to your advantage by clocking the block RAM at an integer multiple of your design,
+and increasing the number of read and write ports by the same integer multiple with some clever
+time-multiplexing.
+
+If your design doesn't already have such a faster clock available, you'll also have to add a PLL to 
+create this faster clock. 
+
+To ensure that reads and writes from and to different ports are coherent, you will need a small 
+controller to schedule all transactions in just the right order.
+
+But if you have spare a PLL and if your design doesn't have to be very fast, it's definitely a valid
+approach that has a good chance of being smaller than most other solutions!
+
 # Banked Multi-Port RAMs
 
 With banking, you split one large memory into multiple smaller ones. Each memory bank stores
@@ -197,7 +216,7 @@ to update a particular value?
 
 That's where the live value table comes in: it is itself a RAM with the same number of write and read ports,
 and with the same address capacity of the full RAM, but with a data width that is only as large as
-*log2(nr_write_ports)*, 1 in our case with 2 write ports. 
+*log2(nr_write_ports)*, 1 in our case with 2 write ports.
 **It stores the number of the write port which has last issued a write to a
 given address**. When a read is issued, the output of this extra RAM goes directly to the
 select input of the multipler.
@@ -288,7 +307,7 @@ ports.
 
 ![XOR RAM 2w_2r]({{ "/assets/multiport_memories/xor_memory-2_read_ports.svg" | absolute_url }})
 
-The total number of block RAMs used by the XOR technique is: 
+The total number of block RAMs used by the XOR technique is:
 
 *nr_block_rams = nr_write_ports * ((nr_write_ports-1) + nr_read_ports)*.
 
@@ -301,7 +320,7 @@ An important caveat with the XOR-based approach is the fact that you first need 
 from a RAM before you can store the new value.
 
 If we want to retain the RAM behavior that were laid out the introduction (a read latency of 1
-clock cycle and concurrent read/write resulting in the newly written value being read), then 
+clock cycle and concurrent read/write resulting in the newly written value being read), then
 we need to add some bypass paths to make that work.
 
 # A XOR-Based Multi-Port RAM Implementation
@@ -330,10 +349,10 @@ And there's the [bypass path](https://github.com/tomverbeure/multi_port_mem/blob
         io.rd_data := bypass_ena_p1 ? wr_data_p1 | rd_data_mem
 ```
 
-The [2-write port version](https://github.com/tomverbeure/multi_port_mem/blob/e9d456f019913c94d2aa2839e199fed50840d09b/spinal/src/main/scala/multi_port_mem/MultiPortMem.scala#L132-L228) 
+The [2-write port version](https://github.com/tomverbeure/multi_port_mem/blob/e9d456f019913c94d2aa2839e199fed50840d09b/spinal/src/main/scala/multi_port_mem/MultiPortMem.scala#L132-L228)
 builds on this simple RAM.
 
-Due to the pipelining where you first need to read before doing a write, this one also has 
+Due to the pipelining where you first need to read before doing a write, this one also has
 [its own bypass logic](https://github.com/tomverbeure/multi_port_mem/blob/e9d456f019913c94d2aa2839e199fed50840d09b/spinal/src/main/scala/multi_port_mem/MultiPortMem.scala#L218-L226):
 
 ```Verilog
@@ -384,7 +403,7 @@ to just copy everything. Go to the source!
 
 # Conclusion
 
-Memories with generic multiple write ports are rarely used in digital hardware designs but maybe one day, 
+Memories with generic multiple write ports are rarely used in digital hardware designs but maybe one day,
 you'll run into a case where you absolutely need them. If you don't have custom RAM design team to help
 you out, the techniques presented here may help you out.
 
