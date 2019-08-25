@@ -159,11 +159,50 @@ IRQ =00000000 | 00000018 | 000000b7 | lui ra,0x0
 Notice how the trace data does not contain the program counter for each executed instruction. This is not necessary:
 *as long as instructions don't branch, the next program counter value can be derived from the assembler code*!
 
+# Various
+
+Questions:
+
+* itype: there is an exception and an interrupt, but there's only an exception return and no irq return?
+
+
+Calls:
+
+JAL jumps to pc+offset, and stores pc+4 in the given register.
+
+x1/ra and x5/t0 are the return address and the temporary/alternate link register. So when those registers
+are specified as rd, it suggests that it's a function call with a return address.
+
+Since destination address is based on a constant offset, this instruction is inferable.
+
+    jal x1, <offset>
+    jal x5, <offset>
+
+JALR jumps to rs1 + imm1, and stores pc+4 in the given register.
+
+    jalr x1, t1, 8
+
+In combination with LUI, JALR can be used to create a jump to any absolute address:
+
+    // This sequence jumps to address 0x2000_0010
+    lui  t1, 0x20000
+    jalr x1, t1, 0x10
+
+In combination with AUIPC, JALR can be used to create very large position independent jumps:
+
+    // This sequence jumps to PC + 0x2000_0010
+    auipc t1, 0x20000
+    jalr x1, t1, 0x10
+
+Whether or not JALR is an inferable instruction depends on whether or not the value of the RS1 can be derived
+from the context.
+
 
 
 # Resources
 
-* [RISC-V Trace Spec](https://github.com/riscv/riscv-trace-spec)
+* [RISC-V Processor Trace GitHub Repo](https://github.com/riscv/riscv-trace-spec)
+* [RISC-V Processor Trace Spec](https://github.com/riscv/riscv-trace-spec/raw/master/riscv-trace-spec.pdf)
 * [Trace Debugging in lowRISC](https://riscv.org/wp-content/uploads/2016/07/Tue1200_TracelowRISC_WeiSong.pdf)
 
 * [ELFIO](http://elfio.sourceforge.net)
