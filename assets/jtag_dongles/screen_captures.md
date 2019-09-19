@@ -1,8 +1,9 @@
 
-* Xilinx clone - 30MHz
+* 0001 - Xilinx clone - 30MHz
     * Device detection not great.
     * bitstream loads successfully
-* Xilinx clone - 30MHz
+
+* 0002 - Xilinx clone - 30MHz
     * 142ms loading time
     * Setting time to 60MHz has no effect: still stays at 30MHz
     * Setting time to 24MHz: 
@@ -13,31 +14,30 @@
         * Loading time: 388ms
         * Clock is now 10MHz.
 
-* Altera FT245+CPLD Clone
+* 0003 - Altera FT245+CPLD Clone
     * 6MHz
     * Bitstream loads successfully
     * Loading time 980ms
 
-* Altera FT245+CPLD Clone
+* 0004 - Altera FT245+CPLD Clone
     * Bursts of 7.20ms with then a pause in between
     * No way to change clock speed
 
-* Altera PIC Clone
+* (no slide) - Altera PIC Clone
     * Load time 1.42s
     * Bitstream loads successfully
 
-* Altera PIC Clone
+* 0005 - Altera PIC Clone
     * Bit clock 12MHz
     * Byte period: 2.16us / 462kHz
 
 
-( Not slide)
+( not slide)
 * Terasic Altera Clone
     * Exactly the same behavior as CPLD Clone.
     * Load time 980ms.
-    
 
-* Altera USB-Blaster II
+* 0006 - Altera USB-Blaster II
     lsusb:
     Bus 002 Device 003: ID 0bda:8153 Realtek Semiconductor Corp. 
     Bus 002 Device 002: ID 0bda:0411 Realtek Semiconductor Corp. 
@@ -63,13 +63,13 @@
     
     * Load time 236ms.
 
-* Altera USB-Blaster II
+* 0007 - Altera USB-Blaster II
 
     * 24MHz
     * Very clean signal, even if not measured exactly at the pin
     * No way in openocd to change clock speed
 
-* Olimex ARM-USB-TINY-H
+* 0008 - Olimex ARM-USB-TINY-H
 
     Bus 001 Device 044: ID 15ba:002a Olimex Ltd. ARM-USB-TINY-H JTAG interface
 
@@ -77,53 +77,50 @@
     * Bitstream loads fine
     * Reading data back fine.
 
-* Olimex ARM-USB-TINY-H
+* 0009 - Olimex ARM-USB-TINY-H
 
     * 30MHz
     * Not super clean, but good enough.
 
-* Olimex ARM-USB-TINY-H
+* (no slide) - ARM-USB-TINY-H
 
     * 15MHz
     * Behaves identical to Xilinx clone
 
 
-* Olimex ARM-USB-OCD-H
+* (no slide) - Olimex ARM-USB-OCD-H
 
     * 30MHz
     * Bitstream load fails.
     * Reading data didn't work.
-    
 
-* Olimex ARM-USB-OCD-H
+* 0010 - Olimex ARM-USB-OCD-H
 
     * Changing voltage envelope on TCK
-    
 
-* Olimex ARM-USB-OCD-H
+* 0011 - Olimex ARM-USB-OCD-H
 
     * Changing voltage envelope on TCK.
     * Only starts working around 2kHz.
-    G
 
-* Segger J-Link PLUS Clone
+* 0012 - Segger J-Link PLUS Clone
 
     Bus 001 Device 049: ID 1366:0101 SEGGER J-Link PLUS
-    
+
     * 'interface jlink'
     * 3.24s load time (with 2MHz clock setting!)
-    
-* Segger J-Link PLUS Clone
+
+* 0013 - Segger J-Link PLUS Clone
 
     * 'interface jlink'
     * 2.04s load time (with 30MHz clock setting)
     * Actual speed is 12MHz
 
-* Segger J-Link PLUS Clone
+* 0014 - Segger J-Link PLUS Clone
 
     * huge gaps between maxi-bursts
 
-* Segger J-Link PLUS Clone
+* 0015 - Segger J-Link PLUS Clone
 
     * huge gaps between mini-bursts
 
