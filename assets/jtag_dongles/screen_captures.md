@@ -125,3 +125,93 @@
     * huge gaps between mini-bursts
 
 
+------------------
+
+
+* Xilinx clone - ISE bitstream download
+
+    * Dummy
+
+* Xilinx clone - ISE bitstream download
+
+    * 826ms load time
+
+* Xilinx clone - ISE bitstream download
+
+    * 10MHz clock by default
+
+* Xilinx clone - ISE bitstream download
+
+    * 15MHz -> 784ms download
+
+
+* Xilinx clone - ISE bitstream download
+
+    * 15MHz clock
+
+* Xilinx clone - ISE bitstream download
+
+    * 30MHz: "Maximum TCK operating frequency for this device chain: 25000000." -> 15MHz
+
+* Xilinx clone - ISE bitstream download
+
+    * 15MHz: 7ms period
+
+* Xilinx clone - ISE bitstream download
+
+    * 15MHz: active time only 2.4ms
+
+* Xilinx clone - SVF bitstream download
+
+    * SVF: 3.74s
+
+* Xilinx clone - SVF bitstream download
+
+    * SVF: 1MHz
+
+* Xilinx clone - SVF bitstream download
+
+    * SVF: 15MHz, after editing file
+
+* Xilinx clone - SVF bitstream download
+
+    * SVF: 15MHz
+    * 264ms core download
+
+* Xilinx clone - SVF bitstream download
+
+    * SVF: 15MHz
+    * 448ms download with prologue
+    * Size of prologue seems to be dependent on the size of the bitstream -> file loading time?
+
+
+---------------------------
+
+* Terasic - SVF bitstream download
+
+    * 1.09s total download
+    
+* Terasic - SVF bitstream download
+
+    * 166ms download prologue
+    
+* Terasic - SVF bitstream download
+
+    * BOGUS
+    * Double the bitstream -> 264ms prologue
+    
+* Terasic - SVF bitstream download
+
+    * Double the bitstream -> 264ms prologue
+    * bitstream specific SVF file load part seems to be 36ms
+    
+--------------------------
+
+* (dummy) TI MSP-FET430UIF
+
+Bus 001 Device 012: ID 0451:f430 Texas Instruments, Inc. MSP-FET430UIF JTAG Tool
+
+    
+
+    
+
