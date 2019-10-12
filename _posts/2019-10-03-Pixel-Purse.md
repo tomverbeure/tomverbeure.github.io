@@ -5,6 +5,15 @@ date:   2019-10-03 10:00:00 -0700
 categories:
 ---
 
+*The disassembly of a pretty trivial toy got a bit out of hand. :-)*
+
+* [A Tweet in the Morning](#a-tweet-in-the-morning)
+* [Disassembling the Whole Thing](#disassembling-the-whole-thing)
+* [LED panel P6 32x16 ](#led-panel-p6-32x16)
+* [Main PCB](#main-pcb)
+* [SPI PROM contents](#spi-prom-contents)
+* [HUB75 Capture](#hub75-capture)
+
 # A Tweet in the Morning
 
 It started with this:
@@ -62,8 +71,8 @@ The panel has a standard HUB75 interface but with some functionality missing:
 you'd expect an OE_ (BLANK) pin and 5 address lines, but this panel lacks OE\_ altogether and there are only 3
 address lines.
 
-With 3 address lines you can select 8 rows. With 2 parallel RGB shift register inputs and end up with 
-16, just what you'd expect for a 32x16 panel.
+With 3 address lines you can select 8 rows. With 2 parallel RGB shift register inputs, you end up with 
+16 rows, just what you'd expect for a 32x16 panel.
 
 Important: unused OE_ and 2 upper address lines are not floating, but tied to ground.
 This means that you need to be careful in connecting this panel to a generic HUB75 driver that might drive
@@ -107,7 +116,7 @@ I hoped to be able to repurpose the whole board by reprogramming the microcontro
 I dumped the traffic of the SPI during operation. 
 
 In the past, wiring up the small IO pins of the SPI PROM would have been enough of a hassle to just
-not bother, but with my micro clips (see my review [here](/tools/2018/04/29/micro-chip-rw-clip.html))),
+not bother, but with my micro clips (see my review [here](/tools/2018/04/29/micro-chip-rw-clip.html)),
 it takes just a few minutes to do that:
 
 ![SPI IO Probes]({{ "/assets/pixel_purse/spi_io_probes.jpg" | absolute_url }})
@@ -129,38 +138,37 @@ to one with almost all pixels turned on.
 
 I also wanted to see if there was anything special about the signalling on the HUB75 interface.
 
-As a quick refresher:
+Looking at another Saleae capture, you can see that there's repeating pattern with an overall period of
+15ms. That's the overall screen refresh rate. During this time, the 3 address lines rotate through
+all 8 combinations, thus refreshing all the rows of the panel.
 
-* a HUB75 capable panel has a 3-bit wide (RGB) shift register that drives the columns of an LED matrix.
-* it also had an address decoder that drivers enables a row of an LED matrix.
-    * you select the active shift register with the address pins (of which there are 3 in this case)
-* an LED will light up when its row is selected and when shift register value of its column is set to 1.
-* there are 2 shift register inputs, one for the top half rows and one for the bottom half rows.
+![HUB75 Refresh Rate]({{ "/assets/pixel_purse/HUB75_refresh_rate.png" | absolute_url }})
 
-Since there is only 1 bit per color component, you can either set a pixel component on or off. Unlike
-the ubiquitous WS2812B LED pixels, there is no way to specific a 24-bit color. If you want
-intermediate shades, you do this by shifting ones and zeros for a pixel component using PWM or
-binary encoding.
+15ms for 8 addresses means 1.875ms per address.
 
-The pixel purse only uses 8 colors, so it doesn't need any kind of encoding trickery.
+Zooming in to a single address phase, we see the following:
 
-Looking at the Saleae capture, you can see that there's repeating pattern with an overall period of
-... ms. That's the overall screen refresh rate.
+![HUB75 Single Address]({{ "/assets/pixel_purse/HUB75_single_address.png" | absolute_url }})
 
-But within that period, you see the images gets updated not once but 4 times, with a duration
-that double each time:  ...ms, ...ms, ...ms, ...ms.
+There are 4 phases (marked red, green, blue and yellow), each double the duration of the previous one.
 
-During the first phase, the microcontroller shifts in the RGB values of the pixels, the 3 remaining times shifts 
-zeros. 
+During each phase, the clock is toggled 32 times: the number needed to shift in all the 1-bit RGB
+values for each LED of the address row.
 
-Here's what's going on: the code running on this microcontroller was initially developed to generate 16 color
-gradations per LED pixel, corresponding to 4 bits of data. Since the color only be on or off, the pixel is driven
-with binary encoding, where each bit of the gradation is applied for a different duration. You can read
-all about that in this excellent [article](https://www.sparkfun.com/sparkx/blog/2650).
+However when you look at the rectangle in cyan, color values are only shifted in during the shortest
+phase. During the other phases, zeros are being shifted into the column drivers.
 
-In this particular case, the LEDs of the panels are only assigned to the LSB phase of the 4 phases: this results in the LEDs
-only being lighted up 1/16 (number of shades) / 8 (number of rows) = 1/128th of the time, which is great to
-keep power in check!
+What's happening here is the following: the microcontroller firmware was designed to support 16 color
+shades per pixels, hence the 4 phases of increasing duration. However, the pixel purse only supports
+images with 8 colors: the primaries R/G/B are either on or off.
+
+Those primaries are assigned to the LSB of the 4-bit color shade. This has a major benefit that
+the LEDs are only driven 1/16th of the normal row active time of 1.875ms, thereby saving a considerable
+amount of power. Even this low ON duty cycle is sufficient for the pixel purse: it doesn't need the
+light output of an LED panel that was design for huge video walls.
+
+To learn more about driving LED panels with a HUB75 interface, you should read 
+[this excellent article](https://www.sparkfun.com/sparkx/blog/2650)  on Sparkfun.
 
 # Uploading New Images
 
