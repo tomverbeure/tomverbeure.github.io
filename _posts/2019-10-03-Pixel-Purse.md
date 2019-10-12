@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Pixel Purse Teardown
+title: Project Mc2 Pixel Purse Teardown
 date:   2019-10-03 10:00:00 -0700
 categories:
 ---
@@ -24,7 +24,7 @@ It started with this:
 
 ![Tweet]({{ "/assets/pixel_purse/tweet.png" | absolute_url }})
 
-A useless gizmo for only $6.16 where one part is worth more than the whole thing?
+A useless gizmo for only $6.16 where one part is worth more than the whole thing combined?
 Irresistable!
 
 The next day this abomination arrived:
@@ -72,13 +72,13 @@ This panel is the reason why this purse is such a good deal: on Adafruit,
 to find one for ~$14 including shipping. 
 
 The panel has a standard HUB75 interface but with some functionality missing: 
-you'd expect an OE_ (BLANK) pin and 5 address lines, but this panel lacks OE\_ altogether and there are only 3
+you'd expect an BLANK pin and 5 address lines, but this panel lacks BLANK altogether and there are only 3
 address lines.
 
 With 3 address lines you can select 8 rows. With 2 parallel RGB shift register inputs, you end up with 
 16 rows, just what you'd expect for a 32x16 panel.
 
-Important: unused OE_ and 2 upper address lines are not floating, but tied to ground.
+Important: unused BLANK and 2 upper address lines are not floating, but tied to ground.
 This means that you need to be careful in connecting this panel to a generic HUB75 driver that might drive
 these pins, since you could create into a short-circuit condition!
 
