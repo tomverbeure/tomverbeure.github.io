@@ -278,6 +278,8 @@ Stripped from all the ugly plastics, I have now a cheap LED panel that's ready t
 The only problem is trying to come up with something fun to build. Until then, it goes into the Big
 Box with Components.
 
+For those who want to dig deeper and analyze the SPI capture traces, they can be found in 
+[this GitHub repo](https://github.com/tomverbeure/pixel_purse/tree/master/traces_logic).
 
 
 
