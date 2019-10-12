@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Pixel Purse Disassembly
+title: Pixel Purse Teardown
 date:   2019-10-03 10:00:00 -0700
 categories:
 ---
@@ -13,6 +13,10 @@ categories:
 * [Main PCB](#main-pcb)
 * [SPI PROM contents](#spi-prom-contents)
 * [HUB75 Capture](#hub75-capture)
+* [Audio Upload Interface](#audio-upload-interface)
+* [DC/DC Converter](#dcdc-converter)
+* [Power Consumption](#power-consumption)
+* [Next Steps](#next-steps)
 
 # A Tweet in the Morning
 
@@ -125,14 +129,45 @@ Connect it to a Saleae logic analyzer, and you're good to go!
 
 ![SPI and Saleae]({{ "/assets/pixel_purse/spi_saleae.jpg" | absolute_url }})
 
+The overall SPI activity profile from initial powerdown (pressing the front button) to complete power down
+looks like this:
 
+![SPI Bootup to Powerdown]({{ "/assets/pixel_purse/SPI_bootup_to_powerdown.png" | absolute_url }})
 
-Unfortunately, the SPI dump does not contain anything that looks like a firmware. When active,
-the microcontroller continuously pulls the LED images from PROM and probably sends it directly
-to the panel.
+It takes about 1s to go from powering up the SPI IO pins to traffic. This traffic continous
+as long as the LED panel is lighted up. After 30s, the traffic stops, and another 30s later,
+the SPI IOs power down.
 
-This is especially visible when you switch from displaying a very sparse image (lots of black pixels)
-to one with almost all pixels turned on.
+When you zoom in, there is constant repetition of a burst followed by an idle phase.
+
+![SPI Burst Period]({{ "/assets/pixel_purse/SPI_burst_period.png" | absolute_url }})
+
+The period of this repetition is 250ms, or a 4Hz. That's way too slow for a single refresh of the
+LED panel, so I think this is the rate at which the purse cycles between different frames of an
+animation.
+
+The microcontroller has probably enough memory to store a single 32x16 pixel image, but loads the
+data for a different image on-demand.
+
+This theory didn't really last long when I looked at the SPI data for a case where I rotate between
+3 different animations. The first and the third one behave as expected, with a pattern repeating
+at 4Hz.
+
+![SPI Different Animations]({{ "/assets/pixel_purse/SPI_different_animations.png" | absolute_url }})
+
+But the middle pattern does not, and is much busier:
+
+![SPI Middle Pattern]({{ "/assets/pixel_purse/SPI_middle_pattern.png" | absolute_url }})
+
+There is a somewhat repeating pattern every ~48ms.
+
+I didn't go any deeper into analyzing the exact format in which the frame are stored in the SPI PROM.
+
+Unfortunately, the SPI dump does not contain anything that looks like a firmware. That removes much
+of the hope to rewrite the firmware for our own purposes.
+
+*It might be possible to capture the firmware through the I2C programming interface, but I did not
+try that.*
 
 # HUB75 Capture
 
@@ -170,7 +205,7 @@ light output of an LED panel that was design for huge video walls.
 To learn more about driving LED panels with a HUB75 interface, you should read 
 [this excellent article](https://www.sparkfun.com/sparkx/blog/2650)  on Sparkfun.
 
-# Uploading New Images
+# Audio Upload Interface
 
 I was particularly interested in how images are uploaded through the audio interface. The overal
 process is simple: you enter a new image on an iOS or Android app, you insert audio plug in your
@@ -179,10 +214,39 @@ phone or iPad, and off you go.
 It's a much system that doesn't require any complex protocol like USB and thus very cheap to
 implement.
 
-# DC/DC converter
+The overall process looks like this:
+
+![AUDIO Pulse and Upload]({{ "/assets/pixel_purse/audio_pulse_and_upload.png" | absolute_url }})
+
+Here, uploading takes about 7s, but that's for an animation with multiple images. (A single image
+takes only 1 second.) When not uploading, the iOS app sends a heartbeat pulse every 2 seconds.
+
+The heartbeat pulse shows how data is encoded:
+
+![AUDIO Pulse Detail]({{ "/assets/pixel_purse/audio_pulse_detail.png" | absolute_url }})
+
+The encoding seems to be using [ON-OFF keying](https://en.wikipedia.org/wiki/On–off_keying).
+
+In the image below, you see how 2 consecutive '1' bits are encoded. It takes 1.2ms for the 2
+of them, so we have a transfer BW of 0.6ms per bit or 1.6kbps. 0.6 x 32 x 16 x 3 = 0.9s, which 
+corresponds nicely with the time to transfer 1 image.
+
+![AUDIO 2 Bits]({{ "/assets/pixel_purse/audio_two_bits.png" | absolute_url }})
+
+I tried to follow the signal path of the incoming audio signals all the way to the microcontroller.
+The last point I could find was this one:
+
+![AUDIO Digital Probe]({{ "/assets/pixel_purse/audio_digital_probe.jpg" | absolute_url }})
+
+At that stage in the process, the signal looks already nicely digital. That's probably sufficient
+for the microcontroller to decode.
+
+![AUDIO digital signal]({{ "/assets/pixel_purse/audio_digital_signal.png" | absolute_url }})
+
+# DC/DC Converter
 
 The whole device is powered by 4 AA batteries, good for a maximum of ~6.5V going down to ~5V when
-the batteries are discharged.
+the batteries are discharged. 
 
 A DC/DC converter generates a constant 5V, which is routed to the panel with some
 crude soldering of the wires straight onto the panel power connector.
@@ -191,7 +255,7 @@ crude soldering of the wires straight onto the panel power connector.
 
 ![Peak Power Consumption]({{ "/assets/pixel_purse/peak_current.jpg" | absolute_url }})
 
-I did some crude power measurements by cutting off the batteries, and using the current readout
+I did some crude power measurements by cutting off the batteries and using the current readout
 of my bench power supply.
 
 With the power switch set to ON, but the device in deep sleep (which happens after not pressing
@@ -200,6 +264,20 @@ any buttons for 30s), power consumption was essentially zero.
 Once activated, and with a voltage set to 6.2V, the device consumes between 30 and 150mA depending
 on the image shown. There is no image with all LEDs on white, so the maximum is probably
 somwhere around 180mA. Using 4 AA batteries with 2200 mAh capacity each, this should result in a
-worst case usage of about about 50 hours, much higher that one would expect.
+worst case usage of about about 50 hours, much higher than one would expect.
+
+For fun, I lowered the voltage of the power supply to see when things would start to fail. This happened around
+the 4.2V mark.
+
+# Next Steps
+
+That's it for the teardown. 
+
+Stripped from all the ugly plastics, I have now a cheap LED panel that's ready to be used for a project.
+
+The only problem is trying to come up with something fun to build. Until then, it goes into the Big
+Box with Components.
+
+
 
 
