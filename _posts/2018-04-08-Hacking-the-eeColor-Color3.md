@@ -5,7 +5,7 @@ date:   2018-04-08 00:00:00 -0700
 categories: 
 ---
 
-I'm talking a short break from the BlackIce-II to spend some quality time in my garage with the eeColor color3. 
+I'm taking a short break from the BlackIce-II to spend some quality time in my garage with the eeColor color3. 
 Originally a real consumer product built with a Cyclone 4 FPGA, a DRAM, an HDMI receiver and an HDMI transmitter, 
 it got its 15 minutes of fame when it was 
 [featured on Hackaday](https://hackaday.com/2013/05/08/hdmi-color-processing-board-used-as-an-fpga-dev-board-to-mine-bitcoins/) 
