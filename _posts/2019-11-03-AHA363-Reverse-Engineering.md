@@ -65,12 +65,12 @@ The PCB of the AHA363 is packed with a large number of ASICs and components. It'
 board with a bracket of the same height: that's fine for a rack-mounted server, but it won't fit inside 
 a regular PC. You need to remove that bracket first.
 
-After doing that and plopping into my regular Linux PC, `lspci` greeted me with the following message:
-
+After doing that and plopping the board (with the heat sink!) into my regular Linux PC, `lspci` greeted
+me with the following message:
 
 Success! The board is working!
 
-The first step of my reverse engineering process is to take photographs at close range of all the 
+The first step of my reverse engineering process is to take ponehotographi at close range of all the 
 components and connectors. In most cases, the x2 optical zoom option of my iPhone 7 Plus is sufficient 
 for that, but sometimes I use the [iPhone adapter on my microscope](/tools/2018/04/29/stereozoom4-iphone-adapter.html).
 My eye sight has been declining, and photos make it so much easier to identify the markings of various 
@@ -81,49 +81,122 @@ when needing to find your bearings when probing things.
 
 The PCB contains:
 
-* the FPGA, hidden under a beefy heatsink
-* 2 AHA3610 gzip accelerator ASICs. Other than some slide sets and marketing material, I could not find any technical datasheets about it.
-* 1 Altera MAX II EPM570F100 CPLD: used to load the bitstream from flash into the main FPGA. This CPLD is used in the same configuration in the Altera Arria GX development kit, and in the reference designs for *remote system upgrade* designs.
-* 1 ... parallel FLASH: this flash contains the bitstream
-* a 10-pin connector that's almost certainly used as JTAG conector, and maybe more
-* power regulation circuits: some Emperion chips, some modules
-* 5 LEDs: absolutely essential if we want to get an LED blink working on this board!
-* PCIe interface: the main attraction to reverse engineer this board!
+* 1 EP1AGX90E FPGA
+* 2 AHA3610 gzip accelerator ASICs
 
-One immediately notices that this board get pretty warm when plugged into the PC, even when it's not doing anything useful.
+    Other than some slide sets and marketing material, I could not find any technical datasheets about it.
+
+* 1 Spansion S29GL128P parallel flash
+
+    Contains the FPGA bitstream that gets loaded in the FPGA at boot-up.
+
+* 1 Altera MAX II EPM570F100 CPLD
+
+    Used to copy the bitstream from flash into the main FPGA. This CPLD is used in the same configuration 
+    in the Altera Arria GX development kit, and in the reference designs for *remote system upgrade* designs.
+
+* a 10-pin connector 
+
+    Almost certainly as JTAG conector. Maybe more?
+
+* 1 VPOL5A-12-SMT 12V to 5V DC/DC convertor
+
+    This is probably the DC/DC convertor to bring down the PCIe supplied 12V to some rough regulated 5V,
+    with other regulators doing the more detailed work.
+
+* 4 Enperion Power Convertors
+
+    * 2x 6A EN5365QI for 1.2V
+    * 1x 6A EN5365QI for 2.5V
+    * 1x 3A EN5335QI for 3.3V
+
+
+* 2 100MHz Xtal Oscillators
+
+    Why two?
+
+* 6 LEDs
+
+    Absolutely essential if we want to get an LED blink working on this board!
+
+* PCIe interface
+
+    The head attraction of this PCB and the main reason why it gets reverse engineered!
+
+One immediately notices that this board get pretty warm when plugged into the PC, even when it's not doing 
+anything useful.
+
+![AHA363 Components Annotated]({{ "/assets/aha363/aha363_top_annotated.jpg" | absolute_url }})
 
 
 # Probing, Test points, and Tented Vias
 
-The most important tool for reverse engineering a PCB are a multi-meter with a low reaction time when using it in short-detect mode. This makes it possible to go over
-an array of vias very quickly in the hope to triggering a connection between 2 points.
+The most important tool for reverse engineering a PCB are a multi-meter with a low reaction time when using 
+it in short-detect mode. This makes it possible to go over an array of vias very quickly in the hope to 
+triggering a connection between 2 points.
 
-Another key element is the ability to measure connections in the first place: if you're really lucky, the PCB has plenty of test points. If you're a bit lucky, there are tons of vias that are not [tented](https://macrofab.com/blog/via-tenting-for-pcb-design/). You're totally out of luck if your doesn't have test points and vias are tented at all. In those cases, I'll usually bail: discovering connections becomes simply too cumbersome.
+Another key element is the ability to measure connections in the first place: if you're really lucky, the 
+PCB has plenty of test points. If you're a bit lucky, there are tons of vias that are not 
+[tented](https://macrofab.com/blog/via-tenting-for-pcb-design/). You're totally out of luck if your doesn't 
+have test points and vias are tented at all. In those cases, I usually bail on the whole reverse engineering
+thing: discovering connections becomes simply too cumbersome.
 
-The AHA363 board has an incredibly amount of test points, more than I've ever seen before. So that's fantastic. But strangely enough, one of my board had tented vias and the other did not. I'm using the one with tented vias to record traces with my scope and logic analyzer to check dynamic behavior, and I'm using the other board to probe out connections.
+The Pano Logic G2 has motherboard PCB doesn't have tented vias. You can see accessible blank copper around each
+via hole. 
 
-That said, even the tented vias are relatively easy to measure: I've noticed that pressing my oscilloscope's probes on them is usually sufficient to break through the protective layer and make it peel off a little bit. 
+![Pano Logic G2 Main PCB Bottom]({{ "/assets/panologic-g2/annotated/10-Main Board Bottom.JPG" | absolute_url }})
+
+However, the Pano Logic G2 auxiliary board has a number of accessible test points, but the remaining vias
+have their copper covered:
+
+![Pano Logic G2 Auxiliary PCB Bottom]({{ "/assets/panologic-g2/annotated/7-Aux Board Bottom.JPG" | absolute_url }})
+
+The AHA363 board has an incredibly amount of test points, more than I've ever seen before. So that's fantastic. 
+But strangely enough, one of my board had tented vias and the other did not. I'm using the one with tented vias 
+to record traces with my scope and logic analyzer to check dynamic behavior, and I'm using the other board to 
+probe out connections.
+
+That said, pressing the sharp tip of my oscilloscope's probes on the tented vias is usually sufficient to break 
+through the protective layer and make it peel off a little bit. After that, those vias can be probed without
+much difficulty.
 
 # Package Footprints and Intel Quartus
 
-The Arria GX product family is pretty old now, and not supported anymore by today's versions of Quartus. The last official release with support was Quartus 13.0sp1, but that was only for the standard, commercial version. The last 'free' release was Quartus 11.0. You can download it [here](FIXME).
+The Arria GX product family is pretty old now, and not supported anymore by today's versions of Quartus. The 
+last official release with support was Quartus 13.0sp1, but that was only for the standard, commercial version. 
+The last 'free' release was Quartus 11.0. You can download it [here](FIXME).
 
 I'll use Quartus for a number of reasons:
 
 * Quartus Programmer is very good at discovering all the JTAG TAPs (test access ports)
 * We'll use Quartus to create new bitstreams for our design.
-* The Quartus Pin Assignment editor gives an excellent view of the IO pins of the package, with the ability to view the package from the top or bottem, and at any desired rotation. This is a life saver when trying to find pinpoint the right IO pad on the PCB. The assignment editor also annotated all the special IO pads with the right value when you mouse over it.
+* The Quartus Pin Assignment editor gives an excellent view of the IO pins of the package, with the ability 
+  to view the package from the top or bottem, and at any desired rotation. This is a life saver when trying to 
+  find pinpoint the right IO pad on the PCB. The assignment editor also annotated all the special IO pads with 
+  the right value when you mouse over it.
 
-Here's a screenshot of the Pin Assignment Editor showing the Arria GX FPGA as seen from the bottom of the PCB, with the PCIe transceivers located at the bottom too. 
+Here's a screenshot of the Pin Assignment Editor showing the Arria GX FPGA as seen from the bottom of the PCB, 
+with the PCIe transceivers located at the bottom too. 
+
+![AHA363 Ball Diagram]({{ "/assets/aha363/FPGA_footprint.png" | absolute_url }})
+
+And here's the MAX II CPLD:
+
+![CPLD Ball Diagram]({{ "/assets/aha363/CPLD_footprint.png" | absolute_url }})
 
 # Correlating FPGA IOs with the FPGA vias on the PCB
 
-When you're lucky again, the PCB has vias underneath the FPGA that map directly to the balls on the FPGA package. The Pano Logic G1 is a fantastic example of this. It even has silk screen annotation of the all PAD numbers!
-When your PCB doesn't have this, you may be forced to desolder the FPGA of one of your boards at one point or another. (But be sure that you first read below about various JTAG boundary scan options!)
+When you're lucky again, the PCB has vias underneath the FPGA that map directly to the balls on the FPGA package. 
+The Pano Logic G1 is a fantastic example of this. It even has silk screen annotation of the all PAD numbers!
 
-In the case of the AHA363, there is a pretty decent grid of vias underneath the FPGA, but it's still a bit of a struggle to find the correlation between the vias and the ball on the package. 
+When your PCB doesn't have this, you may be forced to desolder the FPGA of one of your boards at one point or another. 
+(But be sure that you first read below about various JTAG boundary scan options!)
 
-Time to bring out an image editor and start annotating the vias with the most plausible pad name. This is not always the linear process that's describe here: if first located some JTAG pins (see next step), then annotated those
+In the case of the AHA363, there is a pretty decent grid of vias underneath the FPGA, but it's still a bit of a 
+struggle to find the correlation between the vias and the ball on the package. 
+
+Time to bring out an image editor and start annotating the vias with the most plausible pad name. This is not always 
+the linear process that's describe here: if first located some JTAG pins (see next step), then annotated those
 pins, then located some the clock (see down even further), annotated those etc.
 
 Eventually, I ended up with something like this:
