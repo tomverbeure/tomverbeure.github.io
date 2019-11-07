@@ -187,7 +187,6 @@ And here's the MAX II CPLD:
 # Correlating FPGA IOs with the FPGA vias on the PCB
 
 When you're lucky again, the PCB has vias underneath the FPGA that map directly to the balls on the FPGA package. 
-The Pano Logic G1 is a fantastic example of this. It even has silk screen annotation of the all PAD numbers!
 
 When your PCB doesn't have this, you may be forced to desolder the FPGA of one of your boards at one point or another. 
 (But be sure that you first read below about various JTAG boundary scan options!)
@@ -195,32 +194,61 @@ When your PCB doesn't have this, you may be forced to desolder the FPGA of one o
 In the case of the AHA363, there is a pretty decent grid of vias underneath the FPGA, but it's still a bit of a 
 struggle to find the correlation between the vias and the ball on the package. 
 
-Time to bring out an image editor and start annotating the vias with the most plausible pad name. This is not always 
+Time to bring out an image editor (I use Inkscape because it works both on the Linux PC in my lab and on my
+Mac) and start annotating the vias with the most plausible pad name. This is not always 
 the linear process that's describe here: if first located some JTAG pins (see next step), then annotated those
 pins, then located some the clock (see down even further), annotated those etc.
 
-Eventually, I ended up with something like this:
+Eventually, I end up with something like this:
+
+![CPLD Ball Diagram]({{ "/assets/aha363/via_annotation.png" | absolute_url }})
+
+The column and row annotations are at the top and the left. I add grid lines every 5 BGA balls.
+
+Notice how there's an extra column of balls between columns V and W and and an extra row of balls between
+rows 17 and 18. This has been the case for all PCBs that I've dealt with: the vias don't coincide with the
+balls on the BGA, but they fall right in between, so there's always an extra row or column right down
+the middle.
+
 
 # Bringing up JTAG 
 
-Nothing is more important while reverse engineering an FPGA-based PCB than getting the JTAG interface to work, since it's the prime method of loading bitstreams during FPGA development. In addition, FPGAs also have boundary scan registers for most IO pads that make it possible to extract sometimes crucial additional information about how IOs are configured (input or output), locate the clocks, and the values that are being driven or that are being read by the IOs.
+Nothing is more important while reverse engineering an FPGA-based PCB than getting the JTAG interface to work, 
+since it's the prime method of loading bitstreams during FPGA development. In addition, FPGAs also have boundary 
+scan registers for most IO pads that make it possible to extract sometimes crucial additional information about 
+how IOs are configured (input or output), locate the clocks, and the values that are being driven or that are being 
+read by the IOs.
 
-Many FPGA based PCBs have their JTAG interface easily available, even on the final production board, since it's often used as the main interface to flash production firmware and bitstreams on the factory production line.
+Many FPGA based PCBs have their JTAG interface easily available, even on the final production board, since it's 
+often used as the main interface to program production firmware and bitstreams on the factory production line.
 
-The AHA363 has a prominent 10-pin connector that I expected to contain JTAGs pins, so the steps is to figure out how those pins are connected.
+The AHA363 has a prominent 10-pin connector that I expected to contain JTAGs pins, so the steps is to figure out 
+how those pins are connected.
 
-* 4 of the 10 pins are connected to ground. They are all on the front side of the PCB.
-* on visual inspection, the remaining pin on the front side seemed to be unconnected (since there was no via from the connector metal to anywhere.)
-* that leaves 5 more pins: TCK, TMS, TDI, TDO, and VREF (the supply voltage that goes from the PCB to the voltage level shifters in the JTAG dongle.)
+* 4 of the 10 pins are connected to ground. They are all on the front (component) side of the PCB.
+* on visual inspection, the remaining pin on the front side seemed to be unconnected (since there was no via from 
+  the connector metal to anywhere.)
+* that leaves 5 more pins: TCK, TMS, TDI, TDO, and VREF. VREF is the IO supply voltage that goes from the PCB to 
+  the voltage level shifters in the JTAG dongle.
 
-The discovery process is pretty straight forward: you start with one of the JTAG pins that is shared between all chips in the chain, TCK or TMS. You check if there's a connection between those IO pads on the FPGA and one of the connector pins. Done!
+The discovery process is pretty straight forward: you start with one of the JTAG pins that is shared between all 
+chips in the chain, TCK or TMS. You check if there's a connection between those IO pads on the FPGA and one of 
+the connector pins. Done!
 
 I was able to identify TCK and TMS quickly, but had no such luck for TDI and TDO.
 
-The thing is that TDI and TDO are point-to-point, and they can be part of a chain: if the FPGA is in the middle of a JTAG chain, then these pins on the FPGA package will not be connected to the connector. 
+The thing is that TDI and TDO are point-to-point, and they can be part of a chain. If the FPGA is in the middle 
+of a JTAG chain, then these pins on the FPGA package will not be connected to the connector. 
 
-So the next step is to check if TDI of the CPLD is connected to the connector, and bingo!
+So the next step is to check if TDI of the CPLD, and bingo: it goes straight to the JTAG connector!
 
-I also confirmed that the TDO pin of the CPLD is connected to the TDI pin of the FPGA. Since there is no connection between the FPGA TDO and the connector, it's likely that the 2 ASICs are part of the JTAG chain as well. We don't know anything of their pin-out, so that's a dead-end. 
+I also confirmed that the TDO pin of the CPLD is connected to the TDI pin of the FPGA. 
 
-But if one of the pins is VREF, you can try checking if there's a connection between one of the 2 pins and VDD. And, indeed, there is! And since there's now only unknown left, that one can be assigned to TDO.
+Since there is no connection between the FPGA TDO and the connector, it's likely that the 2 ASICs are part of 
+the JTAG chain as well. We don't know anything of their pin-out, so that's a dead-end. 
+
+But if one of the pins is VREF, you can try checking if there's a connection between one of the 2 pins and VDD. 
+And, indeed, there is! And since there's now only unknown left, that one can be assigned to TDO.
+
+
+
