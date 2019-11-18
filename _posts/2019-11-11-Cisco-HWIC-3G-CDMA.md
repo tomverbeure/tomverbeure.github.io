@@ -5,7 +5,7 @@ date:   2019-11-11 00:00:00 -0700
 categories:
 ---
 
-* [Reverse Engineering the Cisco HWIC-3G-CDMA PCB](#reverse-engineering-the-cisco-hwic-3g-cdma-pcb)
+* [The Cisco HWIC-3G-CDMA PCB](#the-cisco-hwic-3g-cdma-pcb)
 * [An Annotated Overview of the Board](#an-annotated-overview-of-the-board)
 * [Powering Up the Board](#powering-up-the-board)
 * [JTAG Connector](#jtag-connector)
@@ -16,7 +16,7 @@ categories:
 * [Block Diagram: Putting It All Together](#block-diagram-putting-it-all-together)
 * [Low Level Connections](#low-level-connections)
 
-# Reverse Engineering the Cisco HWIC-3G-CDMA PCB
+# The Cisco HWIC-3G-CDMA PCB
 
 After the [abandoned attempt](https://github.com/tomverbeure/cisco-vwic2-2mft/blob/master/README.md) (\*) to reverse 
 engineer the $5 Cisco VWIC2-2MFT-T1/E1 card (because its Stratix II FPGA is not supported by Quartus Web Edition), 
