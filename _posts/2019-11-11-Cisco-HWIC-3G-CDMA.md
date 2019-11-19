@@ -130,6 +130,8 @@ All that remained was:
 * Fire up Quartus Programmer -> Auto Scan
 * Boom! FPGA detected!
 
+![JTAG Detected]({{ "/assets/cisco-hwic-3g-cdma/jtag_detected.png" | absolute_url }})
+
 # LED Blinky
 
 The FPGA Board Hack project already figured out the connections between the LEDs and the FPGA, so with JTAG up and
