@@ -18,8 +18,8 @@ categories:
 
 # The Cisco HWIC-3G-CDMA PCB
 
-After the [abandoned attempt](https://github.com/tomverbeure/cisco-vwic2-2mft/blob/master/README.md) (\*) to reverse 
-engineer the $5 Cisco VWIC2-2MFT-T1/E1 card (because its Stratix II FPGA is not supported by Quartus Web Edition), 
+After the [abandoned attempt](https://github.com/tomverbeure/cisco-vwic3-2mft/blob/master/README.md) (\*) to reverse 
+engineer the $5 Cisco VWIC3-2MFT-T1/E1 card (because its Stratix II FPGA is not supported by Quartus Web Edition), 
 I set my sights on another Cisco WAN card, the HWIC-3G-CDMA. This one has a 
 [Cyclone II EP2C35F484C8](https://www.intel.com/content/dam/www/programmable/us/en/pdfs/literature/hb/cyc2/cyc2_cii5v1.pdf) 
 instead of a Stratix II EP2S30F484C5N, and you better believe that I verified it being supported by the free Quartus version 
@@ -90,7 +90,7 @@ controllers, level shifters, LEDs, connectors, and various unknowns.
 
 # Powering Up the Board
 
-The first step of reverse engineering the VWIC2-2MFT-T1/E1 card consisted of unraveling its power supply architecture.
+The first step of reverse engineering the VWIC3-2MFT-T1/E1 card consisted of unraveling its power supply architecture.
 That board uses the full spectrum of available power sources of the HWIC connector: 12V, 5V and 3.3V (though
 you cheat your way out with only a single 5V source.)
 
@@ -156,22 +156,22 @@ In addition to a 5V VDD and GND, C9059 has 4 pins connected straight to MXQ3311.
 a serial configuration PROM that contains the bitstream for the FPGA. Configured in Passive Serial mode, there
 would need to be some kind of microcontroller to assist with copying over the data from the PROM to the FPGA.
 
-The earlier VWIC2-2MFT-T1/E1 card has the same C9059 chip, confirming that it provides some common functionality that
+The earlier VWIC3-2MFT-T1/E1 card has the same C9059 chip, confirming that it provides some common functionality that
 is not unique to this particular design. And the Stratix II FPGA on that board has a very similar capacity in terms
 of logic elements, DSPs, and memories.
 
 But while there are indeed connections between the MXQ3311 and the FPGA, these connections don't seem to go to the
 FPGA configuration pins.
 
-Even stranger, the FPGA Board Hack project *also* had a go at reverse engineering the VWIC2-2MFT board. When you
+Even stranger, the FPGA Board Hack project *also* had a go at reverse engineering the VWIC3-2MFT board. When you
 look at the pictures of their board the C9059 and MXQ3311 footprints are not populated! Unlikely that these were
 desoldered after the fact, but that means that these components aren't even essential for basic operations.
 
-After a while (hours...) I noticed that my VWIC2-2MFT board doesn't have an MXQ3311, but a CV9606 chip. One that
+After a while (hours...) I noticed that my VWIC3-2MFT board doesn't have an MXQ3311, but a CV9606 chip. One that
 doesn't show up in any Google search either. Eventually, this made me go through all 5 of my Cisco boards to
 see if there were other markings to be found.
 
-And bingo! Against all odds, the second one of my VWIC2-2MFT boards isn't marked C9059 but 12836RCT. 
+And bingo! Against all odds, the second one of my VWIC3-2MFT boards isn't marked C9059 but 12836RCT. 
 The top Google search hit for that results in "Secure Microcontroller for Smart Cards AT90SC12836RCT" which 
 links to a 3 page [datasheet brief](https://pdf1.alldatasheet.com/datasheet-pdf/view/255611/ATMEL/AT90SC12836RCT.html):
 
