@@ -95,6 +95,11 @@ The first step of reverse engineering the VWIC3-2MFT-T1/E1 card consisted of unr
 That board uses the full spectrum of available power sources of the HWIC connector: 12V, 5V and 3.3V (though
 you cheat your way out with only a single 5V source.)
 
+How did I figure out which pins carried which voltage? By plugging the card into a real Cisco router, of course! Not
+too long ago, this one cost ~$10k, but now they go for $60 on eBay.
+
+![Cisco Router with Voltage Wires]({{ "/assets/cisco-hwic-3g-cdma/cisco_router.jpg" | absolute_url }})
+
 A similar exercise on this board had the following outcome:
 
 * 12V: unused
