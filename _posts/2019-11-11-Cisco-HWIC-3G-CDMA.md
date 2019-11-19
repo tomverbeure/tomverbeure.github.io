@@ -66,8 +66,9 @@ which go for a considerably higher price on eBay.
 The GSM version has a standard full-size slot for a SIM card as well as a large capacitance that's lacking on the
 CDMA version. 
 
-On the back side of the PCB, there is an intruiging TSOP-48 footprint which isn't populated for both versions. 
-Was this originally designed to carry a flash chip?
+On the back side of the PCB, there is a TSOP-48 footprint that isn't populated for both versions. 
+The connections between the solder pads and the FPGA are the right ones for NOR flash with a size
+up to 2Mx16-bit. *It is possible to upgrade this board with NOR 4MByte of flash!*
 
 The core functionality of this board comes from an integrated Sierra Wireless module that slots into a
 PCI Express Mini Card.
@@ -251,6 +252,7 @@ When this article went to press, progress was as follows:
 * FPGA configuration pins mapped
 * Connections between FPGA and SDRAM mapped
 * Connections between FPGA and RS232 connector mapped
+* Connections between FPGA and unpopulated TSOP-48 solder pads for NOR flash mapped
 
 To be done:
 
