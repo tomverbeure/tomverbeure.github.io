@@ -161,8 +161,8 @@ There are a few take-aways here:
 
 * It's impossible to conclusively prove the absense of false positives with randoms. Formal verification
   is the only way to guarantee that all corner cases have been covered.
-* Formal verification isn't only useful during the verification stage of a project, it can also be
-  extremely useful to root cause a bug in an existing system.
+* It's never too late to use formal verification: it isn't only useful during the verification stage of 
+  a project, it can also be extremely useful to root cause a bug in an existing system.
 * Formal verification can be much faster than randoms and code inspection. The testbench can be very
   short compared to a simulation testbench.
 
