@@ -16,7 +16,8 @@ supposed to be rejected.
 
 ![System Overview]({{ "/assets/fantom_packets/FantomPackets-Overview.svg" | absolute_url }})
 
-The encoding was pretty simple: there was a start of packet symbol (SOP), an end of packet symbol (EOP)
+The encoding was pretty simple: after the usual descrambling (to maintain a zero DC level across
+the transmission line), there was a start of packet symbol (SOP), an end of packet symbol (EOP)
 and packet data symbols in between. Like this:
 
 ```
@@ -65,7 +66,8 @@ With a solid theory in place, the hunt was on to find the root cause.
 There are different ways to solve this kind of problem.
 
 One way is to throw randoms at the problem. But the issue happened rarely enough to doubt that 
-I'd hit it fast. 
+I'd hit it fast. And even if it'd hit, I'd have to wade through a very large waveform to 
+observe the failure. In case of randoms, these kind of waveform files can be gigabytes in size.
 
 Another option is code inspection. But the original author of the code had long disappeared, and 
 since the code base was relatively large, quick success wasn't guaranteed either.
@@ -100,7 +102,7 @@ triggered a successful decode.
 # The Bug Root Caused
 
 Even on the relatively large code base, it took only 30 seconds for the formal solver to trigger the cover
-condition above.
+condition above, and the waveform of the failing was only around 60 clock cycles.
 
 Here's what happened:
 
