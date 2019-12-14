@@ -35,7 +35,7 @@ but there were good reasons to do it this way.)
 
 A low level packet validity checker looked at the data, calculated the CRC, and determined
 the validity of the packet. In parallel with the low level validity checker, incoming packet
-symbols were also sent to a number higher level packet decoders, one for each different higher
+symbols were also sent to a number of higher level packet decoders, one for each different higher
 level packet type. When a packet reached its end, the higher level decoders were supposed to
 accept or reject the decoded data based on the outcome of the low level packet validity checker.
 
@@ -55,7 +55,7 @@ to this conclusion.
 
 There was very little logic between the FPGA receiver IOs and the packet decoding logic, so I
 speculated that an unplugged cable resulted in random noise being injected into the system.
-The FPGA of our previous board returned zeros when there was no signal present, but the new
+The FPGA on a previous board returned zeros when there was no signal present, but the new
 one returned random data instead.
 
 With a solid theory in place, the hunt was on to find the root cause.
@@ -64,10 +64,10 @@ With a solid theory in place, the hunt was on to find the root cause.
 
 There are different ways to solve this kind of problem.
 
-One way would be throw randoms at the problem. But the issue happened rarely enough to doubt that 
+One way is to throw randoms at the problem. But the issue happened rarely enough to doubt that 
 I'd hit it fast. 
 
-Another option was code inspection. But the original author of the code had long disappeared, and 
+Another option is code inspection. But the original author of the code had long disappeared, and 
 since the code base was relatively large, quick success wasn't guaranteed either.
 
 So instead, I decided to try formal verification.
@@ -96,8 +96,10 @@ the I didn't hit a case where the 16-bit CRC was matching by pure random chance,
 the low level packet checker never triggered a correct packet. Yet still, the higher level decoder
 triggered a successful decode.
 
+# The Bug Root Caused
+
 Even on the relatively large code base, it took only 30 seconds for the formal solver to trigger the cover
-condition above!
+condition above.
 
 Here's what happened:
 
@@ -149,8 +151,9 @@ found almost immediately.
 
 What's more, after fixing the RTL, I reran formal verification and it couldn't find another way to trigger
 a false packet decode valid. And that's of course the biggest benefit of running formal verification: with
-randoms, your confidence levels of hitting all corner cases can be high, but it can't be 100%. And you need
-hours of random simulation to get to that level of confidence.  With formal, you can be certain. 
+randoms, your confidence level of hitting all corner cases can be high, but it can't be 100%. And you need
+hours of random simulation to get to that level of confidence.  With formal, you can be certain, often
+in a much shorter time.
 
 # Conclusion
 
