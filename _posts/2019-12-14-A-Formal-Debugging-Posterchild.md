@@ -102,7 +102,7 @@ triggered a successful decode.
 # The Bug Root Caused
 
 Even on the relatively large code base, it took only 30 seconds for the formal solver to trigger the cover
-condition above, and the waveform of the failing was only around 60 clock cycles.
+condition above, and the waveform of the failure was only around 60 clock cycles long.
 
 Here's what happened:
 
