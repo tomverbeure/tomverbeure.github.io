@@ -124,7 +124,7 @@ Packet Rejected:
 
 
 The second level packet decoder used `packet_sop` to start decoding a packet, but since
-the number of data symbols per packet was always the same, it did not look at packet_eop. Worse,
+the number of data symbols per packet was always the same, it did not look at `packet_eop`. Worse,
 it also didn't reset the packet decoding FSM when it saw a new SOP symbol!
 
 The sequence that triggered the error was as follows:
