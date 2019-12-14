@@ -70,7 +70,8 @@ I'd hit it fast.
 Another option is code inspection. But the original author of the code had long disappeared, and 
 since the code base was relatively large, quick success wasn't guaranteed either.
 
-So instead, I decided to try formal verification.
+So instead, I decided to try formal verification. [SymbiYosys](https://symbiyosys.readthedocs.io/en/latest/) 
+is the tool of choice here. 
 
 Rather than isolating the code where things might go wrong, I just took everything, and added simple
 constraint:
