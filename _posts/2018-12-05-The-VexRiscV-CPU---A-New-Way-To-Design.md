@@ -21,7 +21,8 @@ categories: RTL
 
 In an earlier [blog post](/rtl/2018/08/11/SpinalHDL.html), I made a few references
 to the [VexRiscV](https://github.com/SpinalHDL/VexRiscv), a RISC-V CPU that has been
-implemented completely in SpinalHDL.
+implemented completely in SpinalHDL by Charles Papon (who's also the creator of
+SpinalHDL.)
 
 At some point, I created the [rv32soc](https://github.com/tomverbeure/rv32soc) project,
 where I wanted to compare different RISC-V CPUs against eachother. I also used the
