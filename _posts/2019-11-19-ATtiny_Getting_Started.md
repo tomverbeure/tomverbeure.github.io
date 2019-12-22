@@ -50,14 +50,86 @@ cable to flash new firmware into the board.
 I usually prefer going bare metal instead of using the Arduino IDE, but in this case the main
 goals is to get something going as fast as possible. So Arduino IDE it is...
 
-* Download Arduino IDE from arduino.cc
-* (cd tools && xc -d -c <filename> | tar xfv - .)
-* Set correct udev permissions
-* Follow instructions here: https://digistump.com/wiki/digispark/tutorials/connecting#installation_instructions
-* Select Digispark (Default - 16.5 MHz)
-* Load blinky sketch
-* Upload -> Success
+Follow instructions here: https://digistump.com/wiki/digispark/tutorials/connecting#installation_instructions
 
-# 
+* Download Arduino IDE from arduino.cc
+* (cd tools && tar xfv ~/Downloads/arduino-1.8.10-linux64.tar.xz)
+
+    * Note: tar decompresses .xz file automatically without the need to specify xfvz
+
+* Set up udev permissions
+
+    * `~/tools/arduino/arduino-linux-setup.sh $USER`
+    * Create a file called `/etc/udev/rules.d/49-micronucleus.rules` with the following content:
+
+```
+# UDEV Rules for Micronucleus boards including the Digispark.
+# This file must be placed at:
+#
+# /etc/udev/rules.d/49-micronucleus.rules    (preferred location)
+#   or
+# /lib/udev/rules.d/49-micronucleus.rules    (req'd on some broken systems)
+#
+# After this file is copied, physically unplug and reconnect the board.
+#
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="16d0", ATTRS{idProduct}=="0753", MODE:="0666"
+KERNEL=="ttyACM*", ATTRS{idVendor}=="16d0", ATTRS{idProduct}=="0753", MODE:="0666", ENV{ID_MM_DEVICE_IGNORE}="1"
+#
+# If you share your linux system with other users, or just don't like the
+# idea of write permission for everybody, you can replace MODE:="0666" with
+# OWNER:="yourusername" to create the device owned by you, or with
+# GROUP:="somegroupname" and mange access using standard unix groups.
+```
+
+* Reload udev permisssions: 
+
+    * `sudo udevadm control --reload-rules`
+
+* Launch IDE
+
+    * `~/tools/arduino/arduino`
+
+* Add board manager for Digispark
+
+    * File -> Preferences -> Additional Boards Manager URLs: `http://digistump.com/package_digistump_index.json`
+    * You can have multiple URL there. One per line.
+
+* Install Digispark support library
+
+    * Tools -> Board -> Board Manager -> Type: Contributed -> Digistump AVR Boards -> Install
+
+* Select Digispark board
+    * Tools -> Board -> Digispark (Default - 16.5 MHz)
+
+* Load the Digispark Blinky Example
+    
+    * File -> Examples -> Digispark_Examples -> Start
+
+* Compile 
+
+    * Sketch -> Verify/Compile
+
+* Upload
+
+    * Unplug Digispark board from USB
+    * Sketch -> Upload
+    * Plug in Digispark board into USB
+    * The design will start downloading if all goes well
+    * LED will start blinking
+
+# Boot Sequence
+
+After powering up, the boot loader inside the Digispark ATtiny85 will wait for 4 second to see if a USB host tries to
+program its flash.
+
+If so, the flash gets programmed, and then the newly flashed programmed is executed.
+
+If the host does NOT try to program the flash (or if the host doesn't even try to enumerate the USB device because
+the Digispark board is powered by something else than USB), then the boot loader starts executing whatever program
+is already in the flash.
+
+When the board is already plugged in, and it's in non-programming mode, then you need to plug it in and out of the USB
+port to put it back into programming mode (for 4 seconds.)
+
 
 
