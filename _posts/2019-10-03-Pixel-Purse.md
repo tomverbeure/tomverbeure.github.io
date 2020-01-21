@@ -71,16 +71,13 @@ This panel is the reason why this purse is such a good deal: on Adafruit,
 [it sells for $25](https://www.adafruit.com/product/420). On AliExpress, you should be able
 to find one for ~$14 including shipping. 
 
-The panel has a standard HUB75 interface but with some functionality missing: 
-you'd expect an BLANK pin and 5 address lines, but this panel lacks BLANK altogether and there are only 3
-address lines.
+The panel has a standard HUB75 interface with 3 row address lines. 
 
 With 3 address lines you can select 8 rows. With 2 parallel RGB shift register inputs, you end up with 
 16 rows, just what you'd expect for a 32x16 panel.
 
-Important: unused BLANK and 2 upper address lines are not floating, but tied to ground.
-This means that you need to be careful in connecting this panel to a generic HUB75 driver that might drive
-these pins, since you could create into a short-circuit condition!
+Important: The 2 upper address lines D and E are not floating, but tied to ground. You need to double check when connecting this panel to a generic HUB75 driver that these pins are not driven 
+to avoid a short-circuit condition!
 
 Unfortunately, the panel only has a HUB75 input connector, but the output connector has been left unpopulated.
 
