@@ -144,3 +144,19 @@ sbt clean
 rm -fr ~/.ivy2
 rm -fr ~/.sbt
 ```
+
+# Running Something from the SpinalHDL tree itself
+
+This doesn't work:
+
+```
+cd projects/SpinalHDL
+sbt "runMain  spinal.lib.com.i2c.Apb3I2cCtrl"
+```
+
+SpinalHDL is itself a multi-module project. So you need to do:
+
+```
+cd projects/SpinalHDL
+sbt "lib/runMain  spinal.lib.com.i2c.Apb3I2cCtrl"
+```
