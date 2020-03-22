@@ -202,7 +202,7 @@ Here are all the tools:
 
 That's mostly it!
 
-Not on the list is my stereo-microscope (which I review [here](/tools/2018/04/29/stereozoom4-iphone-adapter.html)).
+Not on the list is my stereo-microscope (which I review [here](/tools/2018/04/30/stereozoom4-iphone-adapter.html)).
 It can be a life saver for precision work (e.g. when soldering wires onto a 0.5mm TQFP pins), it's not something
 I use when building prototypes.
 
