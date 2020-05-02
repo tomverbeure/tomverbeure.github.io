@@ -340,7 +340,7 @@ The base RAM is then a [simple one with 1 write port and 1 read port](https://gi
 
 And there's the [bypass path](https://github.com/tomverbeure/multi_port_mem/blob/e9d456f019913c94d2aa2839e199fed50840d09b/spinal/src/main/scala/multi_port_mem/MultiPortMem.scala#L83-L88):
 
-```Verilog
+```scala
         val rd_eq_wr = io.wr_addr === io.rd_addr
 
         val bypass_ena_p1 = RegNext(io.wr_ena && rd_eq_wr)
@@ -355,7 +355,7 @@ builds on this simple RAM.
 Due to the pipelining where you first need to read before doing a write, this one also has
 [its own bypass logic](https://github.com/tomverbeure/multi_port_mem/blob/e9d456f019913c94d2aa2839e199fed50840d09b/spinal/src/main/scala/multi_port_mem/MultiPortMem.scala#L218-L226):
 
-```Verilog
+```scala
         val rd0_eq_wr0      = io.wr0.addr === io.rd0.addr
         val bypass0_ena_p1  = RegNext(io.wr0.ena && rd0_eq_wr0)
 
@@ -370,7 +370,7 @@ Due to the pipelining where you first need to read before doing a write, this on
 
 You can simulate this RAM by issuing the following command:
 
-```
+```bash
 sbt "runMain multi_port_mem.MultiPortMemSim"
 ```
 

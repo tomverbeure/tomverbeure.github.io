@@ -90,7 +90,7 @@ MUL, and one of the MULH variants.
 On the PicoRV32, when you strip away all the extraneous book keeping, the key part of [the implementation](https://github.com/cliffordwolf/picorv32/blob/23d7bbdc8bb3ff97b4d3ccf9cc2eb9ee291039de/picorv32.v#L2248-L2343)
 is straightforward:
 
-```
+```verilog
     rd <= $signed(rs1) * $signed(rs2);
     assign pcpi_rd = shift_out ? rd >> 32 : rd;
 ```
@@ -107,7 +107,7 @@ The code above requires a 33-bit x 33-bit to 64-bit multiplier, with a multiplex
 
 The relevant code can be found in [MulPlugin.scala](https://github.com/SpinalHDL/VexRiscv/blob/25c0a0ff6fc4980e8ec8b5148fe213c24a245a56/src/main/scala/vexriscv/plugin/MulPlugin.scala#L6-L104)
 
-```
+```scala
     execute plug new Area {
       ...
       val aULow = a(15 downto 0).asUInt

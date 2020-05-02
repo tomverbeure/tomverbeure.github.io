@@ -78,7 +78,7 @@ is the tool of choice here.
 Rather than isolating the code where things might go wrong, I just took everything, and added simple
 constraint:
 
-```
+```verilog
 always @(posedge clk) begin
     cover(higher_level_packet_decode_valid && !low_level_packet_seen);
 
@@ -108,7 +108,7 @@ Here's what happened:
 
 Upon receiving EOP, the low level decoder signaled to the high level decoder a CRC match or fail, like this:
 
-```
+```verilog
 always @(posedge clk) begin
     packet_error <= packet_eop && crc_received != crc_calculated;
 end

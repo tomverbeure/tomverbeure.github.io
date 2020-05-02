@@ -36,7 +36,7 @@ zero and 5 pipeline stages. You select the amount depending on your clock freque
 
 The adder is declared like [this](https://github.com/tomverbeure/math/blob/2d9fbf27218d7574083fee5c417021c707ce4d8c/src/main/scala/math/FpxxAdd.scala#L8-L15):
 
-```Scala
+```scala
 case class FpxxAddConfig(
     pipeStages      : Int = 1
     ){
@@ -51,7 +51,7 @@ class FpxxAdd(c: FpxxConfig, addConfig: FpxxAddConfig = null) extends Component 
 
 And [here](https://github.com/tomverbeure/math/blob/2d9fbf27218d7574083fee5c417021c707ce4d8c/src/test/scala/math/FpxxAddTester.scala#L24) is
 how to instantiate an adder with 5 pipeline stages:
-```Scala
+```scala
     val fp_op = new FpxxAdd(config, FpxxAddConfig(pipeStages = 5))
 ```
 
@@ -77,7 +77,7 @@ The `fpxx` library has a `op_vld` input `result_vld` output for each core operat
 ultimately strings all operations together, from the input of the pipeline to the output.
 
 Now check out this [helper function](https://github.com/tomverbeure/rt/blob/29070b46fa30c290d7e530f7700b9ea1ef45a3eb/src/main/scala/rt/RT.scala#L13-L30):
-```Scala
+```scala
 object MatchLatency {
 
     // Match arrival time of 2 signals with _vld
@@ -105,7 +105,7 @@ so that they are now aligned to each other.
 
 Here's [an example](https://github.com/tomverbeure/rt/blob/29070b46fa30c290d7e530f7700b9ea1ef45a3eb/src/main/scala/rt/Sphere.scala#L109-L123)
 how this is used in the code:
-```Scala
+```scala
     val (common_dly_vld, tca_tca_dly, c0r0_c0r0_dly) = MatchLatency(
                                                 io.op_vld,
                                                 tca_tca_vld,   tca_tca,

@@ -163,7 +163,7 @@ needed in some configurations, but not in others.
 Verilog doesn't provide any core language features to have optional ports: there is no `if generate`
 equivalent to do that. So either you ignore the JTAG ports on the configuration that doesn't need them.
 Or you use ugliness like this to exclude those ports:
-```
+```verilog
 module cpu(
     ...
 `ifdef JTAG
@@ -187,7 +187,7 @@ that creates those IO ports.
 This is [nicely illustrated](https://github.com/tomverbeure/mr1/blob/352927f0dc217bf421cbe4fddf9956afd9277ad6/src/main/scala/mr1/Decode.scala#L18)
 in my MR1 RISC-V core:
 
-```
+```scala
     val rvfi = if (config.hasFormal) RVFI(config) else null
 ```
 
@@ -210,7 +210,7 @@ added at will by means of plugins.
 You start with a [generic Pipeline](https://github.com/SpinalHDL/VexRiscv/blob/6334f430fe1bed302733c6ea6c44f8b514f3e2c6/src/main/scala/vexriscv/Pipeline.scala#L12-L15)
 object that has `stages` and `plugins`.
 
-```
+```scala
 trait Pipeline {
   type T <: Pipeline
   val plugins = ArrayBuffer[Plugin[T]]()
@@ -236,7 +236,7 @@ intermediate stages there are between EXECUTE and WRITEBACK.
 
 In the case of the VexRiscV, the pipeline stages are defined [here](https://github.com/SpinalHDL/VexRiscv/blob/6334f430fe1bed302733c6ea6c44f8b514f3e2c6/src/main/scala/vexriscv/VexRiscv.scala#L86-L90):
 
-```
+```scala
 class VexRiscv(val config : VexRiscvConfig) extends Component with Pipeline{
   type  T = VexRiscv
   import config._
@@ -282,7 +282,7 @@ implements a traditional barrel shifter, split up into 3 operations:
 * it performs a right shift with variable number of steps
 * in case of a left shift operation, it reverses the output again.
 
-```
+```scala
 class FullBarrelShifterPlugin(earlyInjection : Boolean = false) extends Plugin[VexRiscv]{
 ...
 ```
@@ -296,7 +296,7 @@ map very well to FPGA LUTs, that might very well reduce a critical timing path.
 
 Let's see how this is implemented. Let's start with the
 [initial reverse and shift](https://github.com/SpinalHDL/VexRiscv/blob/6334f430fe1bed302733c6ea6c44f8b514f3e2c6/src/main/scala/vexriscv/plugin/ShiftPlugins.scala#L62-L67):
-```
+```scala
     execute plug new Area{
       import execute._
       val amplitude  = input(SRC2)(4 downto 0).asUInt
@@ -311,7 +311,7 @@ Meanwhile, the result is inserted in the pipeline with `insert(SHIFT_RIGHT)`.
 
 The [second part](https://github.com/SpinalHDL/VexRiscv/blob/6334f430fe1bed302733c6ea6c44f8b514f3e2c6/src/main/scala/vexriscv/plugin/ShiftPlugins.scala#L69-L79), the
 reversing back of the `SHIFT_RIGHT` result looks like this:
-```
+```scala
     val injectionStage = if(earlyInjection) execute else memory
     injectionStage plug new Area{
       import injectionStage._

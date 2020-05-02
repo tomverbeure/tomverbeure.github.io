@@ -49,7 +49,7 @@ This is because Quartus Lite 13.0sp1 runs in good old 32-bit mode.
 
 So to fix that, you first need to install the 32-bit version of libc6. Like this:
 
-```
+```bash
 sudo apt-get install libc6-i386
 ```
 
@@ -87,20 +87,20 @@ And then after you quit, it won't really work anymore, because you need to setup
 
 In `~/.profile`:
 
-```
+```bash
 export QUARTUS_ROOTDIR="/home/vagrant/altera/13.0sp1/quartus"
 PATH="$PATH:$QUARTUS_ROOTDIR/bin"
 ```
 
 In `~/.bash_aliases`:
 
-```
+```bash
 alias quartus='quartus --64bit'
 ```
 
 Install 32-bit packages for your 64-bit Ubuntu:
 
-```
+```bash
 sudo dpkg --add-architecture i386
 sudo apt-get update
 sudo apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386 libpng12-0:i386 libfreetype6:i386 libsm6:i386 libxrender1:i386 libfontconfig1:i386 libxext6:i386 libxtst6:i386 libxi6:i386 libgtk2.0-0:i386
@@ -114,7 +114,7 @@ after completing the steps.
 
 Finally, if you want to run any nios2 related tools, you need execute this:
 
-```
+```bash
 $QUARTUS_ROOTDIR/../nios2eds/nios2_command_shell.sh
 ```
 

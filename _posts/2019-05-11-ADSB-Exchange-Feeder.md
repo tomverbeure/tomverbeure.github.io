@@ -244,7 +244,7 @@ So I go into a little more detail.
     * Open a terminal
     * Follow the [installation steps](https://flightaware.com/adsb/piaware/install):
 
-```
+```bash
 wget http://flightaware.com/adsb/piaware/files/packages/pool/piaware/p/piaware-support/piaware-repository_3.7.1_all.deb
 sudo dpkg -i piaware-repository_3.7.1_all.deb
 sudo apt-get update
@@ -263,7 +263,7 @@ sudo reboot
     can find the exact GPS coordinates of your house through [Google Maps](https://maps.google.com): right click on the 
     desired location, and select *What's here*.
 
-```
+```bash
 sudo apt update
 sudo apt install git socat
 git clone https://github.com/adsbxchange/adsb-exchange.git
@@ -295,7 +295,7 @@ NTP synchronized: yes
 
     If NTP was *not* enabled, enable it by executing the commands below:
 
-```
+```bash
 sudo systemctl enable systemd-timesyncd
 sudo systemctl start systemd-timesyncd
 sudo timedatectl set-ntp 1

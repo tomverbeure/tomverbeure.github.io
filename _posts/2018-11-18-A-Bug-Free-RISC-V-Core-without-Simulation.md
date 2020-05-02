@@ -146,11 +146,9 @@ With the RTL in place, all that was needed was an MR1 compatible version of the
 [complete test](https://github.com/tomverbeure/riscv-formal/blob/5f0bb313217d69b79eb3a5d31796cc5a45c4a3ef/cores/mr1/complete.sv) and everything
 was ready for the first formal test.
 
-```sh
-> cd ~/projects/riscv-formal.tvb/core/MR1
-> sby -f complete.sby
-
-
+```bash
+cd ~/projects/riscv-formal.tvb/core/MR1
+sby -f complete.sby
 ```
 
 With only 40-something instructions, an RV32I decoder is pretty straightforward, but there were obviously a bunch of bugs in my original RTL code,
