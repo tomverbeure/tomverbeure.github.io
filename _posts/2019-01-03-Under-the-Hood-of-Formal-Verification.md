@@ -159,16 +159,16 @@ written in SpinalHDL, does exactly that:
 The cover statement has 3 terms that must be satisfied to get a meaningful result:
 
 1.  Boilerplate to ensure that you don't get some false positive during reset:
-```
+```scala
     cover(!initstate() && reset_
 ```
 
 1. the transmit data FIFO much have reached a fill level of at least 10 *at some point* in the past:
-```
+```scala
                 && tx_data_fifo_level_reached
 ```
 1. the transmit data FIFO must currently be empty
-```
+```scala
                 && (ulpi_ctrl_regs.apb_regs.u_tx_data_fifo.io.pushOccupancy === 0)
 ```
 
@@ -275,7 +275,7 @@ tick and check out its different components:
 
 Let's start with [a very simple design](https://github.com/tomverbeure/formal_explorations/blob/master/demo1.sv):
 
-```Verilog
+```verilog
 module demo1(
     input clk
     );
@@ -386,7 +386,7 @@ but it's essentially a very compact way to describe sequences of events.
 
 The example above could have been written like this:
 
-```Verilog
+```verilog
     property p_fifo_tx;
         @(posedge clk)
             (ulpi_ctrl_regs.apb_regs.u_tx_data_fifo.io.pushOccupancy === 10)
@@ -411,7 +411,7 @@ tells it to wait between 1 and infinite amount of cycles until the FIFO empty co
 If we wanted to create a case where 2 packets are transmitted in succession, we could add the following
 cover statement:
 
-```Verilog
+```verilog
     cover property(p_fifo_tx[*2]);
 ```
 
@@ -420,7 +420,7 @@ cover statement:
 Let's abandon the ULPI controller example, and switch to another example that
 will give us a feel of some of the problems that need to be solved under the hood.
 
-```Verilog
+```verilog
 sequence a_seq_b12_seq_c
     a ##1 b[*1:2] ## c
 endsequence
@@ -450,7 +450,7 @@ still evaluating.
 
 Let's cook up some RTL code that implements this kind of sequence.
 
-```Verilog
+```verilog
     assign a_vec[2:0] = { a_dly[1:0], a };
     always @(posedge clk) begin
         a_dly[2:0] <= a_vec[2:0];
