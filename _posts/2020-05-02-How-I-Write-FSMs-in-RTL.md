@@ -32,8 +32,7 @@ who do it differently, but they are obviously doing it wrong.
 
 All of my FSMs follow this format:
 
-```Verilog
-
+```verilog
     localparam IDLE             = 0;
     localparam SETUP            = 1;
     localparam ACTIVE           = 2;
@@ -48,7 +47,6 @@ All of my FSMs follow this format:
 
         // Default output assignments
         comb_output         = <default output value, this can be an equation>;
-
         seq_output_nxt      = seq_output;
 
         case(cur_state)
@@ -73,7 +71,6 @@ All of my FSMs follow this format:
     
                 nxt_state           = IDLE;
             end
-
         endcase
     end
 
@@ -109,7 +106,7 @@ There are many people who write their FSM processes as just the inputs to a stat
 assign the outputs outside of the main FSM process. Like this:
 
 
-```Verilog
+```verilog
     always @(*) begin
         nxt_state           = cur_state;
 
@@ -158,10 +155,10 @@ I sometimes go out of my way to embed assignments in the FSM itself. Imagine a d
 by an FSM and a `data` output that is not, but where `data` is only relevant when `data_valid` is active.
 
 You could write it like this:
-```
+```verilog
     assign data     = <some calculation>;
 
-    ...
+    always @(*) begin
         data_valid      = 1'b0;
 
         case(cur_state) 
@@ -171,16 +168,15 @@ You could write it like this:
             end
             ...
         endcase
-    ...
+    end
 ```
 
 I might do the following instead:
 
-```
-
+```verilog
     assign data_int         = <some calculation>;
-
     ...
+    always @(*) begin
         data_valid      = 1'b0;
         data            = data_int;                     <<<<<<<<<<<<<
 
@@ -192,7 +188,7 @@ I might do the following instead:
             end
             ...
         endcase
-    ...
+    end
 ```
 
 Note that `data` gets a default assignment that is the same as the assignment in the `ACTIVE` state:
@@ -209,44 +205,46 @@ that locally to that particular state.
 
 Like this:
 
-```
+```verilog
     assign data_int         = <some calculation>;
 
-    ...
     always @(*) begin
-        ...
         data_valid      = 1'b0;
         data            = data_int;
-        ...
-        case ACTIVE1: begin
-            data_valid      = 1'b1;
-            data            = data_int;
-            ...
-        end
 
-        case ACTIVE2: begin
-            data_valid      = 1'b1;
-            data            = <some other value>;
+        case(cur_state)
             ...
-        end
-        ...
+            ACTIVE1: begin
+                data_valid      = 1'b1;
+                data            = data_int;
+            end
+    
+            ACTIVE2: begin
+                data_valid      = 1'b1;
+                data            = <some other value>;
+            end
+            ...
+        endcase
     end
 ```
 
 It also allows me to do the following:
 
-```
+```verilog
     ...
     always @(*) begin
         ...
         data_valid      = 1'b0;
         data            = {16{1'bx}};            <<<< Make data invalid when data_valid is 0
         ...
-        case ACTIVE: begin
-            data_valid      = 1'b1;
-            data            = data_int;
-        end
-        ...
+        case(cur_state)
+            ...
+            ACTIVE: begin
+                data_valid      = 1'b1;
+                data            = data_int;
+            end
+            ...
+        endcase
     end
 ```
 
@@ -255,9 +253,8 @@ the downstream code uses `data` when `data_valid` is not asserted.
 
 In some cases, I'll do the following:
 
-```
+```verilog
     always @(*) begin
-        ...
         data_valid      = 1'b0;
 `ifndef SYNTHESIS
         data            = {16{1'bx}};
@@ -265,11 +262,14 @@ In some cases, I'll do the following:
         data            = data_int;
 `endif
         ...
-        case ACTIVE: begin
-            data_valid      = 1'b1;
-            data            = data_int;
-        end
-        ...
+        case(cur_state) 
+            ...
+            ACTIVE: begin
+                data_valid      = 1'b1;
+                data            = data_int;
+            end
+            ...
+        endcase
     end
 ```
 
@@ -296,27 +296,41 @@ interface signals to be grouped together just because they all start with `i_`.)
 
 I do this:
 
-```Verilog
+```verilog
+    always @(*) begin
         nxt_state           = cur_state;
 
-        case IDLE: begin
-            if (start) begin
-                nxt_state       = SETUP;
+        case(cur_state)
+            ...
+            IDLE: begin
+                if (start) begin
+                    nxt_state       = SETUP;
+                end
             end
-        end
+            ...
+        endcase
+    end
 ```
 
 Not this:
 
-```Verilog
-        case IDLE: begin
-            if (start) begin
-                nxt_state       = SETUP;
+```verilog
+    always @(*) begin
+        nxt_state           = cur_state;
+
+        case(cur_state)
+            ...
+            IDLE: begin
+                if (start) begin
+                    nxt_state       = SETUP;
+                end
+                else begin
+                    nxt_state       = IDLE;
+                end
             end
-            else begin
-                nxt_state       = IDLE;
-            end
-        end
+            ...
+        endcase
+    end
 ```
 
 There is no point in stating the obvious, and when there are multiple nested if-else clauses you can get a bunch
@@ -326,29 +340,43 @@ of useless clutter quickly.
 
 I prefer doing this:
 
-```Verilog
-        case DRIVE_BUS: begin
-            data_valid_nxt      = 1'b1;
+```verilog
+    always @(*) begin
+        nxt_state           = cur_state;
 
-            if (data_ready) begin
-                data_valid_nxt      = 1'b0;
-
-                nxt_state           = IDLE
+        case(cur_state)
+            ...
+            DRIVE_BUS: begin
+                data_valid_nxt      = 1'b1;
+    
+                if (data_ready) begin
+                    data_valid_nxt      = 1'b0;
+    
+                    nxt_state           = IDLE
+                end
             end
-        end
+            ...
+        endcase
+    end
 ```
 
 instead of this:
 
+```verilog
+    always @(*) begin
+        nxt_state           = cur_state;
 
-```Verilog
-        case DRIVE_BUS: begin
-            data_valid_nxt      = data_ready ? 1'b0 : 1'b1;
-
-            if (data_ready) begin
-                nxt_state           = IDLE
+        case(cur_state)
+            ...
+            DRIVE_BUS: begin
+                data_valid_nxt      = data_ready ? 1'b0 : 1'b1;
+    
+                if (data_ready) begin
+                    nxt_state           = IDLE
+                end
             end
-        end
+            ...
+        endcase
 ```
 
 My argument here is the same as the one earlier on about the story that you want to tell:
@@ -367,7 +395,7 @@ One-hot encoding has some benefits in terms of timing and sometimes in terms of 
 
 Whether I use regular or one-hot encoding, I prefer to the state numbering to be the same.
 
-```Verilog
+```verilog
     localparam IDLE             = 0;
     localparam SETUP            = 1;
     localparam ACTIVE           = 2;
@@ -375,12 +403,11 @@ Whether I use regular or one-hot encoding, I prefer to the state numbering to be
 
 For regular encoding, the case statement then looks like this:
 
-```Verilog
+```verilog
     case(cur_state)
         IDLE: begin 
             ... 
         end
-
         ...
     endcase
 
@@ -389,7 +416,7 @@ For regular encoding, the case statement then looks like this:
 
 And for one-hot, it looks like this:
 
-```Verilog
+```verilog
     case(1'b1) // synthesis parallel_case
         cur_state[IDLE]: begin 
             ... 
@@ -422,7 +449,7 @@ When you want to make sure the output of your FSM is glitch-free, you have a few
 If a particular output will only ever be high (or low) during 1 specific state of the FSM, you could tie the output
 directly to the state vector of your FSM:
 
-```Verilog
+```verilog
     localparam IDLE             = 0;
     localparam SETUP            = 1;
     localparam ACTIVE           = 2;
@@ -435,7 +462,7 @@ directly to the state vector of your FSM:
 This technique requires no additional FF, but it only works for one-hot FSMs, and it is no good when `my_glitchfree_output` can be 
 high for multiple states. The code below could result in a glitch:
 
-```
+```verilog
     assign my_glitchfree_output = cur_state[SETUP] | cur_state[ACTIVE];
 ```
 
@@ -445,13 +472,14 @@ Assignment to that output signal can be done in two ways.
 
 The first one makes that FF just another sequential output of the FSM:
 
-```Verilog
+```verilog
     ...
     always @(*) begin
 
         my_glitchfree_output_nxt        = my_glitchfree_output;
 
         case(cur_state)
+            ...
             SETUP: begin
                 if (setup_complete) begin
                     my_glitchfree_output_nxt    = 1'b1;
@@ -463,7 +491,6 @@ The first one makes that FF just another sequential output of the FSM:
                 my_glitchfree_output_nxt    = 1'b0;
                 nxt_state                   = IDLE
             end
-            
         endcase
     end
     ...
@@ -477,7 +504,7 @@ The alterative is to implement the FF outside of the FSM, and make use of the `n
 
 Like this:
 
-```Verilog
+```verilog
     ...
         <FSM code>
     ...
@@ -495,7 +522,7 @@ with their state name. A Verilog/GTKWave-based debugging flow doesn't have this 
 For those cases, the 2-process flow gets one additional debug-only process which translates the state vector into
 an ASCII string vector:
 
-```
+```verilog
 `ifndef SYNTHESIS
     reg [255:0] cur_state_text;
 
