@@ -20,7 +20,7 @@ categories:
 
 # Introduction
 
-I sometimes browse the [FPGA subreddit](old.reddit.com/r/FPGA) so see what's going on in that world. 
+I sometimes browse the [FPGA subreddit](https://old.reddit.com/r/FPGA) so see what's going on in that world. 
 
 One topic that comes up relatively often is about how to code FSMs in RTL. I read Reddit almost 
 exclusively to kill time while on my phone. Typing out how to code an FSM on a phone is just no fun.
@@ -94,7 +94,7 @@ breaks down, and I have to convert it to 2 processes anyway.
 With 2 processes, you can decide at will which outputs of the FSM become clocked or combinational, and you
 can decide at will change one from one category to the other without impacting other code.
 
-The sequential process contains all the FFs and the hard reset logic.
+The sequential process contains all the FFs and the hard reset logic, but nothing more.
 
 In the code above, I'm using a synchronous reset (it's the right thing to do for ASICs these days, because it's
 less cross-talk glitch sensitive), but asynchronous is obviously fine as well (assuming you come out in a
@@ -146,7 +146,7 @@ assign the outputs outside of the main FSM process. Like this:
 In other words, instead of focusing the code on the story of what the FSM does for which state, the story is signal oriented:
 what does each signal do for all different states.
 
-I've seen this kind of coding style used by highly competent and respected RTL designers, but I just don't get the appeal.
+I've seen this kind of coding style used by highly competent RTL designers, but I just don't get the appeal.
 How can you possibily keep track of what's happening to multiple signals at a time for different states? With an FSM that
 focuses on the behavior per state, it's much easier to follow what happens from one step to the other. I usually  care
 about what happens to `seq_output` during the `ACTIVE` state when my FSM is in the `IDLE` state. 
@@ -178,13 +178,13 @@ I might do the following instead:
     ...
     always @(*) begin
         data_valid      = 1'b0;
-        data            = data_int;                     <<<<<<<<<<<<<
+        data            = data_int;             <<<<<<<<<<<<<
 
         case(cur_state) 
             ...
             ACTIVE: begin
                 data_valid      = 1'b1;
-                data            = data_int;             <<<<<<<<<<<<<
+                data            = data_int;     <<<<<<<<<<<<<
             end
             ...
         endcase
@@ -235,7 +235,7 @@ It also allows me to do the following:
     always @(*) begin
         ...
         data_valid      = 1'b0;
-        data            = {16{1'bx}};            <<<< Make data invalid when data_valid is 0
+        data            = {16{1'bx}};    <<<< Make data invalid when data_valid is 0
         ...
         case(cur_state)
             ...
@@ -285,7 +285,7 @@ to sequential or vice versa, all relevant signals get renamed.
 code.*
 
 Most waveform viewers sort signal names alphabetically. That's why I will always use suffixes instead of prefixes. When you
-have a bunch of signals like 'a', 'a_nxt', 'b', 'b_nxt', 'c', 'c_nxt' etc, I want all `a`-related signals to be grouped together.
+have a bunch of signals like `a`, `a_nxt`, `b`, `b_nxt`, `c`, `c_nxt` etc, I want all `a`-related signals to be grouped together.
 
 (I personally hate embedding the port direction of a signal in the signal name, but if you really like it, at least use suffixes there
 too. No prefixes. I want to see all signals of an interface grouped together. I don't want signal completely independent and unrelated 
@@ -325,7 +325,7 @@ Not this:
                     nxt_state       = SETUP;
                 end
                 else begin
-                    nxt_state       = IDLE;
+                    nxt_state       = IDLE;     <<<<< Redundant
                 end
             end
             ...
@@ -347,10 +347,10 @@ I prefer doing this:
         case(cur_state)
             ...
             DRIVE_BUS: begin
-                data_valid_nxt      = 1'b1;
+                data_valid_nxt      = 1'b1;         <<<<<
     
                 if (data_ready) begin
-                    data_valid_nxt      = 1'b0;
+                    data_valid_nxt      = 1'b0;     <<<<<
     
                     nxt_state           = IDLE
                 end
@@ -369,7 +369,7 @@ instead of this:
         case(cur_state)
             ...
             DRIVE_BUS: begin
-                data_valid_nxt      = data_ready ? 1'b0 : 1'b1;
+                data_valid_nxt      = data_ready ? 1'b0 : 1'b1;     <<<<<
     
                 if (data_ready) begin
                     nxt_state           = IDLE
@@ -433,11 +433,12 @@ This is one of the only cases where I'll ever use `synthesis parallel_case` in m
 Something that comes up a lot on the FPGA Reddit subforum: How do I code a Mealy FSM? How do I code a Moore FSM?
 
 The answer is simple and, based on the answers on the subreddit, pretty universal: it doesn't matter. Like learning about
-Karnaugh maps and Quine-McClusky optimization, Mealy vs Moore should be forgotten the moment an engineer gets their degree and enters 
-the professional world. 
+[Karnaugh maps](https://en.wikipedia.org/wiki/Karnaugh_map) and 
+[Quine-McCluskey optimization](https://en.wikipedia.org/wiki/Quine%E2%80%93McCluskey_algorithm), 
+the existence of Mealy vs Moore should be forgotten the moment an engineer gets their degree and enters the professional world. 
 
-I've seen some misguided redditors comment that they ask candidates about Mealy vs Moore during interviewings. This should be a fireable
-offense ... for the interviewer.
+I've seen some misguided redditors comment that they ask candidates about Mealy vs Moore during interviewings. This should be a 
+fireable offense for the interviewer.
 
 That said: 2-process coding style is flexible enough to code any kind of FSM. If, for some weird reason, you want to stick
 to Mealy vs Moore concept, go for it. Just keep quiet and don't bother anybody else with it. :-)
@@ -468,9 +469,9 @@ high for multiple states. The code below could result in a glitch:
 
 For everything else, one-hot or not doesn't really matter: you'll need an additional FF just for that output signal.
 
-Assignment to that output signal can be done in two ways.
+Creating that output signal can be done in different ways.
 
-The first one makes that FF just another sequential output of the FSM:
+You could make that FF just another sequential output of the FSM:
 
 ```verilog
     ...
@@ -497,8 +498,8 @@ The first one makes that FF just another sequential output of the FSM:
 ```
 
 The benefit of the code above is, once again, that everything related to a particular state and
-condition is grouped together. However, if there are many FSM transitions into the `ACTIVE` state,
-it may require a `my_glitchfree_output_nxt = 1'b0` statement for each of those transitions.
+condition is grouped together. However, if many FSM states transition into the `ACTIVE` state,
+it may require a `my_glitchfree_output_nxt = 1'b1` statement for each of those transitions.
 
 The alterative is to implement the FF outside of the FSM, and make use of the `nxt_state` signal.
 
@@ -516,7 +517,7 @@ Like this:
 
 # For Hobby Code: a State Signal to State Name Ascii Decoder
 
-In the professional world, you'll probably, hopefully, use a tool like Verdi which understands FSMs and will annotate state signals
+In the professional world, you'll probably ...hopefully... use a tool like Verdi which understands FSMs and will annotate state signals
 with their state name. A Verilog/GTKWave-based debugging flow doesn't have this luxury.
 
 For those cases, the 2-process flow gets one additional debug-only process which translates the state vector into
@@ -536,7 +537,7 @@ an ASCII string vector:
 `endif
 ```
 
-When define a signal of type SpinalEnum in SpinalHDL, the generated Verilog will automatically include this kind of signal
+When you define a signal of type SpinalEnum in SpinalHDL, the generated Verilog will automatically include this kind of signal
 to ASCII decoder for you!
 
 Like almost all other waveform viewers, GTKWave supports displaying a random bit vector in ASCII format.
