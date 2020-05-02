@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Pano Logic Update: Audio Playback, USB and Ethernet Connections"
-date:   2018-07-09 22:00:00 -0700
+date:   2018-07-10 00:00:00 -1000
 categories: Pano Logic
 ---
 

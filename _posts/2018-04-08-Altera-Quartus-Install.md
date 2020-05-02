@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Altera Quartus Install on Ubuntu 16.04"
-date:   2018-04-08 00:00:00
+date:   2018-04-08 00:00:00 -1000
 categories:
 ---
 

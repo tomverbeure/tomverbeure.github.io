@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Moving Away from Verilog - A First Look at SpinalHDL"
-date:   2018-08-11 22:00:00 -0700
+date:   2018-08-12 00:00:00 -1000
 categories: RTL
 ---
 

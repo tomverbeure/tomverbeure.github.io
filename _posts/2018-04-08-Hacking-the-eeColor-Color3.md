@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Hacking the eeColor Color3"
-date:   2018-04-08 00:00:00 -0700
+date:   2018-04-08 00:00:00 -1000
 categories: 
 ---
 

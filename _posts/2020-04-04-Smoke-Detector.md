@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Taking Apart a Smoke Detector
-date:  2020-04-10 00:00:00 -0700
+date:  2020-04-10 00:00:00 -1000
 categories:
 ---
 

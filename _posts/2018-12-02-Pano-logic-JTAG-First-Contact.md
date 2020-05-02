@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  Pano Logic JTAG First Contact
-date:   2018-12-02 17:00:00 -0700
+date:   2018-12-03 00:00:00 -1000
 categories: Pano Logic
 ---
 

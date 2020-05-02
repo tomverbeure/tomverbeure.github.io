@@ -1,7 +1,7 @@
 ---
 layout: post
 title: VGA I2C Atari 2600 Joystick Expander - My First PCB
-date:   2019-02-04 17:00:00 -0700
+date:   2019-02-05 00:00:00 -1000
 categories:
 ---
 

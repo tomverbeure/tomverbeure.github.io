@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Project Mc2 Pixel Purse Teardown
-date:   2019-10-03 10:00:00 -0700
+date:   2019-10-03 00:00:00 -1000
 categories:
 ---
 
