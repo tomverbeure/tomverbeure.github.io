@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Reverse Engineering the Cisco HWIC-3G-CDMA
-date:   2019-11-11 00:00:00 -0700
+date:   2019-11-11 00:00:00 -1000
 categories:
 ---
 

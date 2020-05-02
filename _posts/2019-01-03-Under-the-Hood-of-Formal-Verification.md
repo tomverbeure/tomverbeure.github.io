@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Under the hood of Formal Verification
-date:   2019-01-03 17:00:00 -0700
+date:   2019-01-04 00:00:00 -1000
 categories: RTL
 ---
 

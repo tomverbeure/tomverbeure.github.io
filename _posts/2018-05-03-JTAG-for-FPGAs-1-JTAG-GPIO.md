@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "JTAG for FPGAs - Part 1: JTAG_GPIO"
-date:   2018-05-03 22:00:00 -0700
+date:   2018-05-04 00:00:00 -1000
 categories: JTAG
 ---
 

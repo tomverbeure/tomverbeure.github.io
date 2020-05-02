@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  The VexRiscV CPU - A New Way to Design
-date:   2018-12-05 17:00:00 -0700
+date:   2018-12-06 00:00:00 -1000
 categories: RTL
 ---
 

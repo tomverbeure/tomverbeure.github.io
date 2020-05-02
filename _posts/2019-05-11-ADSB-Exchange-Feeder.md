@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Setting Up an ADSB-Exchange Feeder
-date:   2019-05-11 10:00:00 -0700
+date:   2019-05-11 00:00:00 -1000
 categories:
 ---
 

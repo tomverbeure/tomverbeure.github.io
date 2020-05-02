@@ -1,7 +1,7 @@
 ---
 layout: post
 title: In The Lab - Soldering Prototypes with Enamel Magnet Wire
-date:  2020-02-22 00:00:00 -0700
+date:  2020-02-22 00:00:00 -1000
 categories:
 ---
 

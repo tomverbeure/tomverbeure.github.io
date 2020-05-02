@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "eeColor Color3: SiI9136 and SiI9233 Connections to FPGA"
-date:   2018-04-11 00:00:00 -0700
+date:   2018-04-11 00:00:00 -1000
 categories: 
 ---
 

@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "SpinalHDL Snippets"
-date:   2018-10-13 22:00:00 -0700
+date:   2018-10-14 00:00:00 -1000
 categories: RTL
 ---
 

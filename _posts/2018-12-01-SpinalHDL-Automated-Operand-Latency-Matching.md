@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  SpinalHDL Automated Operand Latency Matching
-date:   2018-12-01 14:00:00 -0700
+date:   2018-12-01 00:00:00 -1000
 categories: RTL
 ---
 

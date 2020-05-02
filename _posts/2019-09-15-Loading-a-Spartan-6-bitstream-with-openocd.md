@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Loading a Xilinx Spartan 6 bitstream with OpenOCD
-date:   2019-09-15 10:00:00 -0700
+date:   2019-09-15 00:00:00 -1000
 categories:
 ---
 
