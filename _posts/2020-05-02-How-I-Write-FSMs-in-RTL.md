@@ -1,7 +1,7 @@
 ---
 layout: post
 title: How I Write FSMs in RTL
-date:  2020-05-01 00:00:00 -0700
+date:  2020-05-01 00:00:00 -1000
 categories:
 ---
 
