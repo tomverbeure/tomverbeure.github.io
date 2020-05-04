@@ -5,6 +5,11 @@ date:  2020-04-10 00:00:00 -1000
 categories:
 ---
 
+* TOC
+{:toc}
+
+# Introduction
+
 The smoke detector in our laundry room/cat mansion (soon to be hobby room... if the virus lockdown
 goes away) started to beep yesterday, even though there was no smoke to be seen. If I'm reading the 
 manual correctly, it's a low battery condition.

@@ -5,6 +5,10 @@ date:   2018-10-14 00:00:00 -1000
 categories: RTL
 ---
 
+* TOC
+{:toc}
+
+
 # Introduction
 
 Since I've started using SpinalHDL for my hobby projects, I've been running into many issues. A few of those where minor bugs of SpinalHDL itself,

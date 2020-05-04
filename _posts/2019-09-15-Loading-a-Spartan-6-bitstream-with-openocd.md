@@ -9,6 +9,9 @@ categories:
 something useful. I always forget the details, so this is more for later personal
 use than anything else.*
 
+* TOC
+{:toc}
+
 # Goal 
 
 I have the following JTAG dongles: 

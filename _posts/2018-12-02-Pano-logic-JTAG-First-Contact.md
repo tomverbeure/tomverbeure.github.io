@@ -5,6 +5,9 @@ date:   2018-12-03 00:00:00 -1000
 categories: Pano Logic
 ---
 
+* TOC
+{:toc}
+
 Steps required to get JTAG working on a Pano Logic thin client.
 
 # Get a Xilinx-compatible JTAG Programmer

@@ -7,15 +7,8 @@ categories: RTL
 
 # Table of Contents
 
-* [Introduction](#introduction)
-* [Designing a CPU the Traditional Way](#designing-a-cpu-the-traditional-way)
-* [A Quick Rehash of SpinalHDL](#a-quick-rehash-of-spinalhdl)
-* [The VexRiscV Pipeline Plugin Architecture](#the-vexriscv-pipeline-plugin-architecture)
-* [The Barrel Shifter and Multiplier Plugins](#barrel-shifter-and-multiplier-plugins)
-* [Additional Goodies](#additional-goodies)
-* [Disadvantages](#disadvantages)
-* [Conclusion](#conclusion)
-
+* TOC
+{:toc}
 
 # Introduction
 

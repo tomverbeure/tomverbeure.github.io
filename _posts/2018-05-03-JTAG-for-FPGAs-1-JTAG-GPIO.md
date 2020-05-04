@@ -5,6 +5,9 @@ date:   2018-05-04 00:00:00 -1000
 categories: JTAG
 ---
 
+* TOC
+{:toc}
+
 # Introduction
 
 During the development of an FPGA project, you sometimes want to be able to control internal signals of the design from your

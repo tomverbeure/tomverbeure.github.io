@@ -5,12 +5,8 @@ date:   2019-05-11 00:00:00 -1000
 categories:
 ---
 
-* [Introduction](#introduction)
-* [Tracking Local Airplanes](#tracking-local-airplanes)
-* [The Hardware](#the-hardware)
-* [Software Installation](#software-installation)
-* [Local Live View](#local-live-view)
-* [Conclusion](#conclusion)
+* TOC
+{:toc}
 
 # Introduction
 

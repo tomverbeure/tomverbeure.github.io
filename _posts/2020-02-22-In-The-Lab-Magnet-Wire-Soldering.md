@@ -5,6 +5,11 @@ date:  2020-02-22 00:00:00 -1000
 categories:
 ---
 
+* TOC
+{:toc}
+
+# Introduction
+
 I'm not a huge fan of breadboarding. For many, it's been the tried and true way to quickly hack a circuit
 together, but somehow it rubs me the wrong way: it's too impermanent, I'm terrible at arranging the 
 components just right. I always run out of just the wires that I need. And I've

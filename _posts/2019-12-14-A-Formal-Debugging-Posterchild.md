@@ -8,6 +8,9 @@ categories:
 *Some time ago, I ran into a posterchild case of why formal verification should be
 a core part of your verification strategy.*
 
+* TOC
+{:toc}
+
 # A System that Transmits and Receives Packets
 
 I was dealing a proprietary high-speed communication channel between 2 PCBs that transfered

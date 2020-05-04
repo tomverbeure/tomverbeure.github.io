@@ -5,6 +5,10 @@ date:   2018-08-12 00:00:00 -1000
 categories: RTL
 ---
 
+* TOC
+{:toc}
+
+
 # Introduction
 
 Electronics in general and digital design in particular is what I do. I love coming up with a new architecture for a major block. 

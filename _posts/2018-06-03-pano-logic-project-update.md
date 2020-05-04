@@ -5,6 +5,9 @@ date:   2018-06-04 00:00:00 -1000
 categories: Pano Logic
 ---
 
+* TOC
+{:toc}
+
 Introduction
 ------------
 

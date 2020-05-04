@@ -5,6 +5,10 @@ date:   2018-07-10 00:00:00 -1000
 categories: Pano Logic
 ---
 
+* TOC
+{:toc}
+
+
 After a vacation and lots of World Cup quality time (Go Belgium!), the pace on the Pano Logic project has been picking up again.
 
 Audio Playback

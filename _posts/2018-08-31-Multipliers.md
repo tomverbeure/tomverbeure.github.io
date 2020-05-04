@@ -5,6 +5,10 @@ date:   2018-08-12 00:00:00 -1000
 categories: RTL
 ---
 
+* TOC
+{:toc}
+
+
 # CPU Multipliers
 
 I've been working on my own RISC-V CPU to learn SpinalHDL and to get some hands on experience with

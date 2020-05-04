@@ -7,16 +7,8 @@ categories:
 
 *The disassembly of a pretty trivial toy got a bit out of hand. :-)*
 
-* [A Tweet in the Morning](#a-tweet-in-the-morning)
-* [Disassembling the Whole Thing](#disassembling-the-whole-thing)
-* [LED panel P6 32x16 ](#led-panel-p6-32x16)
-* [Main PCB](#main-pcb)
-* [SPI PROM contents](#spi-prom-contents)
-* [HUB75 Capture](#hub75-capture)
-* [Audio Upload Interface](#audio-upload-interface)
-* [DC/DC Converter](#dcdc-converter)
-* [Power Consumption](#power-consumption)
-* [Next Steps](#next-steps)
+* TOC
+{:toc}
 
 # A Tweet in the Morning
 

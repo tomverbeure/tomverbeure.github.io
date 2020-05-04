@@ -7,21 +7,8 @@ categories: RTL
 
 # Table of Contents
 
-* [Why Formal Verification?](#why-formal-verification)
-* [What Is Formal Verification?](#what-is-formal-verification)
-* [Open Source Formal Verification with SymbiYosys](#open-source-formal-verification-with-symbiyosys)
-* [An Example with a Workaround](#an-example-with-a-workaround)
-* [Components of the SymbiYosys Formal Flow](#components-of-the-symbiyosys-formal-flow)
-* [Synthesizing a Design with Formal Verification Statements](#synthesizing-a-design-with-formal-verification-statements)
-* [SystemVerilog Assertions](#systemverilog-assertions)
-* [A Simple but Non-Trivial Sequence](#a-simple-but-non-trivial-sequence)
-* [A Working (but Ultimately Useless) Implementation](#a-working-but-ultimately-useless-implementation)
-* [Finite State Machines to the Rescue](#finite-state-machines-to-the-rescue)
-* [From Non-Deterministic to Deterministic FSM](#from-non-deterministic-to-deterministic-fsm)
-* [Handling Parallel Sequence Evaluation](#handling-parallel-sequence-evaluation)
-* [Intermediate Conclusion](#intermediate-conclusion)
-* [Advanced Formal Support in Yosys Already Exists](#advanced-formal-support-in-yosys-already-exists)
-* [Call to Action](#call-to-action)
+* TOC
+{:toc}
 
 # Why Formal Verification?
 

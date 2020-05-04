@@ -5,18 +5,8 @@ date:  2020-05-01 00:00:00 -1000
 categories:
 ---
 
-* [Introduction](#introduction)
-* [My FSM Template](#my-fsm-template)
-* [An FSM Always Consists of 2 Processes](#an-fsm-always-consists-of-2-processes)
-* [The FSM Code is State Centric instead of Output Signal Centric](#the-fsm-code-is-state-centric-instead-of-output-signal-centric)
-* [Rigorous Naming Convention for Combinatorial and Sequential Outputs](#rigorous-naming-convention-for-combinatorial-and-sequential-outputs)
-* [No Explicit Stay-in-the-Same-State Assignments](#no-explicit-stay-in-the-same-state-assignments)
-* [Overriding Previous Default Assignments is Totally Fine](#overriding-previous-default-assignments-is-totally-fine)
-* [Regular vs One-Hot Encoding](#regular-vs-one-hot-encoding)
-* [No Mealy vs Moore BS](#no-mealy-vs-moore-bs)
-* [Glitch-Free Outputs](#glitch-free-outputs)
-* [For Hobby Code: a State Signal to State Name Ascii Decoder](#for-hobby-code-a-state-signal-to-state-name-ascii-decoder)
-
+* TOC
+{:toc}
 
 # Introduction
 

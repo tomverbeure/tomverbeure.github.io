@@ -5,6 +5,9 @@ date:   2018-04-30 00:00:00 -1000
 categories: tools
 ---
 
+* TOC
+{:toc}
+
 # The Microscope
 
 In an [earlier log](https://hackaday.io/project/122480-eecolor-color3/log/144836-sii9233-and-sii9136-i2c-traces), 

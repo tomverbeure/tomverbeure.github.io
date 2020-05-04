@@ -5,16 +5,8 @@ date:   2019-08-03 00:00:00 -1000
 categories:
 ---
 
-* [Introduction](#introduction)
-* [Multiple-Read, Single-Write RAMs](#multiple-read-single-write-rams)
-* [Flip-Flop RAMs](#flip-flop-rams)
-* [Multipumped Multi-Port RAMs](#multipumped-multi-port-rams)
-* [Banked Multi-Port RAMs](#banked-multi-port-rams)
-* [Live Value Table Multi-Port RAMs](#live-value-table-multi-port-rams)
-* [XOR-Based Multi-Port RAMs](#xor-based-multi-port-rams)
-* [A XOR-Based Multi-Port RAM Implementation](#a-xor-based-multi-port-ram-implementation)
-* [Which Type To Use?](#which-type-to-use)
-* [Conclusion](#conclusion)
+* TOC
+{:toc}
 
 # Introduction
 

@@ -21,27 +21,8 @@ categories: RTL
 
 # Table of Contents
 
-* [Introduction](#introduction)
-* [The HW Platform](#the-hw-platform)
-* [Racing the Beam - Graphics without a Frame Buffer ](#racing-the-beam---graphics-without-a-frame-buffer)
-* [One Pixel per Clock Ray Tracing](#one-pixel-per-clock-ray-tracing)
-* [A Floating Point C model](#a-floating-point-c-model)
-* [From Floating Point to Fixed Point](#from-floating-point-to-fixed-point)
-* [Math Resource Usage Statistics](#math-resource-usage-statistics)
-* [Scene Math Optimization](#scene-math-optimization)
-* [Start Your SpinalHDL RTL Coding Engines! Or... ?](#start-your-spinalhdl-rtl-coding-engines-or-)
-* [Conversion to 20-bit Floating Point Numbers](#conversion-to-20-bit-floating-point-numbers)
-* [Building the Pipeline](#building-the-pipeline)
-* [SpinalHDL LatencyAnalysis Life Saver - Automatic Latency Matching](#spinalhdl-latencyanalysis-life-saver---automatic-latency-matching)
-* [Progression to C Model Match](#progression-to-c-model-match)
-* [Intermediate FPGA Synthesis Stats - A Pleasant Surprise!](#intermediate-fpga-synthesis-stats---a-pleasant-surprise)
-* [A Sphere Casting a Shadow and a Directional Light](#a-sphere-casting-a-shadow-and-a-directional-light)
-* [SpinalHDL - Selectively Using HW Multipliers](#spinalhdl---selectively-using-hw-multipliers)
-* [Camera Movement and Flexibility - Bringing in a CPU](#camera-movement-and-flexibility---bringing-in-a-cpu)
-* [Final Toplevel Pipeline](#final-toplevel-pipeline)
-* [Text Overlay - The Final Step](#text-overlay---the-final-step)
-* [Total Resource Usage and Critical Path](#total-resource-usage-and-critical-path)
-* [The End](#the-end)
+* TOC
+{:toc}
 
 # Introduction
 

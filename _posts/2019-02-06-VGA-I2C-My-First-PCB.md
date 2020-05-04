@@ -5,6 +5,9 @@ date:   2019-02-05 00:00:00 -1000
 categories:
 ---
 
+* TOC
+{:toc}
+
 # Introduction
 
 The long term goal is to be able to connect USB HID devices (mouse, keyboard, joystick) to the Pano Logic G1 and
