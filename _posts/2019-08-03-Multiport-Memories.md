@@ -1,20 +1,12 @@
 ---
 layout: post
 title: Building Multiport Memories with Block RAMs
-date:   2019-08-03 10:00:00 -0700
+date:   2019-08-03 00:00:00 -1000
 categories:
 ---
 
-* [Introduction](#introduction)
-* [Multiple-Read, Single-Write RAMs](#multiple-read-single-write-rams)
-* [Flip-Flop RAMs](#flip-flop-rams)
-* [Multipumped Multi-Port RAMs](#multipumped-multi-port-rams)
-* [Banked Multi-Port RAMs](#banked-multi-port-rams)
-* [Live Value Table Multi-Port RAMs](#live-value-table-multi-port-rams)
-* [XOR-Based Multi-Port RAMs](#xor-based-multi-port-rams)
-* [A XOR-Based Multi-Port RAM Implementation](#a-xor-based-multi-port-ram-implementation)
-* [Which Type To Use?](#which-type-to-use)
-* [Conclusion](#conclusion)
+* TOC
+{:toc}
 
 # Introduction
 
@@ -340,7 +332,7 @@ The base RAM is then a [simple one with 1 write port and 1 read port](https://gi
 
 And there's the [bypass path](https://github.com/tomverbeure/multi_port_mem/blob/e9d456f019913c94d2aa2839e199fed50840d09b/spinal/src/main/scala/multi_port_mem/MultiPortMem.scala#L83-L88):
 
-```Verilog
+```scala
         val rd_eq_wr = io.wr_addr === io.rd_addr
 
         val bypass_ena_p1 = RegNext(io.wr_ena && rd_eq_wr)
@@ -355,7 +347,7 @@ builds on this simple RAM.
 Due to the pipelining where you first need to read before doing a write, this one also has
 [its own bypass logic](https://github.com/tomverbeure/multi_port_mem/blob/e9d456f019913c94d2aa2839e199fed50840d09b/spinal/src/main/scala/multi_port_mem/MultiPortMem.scala#L218-L226):
 
-```Verilog
+```scala
         val rd0_eq_wr0      = io.wr0.addr === io.rd0.addr
         val bypass0_ena_p1  = RegNext(io.wr0.ena && rd0_eq_wr0)
 
@@ -370,7 +362,7 @@ Due to the pipelining where you first need to read before doing a write, this on
 
 You can simulate this RAM by issuing the following command:
 
-```
+```bash
 sbt "runMain multi_port_mem.MultiPortMemSim"
 ```
 

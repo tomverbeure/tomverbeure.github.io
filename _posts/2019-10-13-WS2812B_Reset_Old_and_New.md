@@ -1,7 +1,7 @@
 ---
 layout: post
 title: WS2812B Reset Old & New
-date:   2019-10-13 10:00:00 -0700
+date:   2019-10-13 00:00:00 -1000
 categories:
 ---
 

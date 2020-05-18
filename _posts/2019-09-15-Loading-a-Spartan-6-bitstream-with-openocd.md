@@ -1,13 +1,16 @@
 ---
 layout: post
 title: Loading a Xilinx Spartan 6 bitstream with OpenOCD
-date:   2019-09-15 10:00:00 -0700
+date:   2019-09-15 00:00:00 -1000
 categories:
 ---
 
 *This post is just the sequence that I use to get from nowhere to a JTAG dongle doing 
 something useful. I always forget the details, so this is more for later personal
 use than anything else.*
+
+* TOC
+{:toc}
 
 # Goal 
 
@@ -31,7 +34,7 @@ In other words: you don't need the Xilinx iMPACT tool to do so!
 
 On Linux, I get the USB details of the Xilinx JTAG cable as follows:
 
-```
+```bash
 > lsusb
 
 Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
@@ -47,7 +50,7 @@ and that there is a custom script for it that configures everything correctly.
 
 I have OpenOCD installed under `/opt/openocd`, so let's see if we can find the right interface script for our device:
 
-```
+```bash
 > cd /opt/openocd/share/openocd/scripts/interface
 > grep 6014 *.cfg
 
@@ -69,7 +72,7 @@ Looking closer, my device says "Model: JTAG SMT2", so let's use `ftdi/digilent_j
 
 Device permissions are something I always have problems with. To bypass that, I simply run things as root:
 
-```
+```bash
 > sudo /opt/openocd/bin/openocd -f /opt/openocd/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg
 
 Open On-Chip Debugger 0.10.0+dev-00410-gf0767a3 (2018-05-15-21:46)
@@ -85,7 +88,7 @@ Apparently, an JTAG clock speed must always be specified for this dongle. Let's 
 
 We can do this via our own custom configuration script, or we can simply add this command directly on the command line:
 
-```
+```bash
 > sudo /opt/openocd/bin/openocd -f /opt/openocd/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg \
              -c "adapter_khz 1000"
 
@@ -107,7 +110,7 @@ in procedure 'ocd_bouncer'
 
 A Xilinx Spartan-6 FPGA has a JTAG port:
 
-```
+```bash
 > sudo /opt/openocd/bin/openocd -f /opt/openocd/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg \ 
              -c "adapter_khz 1000; transport select jtag"
 
@@ -138,7 +141,7 @@ the command line.
 
 In a different terminal window:
 
-```
+```bash
 > telnet localhost 4444
 
 Trying 127.0.0.1...
@@ -158,7 +161,7 @@ issue commands that are specific to this product.
 
 Let's restart OpenOCD and load the Spartan-6 device file as well:
 
-```
+```bash
 > sudo /opt/openocd/bin/openocd -d -f /opt/openocd/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg -f /opt/openocd/share/openocd/scripts/cpld/xilinx-xc6s.cfg -c "adapter_khz 1000"
 
 
@@ -183,7 +186,7 @@ OpenOCD know reports that it has found an `xc6s`, or Spartan 6, JTAG TAP control
 
 Same thing here:
 
-```
+```bash
 > lsusb
 
 Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
@@ -195,7 +198,7 @@ Bus 001 Device 028: ID 09fb:6001 Altera Blaster
 I have 3 Altera USB-Blaster clones. They all have the same `09fb:6001` vendor ID/device ID, and they
 can all use the same OpenOCD script:
 
-```
+```bash
 > sudo /opt/openocd/bin/openocd -f /opt/openocd/share/openocd/scripts/interface/altera-usb-blaster.cfg
 
 Open On-Chip Debugger 0.10.0+dev-00930-g09eb941 (2019-09-16-21:01)
@@ -222,7 +225,7 @@ This was much easier than for the Xilinx dongle: no need to specify a clock spee
 
 I'll load [this LED blink bitstream](https://github.com/q3k/chubby75/blink/ise/top.bit).
 
-```
+```bash
 > sudo /opt/openocd/bin/openocd \ 
             -f /opt/openocd/share/openocd/scripts/interface/altera-usb-blaster.cfg \
             -f /opt/openocd/share/openocd/scripts/cpld/xilinx-xc6s.cfg \
