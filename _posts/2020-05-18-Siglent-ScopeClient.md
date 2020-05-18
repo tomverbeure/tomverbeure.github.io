@@ -1,10 +1,12 @@
 ---
 layout: post
 title: Siglent SDS 2304X Remote Control
-date:  2019-11-21 00:00:00 -0700
+date:  2020-05-18 00:00:00 -1000
 categories:
 ---
 
+* TOC
+{:toc}
 
 
 * Compile on Ubuntu 18.04.
