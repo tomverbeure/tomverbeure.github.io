@@ -43,9 +43,9 @@ Bus 001 Device 002: ID 8087:0a2b Intel Corp.
 Bus 001 Device 006: ID 0403:6014 Future Technology Devices International, Ltd FT232H Single HS USB-UART/FIFO IC
 ```
 
-The devices I care about is the Future Technology Devices International (FTDI) one.
+The device I care about is the Future Technology Devices International (FTDI) one: it's used it many JTAG dongles.
 
-`0403:6014` is the vendor_id/device_id combo of our device. Chances are that OpenOCD already knows about this device
+`0403:6014` is the vendor_id/device_id combo of our USB device. Chances are that OpenOCD already knows about this device
 and that there is a custom script for it that configures everything correctly.
 
 I have OpenOCD installed under `/opt/openocd`, so let's see if we can find the right interface script for our device:
@@ -84,7 +84,7 @@ Info : Listening on port 4444 for telnet connections
 Error: An adapter speed is not selected in the init script. Insert a call to adapter_khz or jtag_rclk to proceed.
 ```
 
-Apparently, an JTAG clock speed must always be specified for this dongle. Let's do just that. 
+Apparently, a JTAG clock speed must always be specified for this dongle. Let's do just that. 
 
 We can do this via our own custom configuration script, or we can simply add this command directly on the command line:
 
@@ -133,7 +133,7 @@ Warn : gdb services need one or more targets defined
 
 SUCCESS!
 
-OpenOCD has been able to succesfully access send something through the JTAG interface, and, even better, it has
+OpenOCD has been able to succesfully access and send something through the JTAG interface, and, even better, it has
 even been able to scan out device ID `0x44002093`, which it understands to be a Xilinx device!
 
 It has also launched a telnet service on port 4444. We can use that to issue all kinds of OpenOCD commands through
@@ -182,6 +182,8 @@ Warn : gdb services need one or more targets defined
 
 OpenOCD know reports that it has found an `xc6s`, or Spartan 6, JTAG TAP controller.
 
+Feel free to skip the next section if only only have a Xilinx compatible JTAG dongle...
+
 # Altera USB Blaster Compatible JTAG Dongle 
 
 Same thing here:
@@ -223,7 +225,7 @@ This was much easier than for the Xilinx dongle: no need to specify a clock spee
 
 # Loading the bitstream
 
-I'll load [this LED blink bitstream](https://github.com/q3k/chubby75/blink/ise/top.bit).
+I'll load [this LED blink bitstream](https://github.com/q3k/chubby75/rv901t/blink/ise/top.bit).
 
 ```bash
 > sudo /opt/openocd/bin/openocd \ 
