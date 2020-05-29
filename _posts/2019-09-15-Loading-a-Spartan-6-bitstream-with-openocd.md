@@ -73,8 +73,10 @@ Looking closer, my device says "Model: JTAG SMT2", so let's use `ftdi/digilent_j
 Device permissions are something I always have problems with. To bypass that, I simply run things as root:
 
 ```bash
-> sudo /opt/openocd/bin/openocd -f /opt/openocd/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg
-
+> sudo /opt/openocd/bin/openocd \
+             -f /opt/openocd/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg
+```
+```
 Open On-Chip Debugger 0.10.0+dev-00410-gf0767a3 (2018-05-15-21:46)
 Licensed under GNU GPL v2
 For bug reports, read
@@ -89,9 +91,11 @@ Apparently, a JTAG clock speed must always be specified for this dongle. Let's d
 We can do this via our own custom configuration script, or we can simply add this command directly on the command line:
 
 ```bash
-> sudo /opt/openocd/bin/openocd -f /opt/openocd/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg \
+> sudo /opt/openocd/bin/openocd \ 
+             -f /opt/openocd/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg \
              -c "adapter_khz 1000"
-
+```
+```
 Open On-Chip Debugger 0.10.0+dev-00410-gf0767a3 (2018-05-15-21:46)
 Licensed under GNU GPL v2
 For bug reports, read
@@ -111,9 +115,11 @@ in procedure 'ocd_bouncer'
 A Xilinx Spartan-6 FPGA has a JTAG port:
 
 ```bash
-> sudo /opt/openocd/bin/openocd -f /opt/openocd/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg \ 
+> sudo /opt/openocd/bin/openocd \
+             -f /opt/openocd/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg \ 
              -c "adapter_khz 1000; transport select jtag"
-
+```
+```
 Open On-Chip Debugger 0.10.0+dev-00410-gf0767a3 (2018-05-15-21:46)
 Licensed under GNU GPL v2
 For bug reports, read
@@ -162,10 +168,12 @@ issue commands that are specific to this product.
 Let's restart OpenOCD and load the Spartan-6 device file as well:
 
 ```bash
-> sudo /opt/openocd/bin/openocd -d -f /opt/openocd/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg -f /opt/openocd/share/openocd/scripts/cpld/xilinx-xc6s.cfg -c "adapter_khz 1000"
-
-
-
+> sudo /opt/openocd/bin/openocd -d \
+             -f /opt/openocd/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg \
+             -f /opt/openocd/share/openocd/scripts/cpld/xilinx-xc6s.cfg \
+             -c "adapter_khz 1000"
+```
+```
 Open On-Chip Debugger 0.10.0+dev-00410-gf0767a3 (2018-05-15-21:46)
 Licensed under GNU GPL v2
 For bug reports, read
@@ -201,8 +209,10 @@ I have 3 Altera USB-Blaster clones. They all have the same `09fb:6001` vendor ID
 can all use the same OpenOCD script:
 
 ```bash
-> sudo /opt/openocd/bin/openocd -f /opt/openocd/share/openocd/scripts/interface/altera-usb-blaster.cfg
-
+> sudo /opt/openocd/bin/openocd \
+             -f /opt/openocd/share/openocd/scripts/interface/altera-usb-blaster.cfg
+```
+```
 Open On-Chip Debugger 0.10.0+dev-00930-g09eb941 (2019-09-16-21:01)
 Licensed under GNU GPL v2
 For bug reports, read
@@ -218,7 +228,6 @@ Warn : AUTO auto0.tap - use "jtag newtap auto0 tap -irlen 2 -expected-id 0x44002
 Error: IR capture error at bit 2, saw 0x3FFFFFFFFFFFFFF5 not 0x...3
 Warn : Bypassing JTAG setup events due to errors
 Warn : gdb services need one or more targets defined
-
 ```
 
 This was much easier than for the Xilinx dongle: no need to specify a clock speed or transport protocol.
@@ -229,10 +238,11 @@ I'll load [this LED blink bitstream](https://github.com/q3k/chubby75/blob/master
 
 ```bash
 > sudo /opt/openocd/bin/openocd \ 
-            -f /opt/openocd/share/openocd/scripts/interface/altera-usb-blaster.cfg \
-            -f /opt/openocd/share/openocd/scripts/cpld/xilinx-xc6s.cfg \
-            -c "adapter_khz 1000; init; xc6s_program xc6s.tap; pld load 0 ./ise/top.bit ; exit"
-
+             -f /opt/openocd/share/openocd/scripts/interface/altera-usb-blaster.cfg \
+             -f /opt/openocd/share/openocd/scripts/cpld/xilinx-xc6s.cfg \
+             -c "adapter_khz 1000; init; xc6s_program xc6s.tap; pld load 0 ./ise/top.bit ; exit"
+```
+```
 Open On-Chip Debugger 0.10.0+dev-00930-g09eb941 (2019-09-16-21:01)
 Licensed under GNU GPL v2
 For bug reports, read
