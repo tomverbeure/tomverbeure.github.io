@@ -225,7 +225,7 @@ This was much easier than for the Xilinx dongle: no need to specify a clock spee
 
 # Loading the bitstream
 
-I'll load [this LED blink bitstream](https://github.com/q3k/chubby75/rv901t/blink/ise/top.bit).
+I'll load [this LED blink bitstream](https://github.com/q3k/chubby75/blob/master/rv901t/blink/ise/top.bit).
 
 ```bash
 > sudo /opt/openocd/bin/openocd \ 
