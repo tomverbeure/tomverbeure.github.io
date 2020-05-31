@@ -1,12 +1,96 @@
 ---
 layout: post
-title: Siglent SDS 2304X Remote Control
+title: Siglent SDS2304X Remote Control
 date:  2020-05-18 00:00:00 -1000
 categories:
 ---
 
 * TOC
 {:toc}
+
+# Introduction
+
+With the whole shelter in place going on, I've been spending a lot of time in my garage, now
+serving as my work office and lab. And that includes quite a bit of quality time with my
+oscilloscope, a [Siglent SDS2304X](https://siglentna.com/product/sds2304x/).
+
+I've had it for more than 2 years now. With 4 channels, 300MHz BW, and some of the additonal
+options (16-channel logic analyzer, 25MHz function generator, and various serial protocol
+decoders), it was quite the splurge.
+
+But I came to realization that I'm only ever used a fraction of its capabilities. The cable for
+the 16-channel logic analyzer is still in the box. The function generator has only be switched on 
+to verify that, yes, it actually works. And while I have used the I2C and UART decoders a few
+times, when I really want to decode these kind of traces, a [Saleae logic analyzer](https://www.saleae.com) 
+is usually a much better choice.[^1]
+
+[^1]: Due to the shelter in place, the Saleae Logic Pro 16 from work is now at home, and it's 
+    amazing.  I love its ability to do long term analog traces at 50MS/s.
+
+One feature that I have used is that ability to take screenshots to add as illustration to 
+[some of my blog posts](/2019/10/03/Pixel-Purse.html#audio-upload-interface). But I've
+always used them the primitive way: by saving the screenshot on a USB drive that's plugged
+into the USB type A connector on the front of the scope.
+
+The problem with that is that you can end up with a USB drive full of screenshot bitmap files 
+that are sequentially numbered without any futher annotation or context. It'd be much easier
+if I could immediately save the screenshot from the scope straight onto my computer and give
+them a clarifying filename.
+
+I knew that the Ethernet and USB type B connectors on the back could be used to remote control 
+the scope, but I had never tried.
+
+And thus starteth my descent into the world of protocols to control test equipment.
+
+# A Quickstart Guide to the Test and Measurement Equipment Protocol Stack
+
+When you've never dealt with these kind of protocol before, as was the case for me, you get
+bombared with all kinds of protocols and protocol layers. It took me a little bit to see
+the forest through the trees.
+
+But here's what I ended up with:
+
+There are essentially 3 layers. They probably have an official name, but I've named them myself as follows.
+
+* physical layer
+
+    The method by which the scope is connected to your computer. Today, the 2 most common
+    interfaces are Ethernet and USB, but older ones include 
+    [RS-232](https://en.wikipedia.org/wiki/RS-232), 
+    [RS-422](https://en.wikipedia.org/wiki/RS-422), 
+    [GPIB (IEEE-488)](https://en.wikipedia.org/wiki/IEEE-488), 
+    and [VXI bus](https://en.wikipedia.org/wiki/VME_eXtensions_for_Instrumentation).
+
+* transport layer
+
+    This is the higher level protocol that is used on top of the physical layer. When
+    using USB, this layer is almost always USB Test and Measurement Class (USBTMC). For
+    Ethernet, telnet, sockets or VXI-11 are commonly used. Some devices support
+    the more modern HiSLIP.
+
+* command layer
+
+    This specifies the syntax of commands that are issued over the transport layer. Most
+    equipment supports 
+    [SCPI (Standard Commands for Programmable Instruments, aka 'Skippy')](https://en.wikipedia.org/wiki/Standard_Commands_for_Programmable_Instruments). 
+
+
+If this sounds all simply enough, don't worry: it's not as clear-cut as I'm making it out to be.
+LeCroy has a thing called VICP (Versatile Instrument Control Protocol), a protocol that seems cover
+both the transport layer (running on top of TCP/IP and the command layer). And USBTMC uses a messaging
+system that uses GPIB/IEEE-488 messaging. 
+
+To make things even more fun, the fact that these standards are well defined doesn't mean that
+equipment follows them. Rigol oscilloscopes are known to use different TCP/IP port number than those
+mandated by the standard. USBTMC has seen very buggy implementations. Some Siglent oscilloscopes
+support raw TCP/IP sockets as transport layer while others only support VXI-11... and it's impossible
+to find documentation that illustrates this. And so forth.
+
+
+
+
+# References:
+* [Standard Commands for Programmable Instruments (SCPI) Specification](https://www.ivifoundation.org/docs/scpi-99.pdf)
 
 
 * Compile on Ubuntu 18.04.
