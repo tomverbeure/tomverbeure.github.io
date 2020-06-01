@@ -50,6 +50,8 @@ the forest through the trees.
 
 But here's what I ended up with:
 
+![Instrument Control Protocols]({{ "/assets/siglent/Instrument_Control_Protocols.svg" | absolute_url }})
+
 There are essentially 3 layers. They probably have an official name, but I've named them myself as follows.
 
 * physical layer
@@ -58,7 +60,7 @@ There are essentially 3 layers. They probably have an official name, but I've na
     interfaces are Ethernet and USB, but older ones include 
     [RS-232](https://en.wikipedia.org/wiki/RS-232), 
     [RS-422](https://en.wikipedia.org/wiki/RS-422), 
-    [GPIB (IEEE-488)](https://en.wikipedia.org/wiki/IEEE-488), 
+    [GPIB (IEEE-488.1)](https://en.wikipedia.org/wiki/IEEE-488), 
     and [VXI bus](https://en.wikipedia.org/wiki/VME_eXtensions_for_Instrumentation).
 
 * transport layer
