@@ -16,21 +16,8 @@ a [Siglent SDS2304X](https://siglentna.com/product/sds2304x/).
 
 ![Siglent SDS2304X](/assets/siglent/SDS2000Xa.png)
 
-I've had it for more than 2 years now. With 4 channels, 300MHz BW, and some of the additonal
-options (16-channel logic analyzer, 25MHz function generator, and various serial protocol
-decoders), it was quite the splurge, justified by the "this will be the last scope I'll
-ever buy" argument.
-
-But I've come to realization that I've only ever used a fraction of its capabilities. The cable for
-the 16-channel logic analyzer is still in the box. The function generator has only be switched on 
-to verify that, yes, it actually works. And while I have used the I2C and UART decoders a few
-times, when I really want to decode these kind of traces, a [Saleae logic analyzer](https://www.saleae.com) 
-is usually a much better choice.[^1]
-
-[^1]: Due to the shelter in place, the Saleae Logic Pro 16 from work is now at home, and it's 
-    amazing.  I love its ability to do long term analog traces at 50MS/s.
-
-One feature that I have used is the ability to take screenshots to add as illustration to 
+One feature that I have used quite a bit is the ability to take screenshots to add as 
+illustration to 
 [some of my blog posts](/2019/10/03/Pixel-Purse.html#audio-upload-interface). But I've
 always used them the primitive way: by saving the screenshot on a USB drive that's plugged
 into the USB type A connector on the front of the scope.
@@ -108,8 +95,6 @@ tries to abstract all these transport methods behind one API.
 
 
 # LAN - VXI-11
-
-My scope only supports VXI-11 on the Ethernet port, so that's what I focused on first.
 
 VXI-11 dates all the way back to 1995. It is layered on top of the 
 [ONC Remote Procedure Call](https://en.wikipedia.org/wiki/Open_Network_Computing_Remote_Procedure_Call) 
@@ -289,7 +274,7 @@ depends on your wallet or on your persistence in going through Google search res
 "ieee standard digital interface for programmable instrumentation".
 
 Resources: 
-* [Fundamental of GPIB](https://www.youtube.com/watch?v=MH-srU3bPmU)
+* [Fundamentals of GPIB](https://www.youtube.com/watch?v=MH-srU3bPmU)
 
     The first half of this 1988 video is suprisingly insructive!
 
