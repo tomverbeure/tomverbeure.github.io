@@ -50,7 +50,7 @@ And thus starteth my descent into the world of protocols to control test equipme
 # A Quickstart Guide to the Test and Measurement Equipment Protocol Stack
 
 When you've never dealt with these kind of protocols before, as was the case for me, you get
-bombarded with all kinds of protocols, protocol layers, and APIs. It took me a little bit to see
+bombarded with all kinds of protocols, protocol layers, and APIs. It took me a while to see
 the forest through the trees.
 
 But here's what I ended up with:
@@ -61,11 +61,11 @@ There are essentially 3 layers. They probably have an official name, but I've na
 
 * physical layer
 
-    The method by which the scope is connected to your computer. Today, the 2 most common
+    The physical method by which the scope is connected to your computer. Today, the 2 most common
     interfaces are Ethernet and USB, but older ones include 
+    [GPIB (IEEE-488.1)](https://en.wikipedia.org/wiki/IEEE-488), 
     [RS-232](https://en.wikipedia.org/wiki/RS-232), 
     [RS-422](https://en.wikipedia.org/wiki/RS-422), 
-    [GPIB (IEEE-488.1)](https://en.wikipedia.org/wiki/IEEE-488), 
     and [VXI bus](https://en.wikipedia.org/wiki/VME_eXtensions_for_Instrumentation).
 
 * transport layer
@@ -88,7 +88,7 @@ There are essentially 3 layers. They probably have an official name, but I've na
     While SCPI is a standard at the lowest level, each brand has its own variant with it
     comes to commands and how they are formatted.
     
-If this sounds all simply enough, don't worry: it's not as clear-cut as I'm making it out to be.
+If this sounds all simple enough, don't worry: it's not as clear-cut as I'm making it out to be.
 For example, USBTMC has a messaging system that has been borrowed almost entirely from GPIB/IEEE-488.2
 
 To make things even more fun, the fact that these standards are well defined doesn't mean that
@@ -98,7 +98,7 @@ support raw TCP/IP sockets as transport layer while others only support VXI-11.
 
 When tying all of this together in an automation setup, there's a lot of complexity to manage.
 But fear not: other standards were created to bring some uniformity to the whole deal. The 
-[Lan eXtensions for Instrumentation](https://www.lxistandard.org/) (LXI) is a standard to specifies
+[Lan eXtensions for Instrumentation](https://www.lxistandard.org/) (LXI) standard specifies
 the behavior that is specific for LAN/Ethernet communication, and the
 [Virtual Instrumnet Software Architecture](https://en.wikipedia.org/wiki/Virtual_instrument_software_architecture) (VISA)
 tries to abstract all these transport methods behind one API.
@@ -183,7 +183,7 @@ Under the hood, making a connection to a VXI-11 enabled device goes in two phase
 
     When a client wants to establish an RPC connection, the client first issues a request to the PortMap
     port to ask which TCP/IP port should be used for a particular RPC service. Each RPC service is
-    assigned a so-called program number, the program number of VXI-11 core channel is 395183 / 0x607af.
+    assigned a so-called program number. The program number of the VXI-11 core channel is 395183 / 0x607af.
     (There's also a VXI-11 Abort Channel and a VXI-11 Interrupt channel, which have program numbers
     395184 and 395185 resp.) (Section B.6 of the VXI-11 spec.)
 
@@ -204,7 +204,7 @@ support for VXI-11 RPC calls!
 # Setting Up the IP Address of Your Scope
 
 Since I wasn't able to get the VXI-11 discovery to work, I had to set/figure out the IP address of the scope
-manually.
+manually, as follows:
 
 * Plug in Ethernet cable
 * Press [Utility] -> [I/O] *(Page 2/3)* -> [LAN]
@@ -216,23 +216,27 @@ Otherwise:
 * Set DHCP to Disable
 * Enter the desired IP address
 
-* Press [Single] to exist the LAN settings page
+* Press [Single] to exit the LAN settings page
 * Power cycle the scope
 
     New LAN settings don't take effect until you do this!
 
 * After the power cycle, go again to the LAN settings page and write down the assigned IP address.
 
+    *The IP address of my scope is set to 192.168.1.177. I will use that number in the examples below.*
+
 # Interacting with the Siglent Scope with VXI-11 and PyVISA
 
 [PyVISA](https://pyvisa.readthedocs.io/en/latest/) is probably the easiest way to interact remotely
-with a measurement device. 
+with a measurement device, and it has the major benefit that the same code will work with all transport
+protocols that are supported by your scope.
 
 * Install the `pyvisa` library
 
    ```
    pip3 install pyvisa pyvisa-py
    ```
+
 * Write the following program: `visa_ident.py`
 
     ```python
@@ -243,7 +247,7 @@ with a measurement device.
     siglent = rm.open_resource("TCPIP::192.168.1.177::INSTR")
     print(siglent.query('*IDN?'))
     ```
-    
+ 
     `*IDN?` is the standard SCPI identification command.
 
     `192.168.1.177` is the IP address that has been assigned to the scope in the previous section.
@@ -256,10 +260,40 @@ with a measurement device.
 
 There you have it! The scope returned the brand name, model name, serial number, and the installed firmware version!
 
+# Interacting with the Siglent Scope with VXI-11 and python-vxi11
+
+PyVISA is easy to use and supports pretty much all interfaces that matter, but it's on the heavy
+side in terms of code size. If you're sure that VXI-11 is sufficient for your needs, you can
+use the lightweigh [`python-vxi11`](http://alexforencich.com/wiki/en/python-vxi11/start) library.
+
+* Install the `python-vxi11` library
+
+    ```sh
+    pip3 install python-vxi11
+    ```
+
+* Write the follwoing program: `vxi11_ident.py`
+
+    ```python
+    #! /usr/bin/env python3
+    import vxi11
+    
+    instr = vxi11.Instrument("192.168.1.177")
+    print(instr.ask("*IDN?"))
+    ```
+
+* Result
+
+    ```sh
+    > ./vxi11_ident.py 
+    *IDN SIGLENT,SDS2304X,SDS2XJBD1R2754,1.2.2.2 R19
+    ```
+
+
 # Interacting with the Siglent Scope with VXI-11 and liblxi
 
-If you want to talk to the scope from within a C or C++ program, you can't use `PyVISA`, but there's
-a library called `liblxi` that part of a larger set of utilities called [lxi-tools](https://lxi-tools.github.io/).
+If you want to talk to the scope from within a C or C++ program, there's
+a library called `liblxi` which is part of a larger set of utilities called [lxi-tools](https://lxi-tools.github.io/).
 
 I installed `liblxi` from source code to get the latest version, but most distributions have it as precompiled
 package as well. On my Ubuntu 18.04 system, it's as simple as running `sudo apt isntall liblxi-dev lxi-tools`.
@@ -273,7 +307,7 @@ Let's first try the `lxi` utility:
 *IDN SIGLENT,SDS2304X,SDS2XJBD1R2754,1.2.2.2 R19
 ```
 
-Using the library in a C program isn't much more difficult:
+Using the library in a C program is straightforward as well:
 
 ```c
 #include <stdio.h>
@@ -313,277 +347,7 @@ Loaded siglent-sds screenshot plugin
 Saved screenshot image to screenshot_192.168.1.177_2020-06-06_21:57:53.bmp
 ```
 
-# USBTMC
 
-In the USB world, there are base USB speficiations, which detail everything from the mechanical properties
-of connectors to overall protocol used to exchange data. And then there are numerous additional class
-specifications that describe how devices of a certain class are supposed to exchange data with a host.
-
-The [USB Test and Measurment Class Specification](xxx) is one of those device classes.
-
-It defines a number of endpoints (virtual data channels) that must be used to transmit and receive data, 
-message types, packet headers, and how data needs to be encapsulated inside those packets.
-
-There is also a subclass that specifies the communication of  IEEE-488 traffic over USB.
-
-Almost all modern test and measurement equipment today has a USBTMC compatible USB port.
-
-# Linux and USBTMC
-
-There are plenty of Windows tools that allow one to control USBTMC devices, but Linux is a different story.
-It took a lot of googling around before I had a clear picture. Here's what I found. 
-
-In general, there are 2 major ways to implement a specific USB class driver under Linux:
-
-* a dedicated class driver that's part of the Linux kernel
-
-    There is a usbtmc driver for the Linux kernel. Or better, there are a bunch of them: 
-    a very old one that's not compatible with anything recent, one that was the official one
-    until sometime 2018 which didn't have an API version, but let's call it version 1. And
-    Version 2, backwards compatible with version 1, that can be found in kernels 4.20 and later.
-
-* a user mode driver that uses generic USB device driver
-
-    User mode drivers are typically implemented by using the `libusb` library.
-
-    A major disadvantage of user mode drivers is that they are specific to a particular application.
-    Sigrok is a good example of an application that has [its own USBTMC user mode driver](https://sigrok.org/gitweb/?p=libsigrok.git;a=blob;f=src/scpi/scpi_usbtmc_libusb.c).
-
-A library like PyVISA, which hides the details of all kinds of interfaces, can use either the kernel driver
-or a [user mode driver](https://github.com/pyvisa/pyvisa-py/blob/master/pyvisa-py/protocols/usbtmc.py).
-
-# The Linux USBTMC Kernel Drivers
-
-When you google for USBTMC kernel drivers, you can find articles and source code, but very often things
-will just not work.
-
-A good example is the ["USBTMC Kernel Driver Documentation"](https://www.keysight.com/upload/cmc_upload/All/usbtmc.htm?&cc=US&lc=eng) 
-article on the Keysight website. It's the number one result for a "linux usbtmc" search on Google, yet
-the information in it is almost completely obsolete. 
-The most basic example works, but the moment IOCTL calls or usbtmc specific struct come into play, the code 
-doesn't compile. It turns out that this article is about a kernel driver that was never part of the Linux 
-kernel, but one that was[^2] downloadable from the Agilent (now Keysight) website. 
-
-[^2]: "... *was* downloadable ..." because that the link to that code is dead.
-
-There are 2 USBTMC drivers that are officially part of the Linux kernel: version 1 (all kernels before 4.20),
-and version 2 (everything 4.20 and later). Version 2 is backwards compatible with version 1.
-
-The most important differences:
-
-* Version 1 has a fixed 5s timeout. Version 2 defaults to 5s, but the timeout is programmable.
-
-    This is important for my Siglent scope because request for waveforms larger than 2.8M samples
-    require a larger than 5s preparation time.
-
-* Internal buffer of 2048 vs 4096 bytes
-
-    Large USB bulk read requests get split up into smaller request with a size of this buffer.
-    In theory, this is something that's entirely hidden from the user (who can issue read request
-    for pretty much any size), but it turns out that bugs in the Siglent USBTMC USB device driver 
-    result complete hang of this driver when reads are issued that are almost the size of this
-    internal buffer size.
-* More efficient read transfers
-* Support for USBTMC-USB488 features
-* Expanded support for the IVI library 
-* A way to query the kernel API version 
-
-    The original driver didn't support a way to detect the driver version.
-
-# Linux, USBTMC, and the Siglent SDS2304X
-
-Once I figured out that my Siglent oscilloscope only supports VXI-11 and not TCP/IP sockets or telnet,
-controlling via Ethernet was relatively painless.
-
-Getting it to work using USBTMC was a different story.
-
-I first tested it on Windows 10, with the [National Instruments NI-VISA driver](https://www.ni.com/en-us/support/downloads/drivers/download.ni-visa.html#346210)
-and Siglent's [EasyScopeX](https://siglentna.com/service-and-support/firmware-software/digital-oscilloscopes/), and
-it worked fine.
-
-However, I ran into issues with both using the usbtmc kernel driver (version 1) directly and with
-PyVisa.
-
-Eventually, I had to turn to Wireshark to observe exactly what was going on.
-
-Let's first look at my test program:
-
-```c
-/* usbtmc_trivial.c */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <fcntl.h>
-#include <unistd.h>
-
-// The scope has a maximum waveform capture size of 140M.
-int buffer_size = 150000000;
-char *buffer;
-
-int query(int file, char *cmd)
-{
-    printf("Cmd: %s\n", cmd);
-    write(file,cmd,strlen(cmd));
-
-    int bytes_fetched=read(file,buffer,buffer_size);
-    printf("Size: %d\n",bytes_fetched);
-    buffer[bytes_fetched]=0;
-    printf("Response:\n%s\n",buffer);
-
-    return bytes_fetched;
-}
-
-int main(int argc, char **argv)
-{
-    buffer = (char *)malloc(buffer_size);
-
-    int tmc_file=open("/dev/usbtmc0",O_RDWR);
-    if(tmc_file>0)
-    {
-        query(tmc_file, "*IDN?");
-        query(tmc_file, "C1:WF? DESC");
-    }
-}
-```
-
-When you run this, everything is great:
-```
-tom@thinkcenter:~/projects/siglent_remote/usbtmc$ sudo ./usbtmc_trivial 
-Cmd: *IDN?
-Size: 49
-Response:
-*IDN SIGLENT,SDS2304X,SDS2Xxxxxxxxxx,1.2.2.2 R19
-
-Cmd: C1:WF? DESC
-Size: 369
-Response:
-C1:WF DESC,#9000000346WAVEDESC
-```
-
-The `WF? DESC` comment returns a struct with all information about the waveform that was captured,
-but not the waveform itself.
-
-To do that, we need to add the following line to the case:
-
-```c
-        ...
-        query(tmc_file, "C1:WF? DESC");
-        query(tmc_file, "C1:WF? DAT2");             // Fetch actual waveform data
-        ...
-```
-
-Run this, and here's the result:
-```
-tom@thinkcenter:~/projects/siglent_remote/usbtmc$ sudo ./usbtmc_trivial_hang 
-Cmd: *IDN?
-Size: 49
-Response:
-*IDN SIGLENT,SDS2304X,SDS2Xxxxxxxxxx,1.2.2.2 R19
-
-Cmd: C1:WF? DESC
-Size: 369
-Response:
-C1:WF DESC,#9000000346WAVEDESC
-
-Cmd: C1:WF? DAT2
-Size: -1
-Response:
-```
-
-The `WF? DAT2` request timed out. But it gets better: if you now issue any USBTMC query to the scope, every single
-request time out as well. And it will stay that way until your power cycle the scope! 
-
-I checked out the behavior with [Wireshark](https://www.wireshark.org/) and found the Linux USBTMC driver splits
-up the data request into request with a maximum size of 2048 (in line with 2048 buffer that gets allocated
-in the USBTMC driver), and that USBTMC driver inserts messages for each additonal chunk. Windows doesn't have
-that behavior.
-
-I found 2 ways around that:
-
-* Split up the waveform into chunks of less than 2048 bytes by using the `WFSU` command.
-
-    This requires 2 SCPI calls per fetch of ~2000 bytes, which adds a considerable amount 
-    of overhead.
-
-* Issue consecutive reads to the TMC driver where each read request 2032 bytes or less.
-
-    Why 2032 and not 2048? Beats me! Requesting 2033 is sufficient to trigger then denial
-    of service behavior mentioned earlier!
-
-```
-XXX screenshot.
-```
-
-Here's the version that issues a bunch of reads with a size of 2032:
-
-```c
-void query(int file, char *cmd)
-{
-    printf("Cmd: %s\n", cmd);
-    write(file,cmd,strlen(cmd));
-
-    int max_bytes_per_req = 2032;
-    int i = 0;
-    int bytes_fetched, bytes_requested;
-    do{
-        bytes_requested = MIN(max_bytes_per_req, buffer_size-i);
-        bytes_fetched = read(file, buffer+i, bytes_requested);
-        printf("Size: %d\n",bytes_fetched);
-        i += bytes_fetched;
-    } while(bytes_fetched == bytes_requested);
-
-    buffer[i]=0;
-    printf("Response:\n%s\n",buffer);
-}
-```
-
-```
-tom@thinkcenter:~/projects/siglent_remote/usbtmc$ sudo ./usbtmc_multiple_reads 
-Cmd: *IDN?
-Size: 49
-Response:
-*IDN SIGLENT,SDS2304X,SDS2Xxxxxxxxxx,1.2.2.2 R19
-
-Cmd: C1:WF? DESC
-Size: 369
-Response:
-C1:WF DESC,#9000000346WAVEDESC
-Cmd: C1:WF? DAT2
-Size: 2032
-Size: 2032
-Size: 2032
-Size: 2032
-Size: 2032
-Size: 2032
-Size: 1832
-Response:
-C1:WF DAT2,#9000014000�
-```
-
-# Siglent udev rules
-
-This is the rule that made it work for me. Change "tom" to your own user name...
-
-```
-SUBSYSTEMS=="usb", ACTION=="add", ATTRS{idVendor}=="f4ec", ATTRS{idProduct}=="ee3a", OWNER="tom", MODE="0660"
-```
-
-# Update Ubuntu 18.04 to newer kernel
-
-* upgrade to later kernel: https://ubuntu.com/kernel/lifecycle
-
-```
-# This is the recommend way to upgrade. But after this, mouse and keyboard didn't work
-# anymore
-sudo apt-get install --install-recommends linux-generic-hwe-18.04 xserver-xorg-hwe-18.04 
-# This solved the mouse and keyboard issue...
-sudo apt-get install xserver-xorg-input-all
-```
-
-* Compile on Ubuntu 18.04.
-    * Does not compile with 16.04.
-* Change source code to point to local shaders in ./src/glscopeclient/main.c: ...chdir...
-*
 
 # Communication Standards for Test and Measurement Equipment
 
@@ -616,29 +380,6 @@ sudo apt-get install xserver-xorg-input-all
         The goal is to fake a Siglent waveform generator.
 
     * Structure:
-
-- SCPILxiTransport : public SCPITransport       (Similar to SCPISocketTransport)
-
-```
-
-/home/tom/.local/lib/python3.7/site-packages/vxi11/rpc.py: TCPClinet.__init__:
-
-    calls pmap.get_port
-
-/home/tom/.local/lib/python3.7/site-packages/vxi11/rpc.py: TCPClinet.get_port:
-
-    mapping parameters: (prog = 395183, vers = 1, IPPROTO_TCP:6, 0)
-
-    Per VXI11 spec: Core Channel = RPC program number 395183 / 0x607af, version 1, TCP
-
-/home/tom/.local/lib/python3.7/site-packages/vxi11/rpc.py: make_call:
-    Packs all RPC parameters 
-        First default parameters (start_call)
-        Then specific parameters (args)
-    Does the RPC call
-    Unpacks the parameters
-    result is 9009: port number
-```
 
     * [Discussion about an RPC VXI-11 call with C code](https://forums.ni.com/t5/Instrument-Control-GPIB-Serial/Does-VISA-have-VXI-11-Server-implement-to-serve-the-interrupt/td-p/546919?profile.language=en)
     * [VXI11 Ethernet Protocol for Linux](http://optics.eee.nottingham.ac.uk/vxi11/)
@@ -700,14 +441,7 @@ sudo apt-get install xserver-xorg-input-all
 
 So the overall communications stack looks like this:
 
-There are standardized commands that are understood by all devices due to SCPI. The syntax of these commands follows the
-IEE 488.2 standards. The commands are issued by a program through the VISA API. The VISA API can work with pretty much
-any low level communication protocol (VX-11/HiSLIP/USBTMC/...). These low level protocols sit on top of generic communication
-standards such as TCP/IP, USB, GPIB etc.
-
 # Siglent
-
-All Siglent scopes are using SCPI commands. However, it seems like different Siglnet scope support different low-level transport protocols.
 
 * SDS 2304X
 
@@ -730,18 +464,6 @@ All Siglent scopes are using SCPI commands. However, it seems like different Sig
     * [Code Example on Siglent website](https://siglentna.com/application-note/python-sdg-x-basics-lan/)
 
 
-# VISA
-
-VISA is the most generic API, so let's use that one.
-
-# Low Level Connection to Siglent Scope through Ethernet
-
-* Plug in Ethernet cable
-* Power cycle
-* Utility -> I/O (Page 2) -> Lan
-    * DHCP: Enable
-    * Check (and write down) IP address
-
 # Github Repo
 
 https://github.com/tomverbeure/siglent_remote
@@ -754,28 +476,6 @@ pip3 install python-usbtmc
 
 (See http://alexforencich.com/wiki/en/python-usbtmc/readme)
 
-# Connecting with Python using VXI-11
-
-```
-pip3 install python-vxi11
-```
-
-Python code:
-
-```python
-#! /usr/bin/env python3
-
-import vxi11
-
-instr = vxi11.Instrument("192.168.1.176")
-print(instr.ask("*IDN?"))
-```
-
-Result:
-
-```
-*IDN SIGLENT,SDS2304X,xxxxxxxxxxxxxx,1.2.2.2 R10
-```
 
 Resources:
 
