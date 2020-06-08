@@ -43,9 +43,9 @@ Bus 001 Device 002: ID 8087:0a2b Intel Corp.
 Bus 001 Device 006: ID 0403:6014 Future Technology Devices International, Ltd FT232H Single HS USB-UART/FIFO IC
 ```
 
-The devices I care about is the Future Technology Devices International (FTDI) one.
+The device I care about is the Future Technology Devices International (FTDI) one: it's used it many JTAG dongles.
 
-`0403:6014` is the vendor_id/device_id combo of our device. Chances are that OpenOCD already knows about this device
+`0403:6014` is the vendor_id/device_id combo of our USB device. Chances are that OpenOCD already knows about this device
 and that there is a custom script for it that configures everything correctly.
 
 I have OpenOCD installed under `/opt/openocd`, so let's see if we can find the right interface script for our device:
@@ -73,8 +73,10 @@ Looking closer, my device says "Model: JTAG SMT2", so let's use `ftdi/digilent_j
 Device permissions are something I always have problems with. To bypass that, I simply run things as root:
 
 ```bash
-> sudo /opt/openocd/bin/openocd -f /opt/openocd/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg
-
+> sudo /opt/openocd/bin/openocd \
+             -f /opt/openocd/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg
+```
+```
 Open On-Chip Debugger 0.10.0+dev-00410-gf0767a3 (2018-05-15-21:46)
 Licensed under GNU GPL v2
 For bug reports, read
@@ -84,14 +86,16 @@ Info : Listening on port 4444 for telnet connections
 Error: An adapter speed is not selected in the init script. Insert a call to adapter_khz or jtag_rclk to proceed.
 ```
 
-Apparently, an JTAG clock speed must always be specified for this dongle. Let's do just that. 
+Apparently, a JTAG clock speed must always be specified for this dongle. Let's do just that. 
 
 We can do this via our own custom configuration script, or we can simply add this command directly on the command line:
 
 ```bash
-> sudo /opt/openocd/bin/openocd -f /opt/openocd/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg \
+> sudo /opt/openocd/bin/openocd \ 
+             -f /opt/openocd/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg \
              -c "adapter_khz 1000"
-
+```
+```
 Open On-Chip Debugger 0.10.0+dev-00410-gf0767a3 (2018-05-15-21:46)
 Licensed under GNU GPL v2
 For bug reports, read
@@ -111,9 +115,11 @@ in procedure 'ocd_bouncer'
 A Xilinx Spartan-6 FPGA has a JTAG port:
 
 ```bash
-> sudo /opt/openocd/bin/openocd -f /opt/openocd/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg \ 
+> sudo /opt/openocd/bin/openocd \
+             -f /opt/openocd/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg \ 
              -c "adapter_khz 1000; transport select jtag"
-
+```
+```
 Open On-Chip Debugger 0.10.0+dev-00410-gf0767a3 (2018-05-15-21:46)
 Licensed under GNU GPL v2
 For bug reports, read
@@ -133,7 +139,7 @@ Warn : gdb services need one or more targets defined
 
 SUCCESS!
 
-OpenOCD has been able to succesfully access send something through the JTAG interface, and, even better, it has
+OpenOCD has been able to succesfully access and send something through the JTAG interface, and, even better, it has
 even been able to scan out device ID `0x44002093`, which it understands to be a Xilinx device!
 
 It has also launched a telnet service on port 4444. We can use that to issue all kinds of OpenOCD commands through
@@ -162,10 +168,12 @@ issue commands that are specific to this product.
 Let's restart OpenOCD and load the Spartan-6 device file as well:
 
 ```bash
-> sudo /opt/openocd/bin/openocd -d -f /opt/openocd/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg -f /opt/openocd/share/openocd/scripts/cpld/xilinx-xc6s.cfg -c "adapter_khz 1000"
-
-
-
+> sudo /opt/openocd/bin/openocd -d \
+             -f /opt/openocd/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg \
+             -f /opt/openocd/share/openocd/scripts/cpld/xilinx-xc6s.cfg \
+             -c "adapter_khz 1000"
+```
+```
 Open On-Chip Debugger 0.10.0+dev-00410-gf0767a3 (2018-05-15-21:46)
 Licensed under GNU GPL v2
 For bug reports, read
@@ -181,6 +189,8 @@ Warn : gdb services need one or more targets defined
 ```
 
 OpenOCD know reports that it has found an `xc6s`, or Spartan 6, JTAG TAP controller.
+
+Feel free to skip the next section if only only have a Xilinx compatible JTAG dongle...
 
 # Altera USB Blaster Compatible JTAG Dongle 
 
@@ -199,8 +209,10 @@ I have 3 Altera USB-Blaster clones. They all have the same `09fb:6001` vendor ID
 can all use the same OpenOCD script:
 
 ```bash
-> sudo /opt/openocd/bin/openocd -f /opt/openocd/share/openocd/scripts/interface/altera-usb-blaster.cfg
-
+> sudo /opt/openocd/bin/openocd \
+             -f /opt/openocd/share/openocd/scripts/interface/altera-usb-blaster.cfg
+```
+```
 Open On-Chip Debugger 0.10.0+dev-00930-g09eb941 (2019-09-16-21:01)
 Licensed under GNU GPL v2
 For bug reports, read
@@ -216,21 +228,21 @@ Warn : AUTO auto0.tap - use "jtag newtap auto0 tap -irlen 2 -expected-id 0x44002
 Error: IR capture error at bit 2, saw 0x3FFFFFFFFFFFFFF5 not 0x...3
 Warn : Bypassing JTAG setup events due to errors
 Warn : gdb services need one or more targets defined
-
 ```
 
 This was much easier than for the Xilinx dongle: no need to specify a clock speed or transport protocol.
 
 # Loading the bitstream
 
-I'll load [this LED blink bitstream](https://github.com/q3k/chubby75/blink/ise/top.bit).
+I'll load [this LED blink bitstream](https://github.com/q3k/chubby75/blob/master/rv901t/blink/ise/top.bit).
 
 ```bash
 > sudo /opt/openocd/bin/openocd \ 
-            -f /opt/openocd/share/openocd/scripts/interface/altera-usb-blaster.cfg \
-            -f /opt/openocd/share/openocd/scripts/cpld/xilinx-xc6s.cfg \
-            -c "adapter_khz 1000; init; xc6s_program xc6s.tap; pld load 0 ./ise/top.bit ; exit"
-
+             -f /opt/openocd/share/openocd/scripts/interface/altera-usb-blaster.cfg \
+             -f /opt/openocd/share/openocd/scripts/cpld/xilinx-xc6s.cfg \
+             -c "adapter_khz 1000; init; xc6s_program xc6s.tap; pld load 0 ./ise/top.bit ; exit"
+```
+```
 Open On-Chip Debugger 0.10.0+dev-00930-g09eb941 (2019-09-16-21:01)
 Licensed under GNU GPL v2
 For bug reports, read
