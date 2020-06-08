@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Pano Logic G1: Works Have Started"
-date:   2018-05-11 00:00:00
+date:   2018-05-11 00:00:00 -1000
 categories:
 ---
 

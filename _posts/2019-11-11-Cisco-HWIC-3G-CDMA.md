@@ -1,20 +1,12 @@
 ---
 layout: post
 title: Reverse Engineering the Cisco HWIC-3G-CDMA
-date:   2019-11-11 00:00:00 -0700
+date:   2019-11-11 00:00:00 -1000
 categories:
 ---
 
-* [The Cisco HWIC-3G-CDMA PCB](#the-cisco-hwic-3g-cdma-pcb)
-* [An Annotated Overview of the Board](#an-annotated-overview-of-the-board)
-* [Powering Up the Board](#powering-up-the-board)
-* [JTAG Connector](#jtag-connector)
-* [And Life There Was!](#and-life-there-was)
-* [LED Blinky](#led-blinky)
-* [The Curious Case of Component C9059](#the-curious-case-of-component-c9059)
-* [Bitstream Configuration](#bitstream-configuration)
-* [Block Diagram: Putting It All Together](#block-diagram-putting-it-all-together)
-* [Low Level Connections](#low-level-connections)
+* TOC
+{:toc}
 
 # The Cisco HWIC-3G-CDMA PCB
 

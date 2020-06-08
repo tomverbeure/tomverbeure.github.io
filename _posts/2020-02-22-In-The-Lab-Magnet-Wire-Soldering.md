@@ -1,9 +1,14 @@
 ---
 layout: post
 title: In The Lab - Soldering Prototypes with Enamel Magnet Wire
-date:  2020-02-22 00:00:00 -0700
+date:  2020-02-22 00:00:00 -1000
 categories:
 ---
+
+* TOC
+{:toc}
+
+# Introduction
 
 I'm not a huge fan of breadboarding. For many, it's been the tried and true way to quickly hack a circuit
 together, but somehow it rubs me the wrong way: it's too impermanent, I'm terrible at arranging the 

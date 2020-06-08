@@ -1,9 +1,13 @@
 ---
 layout: post
 title:  "Moving Away from Verilog - A First Look at SpinalHDL"
-date:   2018-08-11 22:00:00 -0700
+date:   2018-08-12 00:00:00 -1000
 categories: RTL
 ---
+
+* TOC
+{:toc}
+
 
 # Introduction
 
@@ -21,9 +25,7 @@ The biggest problem by far is Verilog. Especially the verbosity in the way modul
 
 We've all been [here](https://github.com/tomverbeure/panologic/blob/57d7f782f2c6061ea81fd954507cf2bba4a76c9e/bringup/rtl/soc.v#L32-L83):
 
-```Verilog
-
-
+```verilog
     wire        mem_cmd_valid;
     wire        mem_cmd_ready;
     wire        mem_cmd_instr;
@@ -87,7 +89,7 @@ Verilog mode will analyze your code and expand some magic words in strategically
 
 The net result is something like this:
 
-```Verilog
+```verilog
 module autosense (/*AUTOARG*/
                   // Outputs
                   out, out2,
@@ -222,7 +224,7 @@ The description below is for a slightly different example though, with reduce fu
 
 The [code](https://github.com/tomverbeure/SpinalTimer/blob/master/src/main/scala/mylib/Timer.scala) for the generic timer:
 
-```Scala
+```scala
 package mylib
 
 import spinal.core._
@@ -274,7 +276,7 @@ case class Timer(width : Int) extends Component{
 
 The first part is really pretty straightfoward.
 
-```Scala
+```scala
 case class Timer(width : Int) extends Component{
 ```
 
@@ -282,7 +284,7 @@ The parameters of the class are similar to Verilog parameters. In this case,
 it's a simple integer, but for more complex designs, it's usually some kind of struct with many parameters. This makes
 it very easy to pass parameters around and change some of them as needed. One could also create recursive hardware.
 
-```Scala
+```scala
   val io = new Bundle{
     val tick      = in Bool
     val clear     = in Bool
@@ -304,7 +306,7 @@ create a Bundle subclass that's called [`Apb3`](https://github.com/SpinalHDL/Spi
 
 The implementation of the timer is straightforward as well:
 
-```Scala
+```scala
   val counter = Reg(UInt(width bits))
   when(io.tick && !io.full){
     counter := counter + 1
@@ -341,7 +343,7 @@ This method doesn't add new hardware to the Timer module itself, but it returns 
 the `io` bundle and creates some glue logic for the interface hardware. It connects this glue logic to bus registers that
 are created by the bus factory object.
 
-```Scala
+```scala
   def driveFrom(busCtrl : BusSlaveFactory,baseAddress : BigInt)(ticks : Seq[Bool],clears : Seq[Bool]) = new Area {
 ```
 
@@ -351,7 +353,7 @@ in this class to tie itself into this bus, with some registers that has a certai
 
 That's what happens here:
 
-```Scala
+```scala
     val ticksEnable  = busCtrl.createReadWrite(Bits(ticks.length bits),baseAddress + 0,0) init(0)
     ...
     io.tick  := (ticksEnable  & ticks.asBits ).orR
@@ -368,7 +370,7 @@ It is the task of the `busCtrl` factory object to gather the information of all 
 
 With the core Timer in place, we can now build [a Timer that uses an APB bus](https://github.com/tomverbeure/SpinalTimer/blob/master/src/main/scala/mylib/ApbTimer.scala):
 
-```Scala
+```scala
 package mylib
 
 import spinal.core._
@@ -436,7 +438,7 @@ If all goes well, there will now be an `ApbTimer.v` Verilog file.
 
 The generated Verilog isn't exactly what you'd write up yourself, but it matches the original code pretty well:
 
-```Verilog
+```verilog
 module Timer (
       input   io_tick,
       input   io_clear,
@@ -466,13 +468,13 @@ There's some low hanging fruit for improvement.
 
 This code:
 
-```Verilog
+```verilog
   assign io_full = _zz_1;
   assign _zz_1 = ((counter == io_limit) && io_tick);
 ```
 
 can easily be simplified to:
-```Verilog
+```verilog
   assign io_full = ((counter == io_limit) && io_tick);
 ```
 
@@ -489,7 +491,7 @@ be a nuisance. For my use of SpinalHDL as a hobbyist, I don't think it will be a
 
 Here are some parts of the generated ApbTimer Verilog code:
 
-```Verilog
+```verilog
 module ApbTimer (
       input  [7:0] io_apb_PADDR,
       input  [0:0] io_apb_PSEL,
@@ -518,7 +520,7 @@ module ApbTimer (
 
 Yay for not having to type all those signals myself!
 
-```Verilog
+```verilog
   assign io_apb_PREADY = _zz_6;
   ...
   assign _zz_6 = 1'b1;
@@ -533,7 +535,7 @@ last 2 lines is up for debate. (Probably not?)
 
 Finally, let's look at `_zz_1`:
 
-```Verilog
+```verilog
   Timer timer_1 (
     ...
     .io_limit(_zz_1),
