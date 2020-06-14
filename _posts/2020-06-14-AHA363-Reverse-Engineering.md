@@ -201,7 +201,6 @@ And here's the MAX II CPLD:
 When you're lucky again, the PCB has vias underneath the FPGA that map directly to the balls on the FPGA package. 
 
 When your PCB doesn't have this, you may be forced to desolder the FPGA of one of your boards at one point or another. 
-(But be sure that you first read below about various JTAG boundary scan options!)
 
 In the case of the AHA363, there is a pretty decent grid of vias underneath the FPGA, but it's still a bit of a 
 struggle to find the correlation between the vias and the ball on the package. 
