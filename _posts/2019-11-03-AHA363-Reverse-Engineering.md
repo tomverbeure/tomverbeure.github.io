@@ -15,9 +15,9 @@ The [FPGA board hack](https://hackaday.io/project/159853-fpga-board-hack) projec
 a bunch of commercially available PCBs that have an FPGA in them. Most of them haven't really been 
 comprehesively reverse engineered.
 
-I was particularly attracted to the Comtech AHA363PCIE0301G (AHA363): FPGA development boards with PCIe 
-support are never cheap. It'd be fantastic if it could be repurposed as a general FPGA PCIe accelerator
-board.
+FPGA development boards with PCIe support are never cheap, so I was particularly attracted to the 
+Comtech AHA363PCIE0301G (AHA363).  It'd be fantastic if it could be repurposed as a general FPGA PCIe 
+accelerator board.
 
 The AHA363 is listed as having an Arria GX FPGA, size unknown. Its real purpose is a gzip compression 
 and decompression accelerator, a common operation in data centers that need to serve  gzip compressed 
@@ -68,20 +68,24 @@ a regular PC. You need to remove that bracket first.
 After doing that and plopping the board (with the heat sink!) into my regular Linux PC, `lspci` greeted
 me with the following message:
 
+XXX To be added XXX
+
 Success! The board is working!
 
-The first step of my reverse engineering process is to take ponehotographi at close range of all the 
+The first step of my reverse engineering process is to take photographs at close range of all the 
 components and connectors. In most cases, the x2 optical zoom option of my iPhone 7 Plus is sufficient 
-for that, but sometimes I use the [iPhone adapter on my microscope](/tools/2018/04/29/stereozoom4-iphone-adapter.html).
+for that, but sometimes I use the [iPhone adapter on my microscope](/tools/2018/04/30/stereozoom4-iphone-adapter.html).
 My eye sight has been declining, and photos make it so much easier to identify the markings of various 
 components. 
 
 I also annotate these photos with the component names, connector pins values etc. This makes it much easier 
 when needing to find your bearings when probing things.
 
+![AHA363 Components Annotated]({{ "/assets/aha363/aha363_top_annotated.jpg" | absolute_url }})
+
 The PCB contains:
 
-* 1 EP1AGX90E FPGA
+* 1 Intel Arria GX EP1AGX90E FPGA
 * 2 AHA3610 gzip accelerator ASICs
 
     Other than some slide sets and marketing material, I could not find any technical datasheets about it.
@@ -89,6 +93,10 @@ The PCB contains:
 * 1 Spansion S29GL128P parallel flash
 
     Contains the FPGA bitstream that gets loaded in the FPGA at boot-up.
+
+    It's common for FPGA-based PCIe card to have parallel flash instead of the more commonly used serial
+    flash: parallel flash not only loads faster, but it also support multiple bitstream images in the same
+    flash and selecting between them. Intel FPGAs don't support that with serial flash.
 
 * 1 Altera MAX II EPM570F100 CPLD
 
@@ -105,11 +113,9 @@ The PCB contains:
     with other regulators doing the more detailed work.
 
 * 4 Enperion Power Convertors
-
     * 2x 6A EN5365QI for 1.2V
     * 1x 6A EN5365QI for 2.5V
     * 1x 3A EN5335QI for 3.3V
-
 
 * 2 100MHz Xtal Oscillators
 
@@ -126,7 +132,6 @@ The PCB contains:
 One immediately notices that this board get pretty warm when plugged into the PC, even when it's not doing 
 anything useful.
 
-![AHA363 Components Annotated]({{ "/assets/aha363/aha363_top_annotated.jpg" | absolute_url }})
 
 
 # Probing, Test points, and Tented Vias
@@ -196,10 +201,10 @@ struggle to find the correlation between the vias and the ball on the package.
 
 Time to bring out an image editor (I use Inkscape because it works both on the Linux PC in my lab and on my
 Mac) and start annotating the vias with the most plausible pad name. This is not always 
-the linear process that's describe here: if first located some JTAG pins (see next step), then annotated those
+the linear process that's describe here: I first located some JTAG pins (see next step), then annotated those
 pins, then located some the clock (see down even further), annotated those etc.
 
-Eventually, I end up with something like this:
+Eventually, I ended up with something like this:
 
 ![CPLD Ball Diagram]({{ "/assets/aha363/via_annotation.png" | absolute_url }})
 
@@ -210,8 +215,7 @@ rows 17 and 18. This has been the case for all PCBs that I've dealt with: the vi
 balls on the BGA, but they fall right in between, so there's always an extra row or column right down
 the middle.
 
-
-# Bringing up JTAG 
+# The JTAG Connector
 
 Nothing is more important while reverse engineering an FPGA-based PCB than getting the JTAG interface to work, 
 since it's the prime method of loading bitstreams during FPGA development. In addition, FPGAs also have boundary 
@@ -249,6 +253,36 @@ the JTAG chain as well. We don't know anything of their pin-out, so that's a dea
 
 But if one of the pins is VREF, you can try checking if there's a connection between one of the 2 pins and VDD. 
 And, indeed, there is! And since there's now only unknown left, that one can be assigned to TDO.
+
+![JTAG Connector]({{ "/assets/aha363/jtag_connector.jpg" | absolute_url }})
+
+# Scanning the JTAG Scan Chain
+
+With the JTAG connector figured out, the next step is to get the scan chain working.
+
+That's obviously only possible when the board is powered up, but a PCIe card can have a potentially
+very complex power supply architecture: the PCIe connector has 12V, 3.3V and 3.3Vaux pins, and
+it's not yet clear which ones are used by this board.
+
+Luckily, instead of powering the board on a lab bench, there's a much simpler way: you plug it into
+a working machine! As luck would have it, I was able to save a very old Mac Pro from the dumpster and other
+than being slow, it works just fine.
+
+I soldered some wires from the AHA363 JTAG pins to a 10-pin connector with Intel USB-Blaster arrangement
+and ended up with this:
+
+![Mac Pro with AHA363 and JTAG]({{ "/assets/aha363/aha363_with_jtag_inside_mac.jpg" | absolute_url }})
+
+The Mac was able to boot up just fine (and ignored the AHA363 as expected).
+
+I fired up Quartus Programmer, and after pressing "Auto Detect", I was greeted with the following:
+
+![AHA363 JTAG Scan Chain]({{ "/assets/aha363/JTAG_scan_chain.png" | absolute_url }})
+
+Success!
+
+As expected, the 2 AHA363 are part of the JTAG chain.
+
 
 
 
