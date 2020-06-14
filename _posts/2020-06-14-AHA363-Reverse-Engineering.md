@@ -232,7 +232,7 @@ read by the IOs.
 Many FPGA based PCBs have their JTAG interface easily available, even on the final production board, since it's 
 often used as the main interface to program production firmware and bitstreams on the factory production line.
 
-The AHA363 has a prominent 10-pin connector that I expected to contain JTAGs pins, so the steps is to figure out 
+The AHA363 has a prominent 10-pin connector that I expected to contain JTAGs pins, so the next step is to figure out 
 how those pins are connected.
 
 * 4 of the 10 pins are connected to ground. They are all on the front (component) side of the PCB.
@@ -250,7 +250,7 @@ I was able to identify TCK and TMS quickly, but had no such luck for TDI and TDO
 The thing is that TDI and TDO are point-to-point, and they can be part of a chain. If the FPGA is in the middle 
 of a JTAG chain, then these pins on the FPGA package will not be connected to the connector. 
 
-So the next step is to check if TDI of the CPLD, and bingo: it goes straight to the JTAG connector!
+So the next step is to check the TDI pin of the CPLD, and bingo: it goes straight to the JTAG connector!
 
 I also confirmed that the TDO pin of the CPLD is connected to the TDI pin of the FPGA. 
 
@@ -267,19 +267,19 @@ And, indeed, there is! And since there's now only unknown left, that one can be 
 With the JTAG connector figured out, the next step is to get the scan chain working.
 
 That's obviously only possible when the board is powered up, but a PCIe card can have a potentially
-very complex power supply architecture: the PCIe connector has 12V, 3.3V and 3.3Vaux pins, and
+complex power supply architecture: the PCIe connector has 12V, 3.3V and 3.3Vaux pins, and
 it's not yet clear which ones are used by this board.
 
 Luckily, instead of powering the board on a lab bench, there's a much simpler way: you plug it into
 a working machine! As luck would have it, I was able to save a very old Mac Pro from the dumpster and other
-than being slow, it works just fine.
+than being slow, it just works.
 
 I soldered some wires from the AHA363 JTAG pins to a 10-pin connector with Intel USB-Blaster arrangement
 and ended up with this:
 
 ![Mac Pro with AHA363 and JTAG]({{ "/assets/aha363/aha363_with_jtag_inside_mac.jpg" | absolute_url }})
 
-The Mac was able to boot up just fine (and ignored the AHA363 as expected).
+The Mac was able to boot up fine (and ignored the AHA363 as expected).
 
 I fired up Quartus Programmer, and after pressing "Auto Detect", I was greeted with the following:
 
