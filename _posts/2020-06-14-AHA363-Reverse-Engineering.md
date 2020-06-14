@@ -175,7 +175,8 @@ much difficulty.
 
 The Arria GX product family is pretty old now, and not supported anymore by today's versions of Quartus. The 
 last official release with support was Quartus 13.0sp1, but that was only for the standard, commercial version. 
-The last 'free' release was Quartus 11.0. You can download it [here](FIXME).
+The last 'free' release was Quartus 11.0. You can download it 
+[here](https://www.intel.com/content/www/us/en/programmable/downloads/software/quartus-ii-we/110sp1.html).
 
 I'll use Quartus for a number of reasons:
 
