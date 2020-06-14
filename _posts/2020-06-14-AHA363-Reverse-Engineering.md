@@ -419,4 +419,6 @@ value that these are IOs are driving or the value that they are receiving.
 
 That's the subject of another post.
 
+# References
 
+* [My AHA363 Reverse Engineering Scrapbook on Github](https://github.com/tomverbeure/aha363)
