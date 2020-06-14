@@ -5,8 +5,8 @@ date:   2020-06-14 00:00:00 -0700
 categories:
 ---
 
-*All this work was done in November last year. I haven't worked on this since, but
-others have shown interest in picking this up, so it's about time this get
+*All this work was done in November last year. I haven't worked on it since, but
+others have shown interest in picking this up, so it's about time this gets
 thrown out in the open.*
 
 * TOC
