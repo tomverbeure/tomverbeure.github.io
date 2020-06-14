@@ -1,9 +1,15 @@
 ---
 layout: post
 title: Reverse Engineering the Comtech AHA363 PCIe Gzip Accelerator Board
-date:   2019-11-03 00:00:00 -0700
+date:   2020-06-14 00:00:00 -0700
 categories:
 ---
+
+*All this work was done in November last year. I haven't worked on this since, but
+others haven't shown interest in picking this up.*
+
+* TOC
+{:toc}
 
 # The Start of a Journey
 
@@ -281,8 +287,136 @@ I fired up Quartus Programmer, and after pressing "Auto Detect", I was greeted w
 
 Success!
 
-As expected, the 2 AHA363 are part of the JTAG chain.
+As expected, the 2 AHA363 are part of the JTAG chain. This will soon give me major problems...
 
+# Saving the Parallel Flash Contents
 
+In the previous image, you can see how the Max-II CPLD has the 128Mbit parallel flash
+connected to it.
+
+We're probably going to messing around with the contents of the flash by programming a new
+bitstream into it, so now is a good time to make a backup of that.
+
+In Quartus Programmer, select the "Examine" flag next to "CFI_128Mb" and press the "Start" button.
+
+![CFI_128Mb Examine]({{ "/assets/aha363/CFI_128Mb_examine.png" | absolute_url }})
+
+Now right click on `untitled1.pof` and do "save File".
+
+![CFI_128Mb untitled1.pof]({{ "/assets/aha363/CFI_128Mb_untitled1.pof.png" | absolute_url }})
+
+# Reprogramming the Parallel Flash File
+
+You won't need this yet, but to reprogram the flash:
+
+* First Erase the flash memory
+
+    `CFG_128Mb -> Erase -> Start`
+
+* Reprogram the flash file 
+
+    `CFG_128Mb -> Right click: Change File (NOT Add File!!!) -> Select .pof file -> Start`
+
+# Powering from the Bench
+
+It's really hard to reverse engineer a board when it's sitting inside a PC enclosure!
+
+The next step is to detect the JTAG chain while the board is sitting alone on the bench.
+
+We know that that power comes in through the PCIe connector, so we could solder some wire
+on there. But we also want to be able to still plug in the board into a working PC.
+
+Wouldn't it be great if we had a female PCIe connector?
+
+Well... I didn't have that in my parts kit, but I did have an old, broken motherboard! A few
+minutes of Dremel action later, I had this:
+
+![Motherboard Destroyed]({{ "/assets/aha363/motherboard_destroyed.jpg" | absolute_url }})
+
+And a short PCIe connector!
+
+![AHA363 Powered on the Bench]({{ "/assets/aha363/aha363_powered_on_bench.jpg" | absolute_url }})
+
+I was lucky with the power supply situation: the 3.3V and 3.3Vaux pins of the PCIe connector
+aren't going anywhere on the PCB, so the whole PCB is only powered by the 12V.
+
+So all I had to do was wire up 12V pins on the female PCIe connector.
+
+And once powered up, the JTAG chain was still working fine!
+
+# The Problem of Loading a New Serial Bitstream
+
+When reverse engineering an FPGA board, creating tiny designs to verify assumptions about
+pinout and then loading that bitstream into the FPGA through JTAG is essential.
+
+This normally happens by shifting in a so-called SOF file.
+
+But remember how the JTAG scan chain contains 4 devices: a Max-II CPLD, the Arria GX that
+we're interested in, and the 2 AHA363 chips.
+
+One way or the other, I was not able to load an SOF file into the FPGA. The SOF would
+shift in correctly, but soon after the FPGA would receive a reset from the CPLD.
+I tried forever to make it work and it just didn't...
+
+# Decoding a POF file and Creating a New One
+
+The alternative is to reprogram the parallel flash of the FPGA with the desired bitstream.
+But for that, you need to know the layout of this parallel flash. 
+
+The POF files contains multiple segments with different kinds of information. If you know
+the contents of these segments, you can create a new POF file yourself and load that
+into the FPGA. 
+
+The problem was how to get that information out of a POF file?
+
+I found [a document online](http://www.pldtool.com/pdf/fmt_pof.pdf) that describes the POF file format!
+It's only 2 pages, and refers to the original Altera MAX CPLD devices, so it's probably more than
+20 years old. But it's better than nothing.
+
+![POF File Format]({{ "/assets/aha363/pof_file_format.png" | absolute_url }})
+
+With that information, I could write 
+[a POF disassembly tool](https://github.com/tomverbeure/aha363/blob/master/tools/pof_tool.py).
+
+When I execute this tool on the bitstream that I dumped from the board earlier, I get 
+[a file with all the different chunks](https://github.com/tomverbeure/aha363/blob/master/bitstreams/orig_bitstream.info).
+
+But most important piece of information is this:
+
+```
+==============================
+Tag: 26 (Flash Chunks <unofficial>)
+Length: 124 (0x0000007c)
+Field 0: 0x00ff0000 (16711680)
+Field 1: 0x03800000 (58720256)
+Field 2: 0x00010000 (65536)
+Content:
+mCFI_128Mb 00000000 08000000
+mPage_0 00000000 00D90000
+mPage_1 00800000 00D90000
+oOPTION_BITS 00FF0000 00000408
+```
+
+This shows where major pieces of the POF file are located.
+
+Armed with that information, I was able to create 
+[a `.cof` file](https://github.com/tomverbeure/aha363/blob/master/quartus/aha373.cof): a configuration
+file for the Quartus Convert Programming File tool that is used to convert a .sof file into a .pof file.
+
+I was now able to flash a new bitstream info the parallel flash! A major success!
+
+# End of Part 1
+
+Unfortunately, it didn't get me anywhere interesting: as soon as I load some new bitstream the
+board refuses to work. I suspect that some FPGA IOs are controlling the voltage regulators on the
+board, and my code is clearly not doing that.
+
+I'm only able to recover the board back by plugging it into the Mac Pro and then reflashing
+the original firmware.
+
+There are other ways to proceed though: you can use JTAG to dump the direction of all FPGA IOs, the
+value that these are IOs are driving or the value that they are receiving. 
+
+That's the subject of another post.
 
 
