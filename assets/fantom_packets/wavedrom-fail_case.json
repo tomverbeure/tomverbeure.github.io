@@ -1,0 +1,12 @@
+{signal: [
+  {name: 'symbol',                wave: 'x.3..4..4..3..4..4..4..4..x...', data:[ "SOP", "DATA","DATA","SOP","DATA","DATA","DATA","DATA"]},
+  {name: 'packet_error',          wave: 'l.............................'},
+  {name: 'packet_decode_state',   wave: 'x.3..4..4..4..4..6..6..5..x...', data:[ "SOP", "DATA","DATA","DATA","DATA","CRC","CRC","EOP"]},
+  {name: 'packet_decode_valid',   wave: 'l.........................h..l'},
+],
+ edge:['a~b'],
+ config: {skin: 'narrow'}
+}
+
+
+

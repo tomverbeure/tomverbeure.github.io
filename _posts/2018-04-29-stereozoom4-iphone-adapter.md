@@ -1,9 +1,12 @@
 ---
 layout: post
 title:  "In the lab: Bausch and Lomb StereoZoom 4 with Phone Adapter"
-date:   2018-04-29 22:00:00 -0700
+date:   2018-04-30 00:00:00 -1000
 categories: tools
 ---
+
+* TOC
+{:toc}
 
 # The Microscope
 

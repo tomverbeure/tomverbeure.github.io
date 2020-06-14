@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "eeColor Color3: HDMI RX to HDMI TX is UP!!!"
-date:   2018-04-23 00:00:00 -0700
+date:   2018-04-23 00:00:00 -1000
 categories: 
 ---
 

@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Pano Logic: Acquisition of the Goods!"
-date:   2018-04-14 22:00:00 -0700
+date:   2018-04-15 00:00:00 -1000
 categories: Pano Logic
 ---
 
