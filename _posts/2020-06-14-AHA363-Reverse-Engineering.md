@@ -163,7 +163,7 @@ have their copper covered:
 ![Pano Logic G2 Auxiliary PCB Bottom]({{ "/assets/panologic-g2/annotated/7-Aux Board Bottom.JPG" | absolute_url }})
 
 The AHA363 board has an incredibly amount of test points, more than I've ever seen before. So that's fantastic. 
-But strangely enough, one of my board had tented vias and the other did not. I'm using the one with tented vias 
+But strangely enough, one of my boards had tented vias and the other did not. I'm using the one with tented vias 
 to record traces with my scope and logic analyzer to check dynamic behavior, and I'm using the other board to 
 probe out connections.
 
@@ -193,7 +193,7 @@ with the PCIe transceivers located at the bottom too.
 
 And here's the MAX II CPLD:
 
-![CPLD Ball Diagram]({{ "/assets/aha363/CPLD_footprint.png" | absolute_url }})
+![CPLD Ball Diagram]({{ "/assets/aha363/cpld_footprint.png" | absolute_url }})
 
 # Correlating FPGA IOs with the FPGA vias on the PCB
 
