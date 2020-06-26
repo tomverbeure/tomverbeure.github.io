@@ -234,6 +234,8 @@ Since there are 4 chips per channel, interleaving accesses is sufficient to stor
 
 * [TDS 420 Debug Serial Port](https://forum.tek.com/viewtopic.php?t=138100)
 
+* [TDS420 Options Possible?](https://forum.tek.com/viewtopic.php?t=140268)
+
 * [Upgrade Tektronix: FFT analyzer](http://videohifi17.rssing.com/chan-62314146/all_p49.html)
 
     Story about upgrading the CPU board from 8MB to 16MB on a TDS420 (not 420A?) and then FFT in the
@@ -242,6 +244,20 @@ Since there are 4 chips per channel, interleaving accesses is sufficient to stor
 * [Enabling FFT option in Tektronix TDS 540A oscilloscope](https://www.youtube.com/watch?v=iJt2O5zaLRE)
 
     Not very useful: enables FFT by copying NVRAM chip.
+
+* [tekfwtool](https://github.com/fenugrec/tekfwtool)
+
+    Dos and Windows only
+
+* [tektools](https://github.com/ragges/tektools)
+
+    Also has Linux and macOS support
+
+* [Utility to read/write memory on Tektronix scopes](https://forum.tek.com/viewtopic.php?t=137308)
+
+* [TDS420 with lost options](https://www.eevblog.com/forum/testgear/tds420-with-lost-options/)
+
+* [RS232 Connector](https://forum.tek.com/viewtopic.php?f=568&t=139046#p281757)
 
 # Documentation
 
