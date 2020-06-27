@@ -163,8 +163,15 @@ Some other options, not present on mine:
 
     In default configuration, the only math options are add, subtract, and invert.
 
-    The whole idea of glscopeclient is to move these kind of operations from the scope to the PC, so I don't
-    really care about being able to run an FFT on the scope itself.
+    This option adds a number of additional operations such as differentiation, integration,
+    and FFTs.
+
+    The idea of glscopeclient is to move these kind of operations from the scope to the PC, 
+    but it's still neat to be able to do that on the scope itself.
+
+    ![FFT](/assets/tds420a/fft.jpg)
+
+    *(Yes, this is a little teaser...)*
 
 * Option 05: Video Trigger Interface
 
