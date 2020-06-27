@@ -37,16 +37,16 @@ never seen anybody use them...
 # Yosys, the Swiss Army Knife of Digital Logic Manipulation
 
 Yosys is the star of the open source synthesis world. It initially rose to prominence with the release of 
-[Claire Wolff](http://www.clifford.at/)'s [Project IceStorm](http://www.clifford.at/icestorm/), in 
-which it's the synthesis component of an end-to-end open source RTL to bitstream flow for Lattice ICE40 FPGAs. 
+[Claire Wolff](http://www.clifford.at/)'s [Project IceStorm](http://www.clifford.at/icestorm/), where 
+it's the synthesis component of an end-to-end open source RTL to bitstream flow for Lattice ICE40 FPGAs. 
 
 But Yosys is much more than that.
 
 It's a swiss army knife of digital logic manipulation that takes in a digital design through one of its so-called frontends 
-(Verilog, blif, json, ilang, even VHDL for the commerical version), provides tons of different passes that transform 
+(Verilog, blif, json, ilang, Synopsys liberty, even VHDL for the commerical version), provides tons of different passes that transform 
 the digital logic one way or the other (e.g. flatten a hierarchy, remove redundant logic, map generic gates to 
 specific technology gates, check formal equivalence), and a whole bunch of backends that write the final design in 
-some desired format (e.g. Verilog, Spice, json etc.)
+some desired format (e.g. Verilog, Spice, json.)
 
 If you have a blob of digital logic and you need to perform some kind of transformation, chances are that Yosys
 already supports it.
@@ -54,7 +54,8 @@ already supports it.
 Yosys commands are relatively well documented, but, unfortunately, the documentation snapshots on 
 [the official Yosys website](http://www.clifford.at/yosys/documentation.html) are often woefully behind. 
 
-To get the latest and greatest list of commands, it's best to just compile Yosys and use the `help` function.
+To get the latest and greatest list of commands, it's best to just compile Yosys and use the `help` function
+from the command line of the tool.
 
 *The amount of information can be overwhelming (there are a large amount of commands that I don't quite understand
 myself), but, luckily, it's not necessary to understand most of the commands: in many cases, it's sufficient to use
@@ -73,7 +74,7 @@ simulation model of the digital design.
 Just like with Verilator, the simulation model is cycle-based. And just like Verilator, you need to provide a thin
 C++ wrapper that calls these classes to perform a step-by-step simulation.
 
-# CXXRTL's Origin
+# CXXRTL's Author
 
 CXXRTL is the brainchild of [@whitequark](https://twitter.com/whitequark), a prolific author and contributor to all
 kinds of [open source projects](https://github.com/whitequark).
