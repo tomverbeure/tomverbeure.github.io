@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Dirt Cheap USB Blaster Clones Considered Harmful"
-date:   2018-04-11 00:00:00 -0700
+date:   2018-04-11 00:00:00 -1000
 categories: 
 ---
 
