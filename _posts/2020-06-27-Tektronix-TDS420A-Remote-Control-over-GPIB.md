@@ -1,7 +1,7 @@
 ---
 layout: post
-title: Tektronix TDS 420A Review
-date:   2020-06-16 00:00:00 -0700
+title: Tektronix TDS420A Remote Control over GPIB
+date:   2020-06-27 00:00:00 -0700
 categories:
 ---
 
@@ -10,22 +10,32 @@ categories:
 
 # Introduction
 
-After my work on getting my Siglent oscilloscope to somewhat play nice with
-[glscopeclient](https://hackaday.com/2019/05/30/glscopeclient-a-permissively-licensed-remote-oscilloscope-utility/),
-I wanted to fix a major gap in the list of supported equipment: Tektronix oscilloscopes. There was none. I can't say
-that there was really urgent need for it, but let's justify it by the fact that we're using Tektronix scopes at work,
+I've been playing around with the code of [glscopeclient](https://hackaday.com/2019/05/30/glscopeclient-a-permissively-licensed-remote-oscilloscope-utility/)
+lately, and I wanted to fix a major gap in the list of supported equipment: Tektronix oscilloscopes. 
+
+I can't say that there was really urgent need for it, but let's justify it by the fact that I've been  using Tektronix scopes at work,
 and maybe, one day, I'll need the kind of processing that glscopeclient provides?
 
-Another driver was the fact that I suspected that a Tektronix scope would be better at handling data transfers than the Siglent,
-which spends 80% of the time on preparing the data for transmission and only the remaining 20% on the transmission itself.
+Another driver was the fact that I suspected that a Tektronix scope would be better at handling data transfers than my Siglent
+oscilloscope which spends 80% of the time on preparing the data for transmission and only the remaining 20% on the transmission itself.
 
-I had already been monitoring eBay for cheap Tek scopes (there aren't many), when I noticed this one:
+My requirements were very simply: 
+
+* it needed to have a remote control interface. For an old scope, that means [GPIB](http://localhost:4000/2020/06/07/Making-Sense-of-Test-and-Measurement-Protocols.html#gpib--ieee-488).
+* it had to work.
+* it had to be (relatively) cheap.
+
+I had a look at the Tek programming manuals, and nothing much has changed in terms of 
+[SCPI](/2020/06/07/Making-Sense-of-Test-and-Measurement-Protocols.html#scpi---the-universal-command-language) 
+command set. So the idea was: make it work on something old, and it will probably magically work on something new as well.
+
+I had already been monitoring eBay for cheap Tek scopes, when I noticed this one:
 
 ![Tek 420A on eBay](/assets/tds420a/tds420a_ebay.png)
 
 The Internet is full of stories of people who were able to find $50 bargains of allegedly broken scopes that worked with
-only a bit of work, but $190 (including the $30 shipping) is really not a bad price for a scope that's not only listed
-as working, but one that has been calibrated only little more than a year ago!
+only a bit of work, but $160+30 shipping is really not a bad price for a scope that's not only listed
+as working, but one that had been calibrated only little more than a year ago! 
 
 ![Tek 420A Calibration Tag](/assets/tds420a/tds420a_calibrated.png)
 
@@ -46,8 +56,8 @@ Released in 1991, the TDS 420A is old enough to have teenage children by now! Bu
 with more recent Tek scopes will feel right at home: the user interface is nearly identical. That doesn't mean that
 the UI is great, it's not, but at least it's consistent.
 
-
-Here's a quick overview of the TDS 420A:
+Here's a quick overview of the TDS 420A. The 
+[user manual](https://assets.tequipment.net/assets/1/26/Documents/TDS400_UserManual.pdf) provides much detail.
 
 * 4 channels
 
@@ -70,7 +80,7 @@ Here's a quick overview of the TDS 420A:
     scope switches to [equivalent time sampling](https://www.tek.com/document/application-note/real-time-versus-equivalent-time-sampling)
     mode, which allows you to capture higher BW signals in detail as long as they are repetitive.
 
-* 30000 sample points
+* Up to 30000 sample points
 
     My Siglent scope captures up to 140M samples, but 30K is sufficient to get a lot of work done.  I rarely use 
     the 140M setting because real-time acquistion can become too slow to feel responsive.
@@ -87,6 +97,10 @@ Here's a quick overview of the TDS 420A:
     elements and waveforms. The display is fine for what it is, and after playing with it for
     a couple of hours, it doesn't bother me at all.
 
+* VGA Output
+
+    The VGA output is monochrome green, just like the CRT itself.
+
 * GPIB interface
 
     Essential for me, since the whole point of buying it is the abitilty to remote control the scope.
@@ -100,9 +114,6 @@ Here's a quick overview of the TDS 420A:
     I didn't want to wait 2 months for one of those to arrive, so I went with a $100 National Instruments
     GPIB-USB-HS instead. That's a steep price for what it is, but $190 + $100 is still less than any working
     second hand Tek scope with an Ethernet port.
-
-    Once I'm done (=lose interest) with the whole glscopeclient exercise, I'll probably sell the dongle back 
-    on eBay...
 
 * Other features
 
@@ -120,7 +131,7 @@ Options present on my scope:
     dot matrix printer, via a RS-232 cable or a Centronics parallel cable straight to the scope and make
     beautiful printouts of whatever is one the screen. Amazing!
 
-    The RS-232 port supports a BAUD rate of up to 19200 and only supports the hardcopy feature. It does
+    The RS-232 port supports a baud rate of up to 19200 and only supports the hardcopy feature. It does
     not support remote control.
 
 * Option 1F: File System
@@ -144,8 +155,14 @@ Some other options, not present on mine:
 
 * Option 05: Video Trigger Interface
 
-    This option support triggering on various conditions for old school video signals like
-    PAL and NTSC.
+    This option support triggering on various conditions for video signals like PAL and NTSC.
+
+    Given such a video signal, you can trigger on a specific line, even or odd fields etc.
+
+    In today's world, this feature is completely obsolete, but if you feel like repairing an
+    equally old school CRT with an old school oscilloscope, this might be just the thing for you!
+
+    ![Video Triggering](/assets/tds420a/video_triggering.png)
 
 The 420A is an upgrade of the 420. The most notable differences are the bandwidth which was upgraded from 150 to
 200 MHz, and the number of sample points, upgraded from 15k/60k to 30k/120k.
@@ -166,11 +183,11 @@ of the electronics are failing after its internal self check.
 
 The general advise for anybody who buys such an old scope is to replace *all* caps.
 
-I was fully prepared to have to go through the whole process (the number of caps can be close to 100), and 
-while waiting for the scope to arrive, Iwatched a bunch of videos about how to go about it.
+I was fully prepared to have to go through the process of replacing close to 100 caps, and 
+while waiting for the scope to arrive, I watched a bunch of videos about how to go about it.
 
 After receiving mine, I took off the enclosure to check out the damage, and I found an absolutely pristine
-acquisition PCB. The solder contact points are bright and shiny (leaded solder will do that) and there's 
+acquisition PCB. The solder contact points are bright and shiny (leaded solder!) and there's 
 barely any dust.
 
 ![Inside Overview](/assets/tds420a/inside_overview.jpg)
@@ -224,40 +241,13 @@ are 32K x 8 SRAM chips with an access time of 50MHz.
 
 16 x 32K = 512KB / 4 channels = 128 Kb per channel.
 
-There's little doubt that this board has the hardware to support 120K sample points, it's just that
-the feature is not enabled.
+There's little doubt that the acquisition board has enough memory to store 120K sample points.
 
-Since there are 4 chips per channel, interleaving accesses is sufficient to store samples at a rate of
-100MHz even when the individual chips are limited to 50MHz.
+And since there are 4 chips per channel, interleaving accesses to this memory is sufficient to store samples 
+at a rate of 100MHz even when the individual chips are limited to 50MHz.
 
-* [Hacking my TDS460A to have options 1M/2F?](https://www.eevblog.com/forum/testgear/hacking-my-tds460a-to-have-options-1m2f/)
-
-* [TDS 420 Debug Serial Port](https://forum.tek.com/viewtopic.php?t=138100)
-
-* [TDS420 Options Possible?](https://forum.tek.com/viewtopic.php?t=140268)
-
-* [Upgrade Tektronix: FFT analyzer](http://videohifi17.rssing.com/chan-62314146/all_p49.html)
-
-    Story about upgrading the CPU board from 8MB to 16MB on a TDS420 (not 420A?) and then FFT in the
-    NVRAM.
-
-* [Enabling FFT option in Tektronix TDS 540A oscilloscope](https://www.youtube.com/watch?v=iJt2O5zaLRE)
-
-    Not very useful: enables FFT by copying NVRAM chip.
-
-* [tekfwtool](https://github.com/fenugrec/tekfwtool)
-
-    Dos and Windows only
-
-* [tektools](https://github.com/ragges/tektools)
-
-    Also has Linux and macOS support
-
-* [Utility to read/write memory on Tektronix scopes](https://forum.tek.com/viewtopic.php?t=137308)
-
-* [TDS420 with lost options](https://www.eevblog.com/forum/testgear/tds420-with-lost-options/)
-
-* [RS232 Connector](https://forum.tek.com/viewtopic.php?f=568&t=139046#p281757)
+Whether or not it's possible to hack the scope and tickle it into enable 120K samples points
+is something to explore later. 
 
 # Documentation
 
@@ -283,8 +273,17 @@ information isn't there, some other website probably has a copy.
 
 * [Tektronix TDS420a Oscilloscope Repair (Replace CPU Board)](https://www.youtube.com/watch?v=DKrsFh9jfO0)
 
+    Short video that simply swaps out the CPU board.
 
 * [Tektronix TDS-460 (400 series) Oscilloscope Power Supply Repair](https://www.youtube.com/watch?v=9lmAQUjs_cE)
+
+    Details about how to fix components on the power supply board.
+
+* [Junk Box Oscilloscope, Can It Be Fixed?](https://www.youtube.com/watch?v=HqsXe3IKTCo)
+
+    Assembles a TDS420 (not a TDS420A, but it's pretty much identical) from individual pieces.
+
+* [TDS420 Cameo in the Movie Contact](https://www.youtube.com/watch?v=oTo0zTCdQcc)
 
 # GPIB - Installing the GPIB-USB-HS Linux Kernel Driver
 
@@ -507,3 +506,34 @@ For my purposes, this isn't a huge deal: instead of writing a GPIB backend for s
 to write a TCP/IP to GPIB server. glscopeclient already has a socket based transport driver, so it
 using such a server, no additional transport driver would need to be written.
 
+
+# Various links
+
+* [Hacking my TDS460A to have options 1M/2F?](https://www.eevblog.com/forum/testgear/hacking-my-tds460a-to-have-options-1m2f/)
+
+* [TDS 420 Debug Serial Port](https://forum.tek.com/viewtopic.php?t=138100)
+
+* [TDS420 Options Possible?](https://forum.tek.com/viewtopic.php?t=140268)
+
+* [Upgrade Tektronix: FFT analyzer](http://videohifi17.rssing.com/chan-62314146/all_p49.html)
+
+    Story about upgrading the CPU board from 8MB to 16MB on a TDS420 (not 420A?) and then FFT in the
+    NVRAM.
+
+* [Enabling FFT option in Tektronix TDS 540A oscilloscope](https://www.youtube.com/watch?v=iJt2O5zaLRE)
+
+    Not very useful: enables FFT by copying NVRAM chip.
+
+* [tekfwtool](https://github.com/fenugrec/tekfwtool)
+
+    Dos and Windows only
+
+* [tektools](https://github.com/ragges/tektools)
+
+    Also has Linux and macOS support
+
+* [Utility to read/write memory on Tektronix scopes](https://forum.tek.com/viewtopic.php?t=137308)
+
+* [TDS420 with lost options](https://www.eevblog.com/forum/testgear/tds420-with-lost-options/)
+
+* [RS232 Connector](https://forum.tek.com/viewtopic.php?f=568&t=139046#p281757)
