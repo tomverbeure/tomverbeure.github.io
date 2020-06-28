@@ -153,7 +153,7 @@ Success!
 
 But we're not there yet. We still need to install a bunch of user mode libraries and utilities.
 
-# GPIB - Installing the User Mode Library and Utilities
+# Installing the GPIB User Mode Library and Utilities
 
 The National Instrument GPIB USB dongles have small microcontroller on them that needs its
 own firmware. This firmware must be loaded into the dongle before the dongle is able to behave
