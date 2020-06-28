@@ -14,6 +14,8 @@ In [my earlier post](/2020/06/27/In-the-Lab-Tektronix-TDS420A.html), I introduce
 Tektronix TDS 420A oscilloscope, which I bought to add Tektronix support to 
 [glscopeclient](https://hackaday.com/2019/05/30/glscopeclient-a-permissively-licensed-remote-oscilloscope-utility/).
 
+![glscopeclient](/assets/tds420a/glscopeclient.png)
+
 The first step in that process is to get my PC to talk to the scope through the GPIB interface.
 
 It's not a complicated process, and there's quite a bit of information online that describes how
