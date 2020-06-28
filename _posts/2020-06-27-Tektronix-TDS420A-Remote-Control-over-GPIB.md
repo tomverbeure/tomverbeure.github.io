@@ -19,7 +19,7 @@ Tektronix TDS 420A oscilloscope, which I bought to add Tektronix support to
 The first step in that process is to get my PC to talk to the scope through the GPIB interface.
 
 It's not a complicated process, and there's quite a bit of information online that describes how
-to do this, but in this post I go through the gory detail how to get from nothing to fetching recorded
+to do this, but in this post I go through the gory details how to get from nothing to fetching recorded
 waveforms from the scope onto your PC.
 
 From unpacking the scope, it only took about 30 minutes and 95% of that time was *obviously* spent 
@@ -28,9 +28,9 @@ getting Linux drivers right.
 # Acquiring a USB to GPIB Dongle
 
 [GPIB](/2020/06/07/Making-Sense-of-Test-and-Measurement-Protocols.html#gpib--ieee-488)
-is an obsolete interface standard. All modern test and measurement equipment comes with with
+is an obsolete interface standard. Modern test and measurement equipment comes with
 an Ethernet and/or a USB port. But not too long ago, virtually all equipment had GPIB support,
-and most of the equipment you'll buy second hand on eBay will come with one.
+and thus most of the older equipment you'll buy second hand on eBay will come with one too.
 
 The sturdy, specialized GPIB connector itself was already quite expensive
 back in the day, so a full GPIB interface card or dongle was never cheap.
@@ -69,7 +69,8 @@ Here's the recipe that worked for my Ubuntu 18.04 distribution:
 sudo apt-get install linux-headers-$(uname -r)
     ```
 
-In theory, you will need to redo this step whenever you upgrade your kernel to a later version.
+    In theory, you will need to redo this step whenever you (or the automated updating system of your
+    distribution!) upgrade your kernel to a later version.
 
 * Download the latest version of the Linux-GPIB package
 
@@ -79,7 +80,7 @@ svn checkout svn://svn.code.sf.net/p/linux-gpib/code/trunk linux-gpib-code
 cd linux-gpib-code/linux-gpib-kernel
     ```
 
-    Yes: `svn`. Some projects still use it. I had to install Subverions on my machine just for this.
+    Yes: `svn`. Some projects still use it. I had to install Subversion on my machine just for this.
 
 * Compile and install
 
@@ -88,7 +89,7 @@ make
 sudo make install
     ```
 
-    This will install a whole bunch of gpib drivers in `/lib/module/<kernel version>/gpib`:
+    This will install the gpib drivers in `/lib/module/<kernel version>/gpib`:
 
     ```
 cd /lib/modules/5.3.0-53-generic/gpib
@@ -153,9 +154,9 @@ dmesg -w
 [63517.977621] gpib: registered ni_usb_b interface
     ```
 
-Success!
+    Success!
 
-But we're not there yet. We still need to install a bunch of user mode libraries and utilities.
+But wait, there's more! We still need to install GPIB user mode libraries and utilities.
 
 # Installing the GPIB User Mode Library and Utilities
 
@@ -171,7 +172,7 @@ I used the following recipe:
 
     ```
     cd linux-gpib-user
-    ./bootstrap
+    ./bootstrap/
     ./configure
     make
     sudo make install
@@ -180,8 +181,8 @@ I used the following recipe:
 
     This will install an important configuration file in `/usr/local/etc/gpib.conf`.
 
-    If you want the location of this file to be under `/etc` instead, you can do so with
-    by using `./configure --sysconfdir=/etc`.
+    (If you want the location of this file to be under `/etc` instead, you can do so with
+    by using `./configure --sysconfdir=/etc` instead of just `./configure`.)
 
 * Update the `/usr/local/etc/gpib.conf` configuration file
 
@@ -191,7 +192,7 @@ I used the following recipe:
 
     `sudo gpib_config`
 
-    When you do `dmesg` now, there will be some warnings unexpected data in some buffer, but
+    When you run `dmesg` now, there will be some warnings unexpected data in some buffer, but
     that didn't seem to have any adverse impact on the functionality:
 
     ```
@@ -218,7 +219,7 @@ I used the following recipe:
 
 # Set the GPIB Device Address on the TDS 420A
 
-The GPIB protocol supports up to 31 devices on a single cable daisy chain. But there's no plug
+The GPIB protocol supports up to 31 devices on a single daisy chained cable. But there's no plug
 and play here, the address of each device needs to be assigned manually.
 
 ![Change GPIB Address](/assets/tds420a/change_gpib_address.png)
@@ -311,7 +312,6 @@ It can be as simple as this:
 
 ```python
 #! /usr/bin/env python3
-
 import pyvisa
 
 # Open a link to device 1 of the GPIB bus
@@ -326,9 +326,9 @@ print(wf)
 The output of this program could be something like this:
 ```
 :CURV 78,79,78,77,79,79,79,79,78,83,79,81,78,78,79,77,81,77,78,80,78,79,
-78,77,-46,-49,-46,-45,-46, -45,-44,-45,-47,-46,-47,-45,-44,-45,-44,-44,-44,
--44,-47,-44,-45,-46,-45,-44,-41,81,80,80,80, 80,81,81,80,80,79,79,79,77,
-80,79,78,76,77,79,79,80,79,80,79,78,-48,-44,-45,-48,-50,-47,-56, -46,-45,
+78,77,-46,-49,-46,-45,-46,-45,-44,-45,-47,-46,-47,-45,-44,-45,-44,-44,-44,
+-44,-47,-44,-45,-46,-45,-44,-41,81,80,80,80,80,81,81,80,80,79,79,79,77,
+80,79,78,76,77,79,79,80,79,80,79,78,-48,-44,-45,-48,-50,-47,-56,-46,-45,
 -46,-46,-45,-44,-45,-44,-46,-43,-46,-46,-44,-45,-44,-45,-47,-47,81,80,79,
 80,79,79,80,81,78,78,77,79,80,84,77,78,77,77,79,79,80,77,78,79,79,-46,-49,
 ...
@@ -338,15 +338,17 @@ A discerning reader will see a square wave in the data above!
 
 # Fetching and Plotting a Waveform
 
-The problem with the example is that a Tektronix has a bunch of different
+The problem with the example above is that a Tektronix scope has many different
 settings that will influence how the data is returned.
 
-For example, in the returned waveform data above, the data starts with `:CURV`,
+For example, the returned waveform data starts with `:CURV`,
 a redundant repeat of the query command. The waveform values are returned in
-ASCII text format, as a command separate list etc.
+ASCII text format, as a command separate list etc. Your scope might
+have been configured to return waveform data as signed 8-bit integers, or
+maybe even signed 16-bit numbers.
 
 Your code will be very brittle if you rely on these kinds of settings, so it's
-better to tell the scope how you want the data to be returned.
+better to tell the scope exactly how you want the data to be returned.
 
 Let's look at an extended example.
 
@@ -354,9 +356,7 @@ The start is the same:
 
 ```python
 #! /usr/bin/env python3
-
 import pyvisa
-import sys
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -419,17 +419,28 @@ If everything went well, something like this should appear on your screen:
 
 ![Waveform](/assets/tds420a/waveform.png)
 
+This example still leaves a lot to be desired: it simply graphs integer numbers instead
+of converting sample values to voltages, the X-axis unit is sample number instead of time.
+
+The `WFMPRE?` command gives you all the information to do this right, but that's
+left as an exercise for the reader.
+
+The main goal has been achieved: we can fetch data from the scope to the PC and
+do something useful with it!
+
 # The GPL3 License of the Linux-GPIB Package
 
-The user mode libraries are licensed under the GPL 3.0, which means that projects with a less restrictive
+It's important to point out that the user mode libraries the Linux GPIB driver 
+are licensed under the GPL 3.0. The consequence is that projects with a less restrictive
 open source license can't just be built with the Linux GPIB library without applying the GPL 3.0 license
 to the whole project.
 
 There is a good discussion about this [here](https://opensource.stackexchange.com/questions/1640/if-im-using-a-gpl-3-library-in-my-project-can-i-license-my-project-under-mit-l)
 on Stackoverflow.
 
-For my purposes, this isn't a huge deal: instead of writing a GPIB backend for scopehal/glscopeclient, I want
-to write a TCP/IP to GPIB server. glscopeclient already has a socket based transport driver, so it
-using such a server, no additional transport driver would need to be written.
+For my purposes, this isn't a huge deal: instead of writing a C++ GPIB backend for 
+scopehal/glscopeclient, I will write a TCP/IP to GPIB server instead. `glscopeclient` already 
+has a TCP/IP socket based transport driver, so by using such a server, no additional transport driver 
+would need to be written.
 
 

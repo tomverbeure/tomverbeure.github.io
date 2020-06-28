@@ -307,9 +307,7 @@ information isn't there, some other website probably has a copy.
 
 # To Be Continued...
 
-I have a bunch of hobby projects in mind for this thing: remote control over GPIB, glscopeclient support,
+I have a bunch of hobby projects in mind for this thing: 
+[remote control over GPIB](/2020/06/27/Tektronix-TDS420A-Remote-Control-over-GPIB.html), glscopeclient support,
 trying to enable more features etc.
-
-
-
 
