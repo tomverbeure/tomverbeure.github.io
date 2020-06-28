@@ -298,6 +298,126 @@ time without prefixing it with `sudo`.
 
 Does it work? Congratulations! You're ready to start fetching waveforms from the scope!
 
+# Fetching a Waveform - The Bare Minimum
+
+We'll be using `pyvisa`, the Pyton API for instrumentation that I introduced in
+[a previous blog post](/2020/06/07/Making-Sense-of-Test-and-Measurement-Protocols.html#visa---one-api-that-rules-them-all).
+
+Fetch waveforms is just a matter of sending the right command query to the scope. Check out of 
+[TDS Family Programmers Manual](https://www.tek.com/manual/tds-family-programmer-manual) for a comprehensive list
+of all the commands and how to use them.
+
+It can be as simple as this:
+
+```python
+#! /usr/bin/env python3
+
+import pyvisa
+
+# Open a link to device 1 of the GPIB bus
+rm = pyvisa.ResourceManager()
+g = rm.open_resource('GPIB0::1::INSTR')
+
+# Get the sample points
+wf = g.query("CURV?")
+print(wf)
+```
+
+The output of this program could be something like this:
+```
+:CURV 78,79,78,77,79,79,79,79,78,83,79,81,78,78,79,77,81,77,78,80,78,79,
+78,77,-46,-49,-46,-45,-46, -45,-44,-45,-47,-46,-47,-45,-44,-45,-44,-44,-44,
+-44,-47,-44,-45,-46,-45,-44,-41,81,80,80,80, 80,81,81,80,80,79,79,79,77,
+80,79,78,76,77,79,79,80,79,80,79,78,-48,-44,-45,-48,-50,-47,-56, -46,-45,
+-46,-46,-45,-44,-45,-44,-46,-43,-46,-46,-44,-45,-44,-45,-47,-47,81,80,79,
+80,79,79,80,81,78,78,77,79,80,84,77,78,77,77,79,79,80,77,78,79,79,-46,-49,
+...
+```
+
+A discerning reader will see a square wave in the data above!
+
+# Fetching and Plotting a Waveform
+
+The problem with the example is that a Tektronix has a bunch of different
+settings that will influence how the data is returned.
+
+For example, in the returned waveform data above, the data starts with `:CURV`,
+a redundant repeat of the query command. The waveform values are returned in
+ASCII text format, as a command separate list etc.
+
+Your code will be very brittle if you rely on these kinds of settings, so it's
+better to tell the scope how you want the data to be returned.
+
+Let's look at an extended example.
+
+The start is the same:
+
+```python
+#! /usr/bin/env python3
+
+import pyvisa
+import sys
+
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+
+rm = pyvisa.ResourceManager()
+g = rm.open_resource('GPIB0::1::INSTR')
+```
+
+Specify the way the data will be returned:
+```python
+# Don't repeat the command in the reply. This is easier to parse the result.
+g.write("HEAD OFF")
+
+# Encode the waveform as a comma-separated list
+g.write("DATA:ENC ASCI")
+```
+
+Let the scope record the data:
+```python
+# Record 500 waveform samples
+g.write("HOR:RECORDL 500");
+
+# Setup a single sequence acquisition
+g.write("ACQ:STOPA SEQ")
+
+# Don't do repetitive acquisition (~equivalent-time operation)
+g.write("ACQ:REPE OFF")
+
+# Start acquiring data
+g.write("ACQ:STATE RUN")
+```
+
+Fetch the waveform parameters and the waveform data from the scope:
+```python
+# Request data from channel 1 only
+g.write("DATA:SOURCE CH1")
+
+# Get all waveform acquisition settings needed decode the sample point 
+# values: vdiv, number of sample points etc.
+wf_params = g.query("WFMPRE?")
+print(wf_params)
+
+# Get the sample points
+wf = g.query("CURV?")
+print(wf)
+```
+
+Plot the waveform on the screen:
+```python
+# Convert comma separate string of signed integer values to list of integers
+values = list(map(int, wf.split(",")))
+
+# Plot
+x = range(0, len(values))
+plt.plot(x, values)
+plt.show()
+```
+
+If everything went well, something like this should appear on your screen:
+
+![Waveform](/assets/tds420a/waveform.png)
 
 # The GPL3 License of the Linux-GPIB Package
 
