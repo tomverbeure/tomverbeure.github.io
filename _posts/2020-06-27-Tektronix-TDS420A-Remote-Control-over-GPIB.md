@@ -47,6 +47,8 @@ Not wanting to wait for weeks for a shipment from China, I bought a
 [National Instruments GPIB-USB-HS](https://www.ni.com/en-us/support/model.gpib-usb-hs.html) instead. 
 Instead of the $1059 list price, I got mine for $100 on eBay. 
 
+![GPIB-USB-HS](/assets/tds420a/gpib-usb-hs.jpg)
+
 # Installing the GPIB-USB-HS Linux Kernel Driver
 
 It's hard to believe, but despite supporting pretty much any kind of device imaginable, the 
@@ -77,7 +79,7 @@ svn checkout svn://svn.code.sf.net/p/linux-gpib/code/trunk linux-gpib-code
 cd linux-gpib-code/linux-gpib-kernel
     ```
 
-    Yes: `svn`. Some projects still use it. I had to install it on my machine just for this.
+    Yes: `svn`. Some projects still use it. I had to install Subverions on my machine just for this.
 
 * Compile and install
 
@@ -91,6 +93,8 @@ sudo make install
     ```
 cd /lib/modules/5.3.0-53-generic/gpib
 find .
+    ```
+    ```
 .
 ./cec
 ./cec/cec_gpib.ko
@@ -187,6 +191,31 @@ I used the following recipe:
 
     `sudo gpib_config`
 
+    When you do `dmesg` now, there will be some warnings unexpected data in some buffer, but
+    that didn't seem to have any adverse impact on the functionality:
+
+    ```
+[236430.065817] ni_usb_gpib: attach
+[236430.065830] usb 1-1.2: bus 1 dev num 7 attached to gpib minor 0, NI usb interface 0
+[236430.075276] 	product id=0x709b
+[236430.075697] ni_usb_hs_wait_for_ready: board serial number is 0x120f5de
+[236430.075948] /home/tom/projects/linux-gpib-code/linux-gpib-kernel/drivers/gpib/ni_usb/ni_usb_gpib.c: ni_usb_hs_wait_for_ready: unexpected data: buffer[7]=0x4, expected 0x3 or 0x5 or 0x6
+[236430.075949] /home/tom/projects/linux-gpib-code/linux-gpib-kernel/drivers/gpib/ni_usb/ni_usb_gpib.c: ni_usb_hs_wait_for_ready: unexpected data: buffer[10]=0x3, expected 0x96 or 0x07
+[236430.075950] ni_usb_dump_raw_block:
+[236430.075951]  40
+[236430.075951]   1
+[236430.075951]   0
+[236430.075951]   1
+[236430.075952]  30
+[236430.075952]   1
+[236430.075952]   2
+[236430.075953]   4
+[236430.075953]   0
+[236430.075953]   0
+[236430.075954]   3
+    ```
+
+
 # Set the GPIB Device Address on the TDS 420A
 
 The GPIB protocol supports up to 31 devices on a single cable daisy chain. But there's no plug
@@ -259,7 +288,7 @@ SUBSYSTEMS=="usb", ACTION=="add", ATTRS{idVendor}=="3923", ATTRS{idProduct}=="70
 KERNEL=="gpib[0-9]*", MODE="666", GROUP="tom"
 ```
 
-You will need to change `GROUP"tom"` to something else.
+You will need to change `GROUP="tom"` to something else.
 
 Earlier, we called `sudo gpib_config` to load the GPIB-USB-HS firmware into the device. The second in the udev
 parameters above now does that automatically as soon as you plug in the GPIB dongle in the USB port.
