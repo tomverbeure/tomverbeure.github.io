@@ -262,8 +262,9 @@ Modern equipment has dropped the GPIB connector for LAN and USB ports, but you c
 GPIB equipment in the lab. (A kick-ass power supply or 6-digit multimeter from 30 years ago is very likely
 still a kick-ass power supply or multimeter today! And that's reflected in their prices on eBay.)
 
-If you want to control a GPIB-equiped device today, there are USB interface dongles such as the
-National Instruments GPIB-USB-HS or the Agilent 82375B. One eBay, they can be found for prices of $65
+If you want to control a GPIB-equiped device today, there are 
+[USB interface dongles](/2020/06/27/Tektronix-TDS420A-Remote-Control-over-GPIB.html#acquiring-a-usb-to-gpib-dongle) 
+such as the National Instruments GPIB-USB-HS or the Agilent 82375B. One eBay, they can be found for prices of $70
 and up.
 
 The official IEEE-488 specifications are only available behind a paywall. Getting your hands on it will
@@ -347,9 +348,11 @@ Let's to go straight to the source to see what SCPI is trying to achieve:
 
 It's questionable whether or not SCPI achieved that goal.
 
-To fetch an acquired waveform from an oscilloscope, SCPI defines the `DATA(CURVe(..))` command. My
-Tektronix TDS420A, has the `CURVe?` command (no `DATA(...)`) required, my Siglent uses `WF?`,
-a Rigol scope uses `WAV:DATA?`, and Rohde-Schwartz has `:DATA?`.
+To fetch an acquired waveform from an oscilloscope, SCPI defines the `DATA(CURVe(..))` command. 
+My [Tektronix TDS 420A](/2020/06/27/In-the-Lab-Tektronix-TDS420A.html), has the 
+[`CURVe?`](/2020/06/27/Tektronix-TDS420A-Remote-Control-over-GPIB.html#fetching-a-waveform---the-bare-minimum) 
+command (no `DATA(...)`) required, my Siglent uses `WF?`, a Rigol scope uses `WAV:DATA?`, 
+and Rohde-Schwartz has `:DATA?`.
 
 The only consistency here is that there is none.
 
