@@ -350,7 +350,8 @@ maybe even signed 16-bit numbers.
 Your code will be very brittle if you rely on these kinds of settings, so it's
 better to tell the scope exactly how you want the data to be returned.
 
-Let's look at an extended example.
+Let's look at an extended example. 
+(Complete source code [here](/assets/tds420a/visa_get_tek_waveform.py).)
 
 The start is the same:
 
