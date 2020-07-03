@@ -59,7 +59,7 @@ A week later, the goods arrived.
 It still had the "Property of Motorola" inventory tag attached, and 2 "RICKY J" labels. Ricky: the scope is in good hands!
 
 The eBay listing didn't have the customary bootup screen, but whatever worries I had were unfounded: shortly after powering
-up the scope, I was greeted with with "Power-On self check PASSED" message.
+up the scope, I was greeted with the "Power-On self check PASSED" message.
 
 ![Tek 420A Poweron Self Check PASSED](/assets/tds420a/power_on_self_check_passed.jpg)
 
@@ -70,7 +70,7 @@ with more recent Tek scopes will feel right at home: the user interface is nearl
 the UI is great, it's not, but at least it's consistent.
 
 Here's a quick overview of the TDS 420A. The 
-[user manual](https://assets.tequipment.net/assets/1/26/Documents/TDS400_UserManual.pdf) provides much detail.
+[user manual](https://assets.tequipment.net/assets/1/26/Documents/TDS400_UserManual.pdf) provides much more detail, of course.
 
 * 4 channels
 
