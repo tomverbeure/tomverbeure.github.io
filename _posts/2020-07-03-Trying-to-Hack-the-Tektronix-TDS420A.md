@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Hacking the Tektronix TDS 420A Oscilloscope
-date:   2020-97-03 00:00:00 -0700
+date:   2020-07-03 00:00:00 -0700
 categories:
 ---
 
