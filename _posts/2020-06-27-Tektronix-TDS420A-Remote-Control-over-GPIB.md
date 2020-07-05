@@ -39,7 +39,7 @@ You can find [UGPlus](http://www.lqelectronics.com/Products/USBUG/UGPlus/UGPlus.
 GPIB controllers for around $40 on Amazon, but they aren't supported on Linux.
 
 The cheapest Linux supported option that I could find was an 
-[Agilent/Keysight 82375B](https://www.keysight.com/en/pd-851808-pn-82357B/usb-gpib-interface-high-speed-usb-20).
+[Agilent/Keysight 82357B](https://www.keysight.com/en/pd-851808-pn-82357B/usb-gpib-interface-high-speed-usb-20).
 They're listed for $624 on the Keysight website, but you should be able to find one for ~$70 on eBay
 or AliExpress.
 
