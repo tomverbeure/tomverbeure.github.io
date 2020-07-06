@@ -25,7 +25,9 @@ on the CPU PCB, you can find a 10-pin connector that carries the RS-232 port
 for the debug and diagnostic console. 
 
 To access this port, you need to remove the cover of the scope: just remove
-5 trox screws and you're good. 
+5 torx screws and you're good. 
+
+![Scope Naked](/assets/tds420a/scope_naked.jpg)
 
 **Important reminder: not only are there 110V circuits in the scope, there's also
 a CRT that requires much higher voltages! Don't even think about randomly touching
@@ -34,10 +36,12 @@ things unless you know what you're doing!!!**
 Tektronix used to sell a cable to convert the 10-pin header into a DB9 serial port 
 connector, but I had a much better idea:
 
-The external RS-232 DB9 connector *also* goes to a 10-pin header. If I removed that
-10-pin to DB9 cable from the IO PCB, and connected it to the 10-pin header of
-the CPU PCB, surely, that would allow me to connect the debug port to a
-regular DB9 serial cable.
+The external RS-232 DB9 connector of the HardCopy plug-in board *also* goes to a 
+10-pin header. If I removed that 10-pin to DB9 cable from that PCB, and connected it 
+to the 10-pin header of the CPU PCB, surely, that would allow me to connect the debug 
+port to a regular DB9 serial cable.
+
+![Hardcopy Plug-In Board](/assets/tds420a/hardcopy_board.jpg)
 
 Because, surely, the Tektronix wouldn't be so dumb to have different pinouts for
 the external RS-232 to DB9 cable and the internal one?
@@ -48,6 +52,13 @@ The debug console cable is rotated by 180 degrees compared to the external cable
 After wasting a perfectly good half hour on this, I connected the thing up with some
 flimsy wires. Make sure you configure it in null modem configuration: the RX on
 the PC must be connected to the TX of the scope and vice versa.
+
+![RS232 Annotated Pins](/assets/tds420a/rs232_annotated.jpg)
+
+There is no need to wire up any of the RS-232 flow control pins. TXD and RXD are
+sufficient.
+
+![Serial Port Connection](/assets/tds420a/serial_port_connection.jpg)
 
 Armed with a USB to RS-232 dongle, I used `picocom -b 9600 /dev/ttyUSB0`, and
 the following characters rolled on the screen when booting up the scope:
