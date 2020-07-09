@@ -69,6 +69,8 @@ and a flash light, changing the switches only takes a minute of your time.
 
 ![Switching into firmware update mode](/assets/tds420a/switching_into_firmware_update_mode.png)
 
+![Flip DIP Switches](/assets/tds420a/flip_dip_switches.jpg)
+
 Firmware update mode is a minimal operation mode that accepts a small set of GPIB commands
 to read and write the flash ROMs[^1]. The oscilloscope isn't functional in any other way: the 
 CRT is powered off, buttons don't work, the LEDs of the front panel are all switched on.
