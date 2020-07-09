@@ -11,14 +11,14 @@ categories:
 # Introduction
 
 With [the firmware extracted](/2020/07/02/Extracting-the-Tektronix-TDS420A-Firmware.html),
-it's now time to deeper by connecting to a PC to its RS-232 debug interface and
-see what we find.
+it's now time to dig deeper by connecting to the scope's RS-232 debug interface to a PC 
+and see what we find.
 
-# Connecting to TDS420A RS-232 Debug Console Port
+# Connecting to TDS 420A RS-232 Debug Console Port
 
-Like most Tektronix oscilloscopes of that era, my TDS420A has an external RS-232 port 
-(Option 13). However, it can only be used to connect some ancient printer to the scope 
-and dump screenshots.
+Like most Tektronix oscilloscopes of that era, my TDS 420A has an external RS-232 port 
+(Option 13). However, it can only be used for the HardCopy feature, where you connect 
+the scope to an ancient printer to dump screenshots.
 
 But that's not the only RS-232 port! Next to the firmware update switches
 on the CPU PCB, you can find a 10-pin connector that carries the RS-232 port
@@ -31,14 +31,14 @@ To access this port, you need to remove the cover of the scope: just remove
 
 **Important reminder: not only are there 110V circuits in the scope, there's also
 a CRT that requires much higher voltages! Don't even think about randomly touching
-things unless you know what you're doing!!!**
+things in there unless you know what you're doing!!!**
 
-Tektronix used to sell a cable to convert the 10-pin header into a DB9 serial port 
-connector, but I had a much better idea:
+Tektronix used to sell a cable to convert the 10-pin header into a standard DB9 serial 
+port connector, but I had a much better idea:
 
 The external RS-232 DB9 connector of the HardCopy plug-in board *also* goes to a 
-10-pin header. If I removed that 10-pin to DB9 cable from that PCB, and connected it 
-to the 10-pin header of the CPU PCB, surely, that would allow me to connect the debug 
+10-pin header. If I removed the 10-pin-to-DB9-cable from that PCB, and connected it 
+to the 10-pin header of the CPU PCB, then surely that would allow me to connect the debug 
 port to a regular DB9 serial cable.
 
 ![Hardcopy Plug-In Board](/assets/tds420a/hardcopy_board.jpg)
@@ -60,8 +60,8 @@ sufficient.
 
 ![Serial Port Connection](/assets/tds420a/serial_port_connection.jpg)
 
-Armed with a USB to RS-232 dongle, I used `picocom -b 9600 /dev/ttyUSB0`, and
-the following characters rolled on the screen when booting up the scope:
+Armed with a USB to RS-232 converter, I used `picocom -b 9600 /dev/ttyUSB0`, and
+the following characters rolled on the screen after powering up the scope:
 
 ```
 	Bootrom Header Checksum passed.
@@ -207,13 +207,13 @@ I was in business!!!
 
 # The VxWorks Operating System
 
-Earlier, I already came across the VxWorks logo in the main firmware dump.
+In my previous blog post, I already came across the VxWorks logo in the main firmware dump.
 
 [VxWorks](https://en.wikipedia.org/wiki/VxWorks) is a popular real-time operating system (RTOS) 
 for embedded systems with real-time constraints. An oscilloscope is a very good
 example of that.
 
-It supports on a large amount of CPUs (the TDS420A has a Motorola 68020), has a preemptive 
+It supports a large amount of CPUs (the TDS 420A has a Motorola 68020), has a preemptive 
 multitasking kernel, file systems, network protocol stacks etc. The OS can run a large
 number of different tasks with different priority.
 
@@ -251,19 +251,20 @@ value = 57 = 0x39 = '9'
 ```
 
 `help` is a good starting point to see what you can do from the shell, but
-it only scratches the surface about what's possible. That because console shell that 
+it only scratches the surface about what's possible. That's because console shell
 allows calling *any* function that is declared in the symbol table as if it's a native 
 console command.
 
-You have no idea how useful that is to inspect the internal of a system: all the functions that 
+You have no idea how useful that is if you want to inspect the internals of a system: 
+all the functions that 
 [I found through the `strings main_fw.bin` command](/2020/07/02/Extracting-the-Tektronix-TDS420A-Firmware.html#strings-in-the-main-firmware)
 can be called and executed in a live working environment!
 
-Here's a good example: there is `ringBell()` function in the firmware. When I type `ringBell`
+Here's a simple example: there is `ringBell()` function in the firmware. When I type `ringBell`
 on the console... the bell rings.
 
-VxWorks in combination with a shell and a symbol table is a massive firmware reverse engineering 
-cheat code.
+**VxWorks in combination with a shell and a symbol table is a massive firmware reverse engineering 
+cheat code.**
 
 # Creating a Full Symbol Table
 
@@ -301,7 +302,7 @@ be used in binary code analysis tools such as Ghidra or
 IDA Pro.
 
 Instead of dumping them all at once, I went from `_a` to `_z` and from `_A` to `_Z`. The end 
-results were 5000+ symbols and their address.
+result were 5000+ symbols and their address.
 
 # Ghidra, a Binary Code Analysis Tool
 
@@ -311,8 +312,8 @@ about 1 year ago by the [NSA](https://www.nsa.gov/), believe it or not.
 are the commercial (expensive!) equivalent of Ghidra.
 
 A binary code analysis tool is essentially a smart disassembler that takes in a pure binary 
-dump, identifies machine code segments and data such as strings, converts them to low level C code, cross references
-calls from one function to the other, creates call graphs etc.
+dump, identifies machine code segments and data such as strings and pointers, converts them to 
+low level C code, cross references calls from one function to the other, creates call graphs etc.
 
 Even without a symbol table, tools like this can go a long way in uncovering the secrets
 of firmware, but add one to the mix, and major parts of the the firmware become an open
@@ -321,10 +322,11 @@ book.
 # Diving Deep into the TDS 420A Firmware with Ghidra
 
 I have never used a binary code analysis tool before, but I had heard great things about
-Ghidra and I was eager to give it a try. Ghidra has support for a large 
+Ghidra and I was eager to give it a try. Ghidra has support for a large number of CPUs,
+even ancient ones like the 68020.
 
-Long story short: Ghidra is amazing. In 15 minutes, I went from download the tool to browsing
-through the TDS 420A firmware, jumping in and out of layers of functional call and being
+Long story short: Ghidra is amazing. In 15 minutes, I went from downloading the tool to browsing
+through the TDS 420A firmware, jumping in and out of layers of function calls and being
 productive with it.
 
 Just follow these steps:
@@ -342,22 +344,20 @@ After double clicking `main_fw.bin`, you'll be asked if the newly imported binar
 analyzed. Of course, it should! After waiting half a minute, you'll be greeted with 
 thousands of anonymous C functions in the Symbol Tree window.
 
-Earlier, I created a symbol table file that links symbols to addresses. We replace
-many of these unnamed functions by named one by importing this table into
-Ghidra. 
-
-This goes as follows:
+I could now load the symbol table that I created earlier, which replaced
+many of these unnamed functions by named ones. Here's how you go about importing this table 
+into Ghidra:
 
 * Window -> Script Manager
 * Select 'Data' in the Scripts list
-* Double click on 'ImportSymbolsScripts.py'
+* Double click on 'ImportSymbolsScript.py'
 
 ![Import Symbols Script](/assets/tds420a/import_symbols_script.png)
 
 Now select the symbol table file, and 5000+ of functions that were previously
 anonymous will suddenly reveal their name.
 
-That `ringBell` function that I executed earlier on the debug console gets decompiled
+The `ringBell` function that I executed earlier on the debug console gets decompiled
 to this:
 
 ![ringBell decompiled](/assets/tds420a/ring_bell.png)
@@ -365,7 +365,7 @@ to this:
 There are plenty of Ghidra tutorials on the web, but I have yet to read one of them.
 A few tactical Google searches were needed to discover the way to set the firmware
 based address to 0x01000000, or to figure out now to import the symbol table, 
-but other than the Ghidra UI is intuitive enough to get many things done by just
+but other than that Ghidra UI is intuitive enough to get many things done by just
 trying things out.
 
 That said, it's certain that I haven't even scratched the surface of what's possible!
@@ -376,7 +376,7 @@ Based on all of the above, one might think that a symbol table is necessary to g
 useful information out of a binary executable. Nothing could be further from the
 truth.
 
-I did the Ghidra exercise on the bootrom, and the result were still impressive: 
+I did the Ghidra exercise on the boot ROM, and the result were still impressive: 
 it's a bit more of puzzle where one discovery will lead to the next.
 
 The most important breadcrumbs are embedded strings.
@@ -405,12 +405,12 @@ Transferring control to the SDM (monitor).
 ```
 
 After importing the boot ROM binary into Ghidra, there were many bytes sequences
-that are obviously executable code, but Ghidra didn't identified them as such.
+that are obviously executable code, but Ghidra didn't identify them as such.
 
-I manually started instructing Ghidra to disassemble these functions ("Disassemble")
-and convert them into function.
+I manually started telling Ghidra to disassemble these byte sequences ("Disassemble")
+and convert them into functions.
 
-And, eventually, I hit the jackpot, with a function the reverse compiled
+Eventually I hit the jackpot, with a function that reverse compiled
 into the following C code:
 
 ![Bootrom Log Messages](/assets/tds420a/bootrom_log_messages.png)
@@ -419,7 +419,7 @@ There is so much to learn from this!
 
 * `FUN_0000166C` is obviously a `print` function.
 * `FUN_000034e8` must be running a 68901 test.
-* `FUN_00002c52` must bre doing a boot ROM checksum
+* `FUN_00002c52` must be doing a boot ROM checksum
 
 and so forth.
 
@@ -437,24 +437,24 @@ bit of effort to figure our the checksum algorithm (it's a sum), locate where
 the expected value is read from, and the address range over which the checksum is 
 calculated.
 
-Once you know that, you could patch the boot ROM (or the main firmware) any way
+Once you know that, you could patch the boot ROM, or the main firmware, any way
 you want, calculate the correct firmware, and flash it into the scope using
 `tektool`.
 
 # That GPIB Address 29 in Firmware Update Mode
 
 For fun, I wanted to see if I could find the place where the boot ROM sets a 
-GPIB address of 29 when its in firmware update mode.
+GPIB address of 29 when it's in firmware update mode.
 
 Here's how that went:
 
 * earlier, I had identified the `test_gpib()` function
-* `test_gpib()` has a number of accesses to memory location 0x7000x. 
-
-    These are almost certainly reads and writes to the register access space 
-    of some GPIB protocol chip:
+* `test_gpib()` has a number of accesses to memory location 0x7000x:
 
     ![test_gpib() function](/assets/tds420a/test_gpib.png)
+
+    These are almost certainly writes to the register space of some GPIB protocol 
+    chip.
 
 * When you double click on one of these registers, you get a list with all other
   functions that perform read or write accesses to them
@@ -473,6 +473,6 @@ Here's how that went:
 
 # To Be Continued...
 
-Coming: unlocking optional features!
+Coming up: unlocking optional features!
 
 

@@ -58,9 +58,9 @@ battery. I was not able to dump the contents of that NVRAM with `tektools`.
 I had already [installed the Linux GPIB driver](/2020/06/27/Tektronix-TDS420A-Remote-Control-over-GPIB.html#installing-the-gpib-usb-hs-linux-kernel-driver),
 and compiling `tektools` was trivial: just follow the instructions.
 
-# Switching the TDS420A into Firmware Update Mode
+# Switching the TDS 420A into Firmware Update Mode
 
-Extracting the firmware is a bit more involved than just running the tool: at least on a TDS420A, 
+Extracting the firmware is a bit more involved than just running the tool: at least on a TDS 420A, 
 you first need to flip 2 DIP switches inside the scope to put it in firmware update mode. 
 
 The [service manual](https://www.tek.com/oscilloscope/tds420a-manual/tds420a-tds430a-tds460a-service-manual)
@@ -75,7 +75,7 @@ Firmware update mode is a minimal operation mode that accepts a small set of GPI
 to read and write the flash ROMs[^1]. The oscilloscope isn't functional in any other way: the 
 CRT is powered off, buttons don't work, the LEDs of the front panel are all switched on.
 
-[^1] There may be other commands in firmware update mode, but I wasn't able to find any.
+[^1]: There may be other commands in firmware update mode, but I wasn't able to find any.
 
 In normal operation, you can 
 [set the GPIB address](/2020/06/27/Tektronix-TDS420A-Remote-Control-over-GPIB.html#set-the-gpib-device-address-on-the-tds-420a)
@@ -141,7 +141,7 @@ back in 1991!) It simply means the number of bytes that can be read starting fro
 that won't result in a bus error.
 
 There were online reports about the address range at `0x0400_0000` being used for NVRAM, 
-but it results in a bus error on the TDS420A. For a while, I thought that `0x0500_0000` was 
+but it results in a bus error on the TDS 420A. For a while, I thought that `0x0500_0000` was 
 the option storage, but no amount of writing different values to that regions make any of 
 the scope options to appear.
 
@@ -228,7 +228,7 @@ Commercial firmware images normally contain text data that's used to interact wi
 command strings, help messages, error and log messages. What you won't get are the program symbols.
 These are stripped to reduce code size and, maybe, to avoid reverse engineering.
 
-This is definitely not the case for the main TDS420A firmware. Running `strings main_fw.bin` resulted in a 
+This is definitely not the case for the main TDS 420A firmware. Running `strings main_fw.bin` resulted in a 
 treasure trove of data!
 
 * There are the expected copyright notices:
