@@ -219,7 +219,7 @@ of the enhancement surgery!
 
 The scope bootup screen looks good:
 
-![Option 1M enabled](/assets/tds420a/option_1M_enabled.jpg)
+![Option 1M enabled](/assets/tds420a/option_1m_enabled.jpg)
 
 And this formerly grayed out 12000 points menu option is now available:
 
