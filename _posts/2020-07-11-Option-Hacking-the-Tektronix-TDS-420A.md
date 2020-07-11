@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Option Hacking the Tektronix TDS 420A
-date:   2020-07-08 00:00:00 -0700
+date:   2020-07-11 00:00:00 -0700
 categories:
 ---
 
