@@ -10,8 +10,8 @@ categories:
 
 # Introduction
 
-In [earlier](/2020/06/27/In-the-Lab-Tektronix-TDS420A.html#the-tektronix-tds-420a-in-brief), I
-already mentioned that the TDS 400 series of oscilloscopes has a bunch of optional features:
+I wrote [earlier](/2020/06/27/In-the-Lab-Tektronix-TDS420A.html#the-tektronix-tds-420a-in-brief)
+about the optional features of TDS 400 series of oscilloscopes:
 
 * Option 05: Video Trigger 
 * Option 13: RS-232/Centronics Hardcopy Interface
@@ -19,14 +19,13 @@ already mentioned that the TDS 400 series of oscilloscopes has a bunch of option
 * Option 2F: Advanced DSP Math
 * Option 1M: 120k waveform sample points
 
-Most scopes, including mine, come with options 13 and 1F already enabled. But the remaining
-ones are less common.
+Most scopes, including mine, come with options 13 and 1F, but the remaining ones are less common.
 
-The video trigger and advanced DSP math are software functions, but even the 120k sample
-points option sweemed like something that could be enabled with a software hack, since
+The video triggering and advanced DSP math options are pure firmware functions, but even 
+the 120k sample points option seemed like something that could be enabled with a software hack, since
 the signal acquisition board has the 512KB of RAM available to store the data.
 
-In this blog post, I'll describe how the TDS 400 series manages option enablement, and
+Here, I'll describe how the TDS 400 series manages option enablement, and
 how you can hack the scope into getting them to work.
 
 # How a TDS400 Oscilloscope Manages Hardware Features
@@ -53,7 +52,7 @@ Here's a very non-exhaustive list of codes that I've been able to identify:
 0x2b8: 30000 points -> value when 1M option is not possible
 0x2bf: TDS420A
 0x2d2: RS232 Debug uart present
-0x317: MathPak
+0x317: MathPak      -> this is the advanced DSP math function
 0x461: Floppy drive present
 0x537: flashRomDateStringPtr
 0x54c: TDS410A
@@ -71,7 +70,7 @@ feature ID.
 # The Key to Enabling Option 05 - Video Triggering
 
 Did you see `_hwProbeTvTrigPresent()`? That's the function that checks
-if the video triggering feature is enabled:
+if the video triggering feature should be enabled:
 
 ![hwProbeTvTrigPresent](/assets/tds420a/hwProbeTvTrigPresent.png)
 
@@ -106,7 +105,6 @@ My scope booted up with this image:
 Success! I'm now the proud owner of a scope that supports an entirely obsolete video triggering
 mode, and a FFT math option!
 
-
 Video Triggering Menu:
 ![Video triggering features](/assets/tds420a/video_triggering_features.jpg)
 
@@ -115,12 +113,12 @@ Live FFT of a 1kHz square wave:
 
 # Option 1M - 120K Sample Points - A Different Story
 
-Unfortunately, the `case` statement is only a small part of `hwAccountGetValue`: most
+Unfortunately, the `case` statement is only a small part of the `hwAccountGetValue` function: most
 feature checking functions are performed by looping through an array of structs that
 have the feature ID and a function pointer to the checking function. This is quite
 a bit harder to figure out in Ghidra.
 
-However, we already know that the function names to enable options start with `hwProbe...`.
+However, we already know that the function names to enable options start with `hwProbe`.
 
 With Ghidra, we can filter on this, and that gives the `hwProbe1MOption` and the 
 `hwProbe1MPresent` functions. 
@@ -157,7 +155,7 @@ hwAccountantQuery(0x20f)
 ```
 
 And now it's clear why option 1M doesn't get enabled: feature ID 0x20f is fine, 131071/0x1ffff 
-is larger than 0x1fffe, but feature ID 0x216 is not: 262143/0x3ffff is smaller than 0xffffe.
+is larger than 0x1fffe, but feature ID 0x216 is not, 262143/0x3ffff is smaller than 0xffffe.
 
 Whatever it is used for, the "D2" memory is too small.
 
@@ -166,8 +164,8 @@ Whatever it is used for, the "D2" memory is too small.
 This finally gave me the crucial hint to start looking at other PCBs inside the scope and
 try to find if there's a place with empty footprints for RAM chips.
 
-I call this the DSP PCB. Luckily, it's a board that's easy to remove, without fragile flex
-cables or connectors.
+I call this the DSP PCB. Luckily, it's a board that's easy to remove from the chassis, without 
+fragile flex cables or connectors.
 
 ![DSP PCB](/assets/tds420a/dsp_pcb.jpg)
 
@@ -181,15 +179,15 @@ The RAM chips are M5M51008 with a 100ns speed rating, made by Mitsubishi LSI.
 
 Surprisingly, Digikey still carries these parts: they're now made by Rochester
 Electronics, and only available in 70ns or 55ns version, but faster is better,
-so that's not a problem.
+so that shouldn't be a problem.
 
-And they're cheap too at just $2.56 a piece.
+They're cheap too at just $2.56 a piece.
 
 The only issue is a minimum order quantity of 100 parts. $256 for a feature
 on a 25 years old $190 oscilloscope is a bit too much! Luckily, the parts
 are available at various Chinese chip brokers: I was able to buy them at 
-UTSource for just $1.81 a piece. Even when buying 10 of them (for redundancy),
-shipping was the biggest part of the cost:
+[UTSource](https://utsource.net) for just $1.81 a piece. Even when buying 10 
+of them (for redundancy), shipping was the biggest part of the cost:
 
 ![Memory Order](/assets/tds420a/memory_order.png)
 
@@ -201,8 +199,8 @@ on the DSP board:
 ![DSP Board Before Surgery](/assets/tds420a/dsp_board_before_surgery.jpg)
 
 Note how I did not disconnect the battery that's wired to the board: it's used to
-permanently provide power to those 4 RAMs chips that are encased into some
-transparant polymer gu. Removing the battery will result in lost calibration
+permanently provide power to those 4 RAMs chips on the left that are encased into 
+some transparant polymer gu. Removing the battery will result in lost calibration
 data (or so they say.)
 
 I used a regular soldering iron instead of a hot air gun to attach the 6 RAMs:
@@ -219,25 +217,29 @@ The end result isn't perfect, but it's good enough:
 With the RAM populated, it's time to power on the scope and check the result
 of the enhancement surgery!
 
-The scope bootup screen is promising:
+The scope bootup screen looks good:
 
-And this formerly grayed out option is now available:
+![Option 1M enabled](/assets/tds420a/option_1M_enabled.jpg)
+
+And this formerly grayed out 12000 points menu option is now available:
 
 ![120K Points](/assets/tds420a/120k_points.jpg)
+
+Victory at Last!
 
 # Conclusion
 
 The TDS 420A is an old oscilloscope, and even with those 3 new options enabled, it's
 far inferior to my Siglent 2304X or even my HP 54825A (Windows 95!) loaner.
 
-120K sample points is definitely better than 30K, but it still pales in comparison
+120K sample points is obviously better than 30K, but it still pales in comparison
 to the 140M sample points of the Siglent.
 
 So what then was the point of this whole exercise?
 
 I got a close up view of oscilloscope internals, I learned Ghidra from scratch and
 applied it on a real, non-trival project, I added RAM to a 25 year old oscilloscope 
-and it freaking worked! I spent tons of late night hours decoding firmware and 
+and it worked, I spent tons of late night hours decoding firmware, and 
 I had an unreasonable amount of fun doing so.
 
 I even started to appreciate the Tektronix user interface a little bit!
