@@ -5,6 +5,11 @@ date:   2020-07-11 00:00:00 -0700
 categories:
 ---
 
+*Previous installments in this series: [In the Lab - Tektronix TDS 420A Oscilloscope](/2020/06/27/In-the-Lab-Tektronix-TDS420A.html), 
+ [Tektronix TDS 420A Remote Control over GPIB](/2020/06/27/Tektronix-TDS420A-Remote-Control-over-GPIB.html), 
+ [Extracting the Tektronix TDS 420A Firmware](/2020/07/02/Extracting-the-Tektronix-TDS420A-Firmware.html), 
+ [A Tektronix TDS 420A, a Serial Debug Console, a Symbol Table, and Ghidra](/2020/07/03/TDS420A-Serial-Debug-Console-Symbol-Table-Ghidra.html)*
+
 * TOC
 {:toc}
 

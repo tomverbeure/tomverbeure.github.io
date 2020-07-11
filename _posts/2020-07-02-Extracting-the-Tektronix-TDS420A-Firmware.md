@@ -5,6 +5,9 @@ date:   2020-07-02 00:00:00 -0700
 categories:
 ---
 
+*Previous installments in this series: [In the Lab - Tektronix TDS 420A Oscilloscope](/2020/06/27/In-the-Lab-Tektronix-TDS420A.html), 
+ [Tektronix TDS 420A Remote Control over GPIB](/2020/06/27/Tektronix-TDS420A-Remote-Control-over-GPIB.html)*
+
 * TOC
 {:toc}
 
