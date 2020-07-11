@@ -115,10 +115,8 @@ Live FFT of a 1kHz square wave:
 
 Unfortunately, the `case` statement is only a small part of the `hwAccountGetValue` function: most
 feature checking functions are performed by looping through an array of structs that
-have the feature ID and a function pointer to the checking function. This is quite
-a bit harder to figure out in Ghidra.
-
-However, we already know that the function names to enable options start with `hwProbe`.
+have the feature ID and a function pointer to the checking function. It's a bit harder to figure 
+out in Ghidra, but we already know that the function names to enable options start with `hwProbe`.
 
 With Ghidra, we can filter on this, and that gives the `hwProbe1MOption` and the 
 `hwProbe1MPresent` functions. 
@@ -134,7 +132,6 @@ NVRAM:
 libManagerWordAtPut 0x50006, 1
 ```
 
-
 `hwProbe1MOption` is a different story:
 
 ![hwProbe1MOption](/assets/tds420a/hwProbe1MOption.png)
@@ -142,8 +139,12 @@ libManagerWordAtPut 0x50006, 1
 When you run `hwProbe1MOption` on the command line, the function returns a 0.
 
 Feature IDs 0x216 and 0x20f are also part of the array of structs. They call the functions
-`hwProbeD2MemSize` and `hwProbe XXX` respectively.  Both of these functions run a test
-to check the amount of RAM that is populated on the board.
+`hwProbeD2MemSize` and `hwProbeAcqMemSize` respectively.  
+
+![hwProbe table](/assets/tds420a/hwProbeTable.png)
+
+`hwProbeD2MemSize` and `hwProbeAcqMemSize` both run a test to check the amount of RAM that 
+is populated on the board.
 
 When you run these query commands on the debug console, you get:
 
@@ -154,10 +155,11 @@ hwAccountantQuery(0x20f)
 131071
 ```
 
-And now it's clear why option 1M doesn't get enabled: feature ID 0x20f is fine, 131071/0x1ffff 
-is larger than 0x1fffe, but feature ID 0x216 is not, 262143/0x3ffff is smaller than 0xffffe.
+It's now clear why option 1M doesn't get enabled after changing the NVRAM value: 
+feature ID 0x20f is fine (131071/0x1ffff is larger than 0x1fffe), but feature ID 0x216 is not 
+(262143/0x3ffff is smaller than 0xffffe).
 
-Whatever it is used for, the "D2" memory is too small.
+Whatever it is used for, the amount of "D2" memory in the scope is too small.
 
 # In Search of the Missing Memory
 
