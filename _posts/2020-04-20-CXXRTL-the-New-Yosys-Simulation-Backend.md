@@ -29,21 +29,21 @@ tutorial](https://zipcpu.com/blog/2017/06/21/looking-at-verilator.html).
 Verilator can easily be 100x faster than Icarus Verilog. When the simulation time of my projects gets too
 long, I usually switch from Icarus to Verilator.
 
-Icarus and Verilator aren't the only open source Verilog simulators, but they are the most popular by far, and
-for good reason.  Wikipedia [lists](https://en.wikipedia.org/wiki/List_of_HDL_simulators#Free_and_open-source_simulators) a number
+Icarus and Verilator aren't the only open source Verilog simulators, but they are the most popular by far. And
+for good reason: Wikipedia [lists](https://en.wikipedia.org/wiki/List_of_HDL_simulators#Free_and_open-source_simulators) a number
 of alternatives, but one constant between them is the lack of support for modern Verilog features. I've
 never seen anybody use them...
 
 # Yosys, the Swiss Army Knife of Digital Logic Manipulation
 
 Yosys is the star of the open source synthesis world. It initially rose to prominence with the release of 
-[Claire Wolff](http://www.clifford.at/)'s [Project IceStorm](http://www.clifford.at/icestorm/), in 
-which it's the synthesis component of an end-to-end open source RTL to bitstream flow for Lattice ICE40 FPGAs. 
+[Claire Wolff](http://www.clifford.at/)'s [Project IceStorm](http://www.clifford.at/icestorm/), 
+where it's the synthesis component of an end-to-end open source RTL to bitstream flow for Lattice ICE40 FPGAs. 
 
 But Yosys is much more than that.
 
 It's a swiss army knife of digital logic manipulation that takes in a digital design through one of its so-called frontends 
-(Verilog, blif, json, ilang, even VHDL for the commerical version), provides tons of different passes that transform 
+(Verilog, blif, json, ilang, even VHDL and SystemVerilog for the commerical version), provides tons of different passes that transform 
 the digital logic one way or the other (e.g. flatten a hierarchy, remove redundant logic, map generic gates to 
 specific technology gates, check formal equivalence), and a whole bunch of backends that write the final design in 
 some desired format (e.g. Verilog, Spice, json etc.)
@@ -66,8 +66,8 @@ ready-made recipes to go from RTL to a synthesized gate-level netlist.*
 the digital logic inside Yosys as a set of C++ classes, one for each remaining module, after performing whichever 
 transformation pass you want to apply.
 
-In combination with a single C++ [`cxxrtl.h`](https://github.com/YosysHQ/yosys/blob/master/backends/cxxrtl/cxxrtl.h)
-include file with template classes that implements variable width bitvector arithmetic, the C++ classes become a 
+In combination with [`cxxrtl.h`](https://github.com/YosysHQ/yosys/blob/master/backends/cxxrtl/cxxrtl.h),
+a single C++ include file with template classes that implement variable width bitvector arithmetic, the C++ classes become a 
 simulation model of the digital design.
 
 Just like with Verilator, the simulation model is cycle-based. And just like Verilator, you need to provide a thin
@@ -83,7 +83,7 @@ kinds of [open source projects](https://github.com/whitequark).
 to [patching Nvidia drivers to support hot-unplug on Linux](https://lab.whitequark.org/notes/2018-10-28/patching-nvidia-gpu-driver-for-hot-unplug-on-linux/), 
 to [using a blowtorch to reflow PCBs](https://lab.whitequark.org/notes/2016-04-28/smd-reflow-with-a-blowtorch/) (because... why not?).
 
-In addition to she's the main author of [nMigen](https://github.com/m-labs/nmigen) (a Python framework that replaces Verilog as a 
+In addition to CXXRTL, she's the main author of [nMigen](https://github.com/m-labs/nmigen) (a Python framework that replaces Verilog as a 
 language to write RTL), the maintainer of [Solvespace](http://solvespace.com/index.pl) (a parametric 2d/3d CAD tool), 
 and she has countless Yosys contributions to her name.
 
@@ -99,9 +99,9 @@ Going from Verilog to running a simulation is straightforward.
     ```verilog
     module blink(input clk, output led);
     
-        reg [7:0] counter = 0;
+        reg [11:0] counter = 12'h0;
     
-        always @(posedge clk)
+        always @(posedge clk) 
             counter <= counter + 1'b1;
     
         assign led = counter[7];
@@ -111,7 +111,7 @@ Going from Verilog to running a simulation is straightforward.
 
 1. Convert the design above to a simulatable C++ class 
 
-    `yosys -p "read_verilog blink.v; write_cxxrtl blink.cpp"`. 
+    `yosys -p "read_verilog blink.v; write_cxxrtl blink.cpp"`
 
 1. Create a simulation wrapper
 
@@ -127,21 +127,22 @@ Going from Verilog to running a simulation is straightforward.
     {
         cxxrtl_design::p_blink top;
     
-        int prev_led = 0;
+        bool prev_led = 0;
     
         top.step();
-        for(int i=0;i<1000;++i){
+        for(int cycle=0;cycle<1000;++cycle){
     
-            top.p_clk = value<1>{0u};
+            top.p_clk.set<bool>(0);
             top.step();
-            top.p_clk = value<1>{1u};
+            top.p_clk.set<bool>(1);
             top.step();
     
-            int cur_led = top.p_led.curr.data[0];
+            bool cur_led        = top.p_led.get<bool>();
+            uint32_t counter    = top.p_counter.get<uint32_t>();
     
-            if (cur_led != prev_led)
-                cout << "cycle " << i << " - led: " << cur_led << endl;
-    
+            if (cur_led != prev_led){
+                cout << "cycle " << cycle << " - led: " << cur_led << ", counter: " << counter << endl;
+            }
             prev_led = cur_led;
         }
     }
@@ -149,7 +150,7 @@ Going from Verilog to running a simulation is straightforward.
 
 1. Compile `blink.cpp` and main.cpp` to a simulation executable
 
-    `clang++ -g -O3 -std=c++14 -I ~/tools/yosys/ main.cpp -o tb`
+    ```clang++ -g -O3 -std=c++14 -I `yosys-config --datdir`/include main.cpp -o tb```
 
 1. Execute!
 
@@ -164,6 +165,8 @@ Going from Verilog to running a simulation is straightforward.
     cycle 895 - led: 1
     ```
 
+You can find the files above in my [`cxxrtl_eval`](https://github.com/tomverbeure/cxxrtl_eval/tree/master/blink_basic) project on GitHub.
+
 # Under the Hood
 
 CXXRTL is surprisingly lightweight. At the time of writing this 
@@ -171,8 +174,8 @@ CXXRTL is surprisingly lightweight. At the time of writing this
 it stands at around [4500 lines of code and copious comments](https://github.com/YosysHQ/yosys/tree/072b14f1a945d096d6f72fc4ac621354aa636c70/backends/cxxrtl).
 
 This code includes a manual with description of the various options and some examples, the backend that transforms Yosys
-internal design representation into C++ code, `cxxrtl.h`, a C++ template library with support for variable length
-bit vectors, as well as a C API and a VCD debug support.
+internal design representation into C++ code, the aforementioned `cxxrtl.h` library for variable length
+bit vector operations, as well as a C API and a VCD waveform dumping support.
 
 It's tempting to compare this against the 105000 lines of code of Verilator, but that's incredibly
 unfair because a lot of the heavy lifting to create a CXXRTL simulator is performed by the generic
@@ -193,13 +196,12 @@ for a cycle based simulator.
 
 CXXRTL expects a design, hierarchically flattened or not, as a graph of logic operations and flip-flops. Yosys
 already does that. All CXXRTL needs to do is to topologically sort this graph so that dependent
-operations are performed in the optimal order (for best performance), and write out these operations as
+operations are performed in the optimal execution order, for best performance, and write out these operations as
 C++ code.
 
 # CXXRTL Manual
 
-CXXRTL is still in heavy development and moving fast. This blog post had to be updated multiple times due to 
-new features being added all the time.
+CXXRTL is very new and moving fast. This blog post had to be updated multiple times due to new features being added.
 
 For an up-to-date state of features, it's best to bring up the CXXRTL manual from within Yosys:
 
@@ -223,7 +225,7 @@ driving rising edge triggered flip-flops:
 
 # Features and Options
 
-* Black-boxing of select submodules
+* Black-boxing of submodules deep in the design hierarchy
 
     When you black-box a module in CXXRTL, you replace it with your own C++ class.
 
@@ -281,7 +283,7 @@ driving rising edge triggered flip-flops:
 * Simplicity
 
     One of the most attractive points of CXXRTL is the simplicity of the code. The 
-    Yosys backend is small. The generated code is understandable. The execution model is
+    Yosys backend is small. The generated code is understandable (to a point). The execution model is
     straightforward. It uses a single bit vector data representation and C++ templates to 
     implement Yosys digital logic primitives.
 
