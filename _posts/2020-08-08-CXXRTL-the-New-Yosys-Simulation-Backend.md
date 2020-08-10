@@ -322,7 +322,7 @@ driving rising edge triggered flip-flops:
     to add support for `$display` in Yosys.
 
     Functions like `$readmem` are supported, but only the way a synthesis tool supports
-    them: tihe file with the memory contents is read when Yosys reads in the Verilog file,
+    them: the file with the memory contents is read when Yosys reads in the Verilog file,
     is then converted into some internal format, and, ultimately, written out as an 
     array initialization in the CXXRTL C++ model.
 
