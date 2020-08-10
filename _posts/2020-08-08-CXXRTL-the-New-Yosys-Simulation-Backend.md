@@ -348,11 +348,11 @@ bridge to GDB.
 
 And in SOCs, a common simulation speedup tactic is to replace the hardware
 cycle-true model of a CPU by a behavioral call to the C code that would otherwise
-need to be simulated assembler instruction by assembler instruction on the
-hardware model of other CPU. This can result in huge simulation speed increases
-for simulations that tests something not directly related to the embedded
+need to be simulated assembler instruction by assembler instruction. 
+This can result in huge simulation speed increases for simulations that tests 
+something not directly related to the embedded
 CPU (and thus doesn't require the CPU to be cycle or transaction accurate), 
-but still needs the CPU for things like initialization.
+but still uses the embedded CPU for things like initialization.
 
 An additional treat of CXXRTL is the fact that it supports black-boxing of
 parameterized Verilog modules through C++ templates, where the Verilog parameter
