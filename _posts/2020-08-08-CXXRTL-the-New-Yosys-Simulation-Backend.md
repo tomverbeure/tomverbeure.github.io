@@ -362,7 +362,7 @@ extensive debugging capabilities. For example, the behaviorla FIFO could log all
 interesting traffic to a file for later analysis, or maintain an occupancy
 histogram to help with maximum FIFO depth sizing.
 
-In commercial simulators, replacing desig blocks with a behavior model is
+In commercial simulators, replacing design blocks with a behavior model is
 often a cumbersome process, and one that can slow down the peak simulation
 speed due to its interference with the scheduling model. The CXXRTL
 black box implementation does not suffer from this: by adding the right
