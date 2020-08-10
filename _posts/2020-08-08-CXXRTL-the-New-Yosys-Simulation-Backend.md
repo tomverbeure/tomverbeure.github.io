@@ -1,7 +1,7 @@
 ---
 layout: post
 title: CXXRTL, a Yosys Simulation Backend
-date:  2020-04-20 00:00:00 -1000
+date:  2020-08-08 00:00:00 -1000
 categories:
 ---
 
