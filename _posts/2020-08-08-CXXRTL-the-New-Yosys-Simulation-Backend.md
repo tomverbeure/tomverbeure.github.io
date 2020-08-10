@@ -299,8 +299,14 @@ driving rising edge triggered flip-flops:
     in parallel. CXXRTL dumps out 1 flat file, so nothing about compiling the model can 
     be done in parallel.
 
-    With highest performance flags, my VexRiscv benchmark takes 66s to build with CXXRTL 
-    vs 9s on Verilator, or about 7 times longer.
+    With highest performance flags, my VexRiscv benchmark takes 7s to build with CXXRTL 
+    vs 3.5s on Verilator, or about 2x times longer. 
+
+    When using CXXRTL, it's crucial to use the right C compiler: while clang9 took
+    7s, clang6 took 17s, and gcc10 needed a whopping 32s for the same simulation
+    model!
+
+    See details [here](https://github.com/tomverbeure/cxxrtl_eval/blob/master/README.md#verilator-compile-time).
 
     The ratio increases for larger models when multiple compilations are launched at the
     same time.
