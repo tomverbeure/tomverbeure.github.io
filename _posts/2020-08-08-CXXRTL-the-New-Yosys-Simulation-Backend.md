@@ -150,7 +150,7 @@ Going from Verilog to running a simulation is straightforward.
     cycle 895 - led: 1
     ```
 
-You can find the files above in the [`blink_basic`](https://github.com/tomverbeure/cxxrtl_eval/tree/master/blink_basic) project on GitHub.
+You can find the files above in the [`blink_basic`](https://github.com/tomverbeure/cxxrtl_eval/tree/master/blink_basic) 
 example of my [`cxxrtl_eval`](https://github.com/tomverbeure/cxxrtl_eval) project on GitHub.
 
 
