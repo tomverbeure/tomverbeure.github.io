@@ -74,8 +74,7 @@ simulation model of the digital design.
 Just like with Verilator, the simulation model is cycle-based. And just like Verilator, you need to provide a thin
 C++ wrapper that calls these classes to perform a step-by-step simulation.
 
-
-# Quick Start: From Verilog to Simulation
+# Quick Start: From Verilog to Simulation Result
 
 Going from Verilog to running a simulation is straightforward. 
 
@@ -117,9 +116,9 @@ Going from Verilog to running a simulation is straightforward.
         top.step();
         for(int cycle=0;cycle<1000;++cycle){
     
-            top.p_clk.set<bool>(0);
+            top.p_clk.set<bool>(false);
             top.step();
-            top.p_clk.set<bool>(1);
+            top.p_clk.set<bool>(true);
             top.step();
     
             bool cur_led        = top.p_led.get<bool>();
@@ -180,32 +179,12 @@ driving rising edge triggered flip-flops:
 
 # Features and Options
 
-* Black-boxing of submodules deep in the design hierarchy
+* Flexible Black-boxing of Submodules 
 
-    When you black-box a module in CXXRTL, you replace it with your own C++ class.
+    This makes it possible to replace any module inside the the design hierarchy
+    with a behavior model that's written in C++.
 
-    This can be useful for a variety of reasons. 
-
-    A very good example would be the replacement of a hardware UART with a C++ 
-    class that calls the serial port of the computer on which the simulator
-    is running. Or replacing JTAG debug hardware with a software bridge to GDB.
-
-    Another common simulation speedup tactic is to replace the hardware
-    model of a CPU by a behavioral call to the C code that would otherwise
-    need to be simulated assembler instruction by assembler instruction on the
-    hardware model of other CPU. 
-   
-    The CXXRTL manual contains a black-box example.
-
-* Parameterized Black-Boxes through C++ Templates
-
-    This is a subfeature of black-boxing, but one that I find interesting just
-    for the sake of it.
-    
-    Black box Verilog modules with parameters are converted into templated
-    C++ classes, where the parameter becomes the template parameter. 
-
-    The manual once again gives a good example of this.
+    This can be useful for a variety of reasons during the development process.
 
 * VCD Waveform Generation
 
@@ -230,7 +209,7 @@ driving rising edge triggered flip-flops:
 
     One of the most attractive points of CXXRTL is the simplicity of the implementation. 
 
-    The Yosys backend is small. The generated code is understandable (to a point). The execution 
+    The Yosys backend CXXRTL is small. The generated code is understandable (to a point). The execution 
     model is straightforward. It uses a single bit vector data representation and C++ templates to 
     implement Yosys digital logic primitives.
 
@@ -244,6 +223,16 @@ driving rising edge triggered flip-flops:
     experience relatively painless.
 
     I consider this a major plus for an open source project.
+
+* C API
+
+    For those who can't use C++ for the testbench wrapper, there is a C API that allows pure
+    C to do almost anything you can do with the default C++ interface.
+
+    The simulation model itself still needs to be compiled with C++, but this is useful
+    to integrate and link the simulation model into language such a Python (which
+    uses C to call foreign libraries).
+
 
 * Automatically benefits from Yosys front-end improvements
 
@@ -266,7 +255,7 @@ driving rising edge triggered flip-flops:
     is used by CXXRTL, this improved simulation feature support to automatic!
 
     Once the Yosys gHDL integration stabilize, CXXRTL will be the only open source simulator
-    with mixed Verilg/VHDL language support!
+    with mixed Verilog/VHDL language support!
 
 * Simulation Speed
 
@@ -316,7 +305,7 @@ driving rising edge triggered flip-flops:
     The ratio increases for larger models when multiple compilations are launched at the
     same time.
 
-* No Support for some Verilog $ functions
+* No Support for Some Verilog $ Functions
 
     I like to spinkle my code with debug `$display` statements. Since these are 
     non-synthesizable constructs, Yosys currently just ignores them as if they were never 
@@ -332,17 +321,77 @@ driving rising edge triggered flip-flops:
     There's currently a [feature request](https://github.com/YosysHQ/yosys/issues/2310)
     to add support for `$display` in Yosys.
 
+    Functions like `$readmem` are supported, but only the way a synthesis tool supports
+    them: tihe file with the memory contents is read when Yosys reads in the Verilog file,
+    is then converted into some internal format, and, ultimately, written out as an 
+    array initialization in the CXXRTL C++ model.
+
+    A consequence of this is that changing the memory contents file after running
+    Yosys won't change the memory content of the C++ model if you don't go through
+    the lengthy Yosys/C compiler compilation route again. A potential work-around
+    is to initialize the memory contents from the C++ testbench.
+
+# Black Box Support
+
+CXXRTL makes it possible to replace any module in the design hierarchy with a
+behavioral C++ model.
+
+This can be useful for a variety of reasons. 
+
+A very good example would be the replacement of a hardware UART with a C++ 
+class that calls the serial port of the computer on which the simulator
+is running. Doing so allows a software team to connect with a virtual
+version of the chip just the way they would on real silicon.
+
+Another classic example is to replace a JTAG debug controller with a software 
+bridge to GDB.
+
+And in SOCs, a common simulation speedup tactic is to replace the hardware
+cycle-true model of a CPU by a behavioral call to the C code that would otherwise
+need to be simulated assembler instruction by assembler instruction on the
+hardware model of other CPU. This can result in huge simulation speed increases
+for simulations that tests something not directly related to the embedded
+CPU (and thus doesn't require the CPU to be cycle or transaction accurate), 
+but still needs the CPU for things like initialization.
+
+An additional treat of CXXRTL is the fact that it supports black-boxing of
+parameterized Verilog modules through C++ templates, where the Verilog parameter
+becomes a template parameter. A feature like this could be useful to replace
+FIFOs with various width and depth with a behavioral model that has
+extensive debugging capabilities. For example, the behaviorla FIFO could log all
+interesting traffic to a file for later analysis, or maintain an occupancy
+histogram to help with maximum FIFO depth sizing.
+
+In commercial simulators, replacing desig blocks with a behavior model is
+often a cumbersome process, and one that can slow down the peak simulation
+speed due to its interference with the scheduling model. The CXXRTL
+black box implementation does not suffer from this: by adding the right
+attributes on the ports of the black box model, it can even support
+combinatorial feedback loops within the black box while still keeping
+optimal simulation speed.
+
+I don't think Verilator supports seemless replacement of modules deep in the
+design hierarchy, so this could be a key feature to consider when choosing a
+simulator.
+
+I haven't played with the black-box feature myself yet, but the CXXRTL manual
+has some examples that will get you going. 
+
+The topic of making your black box simulate as efficiently as possible is worthy
+of a blog post of itself.
+
 # Dumping VCD Waveforms
 
-Dupming signal values into a waveform requires knowledge and access to the
+Dumping signal values into a waveform requires knowledge and access to the
 internal signals and memories.
 
 Design introspection provides all that, and makes it really easy to implement
-a simple waveform dumper. CXXRTL comes standard with `cxxrtl_vcd.h` which adds
-VCD support.
+a simple waveform dumper. CXXRTL comes standard with 
+[`cxxrtl_vcd.h` ](https://github.com/YosysHQ/yosys/blob/master/backends/cxxrtl/cxxrtl_vcd.h)
+which adds VCD support.
 
 The decision to dump signal values or not after a simulation timing step is up to the 
-programmer of the C testbench, and requires slightly more effort than for a traditional
+writer of the C++ testbench, and requires slightly more effort than for a traditional
 Verilog simulator, but it's also more flexible: it'd be trivial to only start dumping waves 
 based on some internal design condition, for example.
     
@@ -396,7 +445,7 @@ look at and interact with all the values that the design contains, all without k
 which values exist at compile time.
 
 This opens up all kinds of possibilities. For example, one could embed a CXXRTL model in
-GUI wrapper that allows the user to interactively browse through the design variables,
+a GUI wrapper that allows the user to interactively browse through the design variables,
 inspect values etc.
 
 Or it could be used for checkpointing, where the state of a long-running simulation
@@ -442,7 +491,7 @@ in the future, but it's unlikely.)
 When your Verilog code has a 5-bit register, it will use a single chunk to store its value.
 When there's a 33-bit register, it will use 2 chunks.
 
-Memory are stored just the same, with multiple values tightly packed in memory.
+Memory content is stored just the same, with multiple values tightly packed in an array.
 
 The function below from the same example prints out the current value of a simulation item:
 
@@ -564,7 +613,7 @@ to [patching Nvidia drivers to support hot-unplug on Linux](https://lab.whitequa
 to [using a blowtorch to reflow PCBs](https://lab.whitequark.org/notes/2016-04-28/smd-reflow-with-a-blowtorch/) (because... why not?).
 
 In addition to CXXRTL, she's the main author of [nMigen](https://github.com/m-labs/nmigen) (a Python framework that replaces Verilog as a 
-language to write RTL), the maintainer of [Solvespace](http://solvespace.com/index.pl) (a parametric 2d/3d CAD tool), 
+language to write RTL), the maintainer of [Solvespace](http://solvespace.com/index.pl) (a parametric 2D/3D CAD tool), 
 and she has countless Yosys contributions to her name.
 
 I highly recommend checking out her work, her battles with cursed technologies, and sponsoring her work 
@@ -575,7 +624,7 @@ through [Patreon](https://www.patreon.com/whitequark/posts).
 It's still early days for CXXRTL. It was started less than a year ago, and the first merge into the main Yosys
 tree was only happened in April of this year.
 
-And yet it's already one of the best open source simulators, it's fast, lightweigh, and the easiest by far to extend
+And yet it's already one of the best open source simulators around. It's fast, lightweigh, and the easiest by far to extend
 with new features.
 
 It's already my default simulator for my hobby projects. Give it a try!
@@ -583,23 +632,23 @@ It's already my default simulator for my hobby projects. Give it a try!
 # References
 
 Relevant whitequark tweets:
+* [Initial CXXRTL announcement](https://twitter.com/whitequark/status/1201014573547040769)
+* [Initial black box support with UART example](https://twitter.com/whitequark/status/1251429512732012552)
+* [VCD emitter, minimal example of dumping VCD waves](https://twitter.com/whitequark/status/1269352227002552320)
 * [Size of VCD file compared to Verilator](https://twitter.com/whitequark/status/1269968987682672642)
+* [C API announcement and example](https://twitter.com/whitequark/status/1269473985097543680)
+* [C API example using Python](https://twitter.com/whitequark/status/1269284773840719872)
+* [C API example using design introspection](https://twitter.com/whitequark/status/1269226589356724224)
 * [Zero-cost CXXRTL debug information thread](https://twitter.com/whitequark/status/1269951285106823168)
-* [Poll about zero-cost addition of debug probes](https://twitter.com/whitequark/status/1269889811973844994)
-* [CAPI](https://twitter.com/whitequark/status/1269473985097543680)
-* [VCD emitter](https://twitter.com/whitequark/status/1269352227002552320)
-* [Python using CAPI](https://twitter.com/whitequark/status/1269284773840719872)
-* [CXXRTL and WASM](https://twitter.com/whitequark/status/1269241340711272450)
-* [debug information exposed through CAPI](https://twitter.com/whitequark/status/1269226589356724224)
-* [Initial black box support](https://twitter.com/whitequark/status/1251429512732012552)
 * [CXXRTL 70% faster](https://twitter.com/whitequark/status/1252615261934534656)
-* [Initial announcement](https://twitter.com/whitequark/status/1201014573547040769)
 
 GitHub:
-* [GitHub Initial pull request](https://github.com/YosysHQ/yosys/pull/1562)
+* [CXX initial pull request on GitHub](https://github.com/YosysHQ/yosys/pull/1562)
 
-Libre-soc discussion:
-* [CXXRTL discussion on libre-soc](https://bugs.libre-soc.org/show_bug.cgi?id=276)
+    Contains a number of interesting comments about the underlying philosphy of CXXRTL.
+
+Libre-soc:
+* [Discussion about CXXRTL and different kinds of FF cell support](https://bugs.libre-soc.org/show_bug.cgi?id=276)
 
 Foundational paper about operation scheduling:
 * [A Fast & Effective Heuristic for the Feedback Arc Set Problem](https://pdfs.semanticscholar.org/c7ed/d9acce96ca357876540e19664eb9d976637f.pdf)
