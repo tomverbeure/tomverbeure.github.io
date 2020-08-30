@@ -52,3 +52,38 @@ So what do we get in return for our $225? A very clean signal with almost no ref
 The total bitstream load time was 236ms. Not best in class, but about where you'd expect for a 24MHz clock speed.
 This 236ms includes an idle time of ~40ms between the start of the transaction and the continuous burst of data,
 so for a much larger bitstream, the result will be considerably better.
+
+
+# Blue Pill as USB Blaster
+
+* Ridiculously complete overview of JTAG clones: https://wiki.cuvoodoo.info/doku.php?id=jtag
+
+* Download GNU Arm Embedded toolchain: https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads  
+    * I downloaded https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2020q2/gcc-arm-none-eabi-9-2020-q2-update-x86_64-linux.tar.bz2
+    * gcc-arm-none-eabi-8-2018-q4-major crashes with an internal compiler error!
+
+* GitHub:
+    * original: https://github.com/Icenowy/USB-Blaster-GCC
+    * useful forks: 
+        * Support for "ARMJISHU USB-Blaster": https://github.com/rmaxmu/USB-Blaster-GCC
+        * Support for "JTAGPILL": https://github.com/sztsian/USB-Blaster-GCC
+
+```
+cd ~/tools
+bunzip2 -c ~/Downloads/gcc-arm-none-eabi-9-2020-q2-update-x86_64-linux.tar.bz2 | tar xfv -
+export PATH=~/tools/gcc-arm-none-eabi-9-2020-q2-update/bin:$PATH
+git clone https://github.com/Icenowy/USB-Blaster-GCC
+cd USB-Blaster-GCC
+export CROSS_COMPILE=arm-none-eabi-
+```
+
+Edit Makefile:
+```
+usb-blaster.axf: $(startup-object) $(drv-objects) $(sys-objects) $(usb-objects) $(src-objects) $(stdperiph-objects) $(fsusb-objects) /home/tom/tools/gcc-arm-none-eabi-9-2020-q2-update/lib/gcc/arm-none-eabi/9.3.1/libgcc.a
+```
+
+```
+make
+```
+
+
