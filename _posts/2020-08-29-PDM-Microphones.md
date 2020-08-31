@@ -212,7 +212,7 @@ frequency range!
 This makes total sense, because it's exactly same as the aliasing effect that happens when you
 undersample a signal.
 
-Here's a simple example with 3 sine waves at 0.01, 0.1 and 0.28 of the normalized samplling rate.
+Here's a simple example in PCM format with 3 sine waves at 0.01, 0.1 and 0.28 of the normalized sampling rate.
 In the second and third graph, we've decimate the signal by 2 and by 4. 
 
 ![Decimation without Filtering - 3 Sine Waves](/assets/pdm/decimation_without_filtering_regular.svg)
@@ -234,6 +234,31 @@ down from 3.072 MHz down to 768kHz, our signal has already entry disappeared.
 
 After the first step, the noise that's present in the original frequence range form 0.25 to 0.5 was folded onto
 the range from 0 to 0.25, drowning out the original signal.
+
+# Best Case Low Pass Filtering
+
+It should be abundantly clear now that we need that low pass filter before we can decimate to
+a lower sample rate.
+
+Let's use the following parameters:
+
+* Original sample rate: 3.072 MHz
+* Oversample rate factor: 64
+* Desired sample rate: 48 kHz
+* Original signal bandwidth: 20 kHz
+* Desired pass band: 0 dB
+* Desired stop band: 96 dB
+
+I chose 96 dB because that's the theoretical maximum SNR for 16-bit audio. Most PDM microphones only
+have an SNR in the low sixties, so this is overly aggressive, but let's just see what we can do.
+
+The transition from pass band to stop band will start at 20 kHz. And if we look at the graph for
+a 64x oversampling, 4th order sigma-delta convertor, we see that the noise goes above 96 dB 
+
+Since the noise starts going up immediately above 24 kHz (=48/2), we have 4 kHz to construct a filter
+that goes from a pass band to the stop band. In fact, i
+
+# Box Averaging Filters
 
 
 
