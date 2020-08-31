@@ -10,22 +10,28 @@ categories:
 
 # Introduction
 
-I've been playing around with PDM MEMS microphones lately. They're tiny little things that are primarily used
-in cell phones.
+I've been playing around with PDM MEMS microphones lately. Due to their small size, low cost, and still decent
+quality, they are primarily used in cell phones. 
 
-Instead of sending out the audio signal as PCM over an I2S interface, they use 1-bit pulse density modulation (PDM).
+On Digikey, the cheapest ones are around $1. Or you can buy [a breakout board on Adafruit](https://www.adafruit.com/product/3492) 
+for $5:
+
+![Adafruit PDM MEMS Microphone](/assets/pdm/adafruit-pdm-mems-microphone.jpg)
+
+Instead of sending out the audio signal in PCM format over an I2S interface, they use 1-bit pulse density modulation (PDM).
 
 Over the past months, I've been reading on and off about different aspects of this: how PDM works, the signal
 theory behind it, how to convert the data to PCM etc.
 
-Let's be clear about it right from the start: I didn't know anything about this before reading about it, so I'm
-about the opposite of an expert on any of this. If you're serious about learning about PDM signal processing
-in depth, there are tons of interesting articles on the web.
+In this blog post, I'm writing down a summary of the things that I found. Rather than focussing on the math behind it,
+I'm looking at this from an intuitive angle: I'll forget the math anyway, and there are plenty of articles online where you 
+can look up the details if it's necessary.
 
-I'm primarily writing everything here down for myself so that I remember the most important points that made things
-understandable for me. 
+Just to avoid misunderstandings: I didn't know anything about this before reading about it, so I'm about the opposite of 
+an expert on any of this. If you're serious about learning about PDM signal processing in depth, this blog post is not for you.
+I will include a list of references that may point you in the right direction.
 
-# PDM Microphones
+# PDM MEMS Microphones
 
 Humans are able to hear audio in a range from 20 to 20000Hz (though the upper range is very age dependent.)
 Digital signal theory dictates that audio needs to be sampled at twice the bandwidth to accurately reproduce
@@ -137,7 +143,29 @@ An oversampling rate of 64 and a 4th order sigma-delta convertor seems to be do 
 
 And that's exactly what today's PDM microphones support.
 
-The most important things to remember about PDM microphones and sigma-delta convertors are that: 
+# SNR Slope Depends on Sigma Delta Order
+
+We've seen how higher order sigma-delta convertors have a much lower noise floor in the frequency
+range of the sampled signal, but we overlooked that the noise increases much faster for higher
+order convertors once the frequency is to the right of the green dotted line.
+
+Here's a graph that makes this more obvious:
+
+![Noise slope for different orders](/assets/pdm/noise_slope_different_orders.svg)
+
+On the left of the green line, the noise SNR is lower for higher order convertors, but
+on the right side, the SNR for higher order convertors is soon higher than for the
+lower order convertors!
+
+In other words: the slope of the SNR curve is steeper for higher order convertors.
+
+This will be important later when we need to design a low pass filter to remove all higher
+frequencies when converting back from PDM to PCM format: the low pass filter needs to be 
+steeper for higher order sigma-delta convertors.
+
+# PDM and Sigma-Delta Convertors Summary
+
+The most important things to remember about PDM microphones and their sigma-delta convertors are that: 
 
 * they use oversampling to trade off bits for clock speed
 * they push the quantization noise into the frequency range above the bandwidth of the sampled
@@ -145,21 +173,10 @@ The most important things to remember about PDM microphones and sigma-delta conv
 * the rate at which the noise increases with frequency depends on the order of the sigma-delta
   convertor.
 
+# The Road from PDM to PCM
 
+We now know the characteristics of PDM-encoded audio signal. 
 
-
-
-The rate by which the noise goes up above 20kHz depends on the order of the sigma-delta convertor:
-the higher order, the steeper the noise curve. However, also the higher order, but better noise
-is pushed from the band of interest to the upper frequency regions.
-
-Since the noise in the upper frequency regions is easy to filter, higher order sigma delta convertors
-are better. In practise most contemporary PDM microphones use 4th order convertors, since higher
-order convertors can have their own issues with stability.
-
-Jypiter worksheet with delta-sigma modulator:
-
-https://nbviewer.jupyter.org/github/ggventurini/python-deltasigma/blob/master/examples/dsdemo2.ipynb
-
+What do we need to do to convert it to a traditional PCM code stream of samples?
 
 
