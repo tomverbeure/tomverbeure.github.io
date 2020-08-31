@@ -115,7 +115,7 @@ Higher order sigma delta convertors are significantly more complex and at some p
 difficult to keep stable. Most contemporary PDM microphones use a 4th order sigma-delta convertors.
 
 For a given oversampling rate, there's a point where increasing the order of the convertor stops
-increasing the SNR. For the example here, that point is right around here: the maximum SNR
+increasing the SNR. For this example, that point is right around here: the maximum SNR
 was 51dB.
 
 # Increasing the Oversampling Rate
@@ -143,6 +143,11 @@ An oversampling rate of 64 and a 4th order sigma-delta convertor seems to be do 
 
 And that's exactly what today's PDM microphones support.
 
+Notice how the green vertical line shifts to the right as the oversampling rate increases.
+This is, of course, expected: we are doubling the sampling rate with each step while bandwidth of
+our input signal stays the same. 
+
+
 # SNR Slope Depends on Sigma Delta Order
 
 We've seen how higher order sigma-delta convertors have a much lower noise floor in the frequency
@@ -153,7 +158,9 @@ Here's a graph that makes this more obvious:
 
 ![Noise slope for different orders](/assets/pdm/noise_slope_different_orders.svg)
 
-On the left of the green line, the noise SNR is lower for higher order convertors, but
+For clarity, I only show the normalized frequency range up to 0.1 instead of 0.5.
+
+As we saw before, on the left of the green line, the noise SNR is lower for higher order convertors, but
 on the right side, the SNR for higher order convertors is soon higher than for the
 lower order convertors!
 
@@ -178,5 +185,58 @@ The most important things to remember about PDM microphones and their sigma-delt
 We now know the characteristics of PDM-encoded audio signal. 
 
 What do we need to do to convert it to a traditional PCM code stream of samples?
+
+There are 2 basic components:
+
+* send the PDM signal through a low pass filter 
+
+    This increases the number of bits per sample back to a PCM value. It also
+    removes all the higher order noise.
+
+* decimate the samples back to a lower sample rate
+
+# The Basics of Decimation
+
+In digital signal processing, decimation is the steps of removing N-1 number of samples for every
+N samples. It's really as simple as that: you simply throw away the samples!
+
+If you start with signal that has a bandwidth of 1.536 MHz and you decimate by a factor of 64, 
+you end up with a bandwidth of 24kHz. These numbers weren't chose at random: they're bandwidths
+that you get when you convert the output of a PDM microphone that is clocked at 3.072 MHz down
+to a sample rate of 48 kHz.
+
+There is one major caveat however: during that act of decimation, the signal contents in frequency 
+range that gets removed doesn't just magically disappear, it folds back onto the remaining 
+frequency range!
+
+This makes total sense, because it's exactly same as the aliasing effect that happens when you
+undersample a signal.
+
+Here's a simple example with 3 sine waves at 0.01, 0.1 and 0.28 of the normalized samplling rate.
+In the second and third graph, we've decimate the signal by 2 and by 4. 
+
+![Decimation without Filtering - 3 Sine Waves](/assets/pdm/decimation_without_filtering_regular.svg)
+
+You can see how the sine waves at frequencies 0.01 and 0.1 stay in place, but after decimating
+by 2, the one at 0.28 has moved to 0.23. And after decimating by 4, the
+signal at 0.28 is now at 0.03.
+
+It's clear that decimation without low pass filtering results in major aliasing!
+
+If, just for fun, we made the worlds dumbest PDM sample rate downconvertor by just throwing out 
+1-bit samples, we'd get something like this:
+
+![Decimation without Filtering](/assets/pdm/decimation_without_filtering.svg)
+
+Starting with a beautiful 102 dB, our SNR drops down to 10 dB after removing every other sample, 
+and down to 4.6 dB after doing that again. Forget about a 48 kHz sample rate, even after going
+down from 3.072 MHz down to 768kHz, our signal has already entry disappeared.
+
+After the first step, the noise that's present in the original frequence range form 0.25 to 0.5 was folded onto
+the range from 0 to 0.25, drowning out the original signal.
+
+
+
+
 
 
