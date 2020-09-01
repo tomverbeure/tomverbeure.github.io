@@ -256,12 +256,98 @@ The transition from pass band to stop band will start at 20 kHz. And if we look 
 a 64x oversampling, 4th order sigma-delta convertor, we see that the noise goes above 96 dB 
 
 Since the noise starts going up immediately above 24 kHz (=48/2), we have 4 kHz to construct a filter
-that goes from a pass band to the stop band. In fact, i
+that goes from a pass band to the stop band. 
+
+# FIR Filters for Decimation 
+
+Since we're throwing away N-1 out N samples when decimating by factor N, the decimation filter doesn't
+need to calculate a filter value for each incoming sample when we're using an FIR filter: it's
+sufficient to calculate the output only every N samples. Since we're down
+
 
 # Box Averaging Filters
 
+As we noticed earlier: typical FIR filters require a multiplication per filter tap. Larger FPGAs
+have a decent set of HW multipliers, but even then, setting up an efficient FIR structure can be
+a hassle.
+
+The multipliers are there to ensure that the filter has the right pass band, transition band, and
+stop band characteristics.
+
+But what if we just ignore some of those characteristics with the explicit goal to get rid of this
+kind of mathematical complexity?
+
+The simplest filter, then, is the box filter or moving averaging filter: it sums the last N samples,
+divides the result by N and... that's it!
+
+A box averaging filter probably one of the most common filters in digital signal processing: it's
+super simple to understand and implement, and it's also an optimal filter for white noise reduction. That's
+white noise doesn't have a preference to impact this sample or the other, it affects any sample
+with equal chance. Because of that, there's no way you can tune this or that coefficient of the
+filter coefficients in some preferential way.
+
+Unfortunately, box filters have some major disadvantages as well: they have a very slow roll-off
+from the pass band to the stop band, and the stop band attentuation is very low as well.
+
+But one way to overcome that is by cascading multiple filters after each other.
+
+So there are 2 parameters to play with: the size of the box (the number of samples that are averaged
+together) and the number of filters that are cascaded.
+
+Here's how that looks in terms of filter response:
+
+![Box Filter Response](/assets/pdm/box_filter_overview.svg)
+
+As we increase the length of the box filter, the band pass gets narrower, but the attenuation
+of the stop band (the height of the second lobe) stays the same.
+
+But when we increase the order (the number of box filters cascaded), the attenuation of the
+stop band increase accordingly.
+
+Can we use just cascaded box filters for our factor 64 decimation example? Not really:
+even when 4 box filters are cascaded, the 
 
 
 
+# References
+
+## General DSP
+
+* [dspGuru FAQs](https://dspguru.com/dsp/faqs/)
+    
+    FAQs about FIR, IIR, multirate (decimation, interpolation, resampling), FFT etc.
+    
+    Doesn't go much in detail, but really useful as a refresher.
+
+* [TomRoelandts.com](https://tomroelandts.com/articles)
+
+    Lots of interesting filtering related articles.
+
+    He's also the creator [FIIIR!](https://fiiir.com/), an online tool to create a variety of filters.
+
+* [Earlevel Engineering](https://www.earlevel.com/main/)
+
+    Tons of articles related to audio DSP.
+
+# Filter Design
+
+* [Tom Roelandts - How to Create a Simple Low-Pass Filter](https://tomroelandts.com/articles/how-to-create-a-simple-low-pass-filter)
+
+    Simple explanation, Numpy example code.
+
+## Decimation
+
+
+* [Rick Lyons - Optimizing the Half-band Filters in Multistage Decimation and Interpolation](https://www.dsprelated.com/showarticle/903.php)
+
+    Talks about how it may not be ideal to have 3 identical cascaded 2x half-band filters when
+    you want to be decimate by 8. Unfortunately, it only does so qualitatively, not quantitatively.
+
+
+## Filter Tools
+
+* [FIIIR1](https://fiiir.com)
+
+* [LeventOztruk.com](https://leventozturk.com/engineering/filter_design/)
 
 
