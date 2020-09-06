@@ -1,6 +1,6 @@
 ---
 layout: post
-title: PDM Microphones
+title: PDM Microphones and Sigma-Delta A/D Conversion
 date:  2020-08-29 00:00:00 -1000
 categories:
 ---
@@ -10,39 +10,54 @@ categories:
 
 # Introduction
 
-I've been playing around with PDM MEMS microphones lately. Due to their small size, low cost, and still decent
-quality, they are primarily used in cell phones. 
+Over the past months, I've been reading on and off about MEM microphones, 
+[pulse density modulation](https://en.wikipedia.org/wiki/Pulse-density_modulation) (PDM), conversion
+from PDM to [pulse code modulation](https://en.wikipedia.org/wiki/Pulse-code_modulation) (PCM), 
+and various audio processing techniques and interfaces.
 
-On Digikey, the cheapest ones are around $1. Or you can buy [a breakout board on Adafruit](https://www.adafruit.com/product/3492) 
-for $5:
+In the coming series of blog post, I'll be writing down some of the things that I learned. Rather than focussing on the 
+math behind it, I'm looking at this from an intuitive angle: I'll forget the math anyway, and there are plenty of articles 
+online where you can look up the details if it's necessary.
+
+*Just to avoid misunderstandings: I didn't know anything about this until a few months ago, so I'm about the opposite of 
+an expert on any of this. If you're serious about learning about PDM signal processing in depth, this blog post is not for you.
+Along the way, I will include a list of references that may point you in the right direction.*
+
+## PDM MEMS Microphones
+
+[MEMS microphones ](https://en.wikipedia.org/wiki/Microphone#MEMS) can be found in all moderns
+mobile phones. They are very small in size, are low cost, have low power consumption, offer decent quality, and
+can be mounted to a PCB with a standard surface mounted assembly process.
+
+Some MEMS microphones transmit the audio data in PCM format over an I2S interface, but most use 1-bit pulse density modulation.
+
+On Digikey, the cheapest PDM microphones go for around $1 a piece. Or you can buy [a breakout board on Adafruit](https://www.adafruit.com/product/3492) 
+for $5. It has an [ST MP34DT01-M](https://cdn-learn.adafruit.com/assets/assets/000/049/977/original/MP34DT01-M.pdf) microphone
+with a 61dB SNR.
 
 ![Adafruit PDM MEMS Microphone](/assets/pdm/adafruit-pdm-mems-microphone.jpg)
 
-Instead of sending out the audio signal in PCM format over an I2S interface, they use 1-bit pulse density modulation (PDM).
 
-Over the past months, I've been reading on and off about different aspects of this: how PDM works, the signal
-theory behind it, how to convert the data to PCM etc.
+# Pulse Code Modulation and Quantization Noise
 
-In this blog post, I'm writing down a summary of the things that I found. Rather than focussing on the math behind it,
-I'm looking at this from an intuitive angle: I'll forget the math anyway, and there are plenty of articles online where you 
-can look up the details if it's necessary.
+Humans are able to hear audio in a range from 20 to 20000Hz, though the range goes down with age.
+Digital signal theory dictates that audio needs to be sampled at a frequency of at least twice the bandwidth 
+to accurately reproduce the original signal. That's why most audio is recorded at 44.1 or 48kHz sample rate.
 
-Just to avoid misunderstandings: I didn't know anything about this before reading about it, so I'm about the opposite of 
-an expert on any of this. If you're serious about learning about PDM signal processing in depth, this blog post is not for you.
-I will include a list of references that may point you in the right direction.
-
-# PDM MEMS Microphones
-
-Humans are able to hear audio in a range from 20 to 20000Hz (though the upper range is very age dependent.)
-Digital signal theory dictates that audio needs to be sampled at twice the bandwidth to accurately reproduce
-the original signal. That's why most audio is recorded at 44.1 or 48kHz.
-
-The number of bits at which the audio signal is sampled determines how closesly the sampled signal matches
+The number of bits at which the audio signal is sampled determines how closely the sampled signal matches
 the real signal. The delta between sampled and real signal is the quantization noise. For a certain number
-of bits N, the signal to noise ratio follows the formula: SNR = 6.02 * N + XXX.
+of bits N, the signal to noise ratio (SNR) of a full amplitude sine wave follows the formula: 
+
+SNR = 1.761 + 6.02 * Q db, where Q is the number of quantization bits.
+
+![Quantization Level 8 Noise Level](/assets/pdm/quantization_noise_8.svg)
+
+
+![Quantization Level 8 Noise Level](/assets/pdm/quantization_noise_8.svg)
+
 
 It is, however, possible to trade off the number of bits for clock speed. In the case of PDM microphones, 
-the signal is usuall sampled at 64 times the traditional sample rate, or 48kHz * 64 = 3.072 MHz.
+the signal is usually sampled at 64 times the traditional sample rate, or 48kHz * 64 = 3.072 MHz.
 
 # From Analog Signal to PDM with a Sigma-Delta Convertor
 
@@ -264,8 +279,7 @@ Since we're throwing away N-1 out N samples when decimating by factor N, the dec
 need to calculate a filter value for each incoming sample when we're using an FIR filter: it's
 sufficient to calculate the output only every N samples. Since we're down
 
-
-# Box Averaging Filters
+# Moving Average Filters
 
 As we noticed earlier: typical FIR filters require a multiplication per filter tap. Larger FPGAs
 have a decent set of HW multipliers, but even then, setting up an efficient FIR structure can be
@@ -277,16 +291,16 @@ stop band characteristics.
 But what if we just ignore some of those characteristics with the explicit goal to get rid of this
 kind of mathematical complexity?
 
-The simplest filter, then, is the box filter or moving averaging filter: it sums the last N samples,
+The simplest filter, then, is the moving averaging filter: it sums the last N samples,
 divides the result by N and... that's it!
 
-A box averaging filter probably one of the most common filters in digital signal processing: it's
+A moving average filter probably one of the most common filters in digital signal processing: it's
 super simple to understand and implement, and it's also an optimal filter for white noise reduction. That's
 white noise doesn't have a preference to impact this sample or the other, it affects any sample
 with equal chance. Because of that, there's no way you can tune this or that coefficient of the
 filter coefficients in some preferential way.
 
-Unfortunately, box filters have some major disadvantages as well: they have a very slow roll-off
+Unfortunately, moving average filters have some major disadvantages as well: they have a very slow roll-off
 from the pass band to the stop band, and the stop band attentuation is very low as well.
 
 But one way to overcome that is by cascading multiple filters after each other.
@@ -296,22 +310,40 @@ together) and the number of filters that are cascaded.
 
 Here's how that looks in terms of filter response:
 
-![Box Filter Response](/assets/pdm/box_filter_overview.svg)
+![Moving Average Filter Response](/assets/pdm/moving_average_filter_overview.svg)
 
-As we increase the length of the box filter, the band pass gets narrower, but the attenuation
+As we increase the length of the moving average filter, the band pass gets narrower, but the attenuation
 of the stop band (the height of the second lobe) stays the same.
 
-But when we increase the order (the number of box filters cascaded), the attenuation of the
+But when we increase the order (the number of moving average filters cascaded), the attenuation of thejG
 stop band increase accordingly.
 
-Can we use just cascaded box filters for our factor 64 decimation example? Not really:
-even when 4 box filters are cascaded, the 
+Can we use just cascaded moving average filters for our factor 64 decimation example? Not at all!
+Even when 4 filters are cascaded, the stop band attenuation is only -66dB. And if we want
+to downsample by a factor of 64 and use a filter length of 64, the passband attenuation at 
+0.01 of the normalized frequency (which corresponds to 15.36kHz of our example) is already
+around -33.7! 
+
+![Box Filter Passband](/assets/pdm/moving_average_filter_passband.svg)
+
+With these terrible characteristics, are moving average filters even worth doing?
+
+The answer is yes!
+
+While the 64-length filter has that terrible pass band attenuation of -33.7dB, the attenuation of 16-length 
+version of that 4th order filter at the same 0.01 is only -1.8dB. For high quality audio, the pass band
+ripple should only be around 0.2dB, so -1.8dB is still way too high. 
+
 
 
 
 # References
 
 ## General DSP
+
+* [Introduction to Signal Processing](https://www.ece.rutgers.edu/~orfanidi/intro2sp/)
+
+    Free downloadable book.
 
 * [dspGuru FAQs](https://dspguru.com/dsp/faqs/)
     
