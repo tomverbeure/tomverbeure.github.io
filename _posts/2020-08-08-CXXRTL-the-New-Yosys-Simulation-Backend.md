@@ -42,10 +42,10 @@ where it's the synthesis component of an end-to-end open source RTL to bitstream
 
 But Yosys is much more than that.
 
-It's a swiss army knife of digital logic manipulation that takes in a digital design through one of its so-called frontends 
+It's a Swiss army knife of digital logic manipulation that takes in a digital design through one of its so-called frontends 
 (Verilog, blif, json, ilang, even VHDL and SystemVerilog for the commercial version), provides tons of different passes that transform 
 the digital logic one way or the other (e.g. flatten a hierarchy, remove redundant logic, map generic gates to 
-specific technology gates, check formal equivalence), and a whole bunch of backends that write the final design in 
+specific technology gates, check formal equivalence), and a bunch of backends that write the final design in 
 some desired format (Verilog, Spice, json, SMT2, etc.)
 
 If you have a blob of synthesizable digital logic and you need to perform some kind of transformation, chances are that Yosys
@@ -181,7 +181,7 @@ driving rising edge triggered flip-flops:
 
 * Flexible Black-boxing of Submodules 
 
-    This makes it possible to replace any module inside the the design hierarchy
+    This makes it possible to replace any module inside the design hierarchy
     with a behavior model that's written in C++.
 
     This can be useful for a variety of reasons during the development process.
@@ -203,7 +203,7 @@ driving rising edge triggered flip-flops:
 
     The VCD waveform generation uses this feature to come up with all the storage elements
     (signals, memories) that need to be dumped, but introspection opens up all kinds of other 
-    possibilities that are discussed futher below.
+    possibilities that are discussed further below.
 
 * Implementation Simplicity
 
@@ -290,7 +290,7 @@ driving rising edge triggered flip-flops:
     small.
 
     Meanwhile, Verilator reduces data types to the best matching C storage type. If 
-    something can fit in a `char`, then that's what will be used. There are no templated
+    something can fit in a `char`, then that's what will be used. There are no templates
     to be seen.
 
     Templates are hard work for a C++ compiler. Compilation time is the price you pay. 
@@ -313,7 +313,7 @@ driving rising edge triggered flip-flops:
 
 * No Support for Some Verilog $ Functions
 
-    I like to spinkle my code with debug `$display` statements. Since these are 
+    I like to sprinkle my code with debug `$display` statements. Since these are 
     non-synthesizable constructs, Yosys currently just ignores them as if they were never 
     there.
 
@@ -364,7 +364,7 @@ An additional treat of CXXRTL is the fact that it supports black-boxing of
 parameterized Verilog modules through C++ templates, where the Verilog parameter
 becomes a template parameter. A feature like this could be useful to replace
 FIFOs with various width and depth with a behavioral model that has
-extensive debugging capabilities. For example, the behaviorla FIFO could log all
+extensive debugging capabilities. For example, the behavioral FIFO could log all
 interesting traffic to a file for later analysis, or maintain an occupancy
 histogram to help with maximum FIFO depth sizing.
 
@@ -376,7 +376,7 @@ attributes on the ports of the black box model, it can even support
 combinatorial feedback loops within the black box while still keeping
 optimal simulation speed.
 
-I don't think Verilator supports seemless replacement of modules deep in the
+I don't think Verilator supports seamless replacement of modules deep in the
 design hierarchy, so this could be a key feature to consider when choosing a
 simulator.
 
@@ -446,7 +446,7 @@ known and retained (after Yosys optimization) hierarchical names of the source
 code to information of hierarchical name (its type such as wire or memory, bit width, ...)
 as well as the current simulation value.
 
-With this debug data structure, the testbench can travers through the design,
+With this debug data structure, the testbench can traverse through the design,
 look at and interact with all the values that the design contains, all without knowing
 which values exist at compile time.
 
@@ -564,7 +564,7 @@ location[10] : 0,  0
 You can see how for location 7 bit 1 of the second chunk is set to 1. This corresponds to the
 assigned value of `(1<<33)`.
 
-# Compilation Options - Speed vs Debug
+# Compilation Options - Speed vs. Debug
 
 While the `write_cxxrtl` command has quite a number of options, in most cases, you only
 have to decide between adding `-Og` or not.
