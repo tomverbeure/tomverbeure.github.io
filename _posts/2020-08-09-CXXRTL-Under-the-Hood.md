@@ -144,7 +144,7 @@ State is retained in double buffered wires. Using single buffered wires introduc
 CXXRTL converts your Yosys design in a set of modules, each of which are a subclass of
 the `module` abstract base class.
 
-`step()` is most important method of a `module`. It is identical for all module subclasses, and short
+`step()` is most important method of a `module`. It's defined in the `module` superclass and small
 enough to list it here in full:
 
 ```cpp
@@ -159,9 +159,32 @@ enough to list it here in full:
     }
 ```
 
-The testbench wrapper calls `step()` on the toplevel module. It will execute a loop
-of `eval()` and `commit()` phases until all simulation values of the design have "converged" which
-means that further invocations of `eval()` won't result in changes in any of the signals of the design.
+The testbench calls `step()` on the toplevel module. It will execute a loop
+of `eval()` and `commit()` phases until all simulation values of the design have "converged" 
+or until there are no more changes in the design state variables (`wire`s).
+
+
+Let's look at that in a bit more detail:
+
+* `eval()`
+
+    Each module has an `eval()` function that calculates all the values of design signals (these can
+    be `value` objects, or the `.next` part of a `wire` object.
+
+    When a module has submodules, that module's `eval()` function will call the `eval()` method
+    of the submodules.
+
+
+"converged" means the following: "whether there were any changes during commit or not, the next call 
+to eval won't change anything". 
+
+Whether or not a particular module converges during eval is calculated by the CXXRTL backend 
+([here](https://github.com/YosysHQ/yosys/blob/859e52af59e75689f7b0615899bc3356ba5a7ca1/backends/cxxrtl/cxxrtl_backend.cc#L2269)):
+
+```c++
+    eval_converges[module] = feedback_wires.empty() && buffered_comb_wires.empty();
+```
+
 
 
 # Elements of CXXRTL Module
@@ -250,6 +273,143 @@ In addition to object instances, a module also contains a number of methods:
     At the end of an `eval` cycle, this method copies over the next value of a `wire` to its
     current value, check if a 
 
+# Eval / Commit Cycles
+
+While CXXRTL is anything but trivial, it still strives to be relatively simple. There are a number of performance
+trade-offs made because of that. 
+
+One of them is the 2-phased eval/commit process, which makes things easier, but is often not necessary.
+
+Let's illustrate this with an example, a ring of flip-flops:
+
+```verilog
+    ...
+    reg k1, k2, k3;
+
+    always @(posedge clk) begin
+        k1 <= k3;
+        k2 <= k1;
+        k3 <= k2;
+    end
+    ...
+```
+
+CXXRTL assigns a `wire` for all state holding design elements (other than memories), calculates
+the `.next` value of these elements during the `eval()` phase, and copies over the values from
+`.next` to `.curr` during the `commit()` phase. During the `commit()` phase, it also checks
+if any over the state elements has their value changed, which will be used later on to
+decide whether or not to do another `eval()` phase for the same clock cycle.
+
+The abbreviated generated code looks like this:
+
+```c++
+struct p_ring__of__ffs : public module {
+	wire<1> p_k3;
+	wire<1> p_k2;
+	wire<1> p_k1;
+        ...
+};
+
+bool p_ring__of__ffs::eval() {
+    ...
+    if (posedge_p_clk) {
+        p_k1.next = p_k3.curr;
+    }
+    if (posedge_p_clk) {
+        p_k2.next = p_k1.curr;
+    }
+    if (posedge_p_clk) {
+        p_k3.next = p_k2.curr;
+    }
+    ...
+}
+
+bool p_ring__of__ffs::commit() {
+    bool changed = false;
+    changed |= p_k3.commit();
+    changed |= p_k2.commit();
+    changed |= p_k1.commit();
+    prev_p_clk = p_clk;
+    return changed;
+}
+```
+
+This code works great and is easy to understand!
+
+By having a current and a next value of the state element, the next values can be assigned in
+any order without running the risk of a race condition. But it has the problem that a single
+state update requires a memory read (fetch `.curr`) and a memory write (store to `.next`) during
+`eval()`, and two more memory read (fetch `.curr` and `.next`) and potential memory write (store to `.curr`) during
+`.commit()`.
+
+Here's the pseudo-code of Verilator does it:
+
+```c++
+VL_MODULE(Vring_of_ffs) {
+    ...
+    // LOCAL SIGNALS
+    // Internals; generally not touched by application code
+    VL_SIG8(ring_of_ffs__DOT__k1,0,0);
+    VL_SIG8(ring_of_ffs__DOT__k2,0,0);
+    VL_SIG8(ring_of_ffs__DOT__k3,0,0);
+    ...
+};
+
+VL_INLINE_OPT void Vring_of_ffs::_sequent__TOP__1(Vring_of_ffs__Syms* __restrict vlSymsp) {
+    Vring_of_ffs* __restrict vlTOPp VL_ATTR_UNUSED = vlSymsp->TOPp;
+    // Variables
+    VL_SIG8(__Vdly__ring_of_ffs__DOT__k1,0,0);
+    // Body
+    __Vdly__ring_of_ffs__DOT__k1 = vlTOPp->ring_of_ffs__DOT__k1;
+    // ALWAYS at blink.v:95
+    __Vdly__ring_of_ffs__DOT__k1 = vlTOPp->ring_of_ffs__DOT__k3;
+    // ALWAYS at blink.v:95
+    vlTOPp->ring_of_ffs__DOT__k3 = vlTOPp->ring_of_ffs__DOT__k2;
+    // ALWAYS at blink.v:95
+    vlTOPp->ring_of_ffs__DOT__k2 = vlTOPp->ring_of_ffs__DOT__k1;
+    vlTOPp->ring_of_ffs__DOT__k1 = __Vdly__ring_of_ffs__DOT__k1;
+}
+
+void Vring_of_ffs::_eval(Vring_of_ffs__Syms* __restrict vlSymsp) {
+    ...
+    if (((IData)(vlTOPp->clk) & (~ (IData)(vlTOPp->__Vclklast__TOP__clk)))) {
+	vlTOPp->_sequent__TOP__1(vlSymsp);
+	vlTOPp->__Vm_traceActivity = (2U | vlTOPp->__Vm_traceActivity);
+    }
+    ...
+}
+```
+
+Simplified, it essentially does this:
+
+```c++
+    unsigned char k1, k2, k3;
+
+    if (clk && !clklast_clk){
+        unsigned char dly_k1 = k1;
+        dly_k1 = k3;
+        k3 = k2;
+        k2 = k1;
+        k1 = dly_k1;
+    }
+```
+
+CXXRTL and Verilator do a topological sort on values to ensure that they assigned in the right order during the
+`eval()` phase, but Verilator also does a topological sort on the state elements, to ensure that no value gets
+lost before its needed. And for those chases where there's an assignment loop, as is the case above with `k1`, a temporary
+variable is introduced to break that loop.
+
+For each state variable, a minimum of 4, and 5 when there's value change, memory transactions is reduced to 2 transaction 
+in most cases.
+
+But what about the `changed` value that is calculated by `commit()`?
+
+It turns that this is not needed for almost all well-behaved code: circuits with combinatorial feedback loops won't
+ever have cases where the calculated values don't converge in the first `eval()` phase, so `converged` is always true. 
+And since the trigger to recalculate is a combination of `changed && !converged`, a second invocation of `eval()`
+won't happen either.
+
+
 # References
 
 GitHub:
@@ -258,3 +418,11 @@ GitHub:
 
 Foundational paper:
 * [A Fast & Effective Heuristic for the Feedback Arc Set Problem](https://pdfs.semanticscholar.org/c7ed/d9acce96ca357876540e19664eb9d976637f.pdf)
+
+
+
+Questions:
+
+
+
+
