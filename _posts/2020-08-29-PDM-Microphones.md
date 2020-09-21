@@ -296,7 +296,7 @@ divides the result by N and... that's it!
 
 A moving average filter probably one of the most common filters in digital signal processing: it's
 super simple to understand and implement, and it's also an optimal filter for white noise reduction. That's
-white noise doesn't have a preference to impact this sample or the other, it affects any sample
+because white noise doesn't have a preference to impact this sample or the other, it affects any sample
 with equal chance. Because of that, there's no way you can tune this or that coefficient of the
 filter coefficients in some preferential way.
 
@@ -305,7 +305,7 @@ from the pass band to the stop band, and the stop band attentuation is very low 
 
 But one way to overcome that is by cascading multiple filters after each other.
 
-So there are 2 parameters to play with: the size of the box (the number of samples that are averaged
+There are 2 parameters to play with: the size of the box (the number of samples that are averaged
 together) and the number of filters that are cascaded.
 
 Here's how that looks in terms of filter response:
@@ -315,7 +315,10 @@ Here's how that looks in terms of filter response:
 As we increase the length of the moving average filter, the band pass gets narrower, but the attenuation
 of the stop band (the height of the second lobe) stays the same.
 
-But when we increase the order (the number of moving average filters cascaded), the attenuation of thejG
+*The graph above shows lengths that are a power of 2, but there's no requirement to do so. It just makes
+the graph look a bit nicer.*
+
+But when we increase the order (the number of moving average filters cascaded), the attenuation of the
 stop band increase accordingly.
 
 Can we use just cascaded moving average filters for our factor 64 decimation example? Not at all!
