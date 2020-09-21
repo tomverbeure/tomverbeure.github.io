@@ -346,7 +346,7 @@ ripple should only be around 0.2dB, so -1.8dB is still way too high.
     Free downloadable book.
 
 * [dspGuru FAQs](https://dspguru.com/dsp/faqs/)
-    
+
     FAQs about FIR, IIR, multirate (decimation, interpolation, resampling), FFT etc.
     
     Doesn't go much in detail, but really useful as a refresher.
@@ -367,6 +367,8 @@ ripple should only be around 0.2dB, so -1.8dB is still way too high.
 
     Simple explanation, Numpy example code.
 
+* [Introduction to Digital Filters with Audio Applications](https://ccrma.stanford.edu/~jos/filters/filters.html)
+
 ## Decimation
 
 
@@ -374,6 +376,11 @@ ripple should only be around 0.2dB, so -1.8dB is still way too high.
 
     Talks about how it may not be ideal to have 3 identical cascaded 2x half-band filters when
     you want to be decimate by 8. Unfortunately, it only does so qualitatively, not quantitatively.
+
+* [Small tutorial on CIC filters](http://www.tsdconseil.fr/log/scriptscilab/cic/cic-en.pdf)
+
+    Excellent concrete example of a CIC decimating filter design (with compensation), the number of bits required,
+    and the consequences of aliasing.
 
 
 ## Filter Tools
