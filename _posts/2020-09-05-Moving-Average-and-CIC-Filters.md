@@ -17,7 +17,7 @@ in an effort to revive some of my long forgotten DSP knowledge.
 The ultimate goal is to become proficient enough in DSP to experiment with software
 defined radio and audio processing.
 
-I also want to get better at using Numerical Python (numpy) and matplotlib, it's
+I also want to get better at using Numerical Python (numpy) and matplotlib, its
 graph plotting package.
 
 The best way to really learn something is by doing, so I'm taking a chapter of the
@@ -31,20 +31,19 @@ to an optical SPDIF output.
 
 # Moving Average Filters
 
-As we noticed earlier: typical FIR filters require a multiplication per filter tap. Larger FPGAs
-have a decent set of HW multipliers, but even then, setting up an efficient FIR structure can be
+Typical FIR filters require a multiplication per filter tap. Larger FPGAs have a decent set of DSPs
+(which are essentially HW accumulate-addition blocks), but even then, setting up an efficient FIR structure can be
 a hassle.
 
-The multipliers are there to ensure that the filter has the right pass band, transition band, and
+The multipliers are there to ensure that the filter has the desired pass band, transition band, and
 stop band characteristics.
 
-But what if we just ignore some of those characteristics with the explicit goal to get rid of this
-kind of mathematical complexity?
+But what if we just ignore required characteristics to get rid of this kind of mathematical complexity?
 
-The simplest filter, then, is the moving averaging filter: it sums the last N samples,
-divides the result by N and... that's it!
+The simplest filter, then, is the moving averaging filter (also called "boxcar filter"): it sums the last 
+N samples, divides the result by N and... that's it!
 
-A moving average filter probably one of the most common filters in digital signal processing: it's
+A moving average filter is probably one of the most common filters in digital signal processing: it's
 super simple to understand and implement, and it's also an optimal filter for white noise reduction. That's
 white noise doesn't have a preference to impact this sample or the other, it affects any sample
 with equal chance. Because of that, there's no way you can tune this or that coefficient of the
@@ -53,36 +52,72 @@ filter coefficients in some preferential way.
 Unfortunately, moving average filters have some major disadvantages as well: they have a very slow roll-off
 from the pass band to the stop band, and the stop band attentuation is very low as well.
 
-But one way to overcome that is by cascading multiple filters after each other.
+However, you can overcome the low stop band attenuation by cascading multipe filters after each other.
 
-So there are 2 parameters to play with: the size of the box (the number of samples that are averaged
-together) and the number of filters that are cascaded.
+There are only 2 parameters to play with: the size of the box (the number of samples that are averaged
+together) and the order, number of filters that are cascaded
 
 Here's how that looks in terms of filter response:
 
 ![Moving Average Filter Response](/assets/pdm/moving_average_filter_overview.svg)
 
-As we increase the length of the moving average filter, the band pass gets narrower, but the attenuation
-of the stop band (the height of the second lobe) stays the same.
+As we increase the length of the filter, the band pass gets narrower, but the attenuation of the stop 
+band,the height of the second lobe, stays the same. For the first order filter, the stop band
+attenuation is ~13dB, irrespective of the length of the filter.
 
-But when we increase the order (the number of moving average filters cascaded), the attenuation of thejG
-stop band increase accordingly.
+When we increase the order, the attenuation of the stop band increases accordingly: you can just
+multiple the stop band attenuation of the first order filter by the number of stages.
+
+As mentioned earlier, another problem of the moving average filter is that its passband
+behavior isn't very flat: in the frequency domain, the transfer function follows a sin(x)/x
+curve, which starts out flat at the 0, becomes progressively steeper as the frequency increases.
+
+![Box Filter Passband](/assets/pdm/moving_average_filter_passband.svg)
+
+With these problematic characteristics, are moving average filters even worth doing?
+
+The answer is yes!
+
+When these filters are used for decimation (downsampling), they are even easier than you'd think they would be.
+
+# Moving Average Implementation from Trivial to Cascaded Integrator Comb (CIC) Configuration
+
+The most naieve and trivial moving averaging filter implementation would be a literal translation
+of the math that describe averaging into hardware. It'd look something like this:
+
+![Moving Average Filter - Trivial Implementation](/assets/pdm/moving_average_filters_trivial.svg)
+
+The implementation above averages 8 samples, requires 7 delay elements and 7 adders. There are
+no multipliers, but you're the 7 adders are bit difficult to accept. Can we do better?
+
+Of course!
+
+For each new sample, 
+
+
+
+In XXX, Eugene Hogenauer published a seminal paper about how to implement cascaded moving average
+filters for decimation and interpolation purposes that reduces the required hardware to 2 registers,
+1 adder, and 1 subtractor.
+
+
+
+
+
+While the 64-length filter has that terrible pass band attenuation of -33.7dB, the attenuation of 16-length 
+version of that 4th order filter at the same 0.01 is only -1.8dB. For high quality audio, the pass band
+ripple should only be around 0.2dB, so -1.8dB is still way too high. 
+
+
+
+
+
 
 Can we use just cascaded moving average filters for our factor 64 decimation example? Not at all!
 Even when 4 filters are cascaded, the stop band attenuation is only -66dB. And if we want
 to downsample by a factor of 64 and use a filter length of 64, the passband attenuation at 
 0.01 of the normalized frequency (which corresponds to 15.36kHz of our example) is already
 around -33.7! 
-
-![Box Filter Passband](/assets/pdm/moving_average_filter_passband.svg)
-
-With these terrible characteristics, are moving average filters even worth doing?
-
-The answer is yes!
-
-While the 64-length filter has that terrible pass band attenuation of -33.7dB, the attenuation of 16-length 
-version of that 4th order filter at the same 0.01 is only -1.8dB. For high quality audio, the pass band
-ripple should only be around 0.2dB, so -1.8dB is still way too high. 
 
 
 
