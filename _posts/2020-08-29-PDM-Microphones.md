@@ -342,6 +342,15 @@ ripple should only be around 0.2dB, so -1.8dB is still way too high.
 
 # References
 
+## Sigma-Delta AD Convertors
+
+* [How delta-sigma ADCs work, Part 1](https://www.ti.com/lit/an/slyt423a/slyt423a.pdf) 
+   and [Part 2](https://www.ti.com/lit/an/slyt438/slyt438.pdf)
+
+    Texas Instruments article.  Part 1 is a pretty gentle introduction about the sigma-delta basics.
+    Part 2 talks about filtering to go from PDM to PCM, but it's very light on details.
+
+
 ## General DSP
 
 * [Introduction to Signal Processing](https://www.ece.rutgers.edu/~orfanidi/intro2sp/)
@@ -364,7 +373,7 @@ ripple should only be around 0.2dB, so -1.8dB is still way too high.
 
     Tons of articles related to audio DSP.
 
-# Filter Design
+## Filter Design
 
 * [Tom Roelandts - How to Create a Simple Low-Pass Filter](https://tomroelandts.com/articles/how-to-create-a-simple-low-pass-filter)
 
@@ -384,6 +393,14 @@ ripple should only be around 0.2dB, so -1.8dB is still way too high.
 
     Excellent concrete example of a CIC decimating filter design (with compensation), the number of bits required,
     and the consequences of aliasing.
+
+* [Designing CIC Compensation Filters](http://threespeedlogic.com/cic-compensation.html)
+
+    References to C++ tools etc to come up with the actual coefficients.
+
+* [Multirate Digital filters, filter banks, polyphase networks, and applications: a tutorial](https://authors.library.caltech.edu/6798/1/VAIprocieee90.pdf)
+
+    37 page paper on decimation and interpolation.
 
 
 ## Filter Tools
