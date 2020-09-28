@@ -1,9 +1,12 @@
 ---
 layout: post
 title:  "Pano Logic Update: VGA, VexRiscV CPU, Text Mode"
-date:   2018-06-03 22:00:00 -0700
+date:   2018-06-04 00:00:00 -1000
 categories: Pano Logic
 ---
+
+* TOC
+{:toc}
 
 Introduction
 ------------

@@ -1,0 +1,21 @@
+[236430.065817] ni_usb_gpib: attach
+[236430.065830] usb 1-1.2: bus 1 dev num 7 attached to gpib minor 0, NI usb interface 0
+[236430.075276] 	product id=0x709b
+[236430.075697] ni_usb_hs_wait_for_ready: board serial number is 0x120f5de
+[236430.075948] /home/tom/projects/linux-gpib-code/linux-gpib-kernel/drivers/gpib/ni_usb/ni_usb_gpib.c: ni_usb_hs_wait_for_ready: unexpected data: buffer[7]=0x4, expected 0x3 or 0x5 or 0x6
+[236430.075949] /home/tom/projects/linux-gpib-code/linux-gpib-kernel/drivers/gpib/ni_usb/ni_usb_gpib.c: ni_usb_hs_wait_for_ready: unexpected data: buffer[10]=0x3, expected 0x96 or 0x07
+[236430.075950] ni_usb_dump_raw_block:
+
+[236430.075951]  40
+[236430.075951]   1
+[236430.075951]   0
+[236430.075951]   1
+[236430.075952]  30
+[236430.075952]   1
+[236430.075952]   2
+[236430.075953]   4
+
+[236430.075953]   0
+[236430.075953]   0
+[236430.075954]   3
+

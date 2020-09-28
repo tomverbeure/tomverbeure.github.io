@@ -1,12 +1,15 @@
 ---
 layout: post
-title: The Case of the Fantom Packets - A Formal Debugging Posterchild
-date:  2019-12-14 00:00:00 -0700
+title: The Case of the Phantom Packets - A Formal Debugging Posterchild
+date:  2019-12-14 00:00:00 -1000
 categories:
 ---
 
 *Some time ago, I ran into a posterchild case of why formal verification should be
 a core part of your verification strategy.*
+
+* TOC
+{:toc}
 
 # A System that Transmits and Receives Packets
 
@@ -45,7 +48,7 @@ accept or reject the decoded data based on the outcome of the low level packet v
 The RTL to process these packets was written years ago, hadn't been touched for a long
 time, and was considered to be solid.
 
-# Fantom Packets
+# Phantom Packets
 
 However, when running this code on a new FPGA board, I noticed that every once in a while
 the receiving end would signal the succesful decoding of a particular type of secondary packet *even
@@ -78,7 +81,7 @@ is the tool of choice here.
 Rather than isolating the code where things might go wrong, I just took everything, and added simple
 constraint:
 
-```
+```verilog
 always @(posedge clk) begin
     cover(higher_level_packet_decode_valid && !low_level_packet_seen);
 
@@ -108,7 +111,7 @@ Here's what happened:
 
 Upon receiving EOP, the low level decoder signaled to the high level decoder a CRC match or fail, like this:
 
-```
+```verilog
 always @(posedge clk) begin
     packet_error <= packet_eop && crc_received != crc_calculated;
 end

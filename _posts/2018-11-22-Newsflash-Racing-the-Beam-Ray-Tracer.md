@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  Newsflash - Racing the Beam Ray Tracer"
-date:   2018-11-22 14:00:00 -0700
+date:   2018-11-22 00:00:00 -1000
 categories: RTL
 ---
 

@@ -1,20 +1,12 @@
 ---
 layout: post
 title: Reverse Engineering the Cisco HWIC-3G-CDMA
-date:   2019-11-11 00:00:00 -0700
+date:   2019-11-11 00:00:00 -1000
 categories:
 ---
 
-* [The Cisco HWIC-3G-CDMA PCB](#the-cisco-hwic-3g-cdma-pcb)
-* [An Annotated Overview of the Board](#an-annotated-overview-of-the-board)
-* [Powering Up the Board](#powering-up-the-board)
-* [JTAG Connector](#jtag-connector)
-* [And Life There Was!](#and-life-there-was)
-* [LED Blinky](#led-blinky)
-* [The Curious Case of Component C9059](#the-curious-case-of-component-c9059)
-* [Bitstream Configuration](#bitstream-configuration)
-* [Block Diagram: Putting It All Together](#block-diagram-putting-it-all-together)
-* [Low Level Connections](#low-level-connections)
+* TOC
+{:toc}
 
 # The Cisco HWIC-3G-CDMA PCB
 
@@ -223,17 +215,20 @@ In the end, it came all down to 3 tiny components in an SOT23-5 package, marked 
 
 ![Config Pins Photo]({{ "/assets/cisco-hwic-3g-cdma/config_sot23-5.jpg" | absolute_url }})
 
-When you search on Mouser for components with an SOT23-5 package, you end up with tons of different options.
-My current guess is that they are a variant of a 74xx125: a single bus buffer with tri-state, like
-[this one](http://www.ti.com/product/SN74CBTLV1G125).
+*(Note: the section below was rewritten. Thanks to MorriganR for this info about how to identify SOT23-5 devices!)*
 
-That would result in the following schematic:
+The SOT23-5 packages have a marking on them with 2 or 3 letters. These indicate their function:
+
+* U3: 'VE': AND gate
+* U7: 'AN': Tri-state buffer with active high OE
+* U9: 'CGK' or 'VG': OR gate
+
+This give the following schematic:
 
 ![Config Pins Schematic]({{ "/assets/cisco-hwic-3g-cdma/config_pins.draw.io.svg" | absolute_url }})
 
-It doesn't make a whole lot of sense, but it should be sufficient to download the bitstream through the 
-HWIC interface when the time comes... And if it doesn't I can always use the JTAG interface and an SVF
-file to initialize the FPGA instead.
+I added Saleae logic analyzer to the HWIC pins of the schematic, plugged in the HWIC card in the Cisco
+router and recorded its whole boot sequence. The signals all make sense.
 
 **A major consequence of the lack of serial configuration PROM on this board is that it's not self-hosting
 and thus can never be deployed without a supporting CPU that loads the bitstream at bootup.**

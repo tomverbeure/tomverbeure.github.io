@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "eeColor Color3: Getting Ready for Reverse Engineering"
-date:   2018-04-09 00:00:00 -0700
+date:   2018-04-09 00:00:00 -1000
 categories: 
 ---
 

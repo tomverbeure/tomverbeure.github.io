@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Terasic vs Cheap Clone USB Blaster"
-date:   2018-04-18 00:00:00 -0700
+date:   2018-04-18 00:00:00 -1000
 categories: 
 ---
 
