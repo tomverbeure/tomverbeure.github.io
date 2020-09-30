@@ -389,6 +389,10 @@ ripple should only be around 0.2dB, so -1.8dB is still way too high.
     Talks about how it may not be ideal to have 3 identical cascaded 2x half-band filters when
     you want to be decimate by 8. Unfortunately, it only does so qualitatively, not quantitatively.
 
+* [Optimum FIR Digital Filter Implementations for Decimation, Interpolation, and Narrow-Band Filtering](https://web.ece.ucsb.edu/Faculty/Rabiner/ece259/Reprints/087_optimum%20fir%20digital%20filters.pdf)
+
+    Paper that discusses how to size cascaded filter to optimized for FIR filter complexity.
+
 * [Small tutorial on CIC filters](http://www.tsdconseil.fr/log/scriptscilab/cic/cic-en.pdf)
 
     Excellent concrete example of a CIC decimating filter design (with compensation), the number of bits required,
