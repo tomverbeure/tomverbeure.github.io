@@ -10,96 +10,121 @@ categories:
 
 # Introduction
 
-I've been slowly working my way through 
-[The Scientist and Engineer's Guide to Digital Signal Processing](http://www.dspguide.com/pdfbook.htm)
-in an effort to revive some of my long forgotten DSP knowledge.
+According my college transcripts, I'm supposed to have some knowledge about signal theory,
+filters etc, but the truth is that, 25 years later, I've forgotten most of it. I couldn't
+design some trivial lowpass filter if my life depended on it.
 
-The ultimate goal is to become proficient enough in DSP to experiment with software
-defined radio and audio processing.
+And that's a shame, because it's a fascinating topic, and a useful one too if you want to
+do audio processing on an FPGA or play with software defined radio.
 
-I also want to get better at using Numerical Python (numpy) and matplotlib, its
-graph plotting package.
+I also want to learn to use Numerical Python (numpy) and matplotlib, its graph plotting
+package.
 
-The best way to really learn something is by doing, so I'm taking a chapter of the
-book, check if I can confirm and recreate the claimed characteristics in numpy, and
-then implement it on an FPGA.
+In an effort to revive some of that forgotten DSP knowledge, I've been slowly working my way through 
+[The Scientist and Engineer's Guide to Digital Signal Processing](http://www.dspguide.com/pdfbook.htm).
+It's a great book that's light on math with an emphasis on practical usage.
 
-My test vehicle is a setup that takes in the data of a MEMS microphone with a single bit pulse density
-modulation (PDM) output, convert that to 16-bit pulse code modulation (PCM), and send the result
-to an optical SPDIF output.
+But the best way to really learn something is by doing, so I started an FPGA project that
+takes in audio from a MEMS microphone in a single bit pulse density modulated (PDM) format,
+converts it to reguler 16-bit pulse code modulated (PCM) samples, and send it out to
+an optical SPDIF output.
 
+When studying the topic of PDM to PCM conversion, it's almost impossible to not run into the
+cascaded integrator comb (CIC) filters: they are extremely lightweight in terms of resources,
+thanks to a number of interesting tricks and transformations.
+
+The full story of my microphone to SPDIF pipeline is still a work in progress, but CIC
+filters by themselves are enough of a topic to fill a pretty long blog post, so that's
+what I'll be writing about below.
+
+*As always, keep the usual disclaimer in mind: these blog posts are a way for me to solidify what
+I've learned. Don't take whatever is written below as gospel, there may be significant error in it!*
 
 # Moving Average Filters
 
-Typical FIR filters require a multiplication per filter tap. Larger FPGAs have a decent set of DSPs
-(which are essentially HW accumulate-addition blocks), but even then, setting up an efficient FIR structure can be
-a hassle.
+Typical FIR filters have a certain length, or taps, and each tap requires a multiplication and an 
+addition. Larger FPGAs have a decent set of DSPs (which are essentially HW accumulate-addition blocks), 
+and support logic to implement FIR filters as efficiently as possible, but even then, implementing
+an FIR filter can consume quite a bit of FPGA resources that are often scarce.
 
-The multipliers are there to ensure that the filter has the desired pass band, transition band, and
+The multipliers are there to shape the filter so that it has the desired pass band, transition band, and
 stop band characteristics.
 
 But what if we just ignore required characteristics to get rid of this kind of mathematical complexity?
 
-The simplest filter, then, is the moving averaging filter (also called "boxcar filter"): it sums the last 
-N samples, divides the result by N and... that's it!
+The simplest filter, then, is the moving average filter (also called "boxcar filter"): it sums the last 
+incoming N samples, divides the result by N and... that's it!
 
 A moving average filter is probably one of the most common filters in digital signal processing: it's
 super simple to understand and implement, and it's also an optimal filter for white noise reduction. That's
 white noise doesn't have a preference to impact this sample or the other, it affects any sample
 with equal chance. Because of that, there's no way you can tune this or that coefficient of the
-filter coefficients in some preferential way.
+filter coefficients in some preferential way. 
 
-Unfortunately, moving average filters have some major disadvantages as well: they have a very slow roll-off
-from the pass band to the stop band, and the stop band attentuation is very low as well.
+Unfortunately, moving average filters have some major disadvantages as well: they have a large attenuation 
+in the pass band, they have a very slow roll-off from the pass band to the stop band, and the stop band 
+attentuation is very low too.
 
-However, you can overcome the low stop band attenuation by cascading multipe filters after each other.
+You can overcome the low stop band attenuation by cascading multipe filters after each other, but that
+makes the pass band attenuation worse too.
 
-There are only 2 parameters to play with: the size of the box (the number of samples that are averaged
-together) and the order, number of filters that are cascaded
+Since the filter coefficients are fixed and constant, there are only 2 parameters to play with: the size 
+of the box (the number of samples that are averaged together) and the order, number of filters that are cascaded
 
-Here's how that looks in terms of filter response:
+The filter's frequency response using a linear scale Y axis looks like this for different averaging lengths, and 
+different filter orders:
+
+![Moving Average Filter Response - Linear](/assets/pdm/moving_average_filter_overview_linear.svg)
+
+The horizontal axis shows the normalized frequency, ranging from 0 to 1/2 of the sample rate.
+
+Since the impulse response of the filter is a box, the frequency response is a sinc(f) function.
+
+When we increase the length of the filter, everything gets squeezed to the left: the bandpass gets
+narrower. And when we cascade multiple filters after each other, the attenuation increases.
+
+The traditional and more useful way to look at a filter's frequency behavior is with a log Y axis:
 
 ![Moving Average Filter Response](/assets/pdm/moving_average_filter_overview.svg)
 
-As we increase the length of the filter, the band pass gets narrower, but the attenuation of the stop 
-band,the height of the second lobe, stays the same. For the first order filter, the stop band
-attenuation is ~13dB, irrespective of the length of the filter.
+A moving average filter doesn't have a clearly defined pass band: close to the 0 frequency,
+the curve starts flat, but as you move to the right, the slope get gradually steeper.
+
+The stop band attenuation, on the other hand, is pretty clearly set at -13.3dB for a first order
+filter, irrespective of the number of samples averaged.
 
 When we increase the order, the attenuation of the stop band increases accordingly: you can just
-multiple the stop band attenuation of the first order filter by the number of stages.
-
-As mentioned earlier, another problem of the moving average filter is that its passband
-behavior isn't very flat: in the frequency domain, the transfer function follows a sin(x)/x
-curve, which starts out flat at the 0, becomes progressively steeper as the frequency increases.
-
-![Box Filter Passband](/assets/pdm/moving_average_filter_passband.svg)
+multiply the stop band attenuation (in dB) of the first order filter by the number of stages: -26.5dB
+for 2 stages, -66.3dB for 4 stages.
 
 With these problematic characteristics, are moving average filters even worth doing?
 
 The answer is yes!
 
-When these filters are used for decimation (downsampling) and interpolation (upsampling), they are even 
-easier than you'd think they would be.
+A trivial implementation of a moving average filter is already much less resource intensive than a 
+regular FIR filter, but when they're used as a part of a decimation (downsampling) or or interpolation
+(upsampling) pipeline, their resource usage reduces to almost nothing! 
 
 # Moving Average Filter: from Trivial Implementation to Cascaded Integrator Comb (CIC) Configuration
 
 In 1980, Eugene Hogenauer published a [seminal paper](http://read.pudn.com/downloads163/ebook/744947/123.pdf) 
 about how to implement cascaded moving average filters for decimation and interpolation purposes. These
-filters are now known as CIC filters (short for Cascaded Integrator Comb filters).
-The paper is surprisingly readable, but still contains a decent amount of math and formulas. Let's take 
-things step by step here.
+filters are now known as CIC filters, short for Cascaded Integrator Comb filters.
+The paper is surprisingly readable... for a paper, but still contains a decent amount of theory and math. 
+
+Here, I want to take the intuitive approach.
 
 The most naive and trivial moving averaging filter implementation is a literal translation
-of the summing math into hardware. For a length 4, it'd look like this:
+of the summing math into hardware. For a length of 4, it'd look like this:
 
-![Moving Average Filter - Trivial Implementation](/assets/pdm/moving_average_filters_trivial.svg)
+![Moving Average Filter - Trivial Implementation](/assets/pdm/moving_average_filters-trivial.svg)
 
 The implementation above averages 4 samples, requires 3 delay elements and 3 adders. The initial
 division by 4 is to ensure that the filter has a unity gain. I will drop that factor going forward, just
 imagine that it's there.
 
 As expected, there are no multipliers in this design, but the 3 adders are bit difficult to accept,
-especially since that number will go up for moving average filters of a longer length.
+especially since that number will go up proportionally for moving average filters of a longer length.
 
 Can we do better? Of course! There is a bunch of math that stays the same from one sample to the next.
 
@@ -117,7 +142,10 @@ or in general:
 y(n) = y(n-1) + x(n) - x(n-4)
 ```
 
-The simple sum has been transformed into a recursive operation. In hardware, that looks like this:
+The simple sum has been transformed into a recursive operation where the output of the previous
+cycle gets reused for the next output.
+
+In hardware, that looks like this:
 
 ![Moving Average Filter - Comb Integrator Version](/assets/pdm/moving_average_filters-comb_integrator_version.svg)
 
