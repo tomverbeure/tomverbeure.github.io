@@ -105,7 +105,46 @@ A trivial implementation of a moving average filter is already much less resourc
 regular FIR filter, but when they're used as a part of a decimation (downsampling) or or interpolation
 (upsampling) pipeline, their resource usage reduces to almost nothing! 
 
-# Moving Average Filter: from Trivial Implementation to Cascaded Integrator Comb (CIC) Configuration
+# Intermission: The Basics of Decimation
+
+Before diving deeper in the specifics of moving average filters, let's do a quick primer on
+decimation.
+
+In digital signal processing, decimation is the step of removing N-1 number of samples for every
+N samples. It's really as simple as that: you throw away samples!
+
+If you start with a signal that has a sample rate of 3.072 MHz and you decimate by a factor of 64, 
+you end up with a signal that's sampled at 48kHz. These numbers weren't chosen at random: they're sample
+rate that you get when converting the output signal of a MEMS microphone from PDM to PCM.
+
+We know that a sample rate of 3.072MHz allows for frequency components of 
+maximum 1.576MHz. And a sample rate of 48kHz allows for frequency components of up to 24kHz.
+
+During that act of decimation, the frequency components between 24kHz and 1.576MHz don't just magically 
+disappear, they fold back onto the remaining frequency range from 0 to 24kHz.
+
+This makes total sense, because it's same as the aliasing effect that happens when you
+undersample a signal.
+
+Here's a simple example spectrum of a signal with 3 sine waves at 0.01, 0.1 and 0.28 of 
+the normalized sampling rate, and some added noise. The sine waves with the 0.01 and 0.1 frequency
+have a much lower amplitude than the one with the 0.28 frequency.
+
+![Decimation without Filtering - 3 Sine Waves - No Decimation](/assets/pdm/decimation_without_filtering-no_decimation.svg)
+
+Here's what happens when you decimate that signal by 2 or by 4: 
+
+![Decimation without Filtering - 3 Sine Waves - No Decimation](/assets/pdm/decimation_without_filtering-2x_4x_decimation.svg)
+
+The signal at 0.28, above the new Nyquist frequency of 0.25 or 0.125 after decimation, didn't magically 
+disappear. It jumped to a frequency of 0.22 or 0.03 for 2x and 4x decimation respectively.
+
+Conclusion: to avoid aliasing, you first need to apply a low pass filter to your signal before
+performing decimation.
+
+And with that, let's get back to our regular programming about moving average filters.
+
+# From Trivial Implementation to Cascaded Integrator Comb (CIC) Configuration
 
 In 1980, Eugene Hogenauer published a [seminal paper](http://read.pudn.com/downloads163/ebook/744947/123.pdf) 
 about how to implement cascaded moving average filters for decimation and interpolation purposes. These
@@ -258,87 +297,82 @@ come first and the interpolators second.
 ![Moving Average Filter - Cascaded Decimation Smart](/assets/pdm/moving_average_filters-comb_integrator_interpolated.svg)
 
 
-# A Moving Average Filter as Decimator
+# Moving Average Filters as Decimator
 
-We now know why moving average filters are so popular for decimation (and interpolation as well): their
-CIC implementation requires almost no resources, irrespective of the decimation ratio!
+We now know why moving average filters are so popular for decimation and interpolation as well: their
+CIC implementation requires almost no resources, irrespective of the up- or downsampling ratio.
 
 However, it's not all roses: the negatives of moving average filters that were mentioned earlier, 
-poor stopband attenuation and non-flat passband attenuation, didn't magically disappear. In fact,
-they actually got worse: in a decimation CIC filter, the length of the moving average filter is directly
-linked to decimation ratio. In most cases, that ratio is 1. Because of this, the only way to 
+poor stop band attenuation and non-flat pass band attenuation, didn't magically disappear. 
+
+In fact, they got worse: in a decimation CIC filter, the length of the moving average filter must be
+an integer multiple of the decimation ratio. In most cases, that ratio is 1. Because of this, the only way to 
 influence the attenuation of the stopband is by increasing the number of cascaded interpolator and
 comb banks, but that, in turn, also has an impact on the pass band. 
 
-Let's look here at 5th order CIC filter with a filter length of 4. The sample frequency is 80kHz, which
+Let's look here at a 5th order CIC filter with a filter length of 4. The sample frequency is 80kHz, which
 means that the incoming signal has a bandwidth from 0 to 40kHz.
 
 ![CIC Response before decimation](/assets/pdm/cic_decimation_full_range.svg)
 
 The filter length of 4 gives a 2 lobes. Under normal circumstances, you'd say that this filter has a stopband 
 attenuation of 56.77dB. However, since the decimation ratio of a CIC filter is linked to the filter length, the 
-decimation ratio is 4 as well.
+decimation ratio has to be 4 as well.
 
-The output sample rate of our decimating filter will be 20kHz, and the bandwidth of the outgoing signal will
+The output sample rate of our decimating filter will be 20kHz (80kHz/4), and the bandwidth of the outgoing signal will
 be from 0 to 10kHz.
 
-After decimation, the signal components with a frequency that are higher than that of the outgoing signal will
-alias into the frequency range of the main signals.
+After decimation, the original signal components with a frequency higher than that of the outgoing signal will
+alias into the frequency range of the outgoing signal. 
 
-In the graph above, this means that the remaining signal components of the orange, the green and the red curve will
+In the graph above, this means that the remaining signal components under the orange, the green and the red curve will
 be alias under the blue curve. 
 
 ![CIC Response after decimation](/assets/pdm/cic_decimation_aliased.svg)
 
-The blue curve is the true signal with a 10kHz bandwidth. The remaining curves are distorting the true signal. 
+The blue curve is the true signal with a 10kHz bandwidth. The remaining curves are distorting the true signal.
 
 Forget about a stopband attenuation of 56.77dB: the real stopband attenuation of this filter is 18.49dB! And
-the passband attenuation is flat either: it varies between 0 and -18.49dB as well.
+the passband attenuation isn't flat either: it goes down from 0 and -18.49dB as well.
 
 If a decimating CIC filter by itself is so terrible, why, then, is it so popular?
 
 **Because a decimating CIC filter is always used as part of a multi-stage decimation configuration!**
 
-Nobody would use a 4x decimating CIC filter to extract a 10kHz BW output signal from a 40kHz BW input signal: the CIC
-filter is just used as a first step to reduce sample rate from some high number to a lower number. And then
+Nobody would use a 4x decimating CIC filter to extract a 10kHz BW output signal from a 40kHz BW input signal. The CIC
+filter is a first step to reduce sample rate from some high number to a lower number. And then
 one or more traditional FIR filters are used to bring the sample rate to the desired output rate.
 
-If our real signal of interest lies in the 0 to 2000Hz range, the CIC filter has reduced the aliasing of all
+In our example, if our signal of interest lies in the 0 to 2000Hz range, the CIC filter has reduced the aliasing of all
 the signal components above 10kHz by more than 90dB, and the passband attenuation is only 0.7dB!
 
 ![CIC Response at lower frequencies](/assets/pdm/cic_decimation_lower_freqs.svg)
 
 All that's needed now is one or two filters with a clean passband behavior from 0 to 2000Hz and with a stop band from, 
-say, 3000Hz to 10000Hz. That is much less computationally intensive that a filter with the same passband
+say, 3000Hz to 10000Hz. That is much less computationally intensive than a filter with the same passband
 and with a stop band that ranges from 3000Hz to 40000kHz!
 
-For example: if we wanted to use a Blackman windowed-sinc FIR with a cutoff frequences of 2500Hz, transition bandwidth of 1000Hz
-and a stopband attenuation of 74dB, a sample rate of 80000Hz would require 369 coefficients. A sample rate of 20000Hz reduces that
-number to only 93 coefficient. And this is for a decimation rate of only 4. In audio applications, the sample rate of
-a PDM microphone often needs to be reduced from 3.072MHz to 48kHz, a ratio of 64. A CIC filter that reduces that
-ratio from 64 to, say, 4, will go a long way in making the size of the FIR filter manageable.
+An example makes this clear: a Blackmann windowed-sinc FIR with a cutoff frequency of 2500Hz, 
+transition bandwidth of 1000Hz, a stopband attenuation of 74dB, and a sample rate of 80000Hz requires 369 coefficients. 
 
+The same filter but with the sample rate reduced to 20000Hz reduces that number to only 93 coefficients.
 
+And this is for a decimation rate of only 4. In audio applications, the sample rate of a PDM microphone often needs to be reduced 
+from 3.072MHz to 48kHz, a ratio of 64.  A 16x CIC filter that reduces that ratio from 64 to, say, 4, will go a long way in making 
+the size of the FIR filter manageable.
 
+# Passband Compensation in CIC Filters
 
-While the 64-length filter has that terrible pass band attenuation of -33.7dB, the attenuation of 16-length 
-version of that 4th order filter at the same 0.01 is only -1.8dB. For high quality audio, the pass band
-ripple should only be around 0.2dB, so -1.8dB is still way too high. 
+I already touched on this before: a CIC filter doesn't have a well defined pass band, and there's
+a very real trade-off between choosing a large pass band vs choosing low pass band attenuation.
 
+Furthermore, a narrow pass band will often require a more complex FIR filter to remove unwanted frequency
+components.
 
+One common way around this is to add a compensation filter that counteracts the pass band behavior of
+the CIC filter. In many cases, these can implemented with limited resources.
 
-
-
-
-
-Can we use just cascaded moving average filters for our factor 64 decimation example? Not at all!
-Even when 4 filters are cascaded, the stop band attenuation is only -66dB. And if we want
-to downsample by a factor of 64 and use a filter length of 64, the passband attenuation at 
-0.01 of the normalized frequency (which corresponds to 15.36kHz of our example) is already
-around -33.7! 
-
-
-
+There are 2 ways to go about this: the pass band compensation can be a separate additional step, or 
 
 
 # References
