@@ -193,36 +193,41 @@ You can increase the attenuation by cascading multiple moving average filters:
 
 ![Moving Average Filter - Cascaded Combs Integrators](/assets/pdm/moving_average_filters-cascaded_integrators_and_combs.svg)
 
-You can even rearrange the integrators and combs and group them together:
+You can even rearrange the blocks above and group the integrators and combs together, without
+changing the mathematical result:
 
 ![Moving Average Filter - Rearranged Integrators and Combs](/assets/pdm/moving_average_filters-rearranged_integrators_combs.svg)
 
+Now observe how the integrator always has exactly 1 delay register, while the comb has
+as many delays as the number of samples of the moving average. If moving average filter requires a length of,
+say, 64, and you're cascading multiple of those together, that's still a lot of delay registers.
 
-Now look back and notice how the integrator always has exactly 1 delay register, while the comb has
-as many delays as the number of samples of the moving average. If you need a length of, say, 64, that's
-still a lot of delay registers.
-
-But remember that these kind of filters are primarily used for decimation and interpolation. 
+But remember: these kind of filters are primarily used for decimation and interpolation. 
 
 Let's focus on decimation: if we decimate by a factor 4, we simply retain one output sample out of every 4
 input samples.
 
-In the example below, the downsampler at the right drops those 3 samples out of 4:
+In the example below, the downsampler at the right drops those 3 samples out of 4, and the output rate,
+*y'(n)*, is one fourth of the input rate *x(n)*:
 
 ![Moving Average Filter - Decimation Trivial](/assets/pdm/moving_average_filters-decimation_trivial.svg)
 
-But now comes the magic: we can move that downsampler from the end of the pipeline to the middle, right
-between the integrator stage and the comb stage. To keep the math working, we also need divide the number
-of delay elements in the comb stage by the decimation number:
+But if we're going to be throwing away 75% of the calculated values, can't we just move the that
+downsampler from the end of the pipeline to somehwere in the middle? Right between the integrator
+stage and the comb stage? That answer is yes, but to keep the math working, we also need to divide
+the number of delay elements in the comb stage by the decimation rate:
 
 ![Moving Average Filter - Decimation Smart](/assets/pdm/moving_average_filters-decimation_smart.svg)
 
-
 The end result is beautiful: 
 
-**When used as part of a decimator, the moving average filter that started out as a design 
-with *(n-1)* delay stages and *(n-1)* adders has been reduced to 2 delay stages, 1 adder, and 1 subtractor, as long as
-the decimation ratio is the same as the length of the desired moving average filter.**
+**When used as part of a decimator, a moving average filter that started out as a design 
+with *(n-1)* delay stages and *(n-1)* adders running at the incoming sample rate, has been reduced to 2 delay stages, 
+1 adder, and 1 subtractor, and half of the logic is running at a much slower rate.** 
+
+We can do this as long as the decimation ratio is an integer multiple of the length of the desired moving average 
+filter. In practice, the decimation ratio will almost be the same as the length of the filter, and thus, the
+number of delay stages in the comb section will be 1.
 
 The math is trivial. 
 
@@ -240,6 +245,10 @@ And *y* subtracts the current *a* value from the one that was delayed:
 y(7) = a(7) - a(3)
 y(7) = x(7) + x(6) + x(5) + x(4)
 ```
+
+And we can do this just the same with cascaded sections where integrators and combs have been grouped:
+
+![Moving Average Filter - Cascaded Decimation Smart](/assets/pdm/moving_average_filters-integrator_comb_decimated.svg)
 
 # A Moving Average Filter as Decimator
 
