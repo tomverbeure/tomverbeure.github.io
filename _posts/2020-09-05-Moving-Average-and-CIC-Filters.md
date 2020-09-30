@@ -250,6 +250,14 @@ And we can do this just the same with cascaded sections where integrators and co
 
 ![Moving Average Filter - Cascaded Decimation Smart](/assets/pdm/moving_average_filters-integrator_comb_decimated.svg)
 
+It's important to note here that, for decimation, it's important that the integrators come first
+and the combs second with the downsampler in between. For interpolation, the reverse is true: for
+those, the incoming sample rate is fraction of the outgoing sample rate, the combs must 
+come first and the interpolators second.
+
+![Moving Average Filter - Cascaded Decimation Smart](/assets/pdm/moving_average_filters-comb_integrator_interpolated.svg)
+
+
 # A Moving Average Filter as Decimator
 
 We now know why moving average filters are so popular for decimation (and interpolation as well): their
