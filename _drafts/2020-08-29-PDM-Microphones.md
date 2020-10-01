@@ -23,7 +23,7 @@ online where you can look up the details if it's necessary.
 an expert on any of this. If you're serious about learning about PDM signal processing in depth, this blog post is not for you.
 Along the way, I will include a list of references that may point you in the right direction.*
 
-## PDM MEMS Microphones
+# PDM MEMS Microphones
 
 [MEMS microphones ](https://en.wikipedia.org/wiki/Microphone#MEMS) can be found in all moderns
 mobile phones. They are very small in size, are low cost, have low power consumption, offer decent quality, and
@@ -246,73 +246,6 @@ a 64x oversampling, 4th order sigma-delta convertor, we see that the noise goes 
 
 Since the noise starts going up immediately above 24 kHz (=48/2), we have 4 kHz to construct a filter
 that goes from a pass band to the stop band. 
-
-# FIR Filters for Decimation 
-
-Since we're throwing away N-1 out N samples when decimating by factor N, the decimation filter doesn't
-need to calculate a filter value for each incoming sample when we're using an FIR filter: it's
-sufficient to calculate the output only every N samples. Since we're down
-
-# Moving Average Filters
-
-As we noticed earlier: typical FIR filters require a multiplication per filter tap. Larger FPGAs
-have a decent set of HW multipliers, but even then, setting up an efficient FIR structure can be
-a hassle.
-
-The multipliers are there to ensure that the filter has the right pass band, transition band, and
-stop band characteristics.
-
-But what if we just ignore some of those characteristics with the explicit goal to get rid of this
-kind of mathematical complexity?
-
-The simplest filter, then, is the moving averaging filter: it sums the last N samples,
-divides the result by N and... that's it!
-
-A moving average filter probably one of the most common filters in digital signal processing: it's
-super simple to understand and implement, and it's also an optimal filter for white noise reduction. That's
-because white noise doesn't have a preference to impact this sample or the other, it affects any sample
-with equal chance. Because of that, there's no way you can tune this or that coefficient of the
-filter coefficients in some preferential way.
-
-Unfortunately, moving average filters have some major disadvantages as well: they have a very slow roll-off
-from the pass band to the stop band, and the stop band attentuation is very low as well.
-
-But one way to overcome that is by cascading multiple filters after each other.
-
-There are 2 parameters to play with: the size of the box (the number of samples that are averaged
-together) and the number of filters that are cascaded.
-
-Here's how that looks in terms of filter response:
-
-![Moving Average Filter Response](/assets/pdm/moving_average_filter_overview.svg)
-
-As we increase the length of the moving average filter, the band pass gets narrower, but the attenuation
-of the stop band (the height of the second lobe) stays the same.
-
-*The graph above shows lengths that are a power of 2, but there's no requirement to do so. It just makes
-the graph look a bit nicer.*
-
-But when we increase the order (the number of moving average filters cascaded), the attenuation of the
-stop band increase accordingly.
-
-Can we use just cascaded moving average filters for our factor 64 decimation example? Not at all!
-Even when 4 filters are cascaded, the stop band attenuation is only -66dB. And if we want
-to downsample by a factor of 64 and use a filter length of 64, the passband attenuation at 
-0.01 of the normalized frequency (which corresponds to 15.36kHz of our example) is already
-around -33.7! 
-
-![Box Filter Passband](/assets/pdm/moving_average_filter_passband.svg)
-
-With these terrible characteristics, are moving average filters even worth doing?
-
-The answer is yes!
-
-While the 64-length filter has that terrible pass band attenuation of -33.7dB, the attenuation of 16-length 
-version of that 4th order filter at the same 0.01 is only -1.8dB. For high quality audio, the pass band
-ripple should only be around 0.2dB, so -1.8dB is still way too high. 
-
-
-
 
 # References
 
