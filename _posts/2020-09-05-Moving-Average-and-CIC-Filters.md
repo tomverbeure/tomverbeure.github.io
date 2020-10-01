@@ -26,11 +26,11 @@ It's a great book that's light on math with an emphasis on practical usage.
 
 But the best way to really learn something is by doing, so I started an FPGA project that
 takes in audio from a MEMS microphone in a single bit pulse density modulated (PDM) format,
-converts it to reguler 16-bit pulse code modulated (PCM) samples, and send it out to
+converts it to regular 16-bit pulse code modulated (PCM) samples, and send it out to
 an optical SPDIF output.
 
 When studying the topic of PDM to PCM conversion, it's almost impossible to not run into the
-cascaded integrator comb (CIC) filters: they are extremely lightweight in terms of resources,
+topic of cascaded integrator comb (CIC) filters: they are extremely lightweight in terms of resources,
 thanks to a number of interesting tricks and transformations.
 
 The full story of my microphone to SPDIF pipeline is still a work in progress, but CIC
@@ -38,7 +38,7 @@ filters by themselves are enough of a topic to fill a pretty long blog post, so 
 what I'll be writing about below.
 
 *As always, keep the usual disclaimer in mind: these blog posts are a way for me to solidify what
-I've learned. Don't take whatever is written below as gospel, there may be significant error in it!*
+I've learned. Don't take whatever is written below as gospel, there may be significant errors in it!*
 
 # Moving Average Filters
 
@@ -52,18 +52,19 @@ stop band characteristics.
 
 But what if we just ignore required characteristics to get rid of this kind of mathematical complexity?
 
-The simplest filter, then, is the moving average filter (also called "boxcar filter"): it sums the last 
+The simplest filter, then, is the moving average filter (also called boxcar filter): it sums the last 
 incoming N samples, divides the result by N and... that's it!
 
 A moving average filter is probably one of the most common filters in digital signal processing: it's
-super simple to understand and implement, and it's also an optimal filter for white noise reduction. That's
-white noise doesn't have a preference to impact this sample or the other, it affects any sample
-with equal chance. Because of that, there's no way you can tune this or that coefficient of the
-filter coefficients in some preferential way. 
+super simple to understand and implement, they are symmetric, so they have linear phase response, 
+and it's also an optimal filter for white noise reduction. (That's
+because white noise doesn't have a preference to impact this sample or the other, it affects any sample
+with equal chance. And because of that, there's no way you can tune this or that coefficient of the
+filter coefficients in some preferential way.) 
 
 Unfortunately, moving average filters have some major disadvantages as well: they have a large attenuation 
-in the pass band, they have a very slow roll-off from the pass band to the stop band, and the stop band 
-attentuation is very low too.
+in the pass band, they have a very slow roll-off from the pass band to the stop band, they have bad
+time domain behavior (ringing) and the stop band attentuation is very low too.
 
 You can overcome the low stop band attenuation by cascading multipe filters after each other, but that
 makes the pass band attenuation worse too.
@@ -101,9 +102,9 @@ With these problematic characteristics, are moving average filters even worth do
 
 The answer is yes!
 
-A trivial implementation of a moving average filter is already much less resource intensive than a 
-regular FIR filter, but when they're used as a part of a decimation (downsampling) or or interpolation
-(upsampling) pipeline, their resource usage reduces to almost nothing! 
+A trivial implementation of a moving average filter is already less resource intensive than an
+FIR filter with variable coefficients, but when they're used as a part of a decimation (downsampling) 
+or or interpolation (upsampling) pipeline, their resource usage reduces to almost nothing. 
 
 # Intermission: The Basics of Decimation
 
@@ -115,7 +116,7 @@ N samples. It's really as simple as that: you throw away samples.
 
 If you start with a signal that has a sample rate of 3.072 MHz and you decimate by a factor of 64, 
 you end up with a signal that's sampled at 48kHz. These numbers weren't chosen at random: they're the 
-sample rates that you get when converting the output signal of a MEMS microphone from PDM to PCM.
+sample rates that you could get when converting the output signal of a MEMS microphone from PDM to PCM.
 
 We know that a sample rate of 3.072MHz allows for frequency components of 
 maximum 1.576MHz. And a sample rate of 48kHz allows for frequency components of up to 24kHz.
@@ -124,20 +125,20 @@ During that act of decimation, the frequency components between 24kHz and 1.576M
 disappear, they fold back onto the remaining frequency range from 0 to 24kHz.
 
 This makes total sense, because it's same as the aliasing effect that happens when you
-undersample a signal.
+undersample a signal right from the start.
 
-Here's a simple example spectrum of a signal with 3 sine waves at 0.01, 0.1 and 0.28 of 
-the normalized sampling rate, and some added noise. The sine waves with the 0.01 and 0.1 frequency
-have a much lower amplitude than the one with the 0.28 frequency.
+Here's a simple example spectrum of a signal with 3 sine waves at 100Hz, 1000Hz and 2800Hz 
+and some added noise, sampled at 10kHz. The sine waves at 100Hz and 1000Hz have a much lower 
+amplitude than the one at 2800Hz.
 
 ![Decimation without Filtering - 3 Sine Waves - No Decimation](/assets/pdm/decimation_without_filtering-no_decimation.svg)
 
-Here's what happens when you decimate that signal by 2 or by 4: 
+This is what happens when you decimate that signal by 2 or by 4: 
 
 ![Decimation without Filtering - 3 Sine Waves - No Decimation](/assets/pdm/decimation_without_filtering-2x_4x_decimation.svg)
 
-The signal at 0.28, above the new Nyquist frequency of 0.25 or 0.125 after decimation, didn't magically 
-disappear. It jumped to a frequency of 0.22 or 0.03 for 2x and 4x decimation respectively.
+The 2800Hz signal, above the new Nyquist frequency of 5000Hz or 2500Hz after decimation  didn't magically 
+disappear. It jumped to a frequency of 2200Hz and 300Hz for 2x and 4x decimation respectively.
 
 If you look closely, you'll also notice that the noise level has increased after decimation too. It's well 
 below -50dB before decimation, yet regularly crosses the -50dB line after 4x decimation. The same thing is 
@@ -458,6 +459,10 @@ CIC Filters:
 * [Designing CIC Compensation Filters](http://threespeedlogic.com/cic-compensation.html)
 
     References to C++ tools etc to come up with the actual coefficients.
+
+* [Understanding CIC Compensation Filters](https://www.intel.com/content/dam/www/programmable/us/en/pdfs/literature/an/an455.pdf)
+
+    Excellent application note from Altera.
 
 * [Rick Lyons - Computing CIC Filter Register Pruning Using Matlab](https://www.dsprelated.com/showcode/269.php)
 
