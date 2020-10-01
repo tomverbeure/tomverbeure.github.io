@@ -1,7 +1,7 @@
 ---
 layout: post
-title: An Intuitive and Practical Look at Moving Average and CIC Filters
-date:  2020-09-05 00:00:00 -1000
+title: An Intuitive Look at Moving Average and CIC Filters
+date:  2020-09-30 00:00:00 -1000
 categories:
 ---
 
