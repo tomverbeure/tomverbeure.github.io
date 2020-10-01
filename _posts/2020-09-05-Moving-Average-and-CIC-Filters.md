@@ -137,8 +137,8 @@ This is what happens when you decimate that signal by 2 or by 4:
 
 ![Decimation without Filtering - 3 Sine Waves - No Decimation](/assets/pdm/decimation_without_filtering-2x_4x_decimation.svg)
 
-The 2800Hz signal, above the new Nyquist frequency of 5000Hz or 2500Hz after decimation  didn't magically 
-disappear. It jumped to a frequency of 2200Hz and 300Hz for 2x and 4x decimation respectively.
+The 2800Hz signal didn't magically disappear. It jumped to a frequency of 2200Hz and 300Hz for 2x and 4x 
+decimation respectively.
 
 If you look closely, you'll also notice that the noise level has increased after decimation too. It's well 
 below -50dB before decimation, yet regularly crosses the -50dB line after 4x decimation. The same thing is 
@@ -202,18 +202,18 @@ The section with the delay line and the subtactor is called a "comb". The recurs
 the previous output is called the "integrator".
 
 It's slightly less intuitive, but you can swap the interpolator and the comb sections and get the same
-calculated result. In this case, instead of having a recursive output, you continuously accumulate x, 
+calculated result. In this case, instead of having a recursive output, you continuously accumulate *x*, 
 and subtract that accumulation later.
 
 ![Moving Average Filter - Integrator Comb Version](/assets/pdm/moving_average_filters-integrator_comb_version.svg)
 
-Accumulate *x* to *a*:
+Accumulate *x* to *a* in the integrator:
 
 ```
 a(n) = x(n) + a(n-1)
 ```
 
-And the output:
+And calculate the output in the comb:
 ```
 y(n) = a(n) - a(n-4)
 ```
@@ -294,9 +294,8 @@ And we can do this just the same with cascaded sections where integrators and co
 
 ![Moving Average Filter - Cascaded Decimation Smart](/assets/pdm/moving_average_filters-integrator_comb_decimated.svg)
 
-It's important to note here that, for decimation, it's important that the integrators come first
-and the combs second with the downsampler in between. For interpolation, the reverse is true: for
-those, the incoming sample rate is fraction of the outgoing sample rate, the combs must 
+It's important to note here that, for decimation, the integrators come first and the combs second with the downsampler in between. 
+For interpolation, the reverse is true: the incoming sample rate is fraction of the outgoing sample rate, the combs must 
 come first and the interpolators second.
 
 ![Moving Average Filter - Cascaded Decimation Smart](/assets/pdm/moving_average_filters-comb_integrator_interpolated.svg)
@@ -321,7 +320,7 @@ means that the incoming signal can have frequency components from 0 to 40kHz.
 ![CIC Response before decimation](/assets/pdm/cic_decimation_full_range.svg)
 
 The filter length of 4 gives a 2 lobes. Under normal circumstances, you'd say that this filter has a stopband 
-attenuation of 56.77dB. However, since the decimation ratio of a CIC filter is linked to the filter length, the 
+attenuation of 56.77dB. However, since the decimation ratio of a CIC filter is linked to the filter length, that 
 decimation ratio has to be 4 as well.
 
 The output sample rate of our decimating filter will be 20kHz (80kHz/4), and the bandwidth of the outgoing signal will
@@ -337,15 +336,16 @@ be alias under the blue curve.
 
 The blue curve is the true signal with a 10kHz bandwidth. The remaining curves are distorting the true signal.
 
-Forget about a stopband attenuation of 56.77dB: the real stopband attenuation of this filter is 18.49dB! And
-the passband attenuation isn't flat either: it goes down from 0 and -18.49dB as well.
+Forget about a stopband attenuation of 56.77dB: the real stopband attenuation of this filter is 18.49dB, the point
+where the blue curve stops and the orange curve starts! And the passband attenuation isn't flat either: it goes down 
+from 0 and -18.49dB as well.
 
 If a decimating CIC filter by itself is so terrible, why, then, is it so popular?
 
 **Because a decimating CIC filter is always used as part of a multi-stage decimation configuration.**
 
 Nobody would use a 4x decimating CIC filter to extract a 10kHz BW output signal from a 40kHz BW input signal. The CIC
-filter is just a first, but important, step to reduce sample rate from some high number to a lower, intermediate, number. 
+filter is just a first step to reduce sample rate from some high number to a lower, intermediate, number. 
 And then one or more traditional FIR filters are used to bring the sample rate to the final desired output rate.
 
 In our example, if our signal of interest lies in the 0 to 2000Hz range, the CIC filter has reduced the signal components 
@@ -368,14 +368,13 @@ the size of the FIR filter manageable.
 
 # Passband Compensation in CIC Filters
 
-I already touched on this before: a CIC filter doesn't have a well defined pass band, and requires
+I already mentioned it a couple time before: a CIC filter doesn't have a well defined pass band, and requires
 a trade-off between choosing a large pass band vs choosing low pass band attenuation.
 
 Furthermore, a narrow pass band will often require a more complex FIR filter to remove unwanted frequency
 components.
 
-One common way around this is to have a higher CIC decimation ratio, and a wider pass band (with
-larger attenuation), but to add a compensation filter that counteracts the pass band behavior of
+One common way around this is to add a compensation filter that counteracts the pass band behavior of
 the CIC filter. In many cases, these compensation filters can implemented with limited resources.
 
 There are 2 ways to go about this: 
@@ -386,10 +385,10 @@ There are 2 ways to go about this:
 ![Moving Average Filter - Compensation Filter Pipeline](/assets/pdm/moving_average_filters-compensation_filter_pipeline.svg)
 
 It seems to make sense to roll the compensation part into the low pass filter, but one good reason
-to not do this, is the existence of [half-band filters](https://en.wikipedia.org/wiki/Half-band_filter): 
+to not do this is the existence of [half-band filters](https://en.wikipedia.org/wiki/Half-band_filter): 
 these are filters that have their transition band centered at exactly one fourth of the sample rate. 
 With some additional restrictions, they have the property that half of the FIR filter coefficients are 
-zero, and thus require only half of the multipliers. That makes them excellent candidates for 2x decimation 
+zero, and they thus require only half of the multipliers. That makes them excellent candidates for 2x decimation 
 filters. However, it makes them ineligible as compensation filter.
 
 Practical compensation filter design will be discussed in the future blog post, but check out the
