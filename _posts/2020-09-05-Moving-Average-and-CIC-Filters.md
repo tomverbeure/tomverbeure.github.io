@@ -111,11 +111,11 @@ Before diving deeper in the specifics of moving average filters, let's do a quic
 decimation.
 
 In digital signal processing, decimation is the step of removing N-1 number of samples for every
-N samples. It's really as simple as that: you throw away samples!
+N samples. It's really as simple as that: you throw away samples.
 
 If you start with a signal that has a sample rate of 3.072 MHz and you decimate by a factor of 64, 
-you end up with a signal that's sampled at 48kHz. These numbers weren't chosen at random: they're sample
-rate that you get when converting the output signal of a MEMS microphone from PDM to PCM.
+you end up with a signal that's sampled at 48kHz. These numbers weren't chosen at random: they're the 
+sample rates that you get when converting the output signal of a MEMS microphone from PDM to PCM.
 
 We know that a sample rate of 3.072MHz allows for frequency components of 
 maximum 1.576MHz. And a sample rate of 48kHz allows for frequency components of up to 24kHz.
@@ -138,6 +138,10 @@ Here's what happens when you decimate that signal by 2 or by 4:
 
 The signal at 0.28, above the new Nyquist frequency of 0.25 or 0.125 after decimation, didn't magically 
 disappear. It jumped to a frequency of 0.22 or 0.03 for 2x and 4x decimation respectively.
+
+If you look closely, you'll also notice that the noise level has increased after decimation too. It's well 
+below -50dB before decimation, yet regularly crosses the -50dB line after 4x decimation. The same thing is 
+happening here: the noise of the higher frequencies aliased into the low frequency band.
 
 Conclusion: to avoid aliasing, you first need to apply a low pass filter to your signal before
 performing decimation.
@@ -188,12 +192,12 @@ In hardware, that looks like this:
 
 ![Moving Average Filter - Comb Integrator Version](/assets/pdm/moving_average_filters-comb_integrator_version.svg)
 
-We have added 2 delay registers, a subtractor, but have saved a whole lot of adders. And these 2 delay
+We have added 2 delay registers and a subtractor, but have saved a whole lot of adders. And these 2 delay
 registers are a one-time cost for converting to a recursive configuration: if we increase
-the summing length from 4 to 8, we'll only add 4 more registers to the delay line and nothing else! (But as
+the summing length from 4 to 8, we'll only add 4 more registers to the delay line and nothing else. (But as
 we shall see below, it will get even better!)
 
-The section with the delay and the subtactor is called a "comb", the recursive part that feeds back
+The section with the delay line and the subtactor is called a "comb". The recursive part that feeds back
 the previous output is called the "integrator".
 
 It's slightly less intuitive, but you can swap the interpolator and the comb sections and get the same
@@ -202,13 +206,13 @@ and subtract that accumulation later.
 
 ![Moving Average Filter - Integrator Comb Version](/assets/pdm/moving_average_filters-integrator_comb_version.svg)
 
-Accumulate *x*:
+Accumulate *x* to *a*:
 
 ```
 a(n) = x(n) + a(n-1)
 ```
 
-And let's define the output as:
+And the output:
 ```
 y(n) = a(n) - a(n-4)
 ```
@@ -226,7 +230,7 @@ y(n) = x(n) + x(n-1) + x(n-2) + x(n-3)
 
 If you were really paying attention, you might have noticed that continously accumulating *x* into *a* will 
 eventually result in overflowing *a*. However, as long as the delay registers have enough bits, the
-comb section will automatically counteract this overflow: you'll still get the right result!
+comb section will automatically counteract this overflow: you'll still get the right result.
 
 You can increase the attenuation by cascading multiple moving average filters:
 
@@ -299,7 +303,7 @@ come first and the interpolators second.
 
 # Moving Average Filters as Decimator
 
-We now know why moving average filters are so popular for decimation and interpolation as well: their
+We now know why moving average filters are so popular for decimation and interpolation: their
 CIC implementation requires almost no resources, irrespective of the up- or downsampling ratio.
 
 However, it's not all roses: the negatives of moving average filters that were mentioned earlier, 
@@ -308,10 +312,10 @@ poor stop band attenuation and non-flat pass band attenuation, didn't magically 
 In fact, they got worse: in a decimation CIC filter, the length of the moving average filter must be
 an integer multiple of the decimation ratio. In most cases, that ratio is 1. Because of this, the only way to 
 influence the attenuation of the stopband is by increasing the number of cascaded interpolator and
-comb banks, but that, in turn, also has an impact on the pass band. 
+comb banks, but that, in turn, also increases the pass band attenuation. 
 
 Let's look here at a 5th order CIC filter with a filter length of 4. The sample frequency is 80kHz, which
-means that the incoming signal has a bandwidth from 0 to 40kHz.
+means that the incoming signal can have frequency components from 0 to 40kHz.
 
 ![CIC Response before decimation](/assets/pdm/cic_decimation_full_range.svg)
 
@@ -337,14 +341,14 @@ the passband attenuation isn't flat either: it goes down from 0 and -18.49dB as 
 
 If a decimating CIC filter by itself is so terrible, why, then, is it so popular?
 
-**Because a decimating CIC filter is always used as part of a multi-stage decimation configuration!**
+**Because a decimating CIC filter is always used as part of a multi-stage decimation configuration.**
 
 Nobody would use a 4x decimating CIC filter to extract a 10kHz BW output signal from a 40kHz BW input signal. The CIC
-filter is a first step to reduce sample rate from some high number to a lower number. And then
-one or more traditional FIR filters are used to bring the sample rate to the desired output rate.
+filter is just a first, but important, step to reduce sample rate from some high number to a lower, intermediate, number. 
+And then one or more traditional FIR filters are used to bring the sample rate to the final desired output rate.
 
-In our example, if our signal of interest lies in the 0 to 2000Hz range, the CIC filter has reduced the aliasing of all
-the signal components above 10kHz by more than 90dB, and the passband attenuation is only 0.7dB!
+In our example, if our signal of interest lies in the 0 to 2000Hz range, the CIC filter has reduced the signal components 
+that aliased into the 0 to 2000Hz range by more than 92dB, and the passband attenuation is only 0.7dB!
 
 ![CIC Response at lower frequencies](/assets/pdm/cic_decimation_lower_freqs.svg)
 
@@ -363,26 +367,115 @@ the size of the FIR filter manageable.
 
 # Passband Compensation in CIC Filters
 
-I already touched on this before: a CIC filter doesn't have a well defined pass band, and there's
-a very real trade-off between choosing a large pass band vs choosing low pass band attenuation.
+I already touched on this before: a CIC filter doesn't have a well defined pass band, and requires
+a trade-off between choosing a large pass band vs choosing low pass band attenuation.
 
 Furthermore, a narrow pass band will often require a more complex FIR filter to remove unwanted frequency
 components.
 
-One common way around this is to add a compensation filter that counteracts the pass band behavior of
-the CIC filter. In many cases, these can implemented with limited resources.
+One common way around this is to have a higher CIC decimation ratio, and a wider pass band (with
+larger attenuation), but to add a compensation filter that counteracts the pass band behavior of
+the CIC filter. In many cases, these compensation filters can implemented with limited resources.
 
-There are 2 ways to go about this: the pass band compensation can be a separate additional step, or 
+There are 2 ways to go about this: 
 
+* the pass band compensation can be a separate additional step at the very end of the filtering pipeline.
+* the pass band compensation is part of the FIR filter(s) after the CIC filter.
+
+![Moving Average Filter - Compensation Filter Pipeline](/assets/pdm/moving_average_filters-compensation_filter_pipeline.svg)
+
+It seems to make sense to roll the compensation part into the low pass filter, but one good reason
+to not do this, is the existence of [half-band filters](https://en.wikipedia.org/wiki/Half-band_filter): 
+these are filters that have their transition band centered at exactly one fourth of the sample rate. 
+With some additional restrictions, they have the property that half of the FIR filter coefficients are 
+zero, and thus require only half of the multipliers. That makes them excellent candidates for 2x decimation 
+filters. However, it makes them ineligible as compensation filter.
+
+Practical compensation filter design will be discussed in the future blog post, but check out the
+references at the bottom of this page if you want more information now.
+
+# The Size of the Delay Elements in a CIC Filter
+
+If the delay elements of a CIC filter aren't large enough, the filter will show overflow behavior.
+
+The easiest way to avoid these overflows is to give all delay elements the same size:
+
+nr bits = *x(n)* bits + roundUp(nr stages * log2(nr delay elements in comb stage * decimation ratio))
+
+This number can go up quickly. For a 16x decimation filter with 5 stages and a 1 bit PDM input, you
+end up with 
+
+nr bits = 1 + roundUp(5 * log2(1 * 16)) = 26
+
+If your input signal has a signal to noise ratio of less than that, assigning 26 bits everywhere
+is overkill. Hogenauer's paper goes into low level detail about how to optimally reduce the size of the
+delay stages at different location in the pipeline, but since flip-flops are pretty cheap these days,
+I'll leave that for another time.
+
+For now, just drop the LSBs of your output signal if the number of bits is higher than what's needed
+to maintain the SNR of your input signal. Or check out the references below for a CIC register pruning
+utility.
+
+# A Note about Simulation
+
+CIC filters are special in that there's no floating point involved: everything
+happens with pure integer or fixed point math. But one thing to keep in mind is that integer overflow is 
+expected and inevitable. The architecture is such that overflow in the initial stages gets compensated
+for in the later stages. When using floating point, due to rounding errors, one can not guarantee that
+this compensation happens correctly.
+
+For that reason, when simulating a moving average filter in something like numpy, I don't bother using CIC filters,
+and use the standard FIR convolution instead.
+
+# Going Forward...
+
+So far, I've only talked about theory. Practice is more fun and scheduled for an upcoming blog post, so
+stay tuned!
+
+Meanwhile, there's plenty to read about the topic. Check out the references below. The favorite one
+is the Rick Lyon's [A Beginner's Guide To Cascaded Integrator-Comb (CIC) Filters](https://www.dsprelated.com/showarticle/1337.php).
+It much covers everything above, but with more mathematical rigor. 
 
 # References
+
+CIC Filters:
+
+* [An Economical Class of Digital Filters For Decimation and Interpolation](http://read.pudn.com/downloads163/ebook/744947/123.pdf)
+
+    Hogenauer's original paper about CIC filters.
+
+* [Rick Lyons - A Beginner's Guide To Cascaded Integrator-Comb (CIC) Filters](https://www.dsprelated.com/showarticle/1337.php)
+
+    Excellent introduction to CIC filters with a bit more of math and rigor.
+
+* [Small tutorial on CIC filters](http://www.tsdconseil.fr/log/scriptscilab/cic/cic-en.pdf)
+
+    Excellent concrete example of a CIC decimating filter design (with compensation), the number of bits required,
+    and the consequences of aliasing.
+
+* [CIC Filter Introduction](http://dspguru.com/files/cic.pdf)
+
+* [Designing CIC Compensation Filters](http://threespeedlogic.com/cic-compensation.html)
+
+    References to C++ tools etc to come up with the actual coefficients.
+
+* [Rick Lyons - Computing CIC Filter Register Pruning Using Matlab](https://www.dsprelated.com/showcode/269.php)
+
+    Explanation about correctly sizing the delay elements with Matlab code. You can find a C implementation
+    of the Matlab code [here: CIC filter register pruning utility](http://www.jks.com/cic/cic.html).
+
+General DSP:
 
 * [The Scientist and Engineer's Guide to Digital Signal Processing](http://www.dspguide.com/pdfbook.htm)
 
     Awesome book about DSP that's low on math and high on intuitive understanding. The digital version
     is free too!
 
-## General DSP
+* [Introduction to Digital Filters with Audio Applications](https://ccrma.stanford.edu/~jos/filters/filters.html)
+
+* [Multirate Digital filters, filter banks, polyphase networks, and applications: a tutorial](https://authors.library.caltech.edu/6798/1/VAIprocieee90.pdf)
+
+    37 page paper on decimation and interpolation.
 
 * [dspGuru FAQs](https://dspguru.com/dsp/faqs/)
     
@@ -400,30 +493,14 @@ There are 2 ways to go about this: the pass band compensation can be a separate 
 
     Tons of articles related to audio DSP.
 
-# Filter Design
-
-* [Tom Roelandts - How to Create a Simple Low-Pass Filter](https://tomroelandts.com/articles/how-to-create-a-simple-low-pass-filter)
-
-    Simple explanation, Numpy example code.
-
-## Decimation
-
-* [An Economical Class of Digital Filters For Decimation and Interpolation](http://read.pudn.com/downloads163/ebook/744947/123.pdf)
-
-    Hogenauer's original paper about CIC filters.
-
-* [A Beginner's Guide To Cascaded Integrator-Comb (CIC) Filters](https://www.dsprelated.com/showarticle/1337.php)
-
-    Excellent introduction to CIC filters with a tiny bit more of math.
-
+Decimation:
 
 * [Rick Lyons - Optimizing the Half-band Filters in Multistage Decimation and Interpolation](https://www.dsprelated.com/showarticle/903.php)
 
     Talks about how it may not be ideal to have 3 identical cascaded 2x half-band filters when
     you want to be decimate by 8. Unfortunately, it only does so qualitatively, not quantitatively.
 
-
-## Filter Tools
+Filter Tools:
 
 * [FIIIR1](https://fiiir.com)
 

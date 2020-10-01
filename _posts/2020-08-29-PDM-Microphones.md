@@ -324,28 +324,7 @@ ripple should only be around 0.2dB, so -1.8dB is still way too high.
     Texas Instruments article.  Part 1 is a pretty gentle introduction about the sigma-delta basics.
     Part 2 talks about filtering to go from PDM to PCM, but it's very light on details.
 
-
 ## General DSP
-
-* [Introduction to Signal Processing](https://www.ece.rutgers.edu/~orfanidi/intro2sp/)
-
-    Free downloadable book.
-
-* [dspGuru FAQs](https://dspguru.com/dsp/faqs/)
-
-    FAQs about FIR, IIR, multirate (decimation, interpolation, resampling), FFT etc.
-    
-    Doesn't go much in detail, but really useful as a refresher.
-
-* [TomRoelandts.com](https://tomroelandts.com/articles)
-
-    Lots of interesting filtering related articles.
-
-    He's also the creator [FIIIR!](https://fiiir.com/), an online tool to create a variety of filters.
-
-* [Earlevel Engineering](https://www.earlevel.com/main/)
-
-    Tons of articles related to audio DSP.
 
 ## Filter Design
 
@@ -353,33 +332,11 @@ ripple should only be around 0.2dB, so -1.8dB is still way too high.
 
     Simple explanation, Numpy example code.
 
-* [Introduction to Digital Filters with Audio Applications](https://ccrma.stanford.edu/~jos/filters/filters.html)
-
 ## Decimation
-
-
-* [Rick Lyons - Optimizing the Half-band Filters in Multistage Decimation and Interpolation](https://www.dsprelated.com/showarticle/903.php)
-
-    Talks about how it may not be ideal to have 3 identical cascaded 2x half-band filters when
-    you want to be decimate by 8. Unfortunately, it only does so qualitatively, not quantitatively.
 
 * [Optimum FIR Digital Filter Implementations for Decimation, Interpolation, and Narrow-Band Filtering](https://web.ece.ucsb.edu/Faculty/Rabiner/ece259/Reprints/087_optimum%20fir%20digital%20filters.pdf)
 
     Paper that discusses how to size cascaded filter to optimized for FIR filter complexity.
-
-* [Small tutorial on CIC filters](http://www.tsdconseil.fr/log/scriptscilab/cic/cic-en.pdf)
-
-    Excellent concrete example of a CIC decimating filter design (with compensation), the number of bits required,
-    and the consequences of aliasing.
-
-* [Designing CIC Compensation Filters](http://threespeedlogic.com/cic-compensation.html)
-
-    References to C++ tools etc to come up with the actual coefficients.
-
-* [Multirate Digital filters, filter banks, polyphase networks, and applications: a tutorial](https://authors.library.caltech.edu/6798/1/VAIprocieee90.pdf)
-
-    37 page paper on decimation and interpolation.
-
 
 ## Filter Tools
 
