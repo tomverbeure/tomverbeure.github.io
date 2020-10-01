@@ -256,7 +256,7 @@ In the example below, the downsampler at the right drops those 3 samples out of 
 
 ![Moving Average Filter - Decimation Trivial](/assets/pdm/moving_average_filters-decimation_trivial.svg)
 
-But if we're going to be throwing away 75% of the calculated values, can't we just move the that
+But if we're going to be throwing away 75% of the calculated values, can't we just move the 
 downsampler from the end of the pipeline to somehwere in the middle? Right between the integrator
 stage and the comb stage? That answer is yes, but to keep the math working, we also need to divide
 the number of delay elements in the comb stage by the decimation rate:
