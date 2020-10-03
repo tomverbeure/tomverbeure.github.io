@@ -495,7 +495,7 @@ that goes from a pass band to the stop band.
 
 # References
 
-## Sigma-Delta AD Convertors
+**Sigma-Delta AD Convertors**
 
 * [How delta-sigma ADCs work, Part 1](https://www.ti.com/lit/an/slyt423a/slyt423a.pdf) 
    and [Part 2](https://www.ti.com/lit/an/slyt438/slyt438.pdf)
@@ -503,24 +503,40 @@ that goes from a pass band to the stop band.
     Texas Instruments article.  Part 1 is a pretty gentle introduction about the sigma-delta basics.
     Part 2 talks about filtering to go from PDM to PCM, but it's very light on details.
 
-## General DSP
-
-## Filter Design
+**Filter Design**
 
 * [Tom Roelandts - How to Create a Simple Low-Pass Filter](https://tomroelandts.com/articles/how-to-create-a-simple-low-pass-filter)
 
     Simple explanation, Numpy example code.
 
-## Decimation
+* [Design of FIR Filters](https://www.vyssotski.ch/BasicsOfInstrumentation/SpikeSorting/Design_of_FIR_Filters.pdf)
+
+    Good presentation about different ways to design filters, Remez, ripple etc.
+
+* [Remez (FIR design) Weights from Requirements](https://www.dsprelated.com/showcode/209.php)
+
+    Shows how to calculate weights for the Remez algorithm (though there seems to be an off-by-2
+    error for the passband weights.)
+
+* [Halfband Filter Design with Python/SciPy](https://www.dsprelated.com/showcode/270.php)
+
+    Simple example that shows how to calculate half-band filter coefficients with NumPy using the Remez
+    algorithm and with a windowed sinc filter. However, it doesn't discuss how to calculate the weights
+    of the Remez algorithm.
+
+* [Multiplier-Free Half-Band Filters](https://www.cs.tut.fi/~ts/sldsp_part2_identical_subfilters_halfband.pdf)
+
+    Excellent discussion about half band filters, ways to design them, and how to design them without
+    multipliers. Also has an extensive example on how to convert from PDM to PCM with a CIC filter followed
+    by 4 half band filters.
+
+    The [website of this professor](https://www.cs.tut.fi/~ts/) has a lot of course notes online. They are 
+    all worth reading.
+
+**Decimation**
 
 * [Optimum FIR Digital Filter Implementations for Decimation, Interpolation, and Narrow-Band Filtering](https://web.ece.ucsb.edu/Faculty/Rabiner/ece259/Reprints/087_optimum%20fir%20digital%20filters.pdf)
 
     Paper that discusses how to size cascaded filter to optimized for FIR filter complexity.
-
-## Filter Tools
-
-* [FIIIR1](https://fiiir.com)
-
-* [LeventOztruk.com](https://leventozturk.com/engineering/filter_design/)
 
 
