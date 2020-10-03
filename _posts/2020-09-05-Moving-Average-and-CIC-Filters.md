@@ -468,6 +468,9 @@ CIC Filters:
     Explanation about correctly sizing the delay elements with Matlab code. You can find a C implementation
     of the Matlab code [here: CIC filter register pruning utility](http://www.jks.com/cic/cic.html).
 
+* [Altera - Understanding CIC Compensation Filters](https://www.intel.com/content/dam/www/programmable/us/en/pdfs/literature/an/an455.pdf)
+
+
 General DSP:
 
 * [The Scientist and Engineer's Guide to Digital Signal Processing](http://www.dspguide.com/pdfbook.htm)
