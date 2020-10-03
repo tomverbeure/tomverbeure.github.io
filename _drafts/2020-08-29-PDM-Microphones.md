@@ -10,26 +10,26 @@ categories:
 
 # Introduction
 
-Over the past months, I've been reading on and off about MEM microphones, 
-[pulse density modulation](https://en.wikipedia.org/wiki/Pulse-density_modulation) (PDM), conversion
+As part of my ongoing quest to learn more about digital signal processing, I've been reading on and off about 
+MEMS microphones, [pulse density modulation](https://en.wikipedia.org/wiki/Pulse-density_modulation) (PDM), conversion
 from PDM to [pulse code modulation](https://en.wikipedia.org/wiki/Pulse-code_modulation) (PCM), 
 and various audio processing techniques and interfaces.
 
-In the coming series of blog post, I'll be writing down some of the things that I learned. Rather than focussing on the 
-math behind it, I'm looking at this from an intuitive angle: I'll forget the math anyway, and there are plenty of articles 
-online where you can look up the details if it's necessary.
+The best way to learn something is by doing (and then writing about it), so in the coming blog
+posts, I'll be talking about an FPGA project that takes in the PDM data stream from the microphone,
+and sends it out in PCM format over an SPDIF interface.
 
-*Just to avoid misunderstandings: I didn't know anything about this until a few months ago, so I'm about the opposite of 
-an expert on any of this. If you're serious about learning about PDM signal processing in depth, this blog post is not for you.
-Along the way, I will include a list of references that may point you in the right direction.*
+*As always, keep the usual disclaimer in mind: these blog posts are a way for me to solidify what
+I've learned. Don't take whatever is written below as gospel, there may be significant errors in it!*
 
 # PDM MEMS Microphones
 
-[MEMS microphones ](https://en.wikipedia.org/wiki/Microphone#MEMS) can be found in all moderns
+[MEMS microphones ](https://en.wikipedia.org/wiki/Microphone#MEMS) can be found in all modern
 mobile phones. They are very small in size, are low cost, have low power consumption, offer decent quality, and
 can be mounted to a PCB with a standard surface mounted assembly process.
 
-Some MEMS microphones transmit the audio data in PCM format over an I2S interface, but most use 1-bit pulse density modulation.
+Some MEMS microphones transmit the audio data in PCM format over an I2S interface, but most use 1-bit pulse 
+density modulation.
 
 On Digikey, the cheapest PDM microphones go for around $1 a piece. Or you can buy [a breakout board on Adafruit](https://www.adafruit.com/product/3492) 
 for $5. It has an [ST MP34DT01-M](https://cdn-learn.adafruit.com/assets/assets/000/049/977/original/MP34DT01-M.pdf) microphone
@@ -37,24 +37,16 @@ with a 61dB SNR.
 
 ![Adafruit PDM MEMS Microphone](/assets/pdm/adafruit-pdm-mems-microphone.jpg)
 
-
 # Pulse Code Modulation and Quantization Noise
 
-Humans are able to hear audio in a range from 20 to 20000Hz, though the range goes down with age.
+Humans are able to hear audio in a range from 20 to 20000Hz, though the range goes down significnatly with age.
 Digital signal theory dictates that audio needs to be sampled at a frequency of at least twice the bandwidth 
 to accurately reproduce the original signal. That's why most audio is recorded at 44.1 or 48kHz sample rate.
 
 The number of bits at which the audio signal is sampled determines how closely the sampled signal matches
-the real signal. The delta between sampled and real signal is the quantization noise. For a certain number
-of bits N, the signal to noise ratio (SNR) of a full amplitude sine wave follows the formula: 
-
-SNR = 1.761 + 6.02 * Q db, where Q is the number of quantization bits.
+the real signal. The delta between sampled and real signal is the quantization noise. 
 
 ![Quantization Level 8 Noise Level](/assets/pdm/quantization_noise_8.svg)
-
-
-![Quantization Level 8 Noise Level](/assets/pdm/quantization_noise_8.svg)
-
 
 It is, however, possible to trade off the number of bits for clock speed. In the case of PDM microphones, 
 the signal is usually sampled at 64 times the traditional sample rate, or 48kHz * 64 = 3.072 MHz.
@@ -64,7 +56,11 @@ the signal is usually sampled at 64 times the traditional sample rate, or 48kHz 
 PDM microphones use so-called sigma-delta A/D convertors that continuously toggle between -1 and 1 to approximate
 the original signal, while feeding back the cumulative errors between the 1-bit output and the real input value.
 
+*sigma-delta or delta-sigma: it's the same thing. I'll be using the former because that's the name that was used
+at a job many years ago. delta-sigma just sounds weird to me.*
+
 The ratio of the number of -1's and 1's, the pulse density, represents the original analog value.
+PDM microphones encode -1 as a logic 0 and 1 as a logic 1.
 
 Here's an example of a PCM sine wave that's converted to PDM with a first order, 16x oversampling sigma-delta convertor:
 
@@ -73,38 +69,48 @@ Here's an example of a PCM sine wave that's converted to PDM with a first order,
 At the peak of the sine wave, the green output consists of primarily ones, while at the trough, the output
 is primarily minus ones.
 
-PDM microphone encodes -1 as a logic 0 and 1 as a logic 1.
-
 Jerry Ellsworth has [great video](https://www.youtube.com/watch?v=DTCtx9eNHXE) that shows how to build a 
 sigma-delta A/D convertor yourself with just 1 FF and a few capacitors and resistors.
 
 Sigma-delta convertors are complex beasts. The [Wikipedia article](https://en.wikipedia.org/wiki/Delta-sigma_modulation)
-goes into a decent amount of intuitive detail without going totally overboard on theory. 
+goes into a decent amount of intuitive detail without going totally overboard on theory, but it comes
+down to this:
 
-When you reduce the number of output bits of an A/D convertor, increasing the oversampling rate doesn't
-automatically reduce quantization noise. In fact, the noise is inevitable! However, if you can
-push the frequency component of that noise to a range that's outside of the freqency range of the
-original input signal, then it's easy later on to recover the original signal by using a
-low pass filter.
+Just increasing the oversampling rate and reducing the number of output bits in an A/D convertor
+won't automatically reduce quantization noise. In fact, the noise is inevitable! However, if you can
+push this noise into the frequency components that are outside the frequency range of the
+original input signal, then it's easy to recover the original signal later by using a low pass filter.
 
-It turns out that this is exactly what happens in a sigma-delta convertor! 
+And that's what happens in a sigma-delta convertor.
 
 We can see this in the power spectral density of the PDM signal above:
 
 ![Sigma-Delta Sine Wave PSD](/assets/pdm/sinewave_pdm_psd.svg)
 
-The bandwidth of the signal that we're interested in lays on the left size of the green dotted line. That's
+The bandwidth of the signal that we've sampled lays on the left of the green dotted line at 24kHz. That's
 where we see the main spike: this is our sine wave. Everything else is noise.
 
-We can also see that the bandwidth of our signal is 1/16th of the total bandwith. With a perfect
-low pass filter, we could remove all the noise to the right of the green line, after which we'd end
-up with a SNR of 35dB. 
+We can also see that the bandwidth of our signal is 1/16th of the total bandwith, which is 384kHz, half
+of the sample rate of 768kHz. With a perfect low pass filter, we could remove all the noise to the right 
+of the green line, after which we'd end up with a SNR of 35dB. 
 
-(Note that the input signal has an amplitude of 0.5. Increasing the amplitude
-would increase the SNR of this case a little bit, but soon you run into limitations of sigma-delta
-convertors that prevent you from using the full input range.)
+(Note that the input signal has an amplitude of 0.5 instead of 1. That's why the frequency of the
+sine wave peaks at -6dB. Increasing the amplitude would increase the SNR, but soon you run into limitations 
+of sigma-delta convertors that prevent you from using the full input range.)
 
-# Higher Order Sigma Delta Convertors
+# Simulating Sigma-Delta Convertors
+
+Simulating sigma-delta convertors and checking the results was a big help in understanding
+how they behave.
+
+I used the `python-deltasigma` package for this. According to 
+[its documentation](http://www.python-deltasigma.io/), it's a port of the Matlab Delta
+Sigma Toolbox.
+
+I don't know enough about sigma-delta convertor to judge the correctness of the results,
+but the graphs that I created matched closely the graphs of various MEMS datasheets.
+
+# Higher Order Sigma-Delta Convertors
 
 A SNR of 35dB is far from stellar (it's terrible), but keep in mind that we're using a very simple 
 *first order* sigma-delta convertor here. Remember how I wrote earlier that there is an error feedback
@@ -122,7 +128,6 @@ way to tell apart the PDM output of a first and a 4th order sigma-delta converto
 But let's have a look if there were any changes in the frequency domain:
 
 ![Sigma-Delta PSD with higher order convertors](/assets/pdm/sinewave_pdm_psd_different_orders.svg)
-
 
 Nice! Despite the constant oversampling rate of 16, the SNR increased from 35dB to 50.2dB!
 
@@ -161,7 +166,6 @@ And that's exactly what today's PDM microphones support.
 Notice how the green vertical line shifts to the right as the oversampling rate increases.
 This is, of course, expected: we are doubling the sampling rate with each step while bandwidth of
 our input signal stays the same. 
-
 
 # SNR Slope Depends on Sigma Delta Order
 
@@ -223,6 +227,248 @@ down from 3.072 MHz down to 768kHz, our signal has already entry disappeared.
 
 After the first step, the noise that's present in the original frequence range form 0.25 to 0.5 was folded onto
 the range from 0 to 0.25, drowning out the original signal.
+
+# PDM to PCM Problem Statement
+
+The problem that we want to solve now convert that PDM signal to a PCM signal while
+maintaining the the quality level of the microphone.
+
+Going forward, I'll use the characteristics of the ST MP34DT01-M microphone of my
+Adafruit test board.
+
+From [the datasheet](https://cdn-learn.adafruit.com/assets/assets/000/049/977/original/MP34DT01-M.pdf): 
+
+![Microphone Characteristics Table](/assets/pdm/mic_characteristics.png)
+
+![Microphone Frequency Response](/assets/pdm/mic_freq_response.png)
+
+We can use this to help set the requirements for our design:
+
+* An output sample rate of 48kHz
+
+    48kHz is universally supported and probably the most common sample rate for high quality audio, 
+    though it's obviously overkill for a microphone that only goes up to 10kHz.
+
+* 1.920 MHz PDM sample rate 
+
+    The microphone supports a PDM clock rate between 1 and 3.25MHz. 
+
+    We shall soon see that some very efficient filters are perfect for 2x decimation, 
+    so it's best to select a ratio that's divisible by 2 or by 4.
+
+    3.072MHz is 64 times higher and 1.920MHz is 40 times higher than our desired output rate 
+    of 48kHz. Let's choose the lower clock: in the real world, that's something
+    you'd choose to reduce power consumption.
+
+* A passband of our signal runs from 0 to 6kHz
+
+    State of the art MEMS microphones have a flat sensitivity curve that goes all the way up 
+    to 20kHz, but this microphone is definitely not in that category. The frequency
+    response is only flat between 100Hz and 5kHz, after which is starts going up. And
+    there's not data above 10kHz.
+
+* The stop band starts at 10kHz
+
+    Since the specification of the microphone doesn't say anything about behavior above
+    10kHz, I'm simply assuming that this is no-go territory, so that's where the
+    stop band will start.
+
+* The SNR of our signal in the passband is 61dB
+
+    I will use this number to set the minimum attenuation of all the filters that operate 
+    in the stop band.
+
+    *I'm not sure if that's the right way to do it.*
+
+* The maximum ripple we're willing to accept in the passband is 0.1dB
+
+    This seems to be a pretty typical requirement for high quality audio?
+
+# Designing Filters with pyFDA
+
+One could use Matlab or NumPy to explore different filter configurations, but during the
+initial stages, it's often faster to play around with a GUI. It's also a great way
+to learn about what's out there and familiarize yourself with characteristics
+of different kinds of filters.
+
+In [a recent tweet](https://twitter.com/matthewvenn/status/1311611352021118976), Matt Venn
+pointed me to [pyFDA](https://github.com/chipmuenk/pyfda), short for Python Filter
+Design Analysis tool, and [his video tutorial](https://www.youtube.com/watch?v=dtK-4JZ4Cwc) 
+about it.
+
+I've since been using it, and it definitely helped me in getting the current design
+off the ground.
+
+In the screenshot below, you can see an exampe of a loop pass filter that has all the
+pass band and stop band characteristics that we need for our microphone, with a
+sample rate of 48kHz:
+
+![pyFDA screenshot](/assets/pdm/pyFDA.png)
+
+pyFDA tells us that we need a 37-order filter. 
+
+There are all kinds of visualizations: magnitude frequency response, phase frequency response, 
+impulse response, group delay, pole/zero plot, even a fancy 3D plot that I don't quite understand.
+
+Once you've designed a filter, you can export the coefficients to use in your design. pyFDA can
+even write out a Verilog file to put on your ASIC or FPGA. 
+
+# Designing Filters with NumPy's Remez Function
+
+For all its benefits, once the basic architecture of a design has been determined,
+I prefer to code all the details as a stand-alone numpy file. For the following reasons:
+
+* It allows me to parameterize the input parameters and regenerate all the collaterals
+  (coefficients, graphs) in one go
+* Much more flexilibity wrt graphs
+
+    All the graphs in this blog post have been created by the [following Python script](...).
+
+* it's much easier for others to reproduce the results, and modify the code, learn from it.
+
+# First try: Just Filter the Damn Thing!
+
+Implementing filters is easy: you fire up your favorite filter design tool, enter the desired
+parameters, and the tool does all the rest.
+
+In my case, that design tool is `pyFDA`. It's great for experimentation and what-if testing,
+and you don't need to type a letter of code. It uses NumPy under the hood, so that's
+an obvious alternative.
+
+After filling in our requirements, and selecting "Equiripple" filter, pyFDA first
+warns us that there'll be a huge amount of coefficients, and that's the math may
+become too imprecise because of it. It's not a good sign.
+
+A few second later, it comes up with a filter that has 2174 taps.
+
+Luckily, we're working a decimation filter, so we don't need to evaluate this
+filter for each input sample, only for each output sample. At 48kHz, this
+means that we need 48000 * 2174 = 104M multiplications per second.
+
+That's a lot!
+
+# Decimation is a Divide and Conquer Problem
+
+It turns out that, given the same pass band and stop band frequencies, and corresponding attenuation,
+changing the sample rate results in a non-linear increase or decrease of the number of taps.
+
+For example: if we fill in the same parameters but halve the sample rate from 3072 kHz to 1536 kHz, the
+number of taps reduces from 2174 to 628.
+
+48000 * 2174 = 104M multiplications
+48000 * 628  = 30M multiplications
+
+However, before we can use that smaller filter, we first need to decimate our original signal by
+a factor of two to get that 1536 kHz input rate.
+
+But decimating by 2 requires only a very gentle FIR filter. The pass band stays the same, 14 kHz,
+but the stop band only starts at 1/4th of the input sample rate, or 788kHz. After filling in
+those numbers, we end up with 15 taps.
+
+Not don't get too excited: the output of this first filter runs at 1536kHz, not 48kHz, so
+the number of multiplications per second for that one is:
+
+   1,576,000 * 15   = 23M multiplications
+
+After splitting up our monolithic 64x decimation filter in a 2x decimation filter followed
+by a 32x decimation filter, we end up with a total of:
+
+```
+   1,576,000 * 15   = 23M multiplications
+      48,000 * 628  = 30M multiplications
+   --------------------------------------
+                      53M multiplications total
+
+```
+
+We can continue this sequence a split up the 32x decimation filter into smaller piece too!
+
+But let's not go into that rabbit hole, because there are much better alternatives.
+
+
+
+# Major Sample Rate Reduction with a CIC Filter
+
+In a [previous blog post](...), I wrote about CIC filters in preparation of this blog post.
+CIC filters make it possible to reduce the amount of hardware to decimate a signal by a large
+factor with next to no resources: no multipliers, and only a handful of register and adders.
+
+The only price to pay is less than ideal behavior in the pass band, and a terrible stop band
+if used stand-alone, but that's something that can be fixed by having additional stages.
+
+And that's exactly what we're doing here in our divide-and-conquer approach.
+
+Here's the plan: we use a factor 16 CIC decimation filter to bring the sample rate
+down from 3072 kHz to 192 kHz. 16x is a good compromise: it's a significant reduction,
+yet the pass band attenuation at 14kHz is only XXXX.
+
+If we then use the monolitic approach to decimate by a factor of 4 to end up with a 48kHz
+output rate, we'd need 57 taps.
+
+```
+    48,000 * 57 = 2.7M multiplications
+```
+
+We can do better by splitting up the 4x decimator into 2 2x decimators:
+
+* 192 -> 96: 18 taps
+*  96 -> 48: 28 taps
+
+```
+     96,000 * 18  = 1.7M multiplications
+     48,000 * 28  = 1.3M multiplications
+   --------------------------------------
+                    3.0M multiplications total
+
+```
+
+Apparently not! There seems to be some kind of cross-over point below which there
+isn't a benefit in splitting up.
+
+Still, we went from 104M to just 2.7M multiplications, a 38x improvement!
+
+Can we do better?
+
+# Stop Band Optimization
+
+So far, the stop band of the intermediate decimation filter has been suboptimal: we
+simply put it at 1/4th of the input rate, because that's what you do for a monolithic
+decimation filter.
+
+But it's not optimal in a divide an conquer configuration!
+
+When we decimate from 192 to 96, it's overkill to put the stop band at 48kHz: we can
+put the stop band at (96-20) = 76 kHz instead!
+
+Yes, the frequency range from 48kHz to 76kHz will now alias onto 20kHz to 48kHz range,
+but who cares? Nobody can hear anything above 20kHz anyway, and we have another filter
+comping up to clean things up in the next decimation step!
+
+With this new stop band constraint, there are only 11 filter taps instead of the earlier
+18, for a total of:
+
+
+```
+     96,000 * 10  = 1.1M multiplications
+     48,000 * 28  = 1.3M multiplications
+   --------------------------------------
+                    2.3M multiplications total
+
+```
+
+# Exploiting Filter Symmetry
+
+For audio applications, linear phase behavior is important: the human ear is able to detect
+phase differences in otherwise similar signals.
+
+An FIR filter with linear phase behavior must have symmetry in its filter coefficients. And
+all the filters we've designed so far have exactly that.
+
+Because of this symmetry, each filter coefficient (except for the center one) will appear
+twice, mirrored around the center tap. By adding the input samples that use the same filter coefficient
+before doing the multiplication, we can reduce the number of multiplications by half!
+
+Instead of 57 multiplications, we're now at 1+(56/2) = 29 multiplications per output sample.
 
 # Best Case Low Pass Filtering
 
