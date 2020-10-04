@@ -326,6 +326,135 @@ I prefer to code all the details as a stand-alone numpy file. For the following 
 
 * it's much easier for others to reproduce the results, and modify the code, learn from it.
 
+The question is: how do you do that?
+
+There are multiple techniques to designing FIR filters. I'm not at all qualified to give
+a comprehensive overview, but here are some very common ways to determine the coefficients
+of FIR filters:
+
+I already written about [Moving Average and CIC filters](2020/09/30/Moving-Average-and-CIC-Filters.html)
+earler. Their coefficients are all the same. pyFDA supports them by selecting the "Moving Average"
+option.
+
+There are [Windowed Sinc filters](http://www.dspguide.com/CH16.PDF) and [Windowed FIR filter](http://www.dspguide.com/CH17.PDF)
+where you specify a filter in the frequency domain, take an inverse FFT to get an impulse
+response, and then us a windowing function to turn the behavior. NumPy and the 
+[`firwin`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.firwin.html) and
+[`firwin2`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.firwin2.html) function
+for those. Use the "Windowed FIR" option in pyFDA for this one.
+
+And finally, there is the 
+[Parks-McClellan filter design algorithm](https://en.wikipedia.org/wiki/Parks%E2%80%93McClellan_filter_design_algorithm),
+as far as I can tell, is the most common way to design FIR filters. That's what I used in my earlier
+pyFDA example by selecting the default "Equiripple" option.
+
+It would lead too far to get into the details about the benefits of one kind of filter
+vs the other, but when given specific pass band and stop band parameters, Parks-McClellan
+filters seem requires the lowest number of FIR coefficients to achieve the desired performance.
+
+YOU can use the the [`remez`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.remez.html)
+function in NumPy to design filters this way, and that exactly what I've been doing.
+
+For example, the coefficients of the filter above in my pyFDA example, can be found as follows:
+
+```python
+#! /usr/bin/env python3
+from scipy import signal
+
+Fs  = 48                # Sample rate
+Fpb = 6                 # End of pass band
+Fsb = 10                # Start of stop band
+Apb = 0.05              # Max Pass band ripple in dB
+Asb = 60                # Min stop band attenuation in dB
+N   = 37                # Order of the filter (=number of taps-1)
+
+# Remez weight calculation: https://www.dsprelated.com/showcode/209.php
+err_pb = (1 - 10**(-Apb/20))/2      # /2 is not part of the article above, but makes the result consistent with pyFDA
+err_sb = 10**(-Asb/20)
+
+w_pb = 1/err_pb
+w_sb = 1/err_sb
+    
+# Calculate that FIR coefficients
+h = signal.remez(
+      N+1,            # Desired number of taps
+      [0., Fpb/Fs, Fsb/Fs, .5], # Filter inflection points
+      [1,0],          # Desired gain for each of the bands: 1 in the pass band, 0 in the stop band
+      [w_pb, w_sb]    # weights used to get the right ripple and attenuation
+    )               
+
+print(h)
+```
+
+Run the code above, and you'll get the following 38 filter coefficients: 
+```
+[-2.50164675e-05 -1.74317423e-03 -2.54534101e-03 -7.63329067e-04
+  3.77271590e-03  6.73718674e-03  2.64362264e-03 -7.87738320e-03
+ -1.48337024e-02 -6.75502030e-03  1.48004646e-02  2.98724354e-02
+  1.54099648e-02 -2.76986944e-02 -6.25133368e-02 -3.81892367e-02
+  6.54474060e-02  2.09343906e-01  3.13554280e-01  3.13554280e-01
+  2.09343906e-01  6.54474060e-02 -3.81892367e-02 -6.25133368e-02
+ -2.76986944e-02  1.54099648e-02  2.98724354e-02  1.48004646e-02
+ -6.75502030e-03 -1.48337024e-02 -7.87738320e-03  2.64362264e-03
+  6.73718674e-03  3.77271590e-03 -7.63329067e-04 -2.54534101e-03
+ -1.74317423e-03 -2.50164675e-05]
+```
+
+A little bit more additional code, will create a frequeny response plot:
+
+```python
+import numpy as np
+from matplotlib import pyplot as plt
+
+# Calculate 20*log10(x) without printing an error when x=0
+def dB20(array):
+    with np.errstate(divide='ignore'):
+        return 20 * np.log10(array)
+
+(w,H) = signal.freqz(h)
+
+# Find pass band ripple
+Hpb_min = min(np.abs(H[0:int(Fpb/Fs*2 * len(H))]))
+Hpb_max = max(np.abs(H[0:int(Fpb/Fs*2 * len(H))]))
+Rpb = 1 - (Hpb_max - Hpb_min)
+    
+# Find stop band attenuation
+Hsb_max = max(np.abs(H[int(Fsb/Fs*2 * len(H)+1):len(H)]))
+Rsb = Hsb_max
+    
+print("Pass band ripple:      %fdB" % (-dB20(Rpb)))
+print("Stop band attenuation: %fdB" % -dB20(Rsb))
+
+plt.figure(figsize=(10,5))
+plt.subplot(211)
+plt.title("Impulse Response")
+plt.stem(h)
+plt.subplot(212)
+plt.title("Frequency Reponse")
+plt.grid(True)
+plt.plot(w/np.pi/2*Fs,dB20(np.abs(H)), "r")
+plt.plot([0, Fpb], [dB20(Hpb_max), dB20(Hpb_max)], "b--", linewidth=1.0)
+plt.plot([0, Fpb], [dB20(Hpb_min), dB20(Hpb_min)], "b--", linewidth=1.0)
+plt.plot([Fsb, Fs/2], [dB20(Hsb_max), dB20(Hsb_max)], "b--", linewidth=1.0)
+plt.xlim(0, Fs/2)
+plt.ylim(-90, 3)
+
+plt.tight_layout()
+plt.savefig("remez_example_filter.svg")
+```
+
+Run this and you get:
+```
+Pass band ripple:      0.047584dB
+Stop band attenuation: 60.316990dB
+```
+
+And the following plot:
+
+![Remez Filter Plot](/assets/pdm/remez_example_filter.svg)
+
+[`remez_example.py`](/assets/pdm/remez_example.py) contains the full source code.
+
 # First try: Just Filter the Damn Thing!
 
 Implementing filters is easy: you fire up your favorite filter design tool, enter the desired
@@ -503,6 +632,8 @@ that goes from a pass band to the stop band.
     Texas Instruments article.  Part 1 is a pretty gentle introduction about the sigma-delta basics.
     Part 2 talks about filtering to go from PDM to PCM, but it's very light on details.
 
+* [Understanding PDM Digital Audio](http://users.ece.utexas.edu/~bevans/courses/realtime/lectures/10_Data_Conversion/AP_Understanding_PDM_Digital_Audio.pdf)
+
 **Filter Design**
 
 * [Tom Roelandts - How to Create a Simple Low-Pass Filter](https://tomroelandts.com/articles/how-to-create-a-simple-low-pass-filter)
@@ -538,5 +669,10 @@ that goes from a pass band to the stop band.
 * [Optimum FIR Digital Filter Implementations for Decimation, Interpolation, and Narrow-Band Filtering](https://web.ece.ucsb.edu/Faculty/Rabiner/ece259/Reprints/087_optimum%20fir%20digital%20filters.pdf)
 
     Paper that discusses how to size cascaded filter to optimized for FIR filter complexity.
+
+* [Seamlessly Interfacing MEMS Microphones with Blackfin Processors](https://www.analog.com/media/en/technical-documentation/application-notes/EE-350rev1.pdf)
+
+    Analog Devices application note. C code can be found[here](https://www.analog.com/media/en/technical-documentation/application-notes/EE350v01.zip)
+
 
 
