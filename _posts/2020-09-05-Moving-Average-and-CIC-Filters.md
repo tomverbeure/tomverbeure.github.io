@@ -18,7 +18,8 @@ And that's a shame, because it's a fascinating topic, and a useful one too if yo
 do audio processing on an FPGA or play with software defined radio.
 
 I also want to learn to use Numerical Python (numpy) and matplotlib, its graph plotting
-package.
+package. (The code to generate the plots of this article can be found 
+[here](https://github.com/tomverbeure/pdm/tree/master/modeling/cic_filters).)
 
 In an effort to revive some of that forgotten DSP knowledge, I've been slowly working my way through 
 [The Scientist and Engineer's Guide to Digital Signal Processing](http://www.dspguide.com/pdfbook.htm).
@@ -512,5 +513,9 @@ Filter Tools:
 * [FIIIR1](https://fiiir.com)
 
 * [LeventOztruk.com](https://leventozturk.com/engineering/filter_design/)
+
+Code:
+
+* [NumPy code to generate plots of this blog post](https://github.com/tomverbeure/pdm/tree/master/modeling/cic_filters)
 
 
