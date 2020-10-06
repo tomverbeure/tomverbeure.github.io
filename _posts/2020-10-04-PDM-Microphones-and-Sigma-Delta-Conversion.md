@@ -145,6 +145,11 @@ I don't know enough about sigma-delta converter to judge the correctness of the 
 but the graphs that I created matched closely the graphs of various MEMS datasheets. If not
 numerically exact, the plots that I've created here should at least by qualitatively correct.
 
+*One thing that bothers me in my sigma-delta plots, is the difference between the theoretical/expected
+and simulated frequency response: at lower frequencies, the simulated signal stays almost
+always below the theoretical line, but at higher frequencies, there are consistent spikes. I don't
+know why this is the case.*
+
 # Higher Order Sigma-Delta Converters
 
 A SNR of 35dB is far from stellar (it's terrible), but keep in mind that we're using a very simple 
