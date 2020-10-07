@@ -10,15 +10,27 @@ categories:
 
 # Introduction
 
+If you've read my previous two posts in this series, you know that I'm improving my general DSP
+knowledge by applying it to a concrete example of taking in single bit data stream of
+a PDM microphone and converting it into a standard PCM coded samples.
+
+The application itself is only a means to an end, most important is understanding the why and 
+the how of every design decision along the way.
+
+After diving into [CIC filters](/2020/09/30/Moving-Average-and-CIC-Filters.html) and the 
+characteristics of the 
+[sigma-delta generated PDM signal of a MEMS microphone](http://localhost:4000/2020/10/04/PDM-Microphones-and-Sigma-Delta-Conversion.html), 
+the time has come to start building up the filter architecture.
 
 
 # PDM to PCM Problem Statement
 
-The problem that we want to solve now convert that PDM signal to a PCM signal while
+The problem that I want to solve is to convert a PDM signal to a PCM signal while
 maintaining the the quality level of the microphone.
 
 Going forward, I'll use the characteristics of the ST MP34DT01-M microphone of my
-Adafruit test board.
+[Adafruit test board](https://www.adafruit.com/product/3492) and let them guide
+the specifications of the filter design.
 
 From [the datasheet](https://cdn-learn.adafruit.com/assets/assets/000/049/977/original/MP34DT01-M.pdf): 
 
@@ -26,7 +38,8 @@ From [the datasheet](https://cdn-learn.adafruit.com/assets/assets/000/049/977/or
 
 ![Microphone Frequency Response](/assets/pdm/pdm2pcm/mic_freq_response.png)
 
-We can use this to help set the requirements for our design:
+
+The requirements for our design are:
 
 * An output sample rate of 48kHz
 
@@ -41,15 +54,18 @@ We can use this to help set the requirements for our design:
     so it's best to select a ratio that's divisible by 2 or by 4.
 
     3.072MHz is 64 times higher and 1.920MHz is 40 times higher than our desired output rate 
-    of 48kHz. Let's choose the lower clock: in the real world, that's something
-    you'd choose to reduce power consumption.
+    of 48kHz. Let's choose the lower clock to avoid giving the impression that decimation
+    filters should have a power of 2 ratio. A lower clock should also
+    reduce power consumptions.
 
 * A passband of our signal runs from 0 to 6kHz
 
     State of the art MEMS microphones have a flat sensitivity curve that goes all the way up 
-    to 20kHz, but this microphone is definitely not in that category. The frequency
+    to 20kHz, but this microphone definitely does not fall in that category. The frequency
     response is only flat between 100Hz and 5kHz, after which is starts going up. And
     there's not data above 10kHz.
+
+    6kHz seems like a good point to start increasing the attenuation.
 
 * The stop band starts at 10kHz
 
@@ -59,19 +75,29 @@ We can use this to help set the requirements for our design:
 
 * The SNR of our signal in the passband is 61dB
 
-    I will use this number to set the minimum attenuation of all the filters that operate 
+    I will use this number to determine the attenuation of the filters that operate 
     in the stop band.
 
     *I'm not sure if that's the right way to do it.*
 
-* The maximum ripple we're willing to accept in the passband is 0.1dB
+* The maximum ripple we're willing to accept in the passband *at the output* is 0.1dB
 
-    This seems to be a pretty typical requirement for high quality audio?
+    This seems to be a pretty typical requirement for high quality audio.
+
+    In a filter architecture with more than 1 filter, each successive filter will impact the
+    passband ripple. As a result, individual filters will need to have tighter specification
+    than this overall ripple.
 
 # Designing Filters with pyFDA
 
-One could use Matlab or NumPy to explore different filter configurations, but during the
-initial stages, it's often faster to play around with a GUI. It's also a great way
+<MOVE THIS PARAGRAPH TO INTRODUCTION?>
+
+Before getting into the actual filter architecture, first some words about filter design tools.
+There are many resources on the web that will discuss the theoretical aspect about this or that
+filter, but fully worked out examples with full code are much harder to find. 
+
+One can use Matlab or NumPy to explore different filter configurations, but during the
+initial stages, I often found it faster to play around with a GUI. It's also a great way
 to learn about what's out there and familiarize yourself with characteristics
 of different kinds of filters.
 
@@ -83,13 +109,13 @@ about it.
 I've since been using it, and it definitely helped me in getting the current design
 off the ground.
 
-In the screenshot below, you can see an exampe of a loop pass filter that has all the
+In the screenshot below, you can see an example of a low pass filter that has all the
 pass band and stop band characteristics that we need for our microphone, with a
 sample rate of 48kHz:
 
 ![pyFDA screenshot](/assets/pdm/pdm2pcm/pyFDA.png)
 
-pyFDA tells us that we need a 37-order filter. 
+pyFDA tells us that we need a 37-order filter (that corresponds at 38 FIR filter taps.)
 
 There are all kinds of visualizations: magnitude frequency response, phase frequency response, 
 impulse response, group delay, pole/zero plot, even a fancy 3D plot that I don't quite understand.
@@ -99,28 +125,36 @@ even write out a Verilog file to put on your ASIC or FPGA.
 
 # Designing Filters with NumPy's Remez Function
 
-For all its benefits, once the basic architecture of a design has been determined,
-I prefer to code all the details as a stand-alone numpy file. For the following reasons:
+For all its initial benefits, once the basic architecture of a design has been determined,
+I prefer to code all the details as a stand-alone numpy file. For this project, that's
+[pdm2pcm.py](https://github.com/tomverbeure/pdm/blob/master/modeling/pdm2pcm/pcm2pdm.py).
 
-* It allows me to parameterize the input parameters and regenerate all the collaterals
-  (coefficients, graphs) in one go
+Code has the following benefits over a GUI:
+
+* You can parameterize the input parameters and regenerate all the collaterals (coefficients, graphs, potentially even RTL code) in one go
+
+    Even while writing this blog post, I made significant changes in the filter characteristics.
+    You really don't want to manually regenerate all the graphs every time you do that!
+
 * Much more flexilibity wrt graphs
 
-    All the graphs in this blog post have been created by the [following Python script](...).
+    You can put multiple graphs in one figure. Add annotations. Tune colors etc.
 
-* it's much easier for others to reproduce the results, and modify the code, learn from it.
+* It's much easier for others to reproduce the results, and modify the code, learn from it.
 
-The question is: how do you do that?
+    Feel free to clone all must stuff, and improve it!
 
-There are multiple techniques to designing FIR filters. I'm not at all qualified to give
-a comprehensive overview, but here are some very common ways to determine the coefficients
-of FIR filters:
+The question is: how do you go about desiging FIR filters? 
 
-I already written about [Moving Average and CIC filters](2020/09/30/Moving-Average-and-CIC-Filters.html)
-earler. Their coefficients are all the same. pyFDA supports them by selecting the "Moving Average"
+I'm not qualified to give a comprehensive overview, but here are some very common techniques to 
+determine the coefficients of FIR filters. It's probably not a coincidence that these techniques
+are also supported by pyFDA.
+
+I already written about [Moving Average and CIC filters](2020/09/30/Moving-Average-and-CIC-Filters.html). 
+Their coefficients are all the same. pyFDA supports them by selecting the "Moving Average"
 option.
 
-There are [Windowed Sinc filters](http://www.dspguide.com/CH16.PDF) and [Windowed FIR filter](http://www.dspguide.com/CH17.PDF)
+There are [Windowed Sinc filters](http://www.dspguide.com/CH16.PDF) and [Windowed FIR filters](http://www.dspguide.com/CH17.PDF)
 where you specify a filter in the frequency domain, take an inverse FFT to get an impulse
 response, and then us a windowing function to turn the behavior. NumPy and the 
 [`firwin`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.firwin.html) and
@@ -128,15 +162,15 @@ response, and then us a windowing function to turn the behavior. NumPy and the
 for those. Use the "Windowed FIR" option in pyFDA for this one.
 
 And finally, there is the 
-[Parks-McClellan filter design algorithm](https://en.wikipedia.org/wiki/Parks%E2%80%93McClellan_filter_design_algorithm),
-as far as I can tell, is the most common way to design FIR filters. That's what I used in my earlier
+[Parks-McClellan filter design algorithm](https://en.wikipedia.org/wiki/Parks%E2%80%93McClellan_filter_design_algorithm).
+As far as I can tell, it is the most common way to design FIR filters. That's what I used in my earlier
 pyFDA example by selecting the default "Equiripple" option.
 
 It would lead too far to get into the details about the benefits of one kind of filter
 vs the other, but when given specific pass band and stop band parameters, Parks-McClellan
-filters seem requires the lowest number of FIR coefficients to achieve the desired performance.
+filters requires the lowest number of FIR coefficients to achieve the desired performance.
 
-YOU can use the the [`remez`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.remez.html)
+You can use the the [`remez`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.remez.html)
 function in NumPy to design filters this way, and that exactly what I've been doing.
 
 For example, the coefficients of the filter above in my pyFDA example, can be found as follows:
@@ -184,7 +218,7 @@ Run the code above, and you'll get the following 38 filter coefficients:
  -1.74317423e-03 -2.50164675e-05]
 ```
 
-A little bit more additional code, will create a frequeny response plot:
+A little bit more additional code, will create a frequency response plot:
 
 ```python
 import numpy as np
@@ -240,65 +274,91 @@ And the following plot:
 Check out [`remez_example.py`](https://github.com/tomverbeure/pdm/blob/master/modeling/pdm2pcm/remez_example.py) 
 for the full source code.
 
+In the code above, you need to specify order of the filter (N) yourself. To find the smallest
+to satisfy the ripple and attenuation requirements, I just increase N until these requirements
+are met.
+
 # First try: Just Filter the Damn Thing!
 
-Implementing filters is easy: you fire up your favorite filter design tool, enter the desired
-parameters, and the tool does all the rest.
+Why go through the trouble of designing a filter architecture when you can let the tool
+do all the work?
 
-In my case, that design tool is `pyFDA`. It's great for experimentation and what-if testing,
-and you don't need to type a letter of code. It uses NumPy under the hood, so that's
-an obvious alternative.
+Let's just fill in the numbers and see what comes out!
 
-After filling in our requirements, and selecting "Equiripple" filter, pyFDA first
-warns us that there'll be a huge amount of coefficients, and that's the math may
-become too imprecise because of it. It's not a good sign.
 
-A few second later, it comes up with a filter that has 2174 taps.
+```
+...
+Trying N=1382
+Rpb: 0.094294dB
+Rsb: 59.976587dB
+Trying N=1383
+Rpb: 0.093942dB
+Rsb: 60.020647dB
+Filter order: 1383
+```
 
-Luckily, we're working a decimation filter, so we don't need to evaluate this
-filter for each input sample, only for each output sample. At 48kHz, this
-means that we need 48000 * 2174 = 104M multiplications per second.
+After more than a little while, it comes up with a filter that has 1384 taps, and the following
+frequency response graph:
 
-That's a lot!
+![Just Filter the Damn Thing](/assets/pdm/pdm2pcm/filter_the_damn_thing.svg)
+
+Since this is a decimation filter, we only need to evaluate it for each output sample.
+At 48kHz, this means that we need 48000 * 1384 = 66M multiplications per second.
+
+That's a lot, but it's a great baseline to impress people about how you were able to optimize
+your design!
 
 # Decimation is a Divide and Conquer Problem
 
-It turns out that, given the same pass band and stop band frequencies, and corresponding attenuation,
-changing the sample rate results in a non-linear increase or decrease of the number of taps.
+All other things equal (sampling rate, pass band ripple, stop band attenuation), the number of
+FIR filter taps depends on the size of the transition band, compared to sample rate.
 
-For example: if we fill in the same parameters but halve the sample rate from 3072 kHz to 1536 kHz, the
-number of taps reduces from 2174 to 628.
+In the example above, the sample rate is 1920 kHz and the transition band is just 4kHz, a ratio
+of 480!
 
-48000 * 2174 = 104M multiplications
-48000 * 628  = 30M multiplications
+If we reduce the sample rate by 5 to 384kHz and keep everything else the same, the number of taps
+goes rougly down by 5 as well:
 
-However, before we can use that smaller filter, we first need to decimate our original signal by
-a factor of two to get that 1536 kHz input rate.
+![Fpdm divided by 5 Frequency Response](/assets/pdm/pdm2pcm/fpdm_div5.svg)
 
-But decimating by 2 requires only a very gentle FIR filter. The pass band stays the same, 14 kHz,
-but the stop band only starts at 1/4th of the input sample rate, or 788kHz. After filling in
-those numbers, we end up with 15 taps.
+Reducing the number of taps from 1384 down to 278 taps, gives
 
-Not don't get too excited: the output of this first filter runs at 1536kHz, not 48kHz, so
-the number of multiplications per second for that one is:
+48000 * 278  = 13M multiplications
 
-   1,576,000 * 15   = 23M multiplications
+Of course, that's not a fair comparison, because to be able use that filter, we'd first need to
+decimate the signal at the initial sample rate from 1920kHz to 384kHz.
 
-After splitting up our monolithic 64x decimation filter in a 2x decimation filter followed
-by a 32x decimation filter, we end up with a total of:
+When we do this in the most naive way possible, we create a filter that doesn't touch the pass band
+and the transition band of the final result, and that filters away everything above the original
+sample rate divided by 5. In other words: a pass band from 0 to 10kHz, and a stop band that starts
+at 77kHz. This guarantees that none of the frequencies above 77kHz will alias into the range of
+0 to 10kHz after decimation.
+
+Number of taps required? 13!
+
+![Fpdm to Fpdm/5 - Frequency Response](/assets/pdm/pdm2pcm/fpdm_to_fpdm_div5.svg)
+
+Total number of multiplications:
 
 ```
-   1,576,000 * 15   = 23M multiplications
-      48,000 * 628  = 30M multiplications
-   --------------------------------------
-                      53M multiplications total
-
+384,000 *  13 =  5M             (5x decimation - from 1920 to 384 kHz)
+ 48,000 * 278 = 13M             (8x decimation - from 384 to 48 kHz)
+-----------------------------------
+                18M multiplications
 ```
 
-We can continue this sequence a split up the 32x decimation filter into smaller piece too!
+By splitting up the dumb initial filter into 2 filters, we've reduced the number of multiplications from
+66M downto 18M, more than a factor of 3!
 
-But let's not go into that rabbit hole, because there are much better alternatives.
+If we can get that kind of savings splitting up a 40x decimation filter into a 2 filters, there must
+be similar optimization possible by splitting up that 8x decimation filter.
 
+The answer is yes, but before going into that rabbit hole, some clarifications and corrections must
+be made about specifying the right decimation filter parameters.
+
+# Optimal Pass Band / Stop Band Settings for Decimators
+
+![Cascaded Decimation Steps](/assets/pdm/pdm2pcm/pdm2pcm-cascaded_decimation.svg)
 
 
 # Major Sample Rate Reduction with a CIC Filter
