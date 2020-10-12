@@ -19,8 +19,8 @@ behavior, I implicitly meant
 They are much easier to understand, and generally behave better, but they also require
 a lot more calculation power to obtain similar ripple and attenuation results than IIR filters.
 
-There are many resources on the web that will discuss the theoretical aspects about this or that
-filter, but fully worked out examples with full code are much harder to find. 
+There are many resources on the web that discuss the theoretical aspects about this or that
+filter, but fully worked out examples with full code are harder to find. 
 
 In this blog post, I will discuss the tools that I've been using to evaluate and design filters: 
 [pyFDA](https://github.com/chipmuenk/pyfda) and [NumPy](https://numpy.org).
@@ -30,15 +30,15 @@ be considered a catch-all for various Python packages that aren't necessarily pa
 SciPy for signal processing function, etc. I think it's fair to do this because [NumPy website](https://numpy.org)
 lists SciPy as part of NumPy as well.*
 
-[Matlab](https://www.mathworks.com/products/matlab.html) is extremely popular in the signal processing
-world, but a license costs thousands of dollar, and even if it's better than NumPy (I honestly have no idea), 
+[Matlab](https://www.mathworks.com/products/matlab.html) is popular in the signal processing
+world, but a license costs thousands of dollars, and even if it's better than NumPy (I honestly have no idea), 
 it's total overkill for the beginner stuff that I want to do. [GNU Octave](https://www.gnu.org/software/octave/)
 is free software that's claimed to be "drop-in compatible with many Matlab scripts", but I haven't tried
 it.
 
 # Designing Filters with pyFDA
 
-During the initial filter configuration exploration, I often find it faster to play around 
+During initial filter configuration exploration, I often find it faster to play around 
 with a GUI. It's also a great way to learn about what's out there and familiarize yourself with characteristics
 of different kinds of filters.
 
@@ -58,14 +58,14 @@ minimum order that's needed to meet these characteristics:
 
 ![pyFDA parameters](/assets/pdm/tools/pyFDA-params.png)
 
-The default plot in the results section is the frequency response plot:
+The default plot in the results section is the magnitude frequency response plot:
 
 ![pyFDA results](/assets/pdm/tools/pyFDA.png)
 
 pyFDA tells us that we need a 37-order filter, which corresponds at 38 FIR filter taps.
 
 There are all kinds of visualizations: magnitude frequency response, phase frequency response, 
-impulse response, group delay, pole/zero plot, even a fancy 3D plot that I don't quite understand.
+impulse response, group delay, pole/zero plot, a fancy 3D plot that I don't quite understand.
 
 Once you've designed a filter, you can export the coefficients to use in your design, with or
 without conversion to fixed point numbers. pyFDA can even write out a Verilog file to put on your ASIC or FPGA. 
@@ -91,7 +91,7 @@ Code has the following benefits over a GUI:
 
 * It's much easier for others to reproduce the results, and modify the code, learn from it.
 
-    Feel free to clone all must stuff, and improve it!
+    Feel free to clone all my stuff and improve it!
 
 The question is: how do you go about desiging FIR filters? 
 
@@ -101,7 +101,7 @@ are also supported by pyFDA.
 
 **Moving Average and CIC Filters**
 
-I already written about [Moving Average and CIC filters](2020/09/30/Moving-Average-and-CIC-Filters.html). 
+I've already written about [Moving Average and CIC filters](/2020/09/30/Moving-Average-and-CIC-Filters.html). 
 Their coefficients are all the same. pyFDA supports them by selecting the "Moving Average"
 option.
 
@@ -109,10 +109,10 @@ option.
 
 There are [Windowed Sinc filters](http://www.dspguide.com/CH16.PDF) and [Windowed FIR filters](http://www.dspguide.com/CH17.PDF)
 where you specify a filter in the frequency domain, take an inverse FFT to get an impulse
-response, and then us a windowing function to tune the behavior. NumPy supports these methods with 
+response, and then use a windowing function to tune the behavior. NumPy supports these methods with the
 [`firwin`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.firwin.html) and
-[`firwin2`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.firwin2.html) functions
-, or use the "Windowed FIR" option in pyFDA.
+[`firwin2`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.firwin2.html) functions.
+Or use the "Windowed FIR" option in pyFDA.
 
 While you can make excellent filters this way, they are often not optimal in terms of computational
 effort, and you need some understanding of the tradeoffs of this or that windowing filter to get what
@@ -177,7 +177,7 @@ Run the code above, and you'll get the following 38 filter coefficients:
  -1.74317423e-03 -2.50164675e-05]
 ```
 
-A little bit more additional code, will create a frequency response plot:
+A little bit more additional code  will create a magnitude frequency response plot:
 
 ```python
 import numpy as np
@@ -235,8 +235,8 @@ for the full source code.
 
 # Finding the Optimal Filter Order
 
-In the example code above, the order of the filter (N=37) was given manually. To find the smallest
-to satisfy the ripple and attenuation requirements, I just increase N until these requirements
+In the example code above, the order of the filter (N=37) was given manually. To find the smallest N
+that satisfies the ripple and attenuation requirements, I just increase N until these requirements
 are met.
 
 *There are formulas to determine the filter order that's needed to meet filter requirements, but
