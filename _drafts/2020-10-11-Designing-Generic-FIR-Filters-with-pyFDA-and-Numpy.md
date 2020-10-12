@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Designing Generic FIR Filters with pyFDA and Numpy
+title: Designing Generic FIR Filters with pyFDA and NumPy
 date:  2020-10-05 00:00:00 -1000
 categories:
 ---
@@ -10,7 +10,7 @@ categories:
 
 # Introduction
 
-In [my previous blog post](2020/10/04/PDM-Microphones-and-Sigma-Delta-Conversion.html), I promised
+In [my previous blog post](/2020/10/04/PDM-Microphones-and-Sigma-Delta-Conversion.html), I promised
 that it was about time to start designing some real filters. Since 
 [infinite response (IIR)](https://en.wikipedia.org/wiki/Infinite_impulse_response) filters are 
 a bit too complicated still, and sometimes not suitable for audio processing due to non-linear phase
@@ -23,7 +23,7 @@ There are many resources on the web that will discuss the theoretical aspects ab
 filter, but fully worked out examples with full code are much harder to find. 
 
 In this blog post, I will discuss the tools that I've been using to evaluate and design filters: 
-[pyFDA](https://github.com/chipmuenk/pyfda) and and [SciPy](https://docs.scipy.org/doc/scipy/reference/index.html).
+[pyFDA](https://github.com/chipmuenk/pyfda) and [NumPy](https://numpy.org).
 
 *I'll almost always write 'NumPy' discussing Python scripts related to this filter series. This should
 be considered a catch-all for various Python packages that aren't necessarily part of NumPy: matplotlib for plots,
@@ -58,7 +58,7 @@ minimum order that's needed to meet these characteristics:
 
 ![pyFDA parameters](/assets/pdm/tools/pyFDA-params.png)
 
-The default result image is the frequency response plot:
+The default plot in the results half is the frequency response plot:
 
 ![pyFDA results](/assets/pdm/tools/pyFDA.png)
 
@@ -233,7 +233,64 @@ And the following plot:
 Check out [`remez_example.py`](https://github.com/tomverbeure/pdm/blob/master/modeling/tools/remez_example.py) 
 for the full source code.
 
-In the code above, you need to specify order of the filter (N) yourself. To find the smallest
+# Finding the Optimal Filter Order
+
+In the example code above, the order of the filter (N=37) was given manually. To find the smallest
 to satisfy the ripple and attenuation requirements, I just increase N until these requirements
 are met.
+
+*There are formulas to determine the filter order that's needed to meet filter requirements, but
+they're approximations. Useful 50 years ago when computing time was expensive, it made sense to
+use those, but that's really not an issue today, so dumb brute force it is.*
+
+After factoring the earlier `remez`-based code as a function inside library 
+[`filter_lib.py`](https://github.com/tomverbeure/pdm/blob/d58bd3fa5f0d9449b1aaf5f70eee91fec940d670/modeling/tools/filter_lib.py#L11-L43),
+it's really as straightforward as this:
+
+```python
+def fir_find_optimal_N(Fs, Fpb, Fsb, Apb, Asb, Nmin = 1, Nmax = 1000):
+    for N in range(Nmin, Nmax):
+        print("Trying N=%d" % N)
+        (h, w, H, Rpb, Rsb, Hpb_min, Hpb_max, Hsb_max) = fir_calc_filter(Fs, Fpb, Fsb, Apb, Asb, N)
+        if -dB20(Rpb) <= Apb and -dB20(Rsb) >= Asb:
+            return N
+```
+
+Run the [remez_example_find_n.py](https://github.com/tomverbeure/pdm/blob/master/modeling/tools/remez_example_find_n.py) 
+script:
+
+```python
+from filter_lib import *
+
+Fs      = 48000
+Fpb     = 6000
+Fsb     = 10000
+Apb     = 0.05
+Asb     = 60
+
+N = fir_find_optimal_N(Fs, Fpb, Fsb, Apb, Asb)
+```
+
+And this is the result:
+```
+...
+Trying N=33
+Rpb: 0.086118dB
+Rsb: 55.258914dB
+Trying N=34
+Rpb: 0.065989dB
+Rsb: 57.550847dB
+Trying N=35
+Rpb: 0.048278dB
+Rsb: 60.216487dB
+Rpb: 0.048278dB
+Rsb: 60.216487dB
+```
+
+Note that we need an FIR filter with order 35 (36 taps) to realize our requirements. In my example earlier, 
+pyFDA with exactly the same parameters came up with a filter that's 2 orders higher.
+
+I have no idea why...
+
+
 
