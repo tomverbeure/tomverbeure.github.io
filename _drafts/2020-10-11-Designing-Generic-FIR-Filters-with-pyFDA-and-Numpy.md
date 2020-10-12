@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Filtering Down PDM to PCM
+title: Designing Generic FIR Filters with pyFDA and Numpy
 date:  2020-10-05 00:00:00 -1000
 categories:
 ---
@@ -10,128 +10,36 @@ categories:
 
 # Introduction
 
-If you've read my previous two posts in this series, you know that I'm improving my general DSP
-knowledge by applying it to a concrete example of taking in single bit data stream of
-a PDM microphone and converting it into a standard PCM coded samples.
+In [my previous blog post](2020/10/04/PDM-Microphones-and-Sigma-Delta-Conversion.html), I promised
+that it was about time to start designing some real filters. Since 
+[infinite response (IIR)](https://en.wikipedia.org/wiki/Infinite_impulse_response) filters are 
+a bit too complicated still, and sometimes not suitable for audio processing due to non-linear phase
+behavior, I implicitly meant 
+[finite impulse response filters](2020/10/04/PDM-Microphones-and-Sigma-Delta-Conversion.html).
+They are much easier to understand, and generally behave better, but they also require
+a lot more calculation power to obtain similar ripple and attenuation results than IIR filters.
 
-The application itself is only a means to an end, most important is understanding the why and 
-the how of every design decision along the way.
+There are many resources on the web that will discuss the theoretical aspects about this or that
+filter, but fully worked out examples with full code are much harder to find. 
 
-After diving into [CIC filters](/2020/09/30/Moving-Average-and-CIC-Filters.html) and the 
-characteristics of the 
-[sigma-delta generated PDM signal of a MEMS microphone](http://localhost:4000/2020/10/04/PDM-Microphones-and-Sigma-Delta-Conversion.html), 
-the time has come to start building up the filter architecture.
+In this blog post, I will discuss the tools that I've been using to evaluate and design filters: 
+[pyFDA](https://github.com/chipmuenk/pyfda) and and [SciPy](https://docs.scipy.org/doc/scipy/reference/index.html).
 
+*I'll almost always write 'NumPy' discussing Python scripts related to this filter series. This should
+be considered a catch-all for various Python packages that aren't necessarily part of NumPy: matplotlib for plots,
+SciPy for signal processing function, etc. I think it's fair to do this because [NumPy website](https://numpy.org)
+lists SciPy as part of NumPy as well.*
 
-# PDM to PCM Problem Statement
-
-The problem that I want to solve is to convert a PDM signal to a PCM signal while
-maintaining the the quality level of the microphone.
-
-Going forward, I'll use the characteristics of the ST MP34DT01-M microphone of my
-[Adafruit test board](https://www.adafruit.com/product/3492) and let them guide
-the specifications of the filter design.
-
-From [the datasheet](https://cdn-learn.adafruit.com/assets/assets/000/049/977/original/MP34DT01-M.pdf): 
-
-![Microphone Characteristics Table](/assets/pdm/pdm2pcm/mic_characteristics.png)
-
-![Microphone Frequency Response](/assets/pdm/pdm2pcm/mic_freq_response.png)
-
-
-The requirements for our design are:
-
-* An output sample rate of 48kHz
-
-    48kHz is universally supported and probably the most common sample rate for high quality audio, 
-    though it's obviously overkill for a microphone that only goes up to 10kHz.
-
-* 1.920 MHz PDM sample rate 
-
-    The microphone supports a PDM clock rate between 1 and 3.25MHz. 
-
-    We shall soon see that some very efficient filters are perfect for 2x decimation, 
-    so it's best to select a ratio that's divisible by 2 or by 4.
-
-    3.072MHz is 64 times higher and 1.920MHz is 40 times higher than our desired output rate 
-    of 48kHz. Let's choose the lower clock to avoid giving the impression that decimation
-    filters should have a power of 2 ratio. A lower clock should also
-    reduce power consumptions.
-
-* A passband from 0 to 6kHz
-
-    State of the art MEMS microphones have a flat sensitivity curve that goes all the way up 
-    to 20kHz, but this microphone definitely does not fall in that category. The frequency
-    response is only flat between 100Hz and 5kHz, after which is starts going up. And
-    there's not data above 10kHz.
-
-    6kHz seems like a good point to start increasing the attenuation.
-
-* A stop band that starts at 10kHz
-
-    Since the specification of the microphone doesn't say anything about behavior above
-    10kHz, I'm simply assuming that this is no-go territory, so that's where the
-    stop band will start.
-
-* The SNR of our signal in the passband is 58dB.
-
-    The microphone datasheet specifies a 61dB SNR , but decimation will alias higher
-    frequencies into the remaining frequency band. This will by definition increase
-    the noise and thus lower the SNR.
-
-    I'm allowing a 3dB SNR deterioration, but this is something with quite a bit of
-    filter design consequences and thus something that needs to be discussed more in
-    depth soon.
-
-* The maximum ripple we're willing to accept in the passband *at the output* is 0.1dB
-
-    This seems to be a pretty typical requirement for high quality audio.
-
-    In a filter architecture with more than 1 filter, each successive filter will impact the
-    passband ripple. As a result, individual filters will need to have tighter specification
-    than this overall ripple.
-
-# Stop Band Attenuation for a Decimation Filter
-
-I had already written most of this blog post when it finally hit me: I had been completely
-wrong about how to determine the stop band attenuation filter.
-
-And since that stop band attenuation influences a whole bunch of other filter parameters,
-that meant that I had to go back to the drawing board to get things right.
-
-In an earlier [Basics of Decimation](2020/09/30/Moving-Average-and-CIC-Filters.html#intermission-the-basics-of-decimation)
-section about CIC filters, I came really close, and still I missed the most important part:
-
-**Higher decimation ratios requires higher stop band attenuation to get the same noise floor.**
-
-In the example below, you can see what happens when you keep the stop band attenuation of
-a decimation filter the same for different decimation ratios:
-
-![Stop Band Attenuation and Decimation](/assets/pdm/pdm2pcm/pdm2pcm-stop_band_attenuation.svg)
-
-Of interest here is the amount of unwanted aliasing noise that was added underneath the
-great signal of interest. In the 2x decimation case, only 1 'unit' of stop band
-noise was added, while it's 3x that for the 4x decimation case.
-
-If we wanted the amount of aliasing noise to be the same for the 2x and the 4x decimation
-case, we'd have to increase the stop band attenuation for the latter.
-
-Let's now put this in numbers for our microphone case.
-
-* The microphone has a 61dB SNR.
-* 
+[Matlab](https://www.mathworks.com/products/matlab.html) is extremely popular in the signal processing
+world, but a license costs thousands of dollar, and even if it's better than NumPy (I honestly have no idea), 
+it's total overkill for the beginner stuff that I want to do. [GNU Octave](https://www.gnu.org/software/octave/)
+is free software that's claimed to be "drop-in compatible with many Matlab scripts", but I haven't tried
+it.
 
 # Designing Filters with pyFDA
 
-<MOVE THIS PARAGRAPH TO INTRODUCTION?>
-
-Before getting into the actual filter architecture, first some words about filter design tools.
-There are many resources on the web that will discuss the theoretical aspect about this or that
-filter, but fully worked out examples with full code are much harder to find. 
-
-One can use Matlab or NumPy to explore different filter configurations, but during the
-initial stages, I often found it faster to play around with a GUI. It's also a great way
-to learn about what's out there and familiarize yourself with characteristics
+During the initial stages of exploring filter configurations, I often find it faster to play around 
+with a GUI. It's also a great way to learn about what's out there and familiarize yourself with characteristics
 of different kinds of filters.
 
 In [a recent tweet](https://twitter.com/matthewvenn/status/1311611352021118976), Matt Venn
@@ -139,7 +47,7 @@ pointed me to [pyFDA](https://github.com/chipmuenk/pyfda), short for Python Filt
 Design Analysis tool, and [his video tutorial](https://www.youtube.com/watch?v=dtK-4JZ4Cwc) 
 about it.
 
-I've since been using it, and it definitely helped me in getting the current design
+I've since been using it, and it definitely helped me in getting my PDM MEMS microphone design
 off the ground.
 
 In the screenshot below, you can see an example of a low pass filter that has all the
