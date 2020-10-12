@@ -259,7 +259,7 @@ There are 2 basic components:
 Enough learning about how to make fancy graphs with NumPy! (You can find the code for
 that [here](...), BTW.)
 
-Let's start designing some real filters!
+[Let's learn how to design some real filters!](/2020/10/05/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html)
 
 # References
 
