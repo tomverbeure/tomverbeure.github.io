@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Designing Generic FIR Filters with pyFDA and NumPy
-date:  2020-10-05 00:00:00 -1000
+date:  2020-10-11 00:00:00 -1000
 categories:
 ---
 
