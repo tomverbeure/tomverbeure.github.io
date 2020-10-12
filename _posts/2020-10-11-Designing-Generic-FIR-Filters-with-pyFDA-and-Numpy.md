@@ -36,6 +36,10 @@ it's total overkill for the beginner stuff that I want to do. [GNU Octave](https
 is free software that's claimed to be "drop-in compatible with many Matlab scripts", but I haven't tried
 it.
 
+*[I've been told](https://twitter.com/realCWolpert/status/1315695960891293696) that a home license for Matlab 
+is around 120 euros + 35 euros per toolbox. Cheaper than thousands, but still overkill.*
+
+
 # Designing Filters with pyFDA
 
 During initial filter configuration exploration, I often find it faster to play around 
