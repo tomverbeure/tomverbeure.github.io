@@ -25,7 +25,7 @@ filter, but fully worked out examples with full code are much harder to find.
 In this blog post, I will discuss the tools that I've been using to evaluate and design filters: 
 [pyFDA](https://github.com/chipmuenk/pyfda) and [NumPy](https://numpy.org).
 
-*I'll almost always write 'NumPy' discussing Python scripts related to this filter series. This should
+*I'll almost always write 'NumPy' when discussing Python scripts related to this filter series. This should
 be considered a catch-all for various Python packages that aren't necessarily part of NumPy: matplotlib for plots,
 SciPy for signal processing function, etc. I think it's fair to do this because [NumPy website](https://numpy.org)
 lists SciPy as part of NumPy as well.*
@@ -38,7 +38,7 @@ it.
 
 # Designing Filters with pyFDA
 
-During the initial stages of exploring filter configurations, I often find it faster to play around 
+During the initial filter configuration exploration, I often find it faster to play around 
 with a GUI. It's also a great way to learn about what's out there and familiarize yourself with characteristics
 of different kinds of filters.
 
@@ -52,17 +52,17 @@ off the ground.
 
 pyFDA's GUI is split into 2 halves: parameters and settings on the left, results on the right.
 
-In the parameters screenshot below I enters a low pass filter with pass band and stop band 
-characteristics that we'll later need for our microphone. I also tell it to come up with the
+In the parameters screenshot below I enter a low pass filter with pass band and stop band 
+characteristics that we'll later need for our microphone. I also ask it to come up with the
 minimum order that's needed to meet these characteristics:
 
 ![pyFDA parameters](/assets/pdm/tools/pyFDA-params.png)
 
-The default plot in the results half is the frequency response plot:
+The default plot in the results section is the frequency response plot:
 
 ![pyFDA results](/assets/pdm/tools/pyFDA.png)
 
-pyFDA tells us that we need a 37-order filter (which corresponds at 38 FIR filter taps.)
+pyFDA tells us that we need a 37-order filter, which corresponds at 38 FIR filter taps.
 
 There are all kinds of visualizations: magnitude frequency response, phase frequency response, 
 impulse response, group delay, pole/zero plot, even a fancy 3D plot that I don't quite understand.
@@ -81,13 +81,13 @@ Code has the following benefits over a GUI:
 
 * You can parameterize the input parameters and regenerate all the collaterals (coefficients, graphs, potentially even RTL code) in one go.
 
-    While writing this blog post, I often make significant changes along the way.
+    While writing these blog posts, I often make significant changes along the way.
     You really don't want to manually regenerate all the graphs every time you do that!
 
 * Much more flexilibity wrt graphs
 
-    You can put multiple graphs in one figure. Add annotations. Tune colors etc. None of that
-    is supported by a GUI.
+    You can put multiple graphs in one figure, add annotations, tune colors etc. None of that
+    is supported by the GUI.
 
 * It's much easier for others to reproduce the results, and modify the code, learn from it.
 
@@ -114,13 +114,13 @@ response, and then us a windowing function to tune the behavior. NumPy supports 
 [`firwin2`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.firwin2.html) functions
 , or use the "Windowed FIR" option in pyFDA.
 
-While you can make excellent filters with this way, they are often not optimal in terms of computational
+While you can make excellent filters this way, they are often not optimal in terms of computational
 effort, and you need some understanding of the tradeoffs of this or that windowing filter to get what
 you want.
 
 **Equiripple FIR Filters**
 
-Finally, there are equiripple filters that are designed with
+Finally, there are equiripple filters that are designed with the
 [Parks-McClellan filter design algorithm](https://en.wikipedia.org/wiki/Parks%E2%80%93McClellan_filter_design_algorithm).
 As far as I can tell, it is the most common way to design FIR filters and it's what I used in my earlier
 pyFDA example by selecting the default "Equiripple" option.
@@ -291,6 +291,20 @@ Note that we need an FIR filter with order 35 (36 taps) to realize our requireme
 pyFDA with exactly the same parameters came up with a filter that's 2 orders higher.
 
 I have no idea why...
+
+# Complex FIR Filters
+
+The `remez` function can handle much more than simple low pass, high pass, band pass or band stop filters.
+
+You can specify pretty much any frequency magnitude behavior you want and make it come up
+with a set of FIR parameters. 
+
+I haven't had a need for this yet. We'll see if that changes in the future.
+
+# Coming up
+
+In the next episode, I'll have a look at the datasheet specifications of the microphone, and use
+that to determine the specification of our PDM to PCM design.
 
 
 
