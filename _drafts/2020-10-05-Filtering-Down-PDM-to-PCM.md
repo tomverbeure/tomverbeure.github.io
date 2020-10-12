@@ -486,5 +486,15 @@ that goes from a pass band to the stop band.
 
     Analog Devices application note. C code can be found[here](https://www.analog.com/media/en/technical-documentation/application-notes/EE350v01.zip)
 
+* [The size of an FIR filter for PDM-PCM conversion](https://www.dsprelated.com/thread/11806/the-size-of-an-fir-filter-for-pdm-pcm-conversion)
+
+    Discussion about PDM to PCM conversion on DSPrelated.com.
+
+* XMOS Microphone array library
+
+    https://www.xmos.ai/download/lib_mic_array-%5buserguide%5d(3.0.1rc1).pdf
+
+    Lots of technical info about PDM to PCM decimation.
+
 
 
