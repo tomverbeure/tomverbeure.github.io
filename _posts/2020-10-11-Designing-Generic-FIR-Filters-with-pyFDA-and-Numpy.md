@@ -321,7 +321,11 @@ that to determine the specification of our PDM to PCM design.
 
     Good presentation about different ways to design filters, Remez, ripple etc.
 
-* [Tom Roelandts - How to Create a Simple Low-Pass Filter](https://tomroelandts.com/articles/how-to-create-a-simple-low-pass-filter)
+* [How to Create a Simple Low-Pass Filter](https://tomroelandts.com/articles/how-to-create-a-simple-low-pass-filter)
 
-    Simple explanation, Numpy example code.
+    Simple explanation of how to do a windowed sinc filter. Numpy example code.
+
+* [FIIIR]( https://fiiir.com)
+
+    Online design tool for windowed sinc filters.
 
