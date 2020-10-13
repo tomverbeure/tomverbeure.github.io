@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Filtering Down PDM to PCM
-date:  2020-10-05 00:00:00 -1000
+date:  2020-10-12 00:00:00 -1000
 categories:
 ---
 
@@ -17,9 +17,10 @@ a PDM microphone and converting it into a standard PCM coded samples.
 The application itself is only a means to an end, most important is understanding the why and 
 the how of every design decision along the way.
 
-After diving into [CIC filters](/2020/09/30/Moving-Average-and-CIC-Filters.html) and the 
-characteristics of the 
+After diving into [CIC filters](/2020/09/30/Moving-Average-and-CIC-Filters.html), 
+the characteristics of the 
 [sigma-delta generated PDM signal of a MEMS microphone](http://localhost:4000/2020/10/04/PDM-Microphones-and-Sigma-Delta-Conversion.html), 
+and [learning how to come up with FIR filter coefficients](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html),
 the time has come to start building up the filter architecture.
 
 
@@ -46,26 +47,28 @@ The requirements for our design are:
     48kHz is universally supported and probably the most common sample rate for high quality audio, 
     though it's obviously overkill for a microphone that only goes up to 10kHz.
 
-* 1.920 MHz PDM sample rate 
+* 2.4 MHz PDM sample rate 
 
     The microphone supports a PDM clock rate between 1 and 3.25MHz. 
 
     We shall soon see that some very efficient filters are perfect for 2x decimation, 
     so it's best to select a ratio that's divisible by 2 or by 4.
 
-    3.072MHz is 64 times higher and 1.920MHz is 40 times higher than our desired output rate 
-    of 48kHz. Let's choose the lower clock to avoid giving the impression that decimation
-    filters should have a power of 2 ratio. A lower clock should also
-    reduce power consumptions.
+    3.072MHz is 64 times higher and 2.4MHz is 50 times higher than our desired output rate 
+    of 48kHz. The acoustic and electrical characteristics are given for 2.4MHz, so let's
+    choose that.
+
+    It also avoids giving the impression that decimation filters should have a power of 2 ratio, 
+    and a lower clock reduces power consumption too.
 
 * A passband from 0 to 6kHz
 
     State of the art MEMS microphones have a flat sensitivity curve that goes all the way up 
     to 20kHz, but this microphone definitely does not fall in that category. The frequency
-    response is only flat between 100Hz and 5kHz, after which is starts going up. And
+    response is only flat between 100Hz and 5kHz, after which it starts going up. And
     there's not data above 10kHz.
 
-    6kHz seems like a good point to start increasing the attenuation.
+    6kHz seems like a good point to start the transition band.
 
 * A stop band that starts at 10kHz
 
@@ -73,11 +76,11 @@ The requirements for our design are:
     10kHz, I'm simply assuming that this is no-go territory, so that's where the
     stop band will start.
 
-* The SNR of our signal in the passband is 58dB.
+* The SNR of our output signal in the passband is 58dB.
 
-    The microphone datasheet specifies a 61dB SNR , but decimation will alias higher
-    frequencies into the remaining frequency band. This will by definition increase
-    the noise and thus lower the SNR.
+    The microphone datasheet specifies a 61dB SNR, but decimation will alias higher
+    frequencies into the remaining frequency band. In the case of PDM signals, these higher
+    frequencies contain a lot of noise which will lower the SNR.
 
     I'm allowing a 3dB SNR deterioration, but this is something with quite a bit of
     filter design consequences and thus something that needs to be discussed more in
@@ -93,16 +96,16 @@ The requirements for our design are:
 
 # Stop Band Attenuation for a Decimation Filter
 
-I had already written most of this blog post when it finally hit me: I had been completely
-wrong about how to determine the stop band attenuation filter.
+Most of this blog post had already been written when it suddenly hit me: I had been completely
+wrong about how to determine the stop band attenuation for the decimation filter.
 
 And since that stop band attenuation influences a whole bunch of other filter parameters,
-that meant that I had to go back to the drawing board to get things right.
+I had to go back to the drawing board to get things right.
 
 In an earlier [Basics of Decimation](2020/09/30/Moving-Average-and-CIC-Filters.html#intermission-the-basics-of-decimation)
 section about CIC filters, I came really close, and still I missed the most important part:
 
-**Higher decimation ratios requires higher stop band attenuation to get the same noise floor.**
+**Higher decimation ratios require higher stop band attenuation to get the same noise floor.**
 
 In the example below, you can see what happens when you keep the stop band attenuation of
 a decimation filter the same for different decimation ratios:
@@ -113,13 +116,37 @@ Of interest here is the amount of unwanted aliasing noise that was added underne
 great signal of interest. In the 2x decimation case, only 1 'unit' of stop band
 noise was added, while it's 3x that for the 4x decimation case.
 
-If we wanted the amount of aliasing noise to be the same for the 2x and the 4x decimation
-case, we'd have to increase the stop band attenuation for the latter.
+If we wanted the amount of aliasing noise to be the same for the 2x and the 4x decimation, 
+we'd have to increase the stop band attenuation for the latter.
 
 Let's now put this in numbers for our microphone case.
 
-* The microphone has a 61dB SNR.
-* 
+* The microphone has a 61dB(A) SNR.
+
+    When talking about SNR, it's important to define the frequency range over which the
+    signal and noise power are measured.
+
+    The 'A' of dB(A) gives us a clue: it standards for [A-weighting](https://en.wikipedia.org/wiki/A-weighting).
+
+    When sound is measured over the audible frequency range, the results are weighted by
+    the sensitivy of the ear.
+
+
+* The decimation ratio is 50x.
+
+    We're going from 2.4MHz down to 48kHz.
+
+* The noise level above 10kHz is below -20dB for all frequencies above 10kHz.
+
+    This is almost certainly wrong, but I expect it to be pessimistic with some additional
+    margin.
+
+    Recall the noise slopes of various sigma-delta converters:
+
+    ![Sigma Delta Noise Slopes](/assets/pdm/sigma_delta/noise_slope_different_orders.svg)
+
+    The noise here does not go above -30dB.
+
 
 
 # PDM to PCM First Try: Just Filter the Damn Thing!
@@ -156,8 +183,8 @@ about how you were able to optimize your design!
 All other things equal (sampling rate, pass band ripple, stop band attenuation), the number of
 filter taps depends on the size of the transition band, compared to sample rate.
 
-In the example above, the sample rate is 1920 kHz and the transition band is just 4kHz, a ratio
-of 480!
+In the example above, the sample rate is 2400 kHz and the transition band is just 4kHz, a ratio
+of 600!
 
 If we reduce the sample rate by 5 to 384kHz and keep everything else the same, the number of taps
 goes rougly down by 5 as well:
@@ -436,30 +463,7 @@ that goes from a pass band to the stop band.
 
 # References
 
-**Sigma-Delta AD Convertors**
-
-* [How delta-sigma ADCs work, Part 1](https://www.ti.com/lit/an/slyt423a/slyt423a.pdf) 
-   and [Part 2](https://www.ti.com/lit/an/slyt438/slyt438.pdf)
-
-    Texas Instruments article.  Part 1 is a pretty gentle introduction about the sigma-delta basics.
-    Part 2 talks about filtering to go from PDM to PCM, but it's very light on details.
-
-* [Understanding PDM Digital Audio](http://users.ece.utexas.edu/~bevans/courses/realtime/lectures/10_Data_Conversion/AP_Understanding_PDM_Digital_Audio.pdf)
-
 **Filter Design**
-
-* [Tom Roelandts - How to Create a Simple Low-Pass Filter](https://tomroelandts.com/articles/how-to-create-a-simple-low-pass-filter)
-
-    Simple explanation, Numpy example code.
-
-* [Design of FIR Filters](https://www.vyssotski.ch/BasicsOfInstrumentation/SpikeSorting/Design_of_FIR_Filters.pdf)
-
-    Good presentation about different ways to design filters, Remez, ripple etc.
-
-* [Remez (FIR design) Weights from Requirements](https://www.dsprelated.com/showcode/209.php)
-
-    Shows how to calculate weights for the Remez algorithm (though there seems to be an off-by-2
-    error for the passband weights.)
 
 * [Halfband Filter Design with Python/SciPy](https://www.dsprelated.com/showcode/270.php)
 
@@ -495,6 +499,10 @@ that goes from a pass band to the stop band.
     https://www.xmos.ai/download/lib_mic_array-%5buserguide%5d(3.0.1rc1).pdf
 
     Lots of technical info about PDM to PCM decimation.
+
+**Microphones**
+
+* [Understanding Microphone Sensitivity](https://www.analog.com/en/analog-dialogue/articles/understanding-microphone-sensitivity.html)
 
 
 

@@ -310,5 +310,18 @@ I haven't had a need for this yet. We'll see if that changes in the future.
 In the next episode, I'll have a look at the datasheet specifications of the microphone, and use
 that to determine the specification of our PDM to PCM design.
 
+# References
 
+* [Remez (FIR design) Weights from Requirements](https://www.dsprelated.com/showcode/209.php)
+
+    Shows how to calculate weights for the Remez algorithm (though there seems to be an off-by-2
+    error for the passband weights.)
+
+* [Design of FIR Filters](https://www.vyssotski.ch/BasicsOfInstrumentation/SpikeSorting/Design_of_FIR_Filters.pdf)
+
+    Good presentation about different ways to design filters, Remez, ripple etc.
+
+* [Tom Roelandts - How to Create a Simple Low-Pass Filter](https://tomroelandts.com/articles/how-to-create-a-simple-low-pass-filter)
+
+    Simple explanation, Numpy example code.
 
