@@ -10,12 +10,14 @@ categories:
 
 # Introduction
 
-If you've read my previous two posts in this series, you know that I'm improving my general DSP
-knowledge by applying it to a concrete example of taking in single bit data stream of
-a PDM microphone and converting it into a standard PCM coded samples.
+If you've read my previous three posts in this series, you know that I'm improving my general DSP
+knowledge by applying it to a concrete example of taking in the single-bit data stream of
+a [PDM](https://en.wikipedia.org/wiki/Pulse-density_modulation) microphone and converting it 
+into standard [PCM](https://en.wikipedia.org/wiki/Pulse-code_modulation) samples.
 
-The application itself is only a means to an end, most important is understanding the why and 
-the how of every design decision along the way.
+The application itself is only a means to an end. Most important is understanding the why and 
+how of every design decision along the way: if there's a filter with a 70dB stop band
+attenuation at 10kHz, I want to know the justification for that.
 
 After diving into [CIC filters](/2020/09/30/Moving-Average-and-CIC-Filters.html), 
 the characteristics of the 
@@ -23,11 +25,12 @@ the characteristics of the
 and [learning how to come up with FIR filter coefficients](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html),
 the time has come to start building up the filter architecture.
 
+And for that, we need to come up with a design specification!
 
-# PDM to PCM Problem Statement
+# Making Sense of Microphone Datasheet Numbers
 
 The problem that I want to solve is to convert a PDM signal to a PCM signal while
-maintaining the the quality level of the microphone.
+maintaining the quality level of the microphone.
 
 Going forward, I'll use the characteristics of the ST MP34DT01-M microphone of my
 [Adafruit test board](https://www.adafruit.com/product/3492) and let them guide
@@ -39,8 +42,81 @@ From [the datasheet](https://cdn-learn.adafruit.com/assets/assets/000/049/977/or
 
 ![Microphone Frequency Response](/assets/pdm/pdm2pcm/mic_freq_response.png)
 
+When I see "SNR" and "AD converter", I think "dynamic range" and the number of bits that
+I need to make sure that my logic can cover the full signal range.
 
-The requirements for our design are:
+For example, 16-bit CD quality audio supports 
+[a theoretical maximum SNR of 96dB](https://en.wikipedia.org/wiki/Audio_bit_depth#Quantization).
+
+So when the datasheet of my microphone showed an SNR of 61dB(A), I simply assumed that you 
+get what you pay for: a cheap device with crappy dynamic range.
+
+And I couldn't have been more wrong!
+
+If you want the gory details, you should read the [Microphone Specifications Explained](https://invensense.tdk.com/wp-content/uploads/2015/02/AN-1112-v1.1.pdf)
+from InvenSense.  Another good (and shorter) document is Infineon's 
+[Digital encoding requirements for high dynamic range microphones](https://www.infineon.com/dgdl/Infineon-AN556%20Digital%20encoding%20requirements%20for%20high%20dynamic%20range%20microphones-AN-v01_00-EN.pdf?fileId=5546d4626102d35a01612d1e33876ad8),
+which discusses the relationship between microphone specifications and the word size needed to
+capture the full dynamic range of a microphone. (Just what I need!)
+
+But I'll give a very short summary here:
+
+**Acoustic Overload Point**
+
+A microphone datasheet lists the loudest 1kHz sine wave that it can more or less reliably record. This is called
+the acoustic overload point (AOP). A common way to quantify "reliably record" is with a 
+[total harmonic distortion](https://en.wikipedia.org/wiki/Total_harmonic_distortion) (THD) of 10%
+or less.
+
+Our microphone has an AOP of 120 dbSPL, where dbSPL stands for decibel 
+[sound pressure level](https://en.wikipedia.org/wiki/Sound_pressure).
+
+It also shows that 120 dbSPL corresponds to a THD of 10%:
+
+![Microphone THD](/assets/pdm/pdm2pcm/mic_thd.png)
+
+According to Wikipedia, 120 dbSPL is about as loud as having the bane of the 2010 World Cup, 
+the [vuvuzela](https://en.wikipedia.org/wiki/Vuvuzela), screaming at you from a 1m distance.
+
+The digital output of a microphone should be at maximum at the AOP. This is full-scale value. All
+quiter sounds will result in a lower digital value. The unit to measure this is 
+[dbFS](https://en.wikipedia.org/wiki/DBFS), decibels relative to
+full scale. At the AOP, dbFS is 0. All other levels have a negative dbFS number.
+
+**Signal to Noise Ratio**
+
+The signal to noise ratio of a microphone quantifies the internal noise of the microphone, and thus
+the boundary for which sound can be recorded.
+
+However, the number is not relative to the AOP but to a 1kHz sine wave with a sound pressure of
+94 dBSPL, which corresponds to the pressure of 1 Pa that's shown in our datasheet.
+
+The measurement is as follows:
+
+* first they record the output of the microphone with this 1kHz reference sine wave
+* then they put the microphone is a fully silent environment, and record the output again. This
+  noise output is corrected by an [A-weighting](https://en.wikipedia.org/wiki/A-weighting) curve,
+  which adjust for the human ear's frequency sensitivity. 
+* finally, they subtract these 2 numbers.
+
+**Dynamic Range**
+
+We now have 2 numbers: AOP, which is the maximum sound pressure, and SNR, which is relative
+to a sound pressure of 94dBSPL.
+
+The dynamic range of the microphone is the SNR plus the difference between the AOP and 94dbSPL.
+
+In our case: 120dBSPL (AOP) - 94dBSPL (SNR reference) + 61dB (SNR) = 87dB.
+
+![Microphone Dynamic Range](/assets/pdm/pdm2pcm/pdm2pcm-mic_aop_and_snr.svg)
+
+At ~6dB per bit, our design will need at least 15 bits to cover the full dynamic range of
+the microphone. The dynaimc range also impacts the performance parameters of the filters that are needed to
+conver the PDM signal into PCM.
+
+# PDM to PCM Design Requirements
+
+We can finally move on the requirements of our design:
 
 * An output sample rate of 48kHz
 
@@ -55,18 +131,17 @@ The requirements for our design are:
     so it's best to select a ratio that's divisible by 2 or by 4.
 
     3.072MHz is 64 times higher and 2.4MHz is 50 times higher than our desired output rate 
-    of 48kHz. The acoustic and electrical characteristics are given for 2.4MHz, so let's
-    choose that.
+    of 48kHz. But the acoustic and electrical characteristics in the datasheet are given for 2.4MHz, 
+    so let's choose that.
 
-    It also avoids giving the impression that decimation filters should have a power of 2 ratio, 
-    and a lower clock reduces power consumption too.
+    It also avoids giving the impression that decimation filters should have a power of 2 ratio. 
 
 * A passband from 0 to 6kHz
 
-    State of the art MEMS microphones have a flat sensitivity curve that goes all the way up 
-    to 20kHz, but this microphone definitely does not fall in that category. The frequency
+    Some MEMS microphones have a sensitivity curve that goes all the way up to 20kHz, but this 
+    microphone definitely does not fall in that category. The frequency
     response is only flat between 100Hz and 5kHz, after which it starts going up. And
-    there's not data above 10kHz.
+    there's no data above 10kHz.
 
     6kHz seems like a good point to start the transition band.
 
@@ -76,34 +151,30 @@ The requirements for our design are:
     10kHz, I'm simply assuming that this is no-go territory, so that's where the
     stop band will start.
 
-* The SNR of our output signal in the passband is 58dB.
+* An output signal with a SNR of 86dB.
 
-    The microphone datasheet specifies a 61dB SNR, but decimation will alias higher
-    frequencies into the remaining frequency band. In the case of PDM signals, these higher
-    frequencies contain a lot of noise which will lower the SNR.
+    In the previous section, I derived a microphone dynamic range of 87dB.
 
-    I'm allowing a 3dB SNR deterioration, but this is something with quite a bit of
-    filter design consequences and thus something that needs to be discussed more in
-    depth soon.
+    Decimation will alias higher frequencies into the final frequency band. Since perfect
+    filters don't exist, the noise of the stop band will inevitably reduce the SNR of the 
+    final signal.
 
-* The maximum ripple we're willing to accept in the passband *at the output* is 0.1dB
+    I'm allowing a 1dB SNR deterioration, which is not a lot, and it will put quite
+    a bit of strain onto the filter design. This will soon be discussed in depth.
+
+* The maximum ripple we're willing to accept in the passband at the output is 0.1dB
 
     This seems to be a pretty typical requirement for high quality audio.
 
-    In a filter architecture with more than 1 filter, each successive filter will impact the
-    passband ripple. As a result, individual filters will need to have tighter specification
+    In a filter architectures with more than 1 filter, each successive filter will impact the
+    passband ripple. As a result, individual filters will need to have a tighter specification
     than this overall ripple.
 
 # Stop Band Attenuation for a Decimation Filter
 
-Most of this blog post had already been written when it suddenly hit me: I had been completely
-wrong about how to determine the stop band attenuation for the decimation filter.
-
-And since that stop band attenuation influences a whole bunch of other filter parameters,
-I had to go back to the drawing board to get things right.
-
-In an earlier [Basics of Decimation](2020/09/30/Moving-Average-and-CIC-Filters.html#intermission-the-basics-of-decimation)
-section about CIC filters, I came really close, and still I missed the most important part:
+I already wrote about the 
+[Basics of Decimation](2020/09/30/Moving-Average-and-CIC-Filters.html#intermission-the-basics-of-decimation)
+earlier, but didn't mention one of the most important parts:
 
 **Higher decimation ratios require higher stop band attenuation to get the same noise floor.**
 
@@ -112,31 +183,24 @@ a decimation filter the same for different decimation ratios:
 
 ![Stop Band Attenuation and Decimation](/assets/pdm/pdm2pcm/pdm2pcm-stop_band_attenuation.svg)
 
-Of interest here is the amount of unwanted aliasing noise that was added underneath the
-great signal of interest. In the 2x decimation case, only 1 'unit' of stop band
-noise was added, while it's 3x that for the 4x decimation case.
+Of interest here is the amount of unwanted aliasing noise (red) that was added underneath the
+signal of interest (green). In the 2x decimation case, only 1 'unit' of stop band
+noise was added, while it's 3x that for the 4x decimation case. Once noise ends up in the
+frequency range of the signal of interest, it can never be removed.
 
-If we wanted the amount of aliasing noise to be the same for the 2x and the 4x decimation, 
-we'd have to increase the stop band attenuation for the latter.
+If we want the amount of aliasing noise to be the same for the 2x and the 4x decimation, 
+we have to increase the stop band attenuation of the 4x decimation filter by 3x compared to the
+2x decimation filter.
 
 Let's now put this in numbers for our microphone case.
 
-* The microphone has a 61dB(A) SNR.
+* microphone dynamic range: 87dB.
 
-    When talking about SNR, it's important to define the frequency range over which the
-    signal and noise power are measured.
+* output dynamic range: 86dB.
 
-    The 'A' of dB(A) gives us a clue: it standards for [A-weighting](https://en.wikipedia.org/wiki/A-weighting).
+* decimation ratio: 50x.
 
-    When sound is measured over the audible frequency range, the results are weighted by
-    the sensitivy of the ear.
-
-
-* The decimation ratio is 50x.
-
-    We're going from 2.4MHz down to 48kHz.
-
-* The noise level above 10kHz is below -20dB for all frequencies above 10kHz.
+* PDM noise level above 24kHz: -20dB or less
 
     This is almost certainly wrong, but I expect it to be pessimistic with some additional
     margin.
@@ -145,7 +209,32 @@ Let's now put this in numbers for our microphone case.
 
     ![Sigma Delta Noise Slopes](/assets/pdm/sigma_delta/noise_slope_different_orders.svg)
 
-    The noise here does not go above -30dB.
+    The noise floor here does not go above -30dB.
+
+* Difference between input and output dynamic range: 1dB (87dB - 86dB)
+
+* Number of upper frequency bands that are aliased onto the main signal: 49 (50-1)
+
+* Combined power of the aliased noise if there's no filter: -3dB
+
+    Paliasing = -20dB * 49 = -20dB + 10*log10(49) = -20dB + 17dB = -3dB.
+
+* Required stop band attenuation: 89dB
+
+    ```
+    Noise_signal + Noise_aliasing = Noise_final 
+    -87dB + P_noise = -86dB
+
+    10^(-87/10) + 10^(P_noise_db/10) + = 10^(-86/10)
+    10^(P_noise_db/10) + = 10^(-86/10) - 10^(-87/10) 
+    P_noise_db = 10 * log10( 10^(-86/10) - 10^(-87/10) )
+    P_noise_db = -92dB 
+    Asb = P_aliasing / P_noise
+    Asb = P_aliasing_db / P_noise_db
+    Asb = -3dB + 92dB = 89dB
+    ```
+
+
 
 
 
@@ -480,6 +569,10 @@ that goes from a pass band to the stop band.
     The [website of this professor](https://www.cs.tut.fi/~ts/) has a lot of course notes online. They are 
     all worth reading.
 
+* [Efficient Multirate Realization for Narrow Transition-Band FIR Filters](https://www.cs.tut.fi/~ts/Part4_Tor_Tapio1.pdf)
+
+    XXX Need to study this...
+
 **Decimation**
 
 * [Optimum FIR Digital Filter Implementations for Decimation, Interpolation, and Narrow-Band Filtering](https://web.ece.ucsb.edu/Faculty/Rabiner/ece259/Reprints/087_optimum%20fir%20digital%20filters.pdf)
@@ -504,5 +597,8 @@ that goes from a pass band to the stop band.
 
 * [Understanding Microphone Sensitivity](https://www.analog.com/en/analog-dialogue/articles/understanding-microphone-sensitivity.html)
 
+* [Digital encoding requirements for high dynamic range microphones](https://www.infineon.com/dgdl/Infineon-AN556%20Digital%20encoding%20requirements%20for%20high%20dynamic%20range%20microphones-AN-v01_00-EN.pdf?fileId=5546d4626102d35a01612d1e33876ad8)
+
+* [Microphone Specifications Explained](https://invensense.tdk.com/wp-content/uploads/2015/02/AN-1112-v1.1.pdf)
 
 
