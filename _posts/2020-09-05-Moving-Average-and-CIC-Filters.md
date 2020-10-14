@@ -18,7 +18,8 @@ And that's a shame, because it's a fascinating topic, and a useful one too if yo
 do audio processing on an FPGA or play with software defined radio.
 
 I also want to learn to use Numerical Python (numpy) and matplotlib, its graph plotting
-package.
+package. (The code to generate the plots of this article can be found 
+[here](https://github.com/tomverbeure/pdm/tree/master/modeling/cic_filters).)
 
 In an effort to revive some of that forgotten DSP knowledge, I've been slowly working my way through 
 [The Scientist and Engineer's Guide to Digital Signal Processing](http://www.dspguide.com/pdfbook.htm).
@@ -75,7 +76,7 @@ of the box (the number of samples that are averaged together) and the order, num
 The filter's frequency response using a linear scale Y axis looks like this for different averaging lengths, and 
 different filter orders:
 
-![Moving Average Filter Response - Linear](/assets/pdm/moving_average_filter_overview_linear.svg)
+![Moving Average Filter Response - Linear](/assets/pdm/cic_filters/moving_average_filter_overview_linear.svg)
 
 The horizontal axis shows the normalized frequency, ranging from 0 to 1/2 of the sample rate.
 
@@ -86,7 +87,7 @@ narrower. And when we cascade multiple filters after each other, the attenuation
 
 The traditional and more useful way to look at a filter's frequency behavior is with a log Y axis:
 
-![Moving Average Filter Response](/assets/pdm/moving_average_filter_overview.svg)
+![Moving Average Filter Response](/assets/pdm/cic_filters/moving_average_filter_overview.svg)
 
 A moving average filter doesn't have a clearly defined pass band: close to the 0 frequency,
 the curve starts flat, but as you move to the right, the slope get gradually steeper.
@@ -131,11 +132,11 @@ Here's a simple example spectrum of a signal with 3 sine waves at 100Hz, 1000Hz 
 and some added noise, sampled at 10kHz. The sine waves at 100Hz and 1000Hz have a much lower 
 amplitude than the one at 2800Hz.
 
-![Decimation without Filtering - 3 Sine Waves - No Decimation](/assets/pdm/decimation_without_filtering-no_decimation.svg)
+![Decimation without Filtering - 3 Sine Waves - No Decimation](/assets/pdm/cic_filters/decimation_without_filtering-no_decimation.svg)
 
 This is what happens when you decimate that signal by 2 or by 4: 
 
-![Decimation without Filtering - 3 Sine Waves - No Decimation](/assets/pdm/decimation_without_filtering-2x_4x_decimation.svg)
+![Decimation without Filtering - 3 Sine Waves - No Decimation](/assets/pdm/cic_filters/decimation_without_filtering-2x_4x_decimation.svg)
 
 The 2800Hz signal didn't magically disappear. It jumped to a frequency of 2200Hz and 300Hz for 2x and 4x 
 decimation respectively.
@@ -161,7 +162,7 @@ Here, I want to take the intuitive approach.
 The most naive and trivial moving averaging filter implementation is a literal translation
 of the summing math into hardware. For a length of 4, it'd look like this:
 
-![Moving Average Filter - Trivial Implementation](/assets/pdm/moving_average_filters-trivial.svg)
+![Moving Average Filter - Trivial Implementation](/assets/pdm/cic_filters/moving_average_filters-trivial.svg)
 
 The implementation above averages 4 samples, requires 3 delay elements and 3 adders. The initial
 division by 4 is to ensure that the filter has a unity gain. I will drop that factor going forward, just
@@ -192,7 +193,7 @@ cycle gets reused for the next output.
 
 In hardware, that looks like this:
 
-![Moving Average Filter - Comb Integrator Version](/assets/pdm/moving_average_filters-comb_integrator_version.svg)
+![Moving Average Filter - Comb Integrator Version](/assets/pdm/cic_filters/moving_average_filters-comb_integrator_version.svg)
 
 We have added 2 delay registers and a subtractor, but have saved a whole lot of adders. And these 2 delay
 registers are a one-time cost for converting to a recursive configuration: if we increase
@@ -206,7 +207,7 @@ It's slightly less intuitive, but you can swap the interpolator and the comb sec
 calculated result. In this case, instead of having a recursive output, you continuously accumulate *x*, 
 and subtract that accumulation later.
 
-![Moving Average Filter - Integrator Comb Version](/assets/pdm/moving_average_filters-integrator_comb_version.svg)
+![Moving Average Filter - Integrator Comb Version](/assets/pdm/cic_filters/moving_average_filters-integrator_comb_version.svg)
 
 Accumulate *x* to *a* in the integrator:
 
@@ -236,12 +237,12 @@ comb section will automatically counteract this overflow: you'll still get the r
 
 You can increase the attenuation by cascading multiple moving average filters:
 
-![Moving Average Filter - Cascaded Combs Integrators](/assets/pdm/moving_average_filters-cascaded_integrators_and_combs.svg)
+![Moving Average Filter - Cascaded Combs Integrators](/assets/pdm/cic_filters/moving_average_filters-cascaded_integrators_and_combs.svg)
 
 You can even rearrange the blocks above and group the integrators and combs together, without
 changing the mathematical result:
 
-![Moving Average Filter - Rearranged Integrators and Combs](/assets/pdm/moving_average_filters-rearranged_integrators_combs.svg)
+![Moving Average Filter - Rearranged Integrators and Combs](/assets/pdm/cic_filters/moving_average_filters-rearranged_integrators_combs.svg)
 
 Now observe how the integrator always has exactly 1 delay register, while the comb has
 as many delays as the number of samples of the moving average. If moving average filter requires a length of,
@@ -255,14 +256,14 @@ input samples.
 In the example below, the downsampler at the right drops those 3 samples out of 4, and the output rate,
 *y'(n)*, is one fourth of the input rate *x(n)*:
 
-![Moving Average Filter - Decimation Trivial](/assets/pdm/moving_average_filters-decimation_trivial.svg)
+![Moving Average Filter - Decimation Trivial](/assets/pdm/cic_filters/moving_average_filters-decimation_trivial.svg)
 
 But if we're going to be throwing away 75% of the calculated values, can't we just move the 
 downsampler from the end of the pipeline to somewhere in the middle? Right between the integrator
 stage and the comb stage? That answer is yes, but to keep the math working, we also need to divide
 the number of delay elements in the comb stage by the decimation rate:
 
-![Moving Average Filter - Decimation Smart](/assets/pdm/moving_average_filters-decimation_smart.svg)
+![Moving Average Filter - Decimation Smart](/assets/pdm/cic_filters/moving_average_filters-decimation_smart.svg)
 
 The end result is beautiful: 
 
@@ -293,13 +294,13 @@ y(7) = x(7) + x(6) + x(5) + x(4)
 
 And we can do this just the same with cascaded sections where integrators and combs have been grouped:
 
-![Moving Average Filter - Cascaded Decimation Smart](/assets/pdm/moving_average_filters-integrator_comb_decimated.svg)
+![Moving Average Filter - Cascaded Decimation Smart](/assets/pdm/cic_filters/moving_average_filters-integrator_comb_decimated.svg)
 
 It's important to note here that, for decimation, the integrators come first and the combs second with the downsampler in between. 
 For interpolation, the reverse is true: the incoming sample rate is fraction of the outgoing sample rate, the combs must 
 come first and the interpolators second.
 
-![Moving Average Filter - Cascaded Decimation Smart](/assets/pdm/moving_average_filters-comb_integrator_interpolated.svg)
+![Moving Average Filter - Cascaded Decimation Smart](/assets/pdm/cic_filters/moving_average_filters-comb_integrator_interpolated.svg)
 
 
 # Moving Average Filters as Decimator
@@ -318,7 +319,7 @@ comb banks, but that, in turn, also increases the pass band attenuation.
 Let's look here at a 5th order CIC filter with a filter length of 4. The sample frequency is 80kHz, which
 means that the incoming signal can have frequency components from 0 to 40kHz.
 
-![CIC Response before decimation](/assets/pdm/cic_decimation_full_range.svg)
+![CIC Response before decimation](/assets/pdm/cic_filters/cic_decimation_full_range.svg)
 
 The filter length of 4 gives a 2 lobes. Under normal circumstances, you'd say that this filter has a stopband 
 attenuation of 56.77dB. However, since the decimation ratio of a CIC filter is linked to the filter length, that 
@@ -333,7 +334,7 @@ alias into the frequency range of the outgoing signal.
 In the graph above, this means that the remaining signal components under the orange, the green and the red curve will
 be alias under the blue curve. 
 
-![CIC Response after decimation](/assets/pdm/cic_decimation_aliased.svg)
+![CIC Response after decimation](/assets/pdm/cic_filters/cic_decimation_aliased.svg)
 
 The blue curve is the true signal with a 10kHz bandwidth. The remaining curves are distorting the true signal.
 
@@ -352,7 +353,7 @@ And then one or more traditional FIR filters are used to bring the sample rate t
 In our example, if our signal of interest lies in the 0 to 2000Hz range, the CIC filter has reduced the signal components 
 that aliased into the 0 to 2000Hz range by more than 92dB, and the passband attenuation is only 0.7dB!
 
-![CIC Response at lower frequencies](/assets/pdm/cic_decimation_lower_freqs.svg)
+![CIC Response at lower frequencies](/assets/pdm/cic_filters/cic_decimation_lower_freqs.svg)
 
 All that's needed now is one or two filters with a clean passband behavior from 0 to 2000Hz and with a stop band from, 
 say, 3000Hz to 10000Hz. That is much less computationally intensive than a filter with the same passband
@@ -383,7 +384,7 @@ There are 2 ways to go about this:
 * the pass band compensation can be a separate additional step at the very end of the filtering pipeline.
 * the pass band compensation is part of the FIR filter(s) after the CIC filter.
 
-![Moving Average Filter - Compensation Filter Pipeline](/assets/pdm/moving_average_filters-compensation_filter_pipeline.svg)
+![Moving Average Filter - Compensation Filter Pipeline](/assets/pdm/cic_filters/moving_average_filters-compensation_filter_pipeline.svg)
 
 It seems to make sense to roll the compensation part into the low pass filter, but one good reason
 to not do this is the existence of [half-band filters](https://en.wikipedia.org/wiki/Half-band_filter): 
@@ -435,7 +436,7 @@ stay tuned!
 
 Meanwhile, there's plenty to read about the topic. Check out the references below. The favorite one
 is the Rick Lyon's [A Beginner's Guide To Cascaded Integrator-Comb (CIC) Filters](https://www.dsprelated.com/showarticle/1337.php).
-It much everything above, but with more mathematical rigor. 
+It covers everything above, but with more mathematical rigor. 
 
 # References
 
@@ -468,6 +469,9 @@ CIC Filters:
 
     Explanation about correctly sizing the delay elements with Matlab code. You can find a C implementation
     of the Matlab code [here: CIC filter register pruning utility](http://www.jks.com/cic/cic.html).
+
+* [Altera - Understanding CIC Compensation Filters](https://www.intel.com/content/dam/www/programmable/us/en/pdfs/literature/an/an455.pdf)
+
 
 General DSP:
 
@@ -503,7 +507,7 @@ Decimation:
 * [Rick Lyons - Optimizing the Half-band Filters in Multistage Decimation and Interpolation](https://www.dsprelated.com/showarticle/903.php)
 
     Talks about how it may not be ideal to have 3 identical cascaded 2x half-band filters when
-    you want to be decimate by 8. Unfortunately, it only does so qualitatively, not quantitatively.
+    you want to be decimate by 8. 
 
 Filter Tools:
 
@@ -512,5 +516,9 @@ Filter Tools:
 * [LeventOztruk.com](https://leventozturk.com/engineering/filter_design/)
 
 * [pyFDA](https://github.com/chipmuenk/pyfda)
+
+Code:
+
+* [NumPy code to generate plots of this blog post](https://github.com/tomverbeure/pdm/tree/master/modeling/cic_filters)
 
 
