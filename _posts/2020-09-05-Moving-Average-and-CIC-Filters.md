@@ -178,6 +178,7 @@ Let's look at the math below:
 ```
 y(3) =               x(3) + x(2) + x(1) + x(0)
 y(4) =        x(4) + x(3) + x(2) + x(1)
+which can be simplified to:
 y(4) = y(3) + x(4)                      - x(0)
 ```
 
@@ -258,7 +259,7 @@ In the example below, the downsampler at the right drops those 3 samples out of 
 ![Moving Average Filter - Decimation Trivial](/assets/pdm/cic_filters/moving_average_filters-decimation_trivial.svg)
 
 But if we're going to be throwing away 75% of the calculated values, can't we just move the 
-downsampler from the end of the pipeline to somehwere in the middle? Right between the integrator
+downsampler from the end of the pipeline to somewhere in the middle? Right between the integrator
 stage and the comb stage? That answer is yes, but to keep the math working, we also need to divide
 the number of delay elements in the comb stage by the decimation rate:
 
@@ -271,7 +272,7 @@ with *(n-1)* delay stages and *(n-1)* adders running at the incoming sample rate
 1 adder, and 1 subtractor, and half of the logic is running at a much slower rate.** 
 
 We can do this as long as the decimation ratio is an integer multiple of the length of the desired moving average 
-filter. In practice, the decimation ratio will almost be the same as the length of the filter, and thus, the
+filter. In practice, the decimation ratio will almost always be the same as the length of the filter, and thus, the
 number of delay stages in the comb section will be 1.
 
 The math is trivial. 
@@ -341,7 +342,7 @@ Forget about a stopband attenuation of 56.77dB: the real stopband attenuation of
 where the blue curve stops and the orange curve starts! And the passband attenuation isn't flat either: it goes down 
 from 0 and -18.49dB as well.
 
-If a decimating CIC filter by itself is so terrible, why, then, is it so popular?
+If a decimating CIC filter by itself is so terrible, why then is it so popular?
 
 **Because a decimating CIC filter is always used as part of a multi-stage decimation configuration.**
 
@@ -435,7 +436,7 @@ stay tuned!
 
 Meanwhile, there's plenty to read about the topic. Check out the references below. The favorite one
 is the Rick Lyon's [A Beginner's Guide To Cascaded Integrator-Comb (CIC) Filters](https://www.dsprelated.com/showarticle/1337.php).
-It much covers everything above, but with more mathematical rigor. 
+It covers everything above, but with more mathematical rigor. 
 
 # References
 
@@ -506,13 +507,15 @@ Decimation:
 * [Rick Lyons - Optimizing the Half-band Filters in Multistage Decimation and Interpolation](https://www.dsprelated.com/showarticle/903.php)
 
     Talks about how it may not be ideal to have 3 identical cascaded 2x half-band filters when
-    you want to be decimate by 8. Unfortunately, it only does so qualitatively, not quantitatively.
+    you want to be decimate by 8. 
 
 Filter Tools:
 
 * [FIIIR1](https://fiiir.com)
 
 * [LeventOztruk.com](https://leventozturk.com/engineering/filter_design/)
+
+* [pyFDA](https://github.com/chipmuenk/pyfda)
 
 Code:
 
