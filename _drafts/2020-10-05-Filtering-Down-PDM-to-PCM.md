@@ -222,21 +222,16 @@ Let's now put this in numbers for our microphone case.
 * Required stop band attenuation: 89dB
 
     ```
-    Noise_signal + Noise_aliasing = Noise_final 
-    -87dB + P_noise = -86dB
+    SNR_signal_before + P_aliasing_noise_after = SNR_signal_after
 
-    10^(-87/10) + 10^(P_noise_db/10) + = 10^(-86/10)
-    10^(P_noise_db/10) + = 10^(-86/10) - 10^(-87/10) 
-    P_noise_db = 10 * log10( 10^(-86/10) - 10^(-87/10) )
-    P_noise_db = -92dB 
-    Asb = P_aliasing / P_noise
-    Asb = P_aliasing_db / P_noise_db
-    Asb = -3dB + 92dB = 89dB
+    10^(-87/10) + 10^(P_aliasing_noise_after_db/10) = 10^(-86/10)
+    10^(P_aliasing_noise_after_db/10) = 10^(-86/10) - 10^(-87/10) 
+    P_aliasing_noise_after_db = 10 * log10( 10^(-86/10) - 10^(-87/10) )
+    P_aliasing_noise_after_db = -92dB 
+    A_stop_band = P_aliasing_noise_before    / P_aliasing_noise_after
+    A_stop_band = P_aliasing_noise_before_db - P_aliasing_noise_after_db
+    A_stop_band = -3dB - (-92dB) = 89dB
     ```
-
-
-
-
 
 # PDM to PCM First Try: Just Filter the Damn Thing!
 
