@@ -123,12 +123,17 @@ We can finally move on the requirements of our design:
     48kHz is universally supported and probably the most common sample rate for high quality audio, 
     though it's obviously overkill for a microphone that only goes up to 10kHz.
 
-* 2.4 MHz PDM sample rate 
+* 2.304 MHz PDM sample rate 
 
     The microphone supports a PDM clock rate between 1 and 3.25MHz. 
 
     We shall soon see that some very efficient filters are perfect for 2x decimation, 
-    so it's best to select a ratio that's divisible by 2 or by 4.
+    so it's best to select a ratio that's divisable by 4 or 8.
+
+    The acoustic and electrical characteristics in the datasheet are given for 2.4MHz, 
+    but 2400/48=50, which is only divisable by 2. 
+
+    So let's choose 2.304MHz. 
 
     3.072MHz is 64 times higher and 2.4MHz is 50 times higher than our desired output rate 
     of 48kHz. But the acoustic and electrical characteristics in the datasheet are given for 2.4MHz, 
@@ -238,66 +243,81 @@ Let's now put this in numbers for our microphone case.
 Do we really need a complex filter architecture to convert PDM to PCM? Maybe a single equiripple
 filter is sufficient for our needs?
 
-Let's just fill in the numbers and see what happens:
+Let's just fill in the numbers, run the `remez` algorithm that was discussed in 
+[my previous blog post](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html#finding-the-optimal-filter-order),
+and see what happens:
 
 ```
 ...
-Trying N=1382
-Rpb: 0.094294dB
-Rsb: 59.976587dB
-Trying N=1383
-Rpb: 0.093942dB
-Rsb: 60.020647dB
-Filter order: 1383
+Trying N=2304
+Rpb: 0.006552dB
+Rsb: 88.905561dB
+Trying N=2305
+Rpb: 0.006677dB
+Rsb: 88.950074dB
+Trying N=2306
+Rpb: 0.006796dB
+Rsb: 88.980624dB
+Trying N=2307
+Rpb: 0.006920dB
+Rsb: 89.021181dB
+Filter order: 2307
 ```
 
-After more than a little while, it comes up with a filter that has 1384 taps, and the following
+After more than a little while, it comes up with a filter that has 2308 taps, and the following
 frequency response graph:
 
 ![Just Filter the Damn Thing](/assets/pdm/pdm2pcm/filter_the_damn_thing.svg)
 
 Since this is a decimation filter, we only need to evaluate it for each output sample.
-At 48kHz, this means that we need 48000 * 1384 = 66M multiplications per second.
+At 48kHz, this means that we need 48000 * 2308 = 110M multiplications per second.
 
 That's a lot, but that's good if you're looking for a baseline and want to impress people 
 about how you were able to optimize your design!
 
+Note that even if the remez function seems to have found a solution, upon closer look, the
+result looks suspicous, with weird coefficients at start and end of the impulse response.
+I suspect that this due to rounding errors.
+
+So even you can stomach the 110M multiplications/s, chances are that the result won't be
+right.
+
 # Decimation is a Divide and Conquer Problem
 
 All other things equal (sampling rate, pass band ripple, stop band attenuation), the number of
-filter taps depends on the size of the transition band, compared to sample rate.
+filter taps depends on the size of the transition band compared to sample rate.
 
 In the example above, the sample rate is 2400 kHz and the transition band is just 4kHz, a ratio
 of 600!
 
-If we reduce the sample rate by 5 to 384kHz and keep everything else the same, the number of taps
+If we reduce the sample rate by, say, 6 to 400 and keep everything else the same, the number of taps
 goes rougly down by 5 as well:
 
 ![Fpdm divided by 5 Frequency Response](/assets/pdm/pdm2pcm/fpdm_div5.svg)
 
-Reducing the number of taps from 1384 down to 278 taps, gives
+Reducing the number of taps from 2308 down to 463 taps, gives
 
-48000 * 278  = 13M multiplications
+48000 * 463  = 22M multiplications
 
 But that's not a fair comparison, because to be able use that filter, we first need to
-decimate the signal at the initial sample rate from 1920kHz to 384kHz.
+decimate the original signal from its initial sample rate of 2400kHz to 480kHz.
 
 If we do this in the most naive way possible like any other decimation filter, we create a 
 filter that doesn't touch the pass band and the transition band of the final result, and that 
-filters away everything above the original sample rate divided by 5. 
-In other words: a pass band from 0 to 10kHz, and a stop band that starts at 77kHz. This 
-guarantees that none of the frequencies above 77kHz will alias into the range of 0 to 10kHz 
+filters away everything above 240kHz: 480kHz/2. 
+
+This guarantees that none of the frequencies above 240kHz will alias into the range of 0 to 10kHz 
 after decimation.
 
-Number of taps required? 13!
+Number of taps required? 18!
 
 ![Fpdm to Fpdm/5 - Frequency Response](/assets/pdm/pdm2pcm/fpdm_to_fpdm_div5.svg)
 
 Total number of multiplications:
 
 ```
-384,000 *  13 =  5M             (5x decimation - from 1920 to 384 kHz)
- 48,000 * 278 = 13M             (8x decimation - from 384 to 48 kHz)
+480,000 *  18 =  5M             (5x decimation - from 2400 to 480 kHz)
+ 48,000 * 463 = 13M             (10x decimation - from  480 to  48 kHz)
 -----------------------------------
                 18M multiplications/s
 ```
