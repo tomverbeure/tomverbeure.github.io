@@ -220,9 +220,13 @@ Let's now put this in numbers for our microphone case.
 
 * Number of upper frequency bands that are aliased onto the main signal: 49 (50-1)
 
-* Combined power of the aliased noise if there's no filter: -3dB
+* Combined power of the aliased noise if there's no decimation filter: -3dB
 
-    Paliasing = -20dB * 49 = -20dB + 10*log10(49) = -20dB + 17dB = -3dB.
+    ```
+    P_aliasing_noise_before = 10^(-20dB/10) * 49 
+    P_aliasing_noise_before_db = -20dB + 10*log10(49) 
+    P_aliasing_noise_before_db = -20dB + 17dB = -3dB.
+    ```
 
 * Required stop band attenuation: 89dB
 
@@ -249,58 +253,68 @@ and see what happens:
 
 ```
 ...
-Trying N=2304
-Rpb: 0.006552dB
-Rsb: 88.905561dB
-Trying N=2305
-Rpb: 0.006677dB
-Rsb: 88.950074dB
-Trying N=2306
-Rpb: 0.006796dB
-Rsb: 88.980624dB
-Trying N=2307
-Rpb: 0.006920dB
-Rsb: 89.021181dB
-Filter order: 2307
+Trying N=2212
+Rpb: 0.013681dB
+Rsb: 88.912090dB
+Trying N=2213
+Rpb: 0.013842dB
+Rsb: 88.953522dB
+Trying N=2214
+Rpb: 0.013998dB
+Rsb: 88.987672dB
+Trying N=2215
+Rpb: 0.014158dB
+Rsb: 89.034898dB
+Filter order: 2215
+
 ```
 
-After more than a little while, it comes up with a filter that has 2308 taps, and the following
+After more than a little while, it comes up with a filter that has 2216 taps, and the following
 frequency response graph:
 
-![Just Filter the Damn Thing](/assets/pdm/pdm2pcm/filter_the_damn_thing.svg)
+![Just Filter the Damn Thing - Frequency Response](/assets/pdm/pdm2pcm/filter_the_damn_thing.svg)
 
 Since this is a decimation filter, we only need to evaluate it for each output sample.
-At 48kHz, this means that we need 48000 * 2308 = 110M multiplications per second.
+
+The number of multiplications per second becomes:
+
+```
+48000 * 2216 = 106M muls/s          (48x decimation - from 2304 to 48kHz)
+```
 
 That's a lot, but that's good if you're looking for a baseline and want to impress people 
 about how you were able to optimize your design!
 
-Note that even if the remez function seems to have found a solution, upon closer look, the
-result looks suspicous, with weird coefficients at start and end of the impulse response.
-I suspect that this due to rounding errors.
+![Just Filter the Damn Thing - Impulse Response](/assets/pdm/pdm2pcm/filter_the_damn_thing_impulse.svg)
 
-So even you can stomach the 110M multiplications/s, chances are that the result won't be
-right.
+Note that even if the remez function seems to have found a solution, upon closer look, the
+result looks suspicous: the very first coefficient (and the very last one, since it's symmetric) have
+a weird bump. 
+
+I suspect that this due to rounding errors. So even you can stomach the 110M multiplications/s, chances 
+are that the result won't be right. (I didn't pursue this further.)
 
 # Decimation is a Divide and Conquer Problem
 
 All other things equal (sampling rate, pass band ripple, stop band attenuation), the number of
 filter taps depends on the size of the transition band compared to sample rate.
 
-In the example above, the sample rate is 2400 kHz and the transition band is just 4kHz, a ratio
-of 600!
+In the example above, the sample rate is 2304 kHz and the transition band is just 4kHz, a ratio
+of 576!
 
-If we reduce the sample rate by, say, 6 to 400 and keep everything else the same, the number of taps
-goes rougly down by 5 as well:
+If we reduce the sample rate by, say, 6 to 384 and keep everything else the same, the number of taps
+goes rougly down by 6 as well:
 
-![Fpdm divided by 5 Frequency Response](/assets/pdm/pdm2pcm/fpdm_div5.svg)
+![Fpdm divided by 6 Frequency Response](/assets/pdm/pdm2pcm/fpdm_div6.svg)
 
-Reducing the number of taps from 2308 down to 463 taps, gives
+Reducing the number of taps from 2216 down to 370 taps, gives:
 
-48000 * 463  = 22M multiplications
+```
+48000 * 370  = 18M muls/s            (6x decimation - from 384 to 48kHz)
+```
 
 But that's not a fair comparison, because to be able use that filter, we first need to
-decimate the original signal from its initial sample rate of 2400kHz to 480kHz.
+decimate the original signal from its initial sample rate of 2304kHz to 384kHz.
 
 If we do this in the most naive way possible like any other decimation filter, we create a 
 filter that doesn't touch the pass band and the transition band of the final result, and that 
@@ -311,28 +325,59 @@ after decimation.
 
 Number of taps required? 18!
 
-![Fpdm to Fpdm/5 - Frequency Response](/assets/pdm/pdm2pcm/fpdm_to_fpdm_div5.svg)
+![Fpdm to Fpdm/6 - Frequency Response](/assets/pdm/pdm2pcm/fpdm_to_fpdm_div6.svg)
 
 Total number of multiplications:
 
 ```
-480,000 *  18 =  5M             (5x decimation - from 2400 to 480 kHz)
- 48,000 * 463 = 13M             (10x decimation - from  480 to  48 kHz)
+384,000 *  21 =  8M             (6x decimation - from 2400 to 384 kHz)
+ 48,000 * 370 = 18M             (8x decimation - from  384 to  48 kHz)
 -----------------------------------
-                18M multiplications/s
+                26M multiplications/s
 ```
 
 By splitting up the dumb initial filter into 2 filters, we've reduced the number of multiplications from
-66M downto 18M, a factor of more than 3!
+106M downto 26M, a factor of 4! 
 
-If we can get that kind of savings splitting up a 40x decimation filter into a 2 filters, there must
-be similar optimization possible by splitting up that 8x decimation filter. 
+In this case, I randomly choose to split 48x decimator into a 6x and an 8x decimator, but
+I could have chosen to split it up in a 12x followed by a 4x decimatior:
 
-There must be some kind of optimal arrangment that results in a minimal number of multiplications
-to get from our initial to our desired sample rate.
 
-But before we look at that, some clarifications and corrections must be made about specifying the right 
-decimation filter parameters.
+```
+192,000 *  52 = 10M             (12x decimation - from 2400 to 192 kHz)
+ 48,000 * 186 = 23M             ( 4x decimation - from  192 to  48 kHz)
+-----------------------------------
+                33M multiplications/s
+```
+
+Or a 3x followed by a 16x decimator:
+
+```
+768,000 *   9 =  7M             ( 3x decimation - from 2400 to 768 kHz)
+ 48,000 * 740 = 35M             (16x decimation - from  768 to  48 kHz)
+-----------------------------------
+                42M multiplications/s
+```
+
+Or 8x followed by 6x:
+
+```
+288,000 *  29 =  8M             ( 8x decimation - from 2400 to 288 kHz)
+ 48,000 * 277 = 13M             ( 6x decimation - from  288 to  48 kHz)
+-----------------------------------
+                21M multiplications/s
+```
+
+Starting from 106M, we're now more than 5 times better!
+
+But wait, there's more!
+
+What if we split the 8x/6x filter into 2x/4x/6x? Or even 2x/2x/2x/2x/3x?
+
+There must be some optimal configuration!
+
+Yes, of course, but before we go down that road, we first need to make some significant general 
+optimizations. 
 
 # Optimal Pass Band / Stop Band Limits for Decimators
 
@@ -354,19 +399,19 @@ In this section, we'll assume the following parameters:
 
 The ratio of incoming and outoing sample rate is 6, so we need a 6x decimating filter.
 
-The fat black line below shows the frequence response if we use a single filter:
+The fat black line below shows the frequency response if we use a single filter:
 
 ![Direct 6x Decimation Filter](/assets/pdm/pdm2pcm/pdm2pcm-div6_decimation_filter.svg)
 
 We already saw earlier that 2 less aggressive filters result in a lower number of taps (and thus
-multiplications) and 1 more aggressive filter. In this particular example, that means we can
+multiplications) than 1 more aggressive filter. In this particular example, that means we can
 either decimate by 2x first and 3x after that, or the other way around.
 
 The figure below shows the two paths:
 
 ![Cascaded Decimation Steps](/assets/pdm/pdm2pcm/pdm2pcm-cascaded_decimation.svg)
 
-There are 2 major things of note:
+There are 3 major things of note:
 
 1. Naive vs smart filtering in the first stage 
 
@@ -376,7 +421,7 @@ There are 2 major things of note:
 
     But that is too aggressive!
 
-    What we can do instead is start of the stop band of the first filter at *Fsample/n* - *Fsb*.
+    What we can do instead is start the stop band of the first filter at *(Fsample/n - Fsb)*.
 
     This expands the transition band by the area marked with the green rectangle and makes
     the first stage decimation filter considerably less steep. This is especially true for
@@ -411,7 +456,7 @@ There are 2 major things of note:
 
 # Passband Ripple and Stop Band Attenuation for Cascaded Filters
 
-We're shooting for an overall pass band ripple of 0.1dB and a stop band attenuation of 60dB. 
+We're shooting for an overall pass band ripple of 0.1dB and a stop band attenuation of 89dB. 
 
 When there's only 1 filter, meeting that goal is a matter of specifying that as a filter design parameter.
 
@@ -422,18 +467,25 @@ In their 1975 paper
 Crochiere and Rabiner write the following:
 
 > As it is desired that the overall pass band ripple for the composite of K stages be maintained 
-> within 1+-delta it is necesary to require more severe frequency constraints on the individual filters
-> in the cascade. Aconvenient choice which will satisfy this requirement is to specify the pass band
-> ripple constraints for each stage *i* to be within 1+delta/K.
+> within *(1+-delta)* it is necesary to require more severe frequency constraints on the individual filters
+> in the cascade. A convenient choice which will satisfy this requirement is to specify the pass band
+> ripple constraints for each stage *i* to be within *(1+delta/K)*.
+
 
 In other words: if we split the filter into 3 stages, they suggest to split the joint passband ripple of 0.1dB into
-3 pass band ripples of ~0.03dB.
+3 smaller pass band ripples.
+
+``` 
+    Ripple_single_db = 0.1
+    Ripple_single = 10^(0.1/20)
+    Ripple_div3 = ((Ripple_single-1) / 3)+1
+    Ripple_div3_db = 20*log10(((Ripple_single-1) / 3)+1)
+    Ripple_div3_db = 20*log10(((1.0116-1) / 3)+1)
+    Ripple_div3_db = 0.033dB
+```
 
 (Note that close to 1, *20 * log10(x)* ~ *x-1*. Since pass band ripple is a deviation around 1, we can simply
 divide the dB number without having to convert from dB to linear and back.)
-
-In practise, this will create a joint pass band ripple that's a bit lower than specified because it's
-unlikely that all 3 filters will have peaks and throughs at the same location.
 
 Now for the stop band. From the same paper:
 
@@ -441,20 +493,8 @@ Now for the stop band. From the same paper:
 > constraint must be imposed on each of the individual low-pass filter as well, in order to suppress
 > the effects of aliasing.
 
-This confused me since as many frequency range will be aliased onto final signal as the decimation
-ratio. And you need to account for that.
-
-But then I realized that I whether you use a single filter or multiple ones, you always need to
-take the decimation ratio into account when specifying the stop band attenuation.
-
-Let's use this on our example: we want 60dB stop band attenuation. When reducing the sample rate from
-1920kHz to 48kHz, there's a 40x decimation ratio. Our filter needs to correct for that: 
-
-```
--60dB = 0.001 / 40 = 0.0000025 -> -72dB
-```
-
-Going forward, all 
+This is much easier: we calculated a stop band attenuation of 89dB. We have to use the same
+attenuation for each filter in the cascade.
 
 
 # Major Sample Rate Reduction with a CIC Filter
