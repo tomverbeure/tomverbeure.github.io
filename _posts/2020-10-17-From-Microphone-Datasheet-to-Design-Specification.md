@@ -22,8 +22,8 @@ attenuation at 10kHz, I want to know the justification for that.
 After diving into [CIC filters](/2020/09/30/Moving-Average-and-CIC-Filters.html), 
 the characteristics of the 
 [sigma-delta generated PDM signal of a MEMS microphone](http://localhost:4000/2020/10/04/PDM-Microphones-and-Sigma-Delta-Conversion.html), 
-and [learning how to come up with FIR filter coefficients](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html),
-the time has come to start building up the filter architecture.
+and [learning how to come up with FIR filter coefficients](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html)
+in general, the time has come to start building up the filter architecture.
 
 And for that, we need to come up with a design specification!
 
@@ -58,7 +58,7 @@ get what you pay for: a cheap device with crappy dynamic range.
 And I couldn't have been more wrong!
 
 If you want the gory details, you should read the [Microphone Specifications Explained](https://invensense.tdk.com/wp-content/uploads/2015/02/AN-1112-v1.1.pdf)
-applicatio note from InvenSense.  Another good (and shorter) document is Infineon's 
+application note from InvenSense.  Another good (and shorter) document is Infineon's 
 [Digital encoding requirements for high dynamic range microphones](https://www.infineon.com/dgdl/Infineon-AN556%20Digital%20encoding%20requirements%20for%20high%20dynamic%20range%20microphones-AN-v01_00-EN.pdf?fileId=5546d4626102d35a01612d1e33876ad8),
 which discusses the relationship between microphone specifications and the word size needed to
 capture the full dynamic range of a microphone. (Just what I need!)
@@ -85,7 +85,7 @@ the [vuvuzela](https://en.wikipedia.org/wiki/Vuvuzela), screaming at you from a 
 ![Vuvuzela](/assets/pdm/datasheet_specs/vuvuzela.jpg)
 
 The digital output of a microphone should be at maximum at the AOP. This is full-scale value. All
-quiter sounds will result in a lower digital value. The unit to measure this is 
+other sounds (with some exceptions) will result in a lower digital output value. The unit to measure this is 
 [dbFS](https://en.wikipedia.org/wiki/DBFS), decibels relative to
 full scale. At the AOP, dbFS is 0. All other levels have a negative dbFS number.
 
@@ -95,7 +95,7 @@ The signal to noise ratio of a microphone quantifies the internal noise of the m
 the boundary for which sound can be recorded. 
 
 However, the number is not relative to the AOP but to a 1kHz sine wave with a sound pressure of
-94 dBSPL. Don't get confused by the fact that our datasheet lists SNR for a sound pressure of 1 Pa; that
+94 dBSPL. Don't get confused by the fact that our datasheet lists SNR for a sound pressure of 1 Pa: that
 corresponds exactly to 94dBSPL.
 
 The SNR measurement goes as follows:
@@ -135,10 +135,10 @@ We can finally move on the requirements of our design:
     The microphone supports a PDM clock rate between 1 and 3.25MHz. 
 
     There are some very efficient filters that are perfect for 2x decimation, 
-    so it's best to select a ratio that is divisiable by some power of 2.
+    so it's best to select a ratio that is divisable by some power of 2.
 
     The acoustic and electrical characteristics in the datasheet are given for 2.4MHz, 
-    but 2400/48=50, which is only divisable by 2.  So let's choose 2.304MHz. 2304/48=48, which
+    but 2400/48=50, which is only divisable by 2.  So let's choose 2.304MHz: 2304/48=48, which
     is in turn divisable by 16. Perfect!
 
 * A passband from 0 to 6kHz.
@@ -223,13 +223,13 @@ Let's now work the numbers for our microphone case.
 
 * Difference between input and output dynamic range: 1dB (87dB - 86dB)
 
-* Number of upper frequency bands that are aliased onto the main signal: 49 (50-1)
+* Number of upper frequency bands that are aliased onto the main signal: 47 (48-1)
 
 * Combined power of the aliased noise if there's no filter: -3dB
 
     ```
-    P_aliasing_noise_before = 10^(-20dB/10) * 49 
-    P_aliasing_noise_before_db = -20dB + 10*log10(49)
+    P_aliasing_noise_before = 10^(-20dB/10) * 47 
+    P_aliasing_noise_before_db = -20dB + 10*log10(47)
     P_aliasing_noise_before_db = -20dB + 17dB = -3dB.
     ```
 
@@ -316,6 +316,13 @@ to optimize the design into something that will work.
 * [Digital encoding requirements for high dynamic range microphones](https://www.infineon.com/dgdl/Infineon-AN556%20Digital%20encoding%20requirements%20for%20high%20dynamic%20range%20microphones-AN-v01_00-EN.pdf?fileId=5546d4626102d35a01612d1e33876ad8)
 
 * [Microphone Specifications Explained](https://invensense.tdk.com/wp-content/uploads/2015/02/AN-1112-v1.1.pdf)
+
+**Decimation Stop Band Attenuation**
+
+* [Given a wide band signal with equal SNR over the whole spectrum, what should the stop band attenuation be for a decimation filter?](https://dsp.stackexchange.com/questions/70763/given-a-wide-band-signal-with-equal-snr-over-the-whole-spectrum-what-should-the)
+
+    [dsp.stackexchange.com](https://dsp.stackexchange.com) is a great resource to ask questions when you
+    need clarification on something!
 
 **Code**
 
