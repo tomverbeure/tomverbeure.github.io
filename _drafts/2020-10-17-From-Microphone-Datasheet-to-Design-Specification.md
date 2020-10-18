@@ -115,7 +115,7 @@ The dynamic range of the microphone is the SNR plus the difference between the A
 
 In our case: 120dBSPL (AOP) - 94dBSPL (SNR reference) + 61dB (SNR) = 87dB.
 
-![Microphone Dynamic Range](/assets/pdm/datasheet_specs/pdm2pcm-mic_aop_and_snr.svg)
+![Microphone Dynamic Range](/assets/pdm/datasheet_specs/datasheet_specs-mic_aop_and_snr.svg)
 
 At ~6dB per bit, our design will need a PCM word size of at least 15 bits to cover the full dynamic range 
 of the microphone. The desired dynamic range also impacts the performance parameters of the filters that are 
@@ -188,7 +188,7 @@ earlier, but didn't mention one of the most important parts:
 In the example below, you can see what happens when you keep the stop band attenuation of
 a decimation filter the same for different decimation ratios:
 
-![Stop Band Attenuation and Decimation](/assets/pdm/pdm2pcm/pdm2pcm-stop_band_attenuation.svg)
+![Stop Band Attenuation and Decimation](/assets/pdm/datasheet_specs/datasheet_specs-stop_band_attenuation.svg)
 
 Of interest here is the amount of unwanted aliasing noise (red) that is added underneath the
 signal of interest (green) after decimation. In the 2x decimation case, only 1 'unit' of stop band
@@ -277,7 +277,7 @@ Filter order: 2215
 After more than a little while, it comes up with a filter that has 2216 taps, and the following
 frequency response graph:
 
-![Just Filter the Damn Thing - Frequency Response](/assets/pdm/pdm2pcm/filter_the_damn_thing.svg)
+![Just Filter the Damn Thing - Frequency Response](/assets/pdm/datasheet_specs/filter_the_damn_thing.svg)
 
 Since this is a decimation filter, we only need to evaluate it for each output sample.
 
@@ -290,7 +290,7 @@ The number of multiplications per second becomes:
 That's a lot, but that's good if you're looking for a baseline and want to impress people 
 about how you were able to optimize your design!
 
-![Just Filter the Damn Thing - Impulse Response](/assets/pdm/pdm2pcm/filter_the_damn_thing_impulse.svg)
+![Just Filter the Damn Thing - Impulse Response](/assets/pdm/datasheet_specs/filter_the_damn_thing_impulse.svg)
 
 Note that even if the remez function seems to have found a solution, upon closer look, the
 result looks suspicous: the very first coefficient (and the very last one, since it's symmetric) have
