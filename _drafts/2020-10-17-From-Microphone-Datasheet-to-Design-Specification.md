@@ -309,10 +309,16 @@ to optimize the design into something that will work.
 
 # References
 
+**Microphones**
+
 * [Understanding Microphone Sensitivity](https://www.analog.com/en/analog-dialogue/articles/understanding-microphone-sensitivity.html)
 
 * [Digital encoding requirements for high dynamic range microphones](https://www.infineon.com/dgdl/Infineon-AN556%20Digital%20encoding%20requirements%20for%20high%20dynamic%20range%20microphones-AN-v01_00-EN.pdf?fileId=5546d4626102d35a01612d1e33876ad8)
 
 * [Microphone Specifications Explained](https://invensense.tdk.com/wp-content/uploads/2015/02/AN-1112-v1.1.pdf)
+
+**Code**
+
+* [Code to generate plots in this article](https://github.com/tomverbeure/pdm/tree/master/modeling/datasheet_specs)
 
 
