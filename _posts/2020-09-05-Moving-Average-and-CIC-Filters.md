@@ -440,7 +440,15 @@ It covers everything above, but with more mathematical rigor.
 
 # References
 
-CIC Filters:
+**My Blog Posts in this Series**
+
+* [An Intuitive Look at Moving Average and CIC Filters](/2020/09/30/Moving-Average-and-CIC-Filters.html)
+* [PDM Microphones and Sigma-Delta A/D Conversion](http://localhost:4000/2020/10/04/PDM-Microphones-and-Sigma-Delta-Conversion.html)
+* [Designing Generic FIR Filters with pyFDA and NumPy](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html)
+* [From Microphone Datasheet to Filter Design Specification](/2020/10/17/From-Microphone-Datasheet-to-Design-Specification.html)
+
+
+**CIC Filters**
 
 * [An Economical Class of Digital Filters For Decimation and Interpolation](http://read.pudn.com/downloads163/ebook/744947/123.pdf)
 
@@ -473,7 +481,7 @@ CIC Filters:
 * [Altera - Understanding CIC Compensation Filters](https://www.intel.com/content/dam/www/programmable/us/en/pdfs/literature/an/an455.pdf)
 
 
-General DSP:
+**General DSP**
 
 * [The Scientist and Engineer's Guide to Digital Signal Processing](http://www.dspguide.com/pdfbook.htm)
 
@@ -487,7 +495,7 @@ General DSP:
     37 page paper on decimation and interpolation.
 
 * [dspGuru FAQs](https://dspguru.com/dsp/faqs/)
-    
+
     FAQs about FIR, IIR, multirate (decimation, interpolation, resampling), FFT etc.
     
     Doesn't go much in detail, but really useful as a refresher.
@@ -502,14 +510,14 @@ General DSP:
 
     Tons of articles related to audio DSP.
 
-Decimation:
+**Decimation**
 
 * [Rick Lyons - Optimizing the Half-band Filters in Multistage Decimation and Interpolation](https://www.dsprelated.com/showarticle/903.php)
 
     Talks about how it may not be ideal to have 3 identical cascaded 2x half-band filters when
     you want to be decimate by 8. 
 
-Filter Tools:
+**Filter Tools**
 
 * [FIIIR1](https://fiiir.com)
 
@@ -517,8 +525,7 @@ Filter Tools:
 
 * [pyFDA](https://github.com/chipmuenk/pyfda)
 
-Code:
+**Code**
 
 * [NumPy code to generate plots of this blog post](https://github.com/tomverbeure/pdm/tree/master/modeling/cic_filters)
-
 
