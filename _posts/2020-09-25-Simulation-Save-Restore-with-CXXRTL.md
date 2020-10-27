@@ -11,13 +11,13 @@ categories:
 # Introduction
 
 In my [initial blog post about CXXRTL](/2020/08/08/CXXRTL-the-New-Yosys-Simulation-Backend.html), I
-wrote about how the underlying data model of CXXRTL allow for 
+wrote about how the underlying data model of CXXRTL allows for 
 [design introspection](2020/08/08/CXXRTL-the-New-Yosys-Simulation-Backend.html#design-introspection), and
-how this could be used for save the design state to a file, and later restore it.
+how this could be used for save the state of a design to a file, and later restore it.
 
 I wanted to try this out on a real example, so that's what I'll be discussing here.
 
-The design is not a toy example, in that it contains a VexRiscv CPU with memories, LEDs, and a UART to
+The design is not a toy example: it contains a VexRiscv CPU with memories, LEDs, and a UART to
 print out status messages.
 
 # The CXXRTL Data Model
@@ -25,19 +25,21 @@ print out status messages.
 Creating a design checkpoint requires an understanding of how a CXXRTL model stores the data of all
 state holding objects.
 
-All of this can be derived from the [`cxxrtl.h`](https://github.com/YosysHQ/yosys/blob/master/backends/cxxrtl/cxxrtl.h).
-At the lowest level, CXXRTL has 
-[`value`](https://github.com/YosysHQ/yosys/blob/cd8b2ed4e6f9447c94d801de7db7ae6ce0976d57/backends/cxxrtl/cxxrtl.h#L84), 
-[`wire`](https://github.com/YosysHQ/yosys/blob/cd8b2ed4e6f9447c94d801de7db7ae6ce0976d57/backends/cxxrtl/cxxrtl.h#L639), 
-and [`memory`](https://github.com/YosysHQ/yosys/blob/cd8b2ed4e6f9447c94d801de7db7ae6ce0976d57/backends/cxxrtl/cxxrtl.h#L682) classes.
-These are the basic primitives that contain simulated data values.
+All of this can be derived from the [`cxxrtl.h`](https://github.com/YosysHQ/yosys/blob/master/backends/cxxrtl/cxxrtl.h), a
+file that gets included in any CXXRTL generated model.
+
+At the lowest level, CXXRTL has templated
+[`value`](https://github.com/YosysHQ/yosys/blob/cd8b2ed4e6f9447c94d801de7db7ae6ce0976d57/backends/cxxrtl/cxxrtl.h#L83), 
+[`wire`](https://github.com/YosysHQ/yosys/blob/cd8b2ed4e6f9447c94d801de7db7ae6ce0976d57/backends/cxxrtl/cxxrtl.h#L638), 
+and [`memory`](https://github.com/YosysHQ/yosys/blob/cd8b2ed4e6f9447c94d801de7db7ae6ce0976d57/backends/cxxrtl/cxxrtl.h#L681) classes.
+These are used to create the basic primitives that contain simulated data values.
 
 * `value`
 
     Used for objects that contain  a single simulation value.
 
     A `value` is always used to represent a combinatorial signal in your design (but not all
-    combinatorial signals are represented by a `value`!)
+    combinatorial signals are represented by a `value`.)
 
 * `wire`
 
@@ -50,7 +52,7 @@ These are the basic primitives that contain simulated data values.
 * `memory`
 
     Self-explanatory: when using Verilog, this would be used to store an object that's declared
-    as in `reg [7:0] memory[0:1023]`.
+    like this `reg [7:0] memory[0:1023]`.
 
 While one could use these objects directly when accessing the internal simulation values of a design,
 it's not very partical: they don't have the same base class, and the way they store the simulation
@@ -84,21 +86,344 @@ A `debug_item` exposes the following aspects of the simulation data holding obje
 
     For memories, these indicates the amount of memory locations in the memory, and index of the first word.
 
-    It's important that these have a meaningful value for  a `wire` or `value`: they're set to 1 and 0 resp.
+    For  a `wire` or `value`, these fields are set to 1 and 0 resp.
     Since a `debug_item` has a uniform interface for all simulation data, one doesn't need to have special
     case to access data between the 3 storage classes: you can all assume them to be memories, but with only 1 location.
 
 * [`curr`](https://github.com/YosysHQ/yosys/blob/cd8b2ed4e6f9447c94d801de7db7ae6ce0976d57/backends/cxxrtl/cxxrtl_capi.h#L217),
     and [`next`](https://github.com/YosysHQ/yosys/blob/cd8b2ed4e6f9447c94d801de7db7ae6ce0976d57/backends/cxxrtl/cxxrtl_capi.h#L218)
 
-    These contain the actual simulation data!
+    Pointers to the actual simulation data!
 
     For a `wire` and `memory`, `next` is a null pointer.
 
     One can see that `curr` and `next` are stored as a `uint32_t` pointer. That's because the C++ classes ultimately
     use that as the way to store simulation data. 
 
-    It's all pretty straifhtforward: the LSB of a vector is stored at bit 0 of the first uint32 word, and as many uint32 words
+    It's all pretty straifhtforward: the LSB of a vector is stored at bit 0 of the first `uint32_t` word, and as many `uint32_t` words
     are allocated to store all the bits of a vector.
+
+# Save/Restore of the VexRiscv Simulation Example
+
+I updated my main CXXRTL example (in the [./cxxrtl](https://github.com/tomverbeure/cxxrtl_eval/tree/master/cxxrtl) directory)
+to add save/restore checkpointing.
+
+The design runs the [following program](https://github.com/tomverbeure/cxxrtl_eval/blob/26e7a499e24aa4c9e7142e0328e519f868c83cab/sw/main.c#L52-L78) 
+on a VexRiscv CPU: 
+
+```c
+int main() 
+{
+    uart_init();
+    uart_tx_str("\nHello World!\n");
+
+    REG_WR(LED_DIR, 0xff);
+    for(int i=0;i<1500;++i){
+        REG_WR(LED_WRITE, 0x01);
+        wait_cycles(100);
+        REG_WR(LED_WRITE, 0x02);
+        wait_cycles(100);
+        REG_WR(LED_WRITE, 0x04);
+        wait_cycles(100);
+    }
+
+    uart_tx_str("\nLEDs done!\n");
+
+    while(1);
+}
+```
+
+The testbench has new [debug level command line parameters](https://github.com/tomverbeure/cxxrtl_eval/blob/26e7a499e24aa4c9e7142e0328e519f868c83cab/cxxrtl/main.cpp#L19-L34) 
+to specify saving a checkpoint and restoring it:
+
+```
+  // <executable> <debug level> <vcd filename> 
+  // debug level:
+  // 0 -> No dumping, no save/restore
+  // 1 -> dump everything
+  // 2 -> dump everything except memories
+  // 3 -> dump custom (only wires)
+  // 4 -> save to checkpoint
+  // 5 -> restore from checkpoint
+```
+
+**Simulation Save**
+
+`./example_Og_clang9 4` dumps the design state after 10000 simulation cycles into `checkpoint.val` file:
+
+```
+ubuntu@ubuntu-xenial:~/projects/cxxrtl_eval/cxxrtl$ ./example_Og_clang9 4
+UART TX:
+UART TX:
+
+UART TX: H
+UART TX: e
+UART TX: l
+UART TX: l
+UART TX: o
+UART TX:
+UART TX: W
+UART TX: o
+UART TX: r
+UART TX: l
+UART TX: d
+UART TX: !
+UART TX:
+UART TX:
+
+led_red: 1 0
+led_red: 0 1
+...
+led_green: 1
+led_green: 0
+led_blue: 1
+led_red: 1 18
+led_blue: 0
+Saving checkpoint...
+```
+
+Note how the simulation starts with the CPU writing "Hello World!" to the UART of the design, then it goes
+18 times through an LED toggling sequence.
+
+**Simulation Restore**
+
+`./example_Og_clang9 5` restores the design from `checkpoint.val` and continues where the design was saved earlier:
+
+```
+ubuntu@ubuntu-xenial:~/projects/cxxrtl_eval/cxxrtl$ ./example_Og_clang9 5
+Restoring from checkpoint...
+Restore done...
+All items:
+       _zz_ExampleTop_1_ : type = 0 ; width =    5 ; depth =      1 ; lsb_at =   0 ; zero_at =   0 ; value = 31
+       _zz_ExampleTop_2_ : type = 0 ; width =    1 ; depth =      1 ; lsb_at =   0 ; zero_at =   0 ; value = 0
+                  button : type = 0 ; width =    1 ; depth =      1 ; lsb_at =   0 ; zero_at =   0 ; value = 0
+                 clk_cpu : type = 0 ; width =    1 ; depth =      1 ; lsb_at =   0 ; zero_at =   0 ; value = 0
+          clk_cpu_reset_ : type = 3 ; width =    1 ; depth =      1 ; lsb_at =   0 ; zero_at =   0 ; value = 1
+clk_cpu_reset_gen_reset_cntr : type = 1 ; width =    5 ; depth =      1 ; lsb_at =   0 ; zero_at =   0 ; value = 31
+clk_cpu_reset_gen_reset_unbuffered_ : type = 0 ; width =    1 ; depth =      1 ; lsb_at =   0 ; zero_at =   0 ; value = 0
+clk_cpu_reset_gen_reset_unbuffered__regNext : type = 1 ; width =    1 ; depth =      1 ; lsb_at =   0 ; zero_at =   0 ; value = 1
+ cpu_u_cpu _zz_CpuTop_1_ : type = 0 ; width =    1 ; depth =      1 ; lsb_at =   0 ; zero_at =   0 ; value = 0
+...
+                uart_rxd : type = 0 ; width =    1 ; depth =      1 ; lsb_at =   0 ; zero_at =   0 ; value = 0
+                uart_txd : type = 3 ; width =    1 ; depth =      1 ; lsb_at =   0 ; zero_at =   0 ; value = 1
+
+led_red: 1 0
+led_red: 0 1
+led_green: 1
+
+...
+
+led_red: 0 1482
+led_green: 1
+led_green: 0
+led_blue: 1
+UART TX:
+UART TX:
+
+UART TX: L
+UART TX: E
+UART TX: D
+UART TX: s
+UART TX:
+UART TX: d
+UART TX: o
+UART TX: n
+UART TX: e
+UART TX: !
+UART TX:
+UART TX:
+```
+
+There are 2 important things to note here:
+
+* CPU does NOT print out "Hello World!"
+* the LED toggle sequence happens 1482 times, not 1500
+
+That's because the simulation picked up where it was saved after 18 LED toggle sequences.
+
+# Adding Save/Restore to a CXXRTL Testbench
+
+Through design introspection feature of CXXRTL, you can get the value of all `value`, `wire`, and `memory` objects of the
+design that link back to an original Verilog named object.  The reverse is not necessarily through: depending on the CXXRTL 
+optimization level, or on the optimization steps that were performed by Yosys, named objects of the Verilog source code may 
+not exist in the simulation model anymore.
+
+To avoid race conditions, CXXRTL expects that values are set by a testbench after the clock has been simulated into a low state, 
+and that values are read by the testbench after a high state has been simulated. I used the same convention when dumping and
+restoring the state.
+
+The full process is as follows:
+
+* Prepare the design for introspection
+
+    This is no different than preparing the design for [VCD waveform dumping](/2020/08/08/CXXRTL-the-New-Yosys-Simulation-Backend.html#dumping-vcd-waveforms), 
+    which I covered in my earlier blog post.
+
+    ```c
+    cxxrtl_design::p_ExampleTop top;
+    cxxrtl::debug_items all_debug_items;
+    top.debug_info(all_debug_items);
+    ```
+
+* Dump the design state when the simulation this 10000 clock cycles
+
+
+    In the [main testbench](https://github.com/tomverbeure/cxxrtl_eval/blob/26e7a499e24aa4c9e7142e0328e519f868c83cab/cxxrtl/main.cpp#L99-L104),
+    I call the `save_state` function:
+
+    ```c
+    if (dump_level == 4 && i==10000){
+        cout << "Saving checkpoint..." << endl;
+        std::ofstream checkpoint("checkpoint.val");
+        save_state(all_debug_items, checkpoint);
+        exit(0);
+    }
+    ```
+
+    This code is called after the design has been simulated [with the clock set to 1](https://github.com/tomverbeure/cxxrtl_eval/blob/26e7a499e24aa4c9e7142e0328e519f868c83cab/cxxrtl/main.cpp#L65-L66):
+
+    ```c
+    top.p_osc__clk__in.set<bool>(true);
+    top.step();
+    ```
+
+    By default, [`save_state`](https://github.com/tomverbeure/cxxrtl_eval/blob/26e7a499e24aa4c9e7142e0328e519f868c83cab/lib/cxxrtl_lib.h#L6) 
+    only stores the value of `wire` and `memory` objects:
+
+    ```
+    void save_state(cxxrtl::debug_items &items, std::ofstream &save_file, 
+                       uint32_t types = (CXXRTL_WIRE | CXXRTL_MEMORY));
+    ```
+
+    The [implementation](https://github.com/tomverbeure/cxxrtl_eval/blob/26e7a499e24aa4c9e7142e0328e519f868c83cab/lib/cxxrtl_lib.cpp#L10-L27) 
+    is straightforward but naive:
+
+    ```c
+    void save_state(cxxrtl::debug_items &items, std::ofstream &save_file, uint32_t types)
+    {
+        save_file << items.table.size() << endl;
+        for(auto &it : items.table){
+            save_file << it.first << endl; 
+            for(auto &part: it.second){
+                if (part.type & types){
+                    uint32_t *mem_data = part.curr;
+                    for(int a=0;a<part.depth;++a){
+                        for(int n=0;n<part.width;n+=32){
+                            save_file << *mem_data << endl;
+                            ++mem_data;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+
+    Note how it saves the name (`it.first`) of all value holding objects, even when they don't match the request
+    `types` argument. This is a place where the code can be improved...
+
+    But more important is how easy it is to fetch and save the simulation values of the requested
+    simulation objects.
+
+* Restore the design state at the start of a simulation
+
+    The testbench [calls the `restore_state` function](https://github.com/tomverbeure/cxxrtl_eval/blob/26e7a499e24aa4c9e7142e0328e519f868c83cab/cxxrtl/main.cpp#L57-L63) for this:
+
+    ```c
+    if (dump_level == 5){
+        cout << "Restoring from checkpoint..." << endl;
+        std::ifstream checkpoint("checkpoint.val");
+        restore_state(all_debug_items, checkpoint);
+        cout << "Restore done..." << endl;
+        dump_all_items(all_debug_items);
+    }
+    ```
+
+    [`restore_state`](https://github.com/tomverbeure/cxxrtl_eval/blob/26e7a499e24aa4c9e7142e0328e519f868c83cab/lib/cxxrtl_lib.cpp#L29-L57)
+    is just as straightforward as `save_state`:
+
+    ```c
+    void restore_state(cxxrtl::debug_items &items, std::ifstream &restore_file, uint32_t types)
+    {
+        int size;
+        restore_file >> size;
+    
+        for(int i=0;i<size;++i){
+            std::string name;
+            uint32_t value;
+    
+            std::getline(restore_file,name);
+
+            vector<cxxrtl::debug_item> &item_parts = items.table[name];
+            for(auto &part: item_parts){
+                if (part.type & types){
+                    uint32_t *mem_data = part.curr;
+                    for(int a=0;a<part.depth;++a){
+                        for(int n=0;n<part.width;n+=32){
+                            restore_file >> value;
+                            *mem_data = value;
+                            ++mem_data;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    ```
+
+    After restoring the state, it's important to 
+    [run a simulation step with the clock set to 1](https://github.com/tomverbeure/cxxrtl_eval/blob/26e7a499e24aa4c9e7142e0328e519f868c83cab/cxxrtl/main.cpp#L65-L66).
+
+
+And that's all there is to it for an example with a single clock domain!
+
+# Design Introspection to Capture the UART TX Writes
+
+To better illustrate that save/restore actually worked, the testbench captures
+writes to the TX register of a SpinalHDL UART.
+
+The UART is connected to a standard APB3 bus. 
+
+The individual signals are referenced [as follows](https://github.com/tomverbeure/cxxrtl_eval/blob/26e7a499e24aa4c9e7142e0328e519f868c83cab/cxxrtl/main.cpp#L71-L75):
+
+```c
+    cxxrtl::debug_item psel    = all_debug_items.at("cpu_u_cpu u_uart io_apb_PSEL");
+    cxxrtl::debug_item penable = all_debug_items.at("cpu_u_cpu u_uart io_apb_PENABLE");
+    cxxrtl::debug_item pwrite  = all_debug_items.at("cpu_u_cpu u_uart io_apb_PWRITE");
+    cxxrtl::debug_item pwdata  = all_debug_items.at("cpu_u_cpu u_uart io_apb_PWDATA");
+    cxxrtl::debug_item paddr   = all_debug_items.at("cpu_u_cpu u_uart io_apb_PADDR");
+```
+
+And writes to the UART TX register (at address 0) are intercepted here:
+
+```c
+    if (debug_item_get_value32(psel)    &&
+        debug_item_get_value32(penable) &&
+        debug_item_get_value32(pwrite)  &&
+        debug_item_get_value32(paddr) == 0
+    ){
+        // APB write to UART RXTX register
+        cout << "UART TX: " << (char)debug_item_get_value32(pwdata) << endl;
+    }
+```
+
+# More Complex Designs
+
+While non-trivial, the example doesn't have complexities that can make save/restore operations
+a lot harder.
+
+A design with multiple, asynchronous clock domains will require careful timing of when to capture the
+data to avoid mismatches. I haven't tried this out myself!
+
+More fundamentally, testbenchs that have their own state that influences the design under simulation
+will need to either dump state state as well, or they'll have to accept the reality that a
+restored design might not simulate exaclty the same way the design would have simulated if it hadn't
+been interrupted. This doesn't have to be a problem, but it's something to be aware off.
+
+# Conclusion
+
+CXXRTL makes it easy to save and restore a simulation. It's not something that you'll often, but 
+one day, you might run into a use case where it can save a major amount of simulation time.
+
 
 
