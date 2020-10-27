@@ -20,6 +20,8 @@ I wanted to try this out on a real example, so that's what I'll be discussing he
 The design is not a toy example: it contains a VexRiscv CPU with memories, LEDs, and a UART to
 print out status messages.
 
+# Save/Restore Checkpoint Use Cases
+
 Before diving into the details, let's talk about some potential use cases.
 
 * Accelerated debugging of long running simulations
@@ -40,6 +42,25 @@ Before diving into the details, let's talk about some potential use cases.
 
     The additional simulation cost of a save/restore operation is minimal.
 
+* Aggressive Waveform Format Compression
+
+    This is an expansion of the previous use case.
+
+    Instead of dumping the changed values of signals whenever they happen, one could instead save the
+    checkpoints at regular intervals, together with the simulation model itself. The checkpoints themselves
+    could even be incremental from one step to the other.
+
+    When zooming in on a waveform, the waveform viewer would have to simulate on-the-fly, but that
+    might be an acceptable trade-off.
+
+    There are all kinds of optimizations possible: while simulating, you could keep track of each
+    signal whether or not a value has stayed constant or not, thus allowing some kind of immediate
+    visual feedback in the waveform viewer about wether or not something interesting has happened
+    for a particular signal.
+
+    [Siloti](https://www.synopsys.com/verification/debug/siloti.html) by Synopsys uses this kind of
+    method to reduce the bulk of waveform data.
+
 * Bypassing a fixed long-running configuration sequence
 
     Imaging simulating an SOC that runs Linux or some other piece of software that requires a long
@@ -53,6 +74,7 @@ Before diving into the details, let's talk about some potential use cases.
 
     It'd be even possible to do this when the RTL of the HW under test changes between runs: all one needs to do
     is keep the HW under test in reset up to the checkpoint. 
+
 
 # The CXXRTL Data Model
 
