@@ -27,27 +27,30 @@ Before diving into the details, let's talk about some potential use cases.
 * Accelerated debugging of long running simulations
 
     In most RTL regression setups, thousands of simulations are run day in/day out with all debuging
-    features disabled, for maximal speed.
+    features disabled for maximal simulation speed.
 
     When a regression simulation fails, the whole simulation gets rerun with wave dumping enabled.
 
-    That's a problem when the simulation failed after many hours.
+    That's a problem when the simulation fails after many hours or even days.
 
-    With a checkpoint save/restore option, one could simulate without dumping waveforms (which can slow
-    down the simulation by an order of magnitude), but instead save the state of the design every 5 minutes,
-    deleting the previous snapshot if necessary to save disk space.
+    Dumping waveforms at all times is not an option, because that can slow down the simulation by
+    an order of magnitude.
+
+    With a checkpoint save/restore option, one could simulate without dumping waveforms but instead 
+    save the state of the design at fixed intervals, say, every 5 minutes, while deleting the previous 
+    snapshot to save disk space.
 
     After a simulation failure, one can quickly get waveforms by restarting the simulation after the
     last saved checkpoint.
 
-    The additional simulation cost of a save/restore operation is minimal.
+    The additional run time for a checkpoint save operation is minimal.
 
 * Aggressive Waveform Format Compression
 
     This is an expansion of the previous use case.
 
     Instead of dumping the changed values of signals whenever they happen, one could instead save the
-    checkpoints at regular intervals, together with the simulation model itself. The checkpoints themselves
+    checkpoints at regular intervals, together with the simulation model. The checkpoints themselves
     could even be incremental from one step to the other.
 
     When zooming in on a waveform, the waveform viewer would have to simulate on-the-fly, but that
@@ -55,7 +58,7 @@ Before diving into the details, let's talk about some potential use cases.
 
     There are all kinds of optimizations possible: while simulating, you could keep track of each
     signal whether or not a value has stayed constant or not, thus allowing some kind of immediate
-    visual feedback in the waveform viewer about wether or not something interesting has happened
+    visual feedback in the waveform viewer about whether or not something interesting has happened
     for a particular signal.
 
     [Siloti](https://www.synopsys.com/verification/debug/siloti.html) by Synopsys uses this kind of
@@ -63,25 +66,24 @@ Before diving into the details, let's talk about some potential use cases.
 
 * Bypassing a fixed long-running configuration sequence
 
-    Imaging simulating an SOC that runs Linux or some other piece of software that requires a long
+    Imagine simulating an SOC that runs Linux or some other piece of software that requires a long
     bootup sequence.
 
     One could save a checkpoint after the initialization sequence has completed, but before a specific
     HW driver has started executing.
 
-    With a bit of careful planning, it's possible to start a simulations at the checkpoint,
-    even when the HW driver is different for each run.
+    With a bit of planning, it's possible to start a simulations at the checkpoint, even when the HW 
+    driver is different for each run, thus allowing rapid driver development interations on the
+    simulation model.
 
-    It'd be even possible to do this when the RTL of the HW under test changes between runs: all one needs to do
-    is keep the HW under test in reset up to the checkpoint. 
-
+    It's even possible to do this when the RTL of the HW under test changes between runs: all one needs 
+    to do is keep the HW under test in reset up to the checkpoint. 
 
 # The CXXRTL Data Model
 
 Creating a simulation checkpoint requires an understanding of how a CXXRTL model stores the data of all
-state holding objects.
-
-All of this can be derived from the [`cxxrtl.h`](https://github.com/YosysHQ/yosys/blob/master/backends/cxxrtl/cxxrtl.h), a
+state holding objects. This can be derived from the 
+[`cxxrtl.h`](https://github.com/YosysHQ/yosys/blob/master/backends/cxxrtl/cxxrtl.h), a
 file that gets included in any CXXRTL generated model.
 
 At the lowest level, CXXRTL has templated
@@ -99,11 +101,13 @@ These are used to create the basic primitives that contain simulated data values
 
 * `wire`
 
-    For objects that contain the current simulation value, and the next simulation value.
+    This awkwardly named class (`reg` would have been a better name IMO) is used for objects that 
+    contain the current simulation value, and the next simulation value.
 
     In most cases, this will be an object that is used to store the contents of a flip-flop
-    or a latch, but there are some cases where a `wire` is used for a combinatorial signal.
-    The most common case for this is an output signal of a module.
+    or a latch. There are some cases where a `wire` is used for a combinatorial signal, such as for
+    output signals of a module. *For our save/restore purpose, it's not important to understand
+    these low level implementation details.*
 
 * `memory`
 
@@ -111,10 +115,10 @@ These are used to create the basic primitives that contain simulated data values
     like this `reg [7:0] memory[0:1023]`.
 
 While one could use these objects directly when accessing the internal simulation values of a design,
-it's not very partical: they don't have the same base class, and the way they store the simulation
+it wouldn't be very partical: they don't have the same base class, and the way they store the simulation
 data differs per class.
 
-But that's ok, because there's a better way: the 
+But that's ok, because there's a much better way: the 
 [`debug_item`](https://github.com/YosysHQ/yosys/blob/cd8b2ed4e6f9447c94d801de7db7ae6ce0976d57/backends/cxxrtl/cxxrtl.h#L826)
 class exists specifically to allow external code to access the simulation values in a uniform way. It
 also makes it possible to write CXXRTL testbenches with introspection in pure C, rather than C++. (You
@@ -137,7 +141,7 @@ A `debug_item` exposes the following aspects of the simulation data holding obje
 
     The size, in bits, of the value, and the bit number of the LSB.
 
-    These values are essential to interpret the simulation data values.
+    These values are essential to interpret the simulation data values correctly.
 
 * [`depth`](https://github.com/YosysHQ/yosys/blob/cd8b2ed4e6f9447c94d801de7db7ae6ce0976d57/backends/cxxrtl/cxxrtl_capi.h#L201), 
     and [`zero_at`](https://github.com/YosysHQ/yosys/blob/cd8b2ed4e6f9447c94d801de7db7ae6ce0976d57/backends/cxxrtl/cxxrtl_capi.h#L204)
@@ -145,8 +149,8 @@ A `debug_item` exposes the following aspects of the simulation data holding obje
     For memories, these indicates the amount of memory locations in the memory, and index of the first word.
 
     For  a `wire` or `value`, these fields are set to 1 and 0 resp.
-    Since a `debug_item` has a uniform interface for all simulation data, one doesn't need to have special
-    case to access data between the 3 storage classes: you can all assume them to be memories, but with only 1 location.
+    Since a `debug_item` has a uniform interface for all simulation data, one doesn't need to have a special
+    case to access data between the 3 storage classes: you can assume all `debug_items` to be memories, but with only 1 location.
 
 * [`curr`](https://github.com/YosysHQ/yosys/blob/cd8b2ed4e6f9447c94d801de7db7ae6ce0976d57/backends/cxxrtl/cxxrtl_capi.h#L217),
     and [`next`](https://github.com/YosysHQ/yosys/blob/cd8b2ed4e6f9447c94d801de7db7ae6ce0976d57/backends/cxxrtl/cxxrtl_capi.h#L218)
@@ -155,8 +159,7 @@ A `debug_item` exposes the following aspects of the simulation data holding obje
 
     For a `wire` and `memory`, `next` is a null pointer.
 
-    One can see that `curr` and `next` are stored as a `uint32_t` pointer. That's because the C++ classes ultimately
-    use that as the way to store simulation data. 
+    `curr` and `next` are `uint32_t` pointers because the C++ simulation model ultimately uses that as the way to store simulation data. 
 
     It's all pretty straightforward: the LSB of a vector is stored at bit 0 of the first `uint32_t` word, and as many `uint32_t` words
     are allocated to store all the bits of a vector.
@@ -301,7 +304,7 @@ That's because the simulation picked up where it was saved after 18 LED toggle s
 
 # Adding Save/Restore to a CXXRTL Testbench
 
-Through design introspection feature of CXXRTL, you can get the simulation values of all `value`, `wire`, and `memory` objects of the
+Through the design introspection feature of CXXRTL, you can get the simulation values of all `value`, `wire`, and `memory` objects of the
 design that link back to an original Verilog named object.  The reverse is not necessarily true: depending on the CXXRTL 
 optimization level, or on optimization steps that were performed by Yosys, named objects of the Verilog source code may 
 not exist in the simulation model anymore.
@@ -310,8 +313,8 @@ To avoid race conditions, CXXRTL expects that values are set by a testbench afte
 and that values are read by the testbench after a high state has been simulated. I used the same convention when dumping and
 restoring the state.
 
-While dumping state, I only save the contents of `wire` and `memory` objects. `value` objects retain data the can be derived
-through by running a simulation step.
+While dumping state, I only save the contents of `wire` and `memory` objects. The simulation value of `value` objects can be derived
+by executing a simulation step.
 
 The full process is as follows:
 
@@ -436,14 +439,13 @@ The full process is as follows:
     [run a simulation step with the clock set to 1](https://github.com/tomverbeure/cxxrtl_eval/blob/26e7a499e24aa4c9e7142e0328e519f868c83cab/cxxrtl/main.cpp#L65-L66).
 
 
-And that's all there is to it for an example with a single clock domain!
+And that's all there is to it!
 
 # Design Introspection to Capture the UART TX Writes
 
 To better illustrate that save/restore actually worked, the testbench captures
-writes to the TX register of a [SpinalHDL UART](https://spinalhdl.github.io/SpinalDoc-RTD/SpinalHDL/Libraries/Com/uart.html).
-
-The UART is connected to a standard APB3 bus. 
+writes to the TX register of a [SpinalHDL UART](https://spinalhdl.github.io/SpinalDoc-RTD/SpinalHDL/Libraries/Com/uart.html)
+that is connected to the CPU through a standard APB3 bus. 
 
 The individual signals are referenced [as follows](https://github.com/tomverbeure/cxxrtl_eval/blob/26e7a499e24aa4c9e7142e0328e519f868c83cab/cxxrtl/main.cpp#L71-L75):
 
@@ -455,7 +457,8 @@ The individual signals are referenced [as follows](https://github.com/tomverbeur
     cxxrtl::debug_item paddr   = all_debug_items.at("cpu_u_cpu u_uart io_apb_PADDR");
 ```
 
-And writes to the UART TX register (at address 0) are intercepted here:
+The testbench [intercepts writes](https://github.com/tomverbeure/cxxrtl_eval/blob/26e7a499e24aa4c9e7142e0328e519f868c83cab/cxxrtl/main.cpp#L89-L96)
+to the UART TX register at address 0 and prints out the transmitted character:
 
 ```c
     if (debug_item_get_value32(psel)    &&
@@ -470,7 +473,7 @@ And writes to the UART TX register (at address 0) are intercepted here:
 
 # More Complex Designs and Potential Improvements
 
-While non-trivial, the example is a proof of concept to illustrate the basics, but it doesn't deal with  
+While non-trivial, the example is only a proof of concept to illustrate the basics, but it doesn't deal with  
 complexities that can make save/restore operations a lot harder. 
 
 **Asynchronous clock domains**
@@ -483,7 +486,7 @@ data to avoid mismatches. I haven't tried this out myself.
 More fundamentally, testbenches that have their own state that influences the design under simulation
 will need to either save/restore their state as well, or they'll have to accept the reality that a
 restored design might not simulate exaclty the same way as the design would have simulated if it hadn't
-been interrupted. This doesn't have to be a problem, but it's something to be aware off.
+been interrupted. This doesn't have to be a problem, but it's something to be aware of.
 
 **Dealing with changed design**
 
@@ -498,7 +501,6 @@ RTL has changed between simulations, but the changed RTL was in reset at the tim
 
 The `save_state` routine is very inefficient, since it just dumps all the hierarchical names in full as well
 as the data itself as an ASCII string. This can probably be optimized by 2 orders of magnitude!
-
 
 # Conclusion
 
