@@ -13,7 +13,7 @@ categories:
 In my [initial blog post about CXXRTL](/2020/08/08/CXXRTL-the-New-Yosys-Simulation-Backend.html), I
 wrote about how the underlying data model of CXXRTL allows for 
 [design introspection](/2020/08/08/CXXRTL-the-New-Yosys-Simulation-Backend.html#design-introspection), and
-how this could be used for save the state of a design to a file, and later restore it.
+how this could be used to save the state of a design to a file, and later restore it.
 
 I wanted to try this out on a real example, so that's what I'll be discussing here.
 
