@@ -12,12 +12,12 @@ categories:
 
 In my [initial blog post about CXXRTL](/2020/08/08/CXXRTL-the-New-Yosys-Simulation-Backend.html), I
 wrote about how the underlying data model of CXXRTL allows for 
-[design introspection](2020/08/08/CXXRTL-the-New-Yosys-Simulation-Backend.html#design-introspection), and
+[design introspection](/2020/08/08/CXXRTL-the-New-Yosys-Simulation-Backend.html#design-introspection), and
 how this could be used for save the state of a design to a file, and later restore it.
 
 I wanted to try this out on a real example, so that's what I'll be discussing here.
 
-The design is not a toy example: it contains a VexRiscv CPU with memories, LEDs, and a UART to
+The design is not a toy example: it contains a VexRiscv RISC-V CPU with memories, LEDs, and a UART to
 print out status messages.
 
 # Save/Restore Checkpoint Use Cases
@@ -26,15 +26,13 @@ Before diving into the details, let's talk about some potential use cases.
 
 * Accelerated debugging of long running simulations
 
-    In most RTL regression setups, thousands of simulations are run day in/day out with all debuging
-    features disabled for maximal simulation speed.
+    In most RTL regression setups, thousands of simulations are run day in/day out on a simulation farm
+    with all debugging features disabled for maximal simulation speed.
 
     When a regression simulation fails, the whole simulation gets rerun with wave dumping enabled.
 
-    That's a problem when the simulation fails after many hours or even days.
-
-    Dumping waveforms at all times is not an option, because that can slow down the simulation by
-    an order of magnitude.
+    That's a problem when the simulation fails after many hours or even days. Dumping waveforms at 
+    all times is not an option, because it slows down the simulation by an order of magnitude.
 
     With a checkpoint save/restore option, one could simulate without dumping waveforms but instead 
     save the state of the design at fixed intervals, say, every 5 minutes, while deleting the previous 
@@ -49,7 +47,7 @@ Before diving into the details, let's talk about some potential use cases.
 
     This is an expansion of the previous use case.
 
-    Instead of dumping the changed values of signals whenever they happen, one could instead save the
+    Instead of dumping the changed values of signals whenever they happen, one could instead save
     checkpoints at regular intervals, together with the simulation model. The checkpoints themselves
     could even be incremental from one step to the other.
 
@@ -72,7 +70,7 @@ Before diving into the details, let's talk about some potential use cases.
     One could save a checkpoint after the initialization sequence has completed, but before a specific
     HW driver has started executing.
 
-    With a bit of planning, it's possible to start a simulations at the checkpoint, even when the HW 
+    With a bit of planning, it's possible to restart a simulation at the checkpoint, even when the HW 
     driver is different for each run, thus allowing rapid driver development interations on the
     simulation model.
 
@@ -115,14 +113,15 @@ These are used to create the basic primitives that contain simulated data values
     like this `reg [7:0] memory[0:1023]`.
 
 While one could use these objects directly when accessing the internal simulation values of a design,
-it wouldn't be very partical: they don't have the same base class, and the way they store the simulation
+it wouldn't be very pratical: they don't have the same base class, and the way they store the simulation
 data differs per class.
 
 But that's ok, because there's a much better way: the 
 [`debug_item`](https://github.com/YosysHQ/yosys/blob/cd8b2ed4e6f9447c94d801de7db7ae6ce0976d57/backends/cxxrtl/cxxrtl.h#L826)
 class exists specifically to allow external code to access the simulation values in a uniform way. It
 also makes it possible to write CXXRTL testbenches with introspection in pure C, rather than C++. (You
-still need to compile the CXXRTL model itself with a C++ compiler.)
+still need to compile the CXXRTL model itself with a C++ compiler.) This is useful when you want to embed
+your simulation model into a program that's written in C, such the standard Python compiler.
 
 A `debug_item` exposes the following aspects of the simulation data holding objects:
 
