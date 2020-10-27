@@ -10,6 +10,9 @@ categories:
 
 # Introduction
 
+Half-band 
+
+
 If you've read my previous three posts in this series, you know that I'm improving my general DSP
 knowledge by applying it to a concrete example of taking in the single-bit data stream of
 a [PDM](https://en.wikipedia.org/wiki/Pulse-density_modulation) microphone and converting it 
@@ -70,6 +73,16 @@ And for that, we need to come up with a design specification!
     https://www.xmos.ai/download/lib_mic_array-%5buserguide%5d(3.0.1rc1).pdf
 
     Lots of technical info about PDM to PCM decimation.
+
+**Sensitivity**
+
+* [Sensitivity Analysis and Architectural Comparison of Narrow-band Sharp-transition Digital Filters](https://core.ac.uk/download/pdf/10195225.pdf)
+
+    Thesis about different filter structures for IIR filters and the impact of fixed precision, quantization etc.
+
+**Implementation**
+
+* [Digital Filter Structures](http://www.ee.ic.ac.uk/hp/staff/dmb/courses/DSPDF/01000_Structures.pdf)
 
 **Microphones**
 
