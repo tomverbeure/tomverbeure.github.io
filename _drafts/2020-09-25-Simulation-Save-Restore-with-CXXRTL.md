@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Simulation Save/Restore Checkpointing with CXXRTL
-date:  2020-09-25 00:00:00 -1000
+date:  2020-10-26 00:00:00 -1000
 categories:
 ---
 
@@ -20,9 +20,43 @@ I wanted to try this out on a real example, so that's what I'll be discussing he
 The design is not a toy example: it contains a VexRiscv CPU with memories, LEDs, and a UART to
 print out status messages.
 
+Before diving into the details, let's talk about some potential use cases.
+
+* Accelerated debugging of long running simulations
+
+    In most RTL regression setups, thousands of simulations are run day in/day out with all debuging
+    features disabled, for maximal speed.
+
+    When a regression simulation fails, the whole simulation gets rerun with wave dumping enabled.
+
+    That's a problem when the simulation failed after many hours.
+
+    With a checkpoint save/restore option, one could simulate without dumping waveforms (which can slow
+    down the simulation by an order of magnitude), but instead save the state of the design every 5 minutes,
+    deleting the previous snapshot if necessary to save disk space.
+
+    After a simulation failure, one can quickly get waveforms by restarting the simulation after the
+    last saved checkpoint.
+
+    The additional simulation cost of a save/restore operation is minimal.
+
+* Bypassing a fixed long-running configuration sequence
+
+    Imaging simulating an SOC that runs Linux or some other piece of software that requires a long
+    bootup sequence.
+
+    One could save a checkpoint after the initialization sequence has completed, but before a specific
+    HW driver has started executing.
+
+    With a bit of careful planning, it's possible to start a simulations at the checkpoint,
+    even when the HW driver is different for each run.
+
+    It'd be even possible to do this when the RTL of the HW under test changes between runs: all one needs to do
+    is keep the HW under test in reset up to the checkpoint. 
+
 # The CXXRTL Data Model
 
-Creating a design checkpoint requires an understanding of how a CXXRTL model stores the data of all
+Creating a simulation checkpoint requires an understanding of how a CXXRTL model stores the data of all
 state holding objects.
 
 All of this can be derived from the [`cxxrtl.h`](https://github.com/YosysHQ/yosys/blob/master/backends/cxxrtl/cxxrtl.h), a
@@ -60,7 +94,9 @@ data differs per class.
 
 But that's ok, because there's a better way: the 
 [`debug_item`](https://github.com/YosysHQ/yosys/blob/cd8b2ed4e6f9447c94d801de7db7ae6ce0976d57/backends/cxxrtl/cxxrtl.h#L826)
-class exists specifically to allow external code to access the simulation values in a uniform way.
+class exists specifically to allow external code to access the simulation values in a uniform way. It
+also makes it possible to write CXXRTL testbenches with introspection in pure C, rather than C++. (You
+still need to compile the CXXRTL model itself with a C++ compiler.)
 
 A `debug_item` exposes the following aspects of the simulation data holding objects:
 
@@ -100,7 +136,7 @@ A `debug_item` exposes the following aspects of the simulation data holding obje
     One can see that `curr` and `next` are stored as a `uint32_t` pointer. That's because the C++ classes ultimately
     use that as the way to store simulation data. 
 
-    It's all pretty straifhtforward: the LSB of a vector is stored at bit 0 of the first `uint32_t` word, and as many `uint32_t` words
+    It's all pretty straightforward: the LSB of a vector is stored at bit 0 of the first `uint32_t` word, and as many `uint32_t` words
     are allocated to store all the bits of a vector.
 
 # Save/Restore of the VexRiscv Simulation Example
@@ -243,14 +279,17 @@ That's because the simulation picked up where it was saved after 18 LED toggle s
 
 # Adding Save/Restore to a CXXRTL Testbench
 
-Through design introspection feature of CXXRTL, you can get the value of all `value`, `wire`, and `memory` objects of the
-design that link back to an original Verilog named object.  The reverse is not necessarily through: depending on the CXXRTL 
-optimization level, or on the optimization steps that were performed by Yosys, named objects of the Verilog source code may 
+Through design introspection feature of CXXRTL, you can get the simulation values of all `value`, `wire`, and `memory` objects of the
+design that link back to an original Verilog named object.  The reverse is not necessarily true: depending on the CXXRTL 
+optimization level, or on optimization steps that were performed by Yosys, named objects of the Verilog source code may 
 not exist in the simulation model anymore.
 
 To avoid race conditions, CXXRTL expects that values are set by a testbench after the clock has been simulated into a low state, 
 and that values are read by the testbench after a high state has been simulated. I used the same convention when dumping and
 restoring the state.
+
+While dumping state, I only save the contents of `wire` and `memory` objects. `value` objects retain data the can be derived
+through by running a simulation step.
 
 The full process is as follows:
 
@@ -265,8 +304,7 @@ The full process is as follows:
     top.debug_info(all_debug_items);
     ```
 
-* Dump the design state when the simulation this 10000 clock cycles
-
+* Dump the design state when the simulation hits 10000 clock cycles
 
     In the [main testbench](https://github.com/tomverbeure/cxxrtl_eval/blob/26e7a499e24aa4c9e7142e0328e519f868c83cab/cxxrtl/main.cpp#L99-L104),
     I call the `save_state` function:
@@ -319,10 +357,11 @@ The full process is as follows:
     }
     ```
 
-    Note how it saves the name (`it.first`) of all value holding objects, even when they don't match the request
-    `types` argument. This is a place where the code can be improved...
+    Note how it saves the name (`it.first`) of all simulation objects, even when they don't match the request
+    `types` argument. In practice, this means that it dumps the name of all `value` objects as well, but it
+    doesn't dump the associated data that comes with it. This is a place where the code can be improved...
 
-    But more important is how easy it is to fetch and save the simulation values of the requested
+    But more important, notice how easy it is to fetch and save the simulation values of the requested
     simulation objects.
 
 * Restore the design state at the start of a simulation
@@ -380,7 +419,7 @@ And that's all there is to it for an example with a single clock domain!
 # Design Introspection to Capture the UART TX Writes
 
 To better illustrate that save/restore actually worked, the testbench captures
-writes to the TX register of a SpinalHDL UART.
+writes to the TX register of a [SpinalHDL UART](https://spinalhdl.github.io/SpinalDoc-RTD/SpinalHDL/Libraries/Com/uart.html).
 
 The UART is connected to a standard APB3 bus. 
 
@@ -407,18 +446,37 @@ And writes to the UART TX register (at address 0) are intercepted here:
     }
 ```
 
-# More Complex Designs
+# More Complex Designs and Potential Improvements
 
-While non-trivial, the example doesn't have complexities that can make save/restore operations
-a lot harder.
+While non-trivial, the example is a proof of concept to illustrate the basics, but it doesn't deal with  
+complexities that can make save/restore operations a lot harder. 
+
+**Asynchronous clock domains**
 
 A design with multiple, asynchronous clock domains will require careful timing of when to capture the
-data to avoid mismatches. I haven't tried this out myself!
+data to avoid mismatches. I haven't tried this out myself.
 
-More fundamentally, testbenchs that have their own state that influences the design under simulation
-will need to either dump state state as well, or they'll have to accept the reality that a
-restored design might not simulate exaclty the same way the design would have simulated if it hadn't
+**Taking care of external state**
+
+More fundamentally, testbenches that have their own state that influences the design under simulation
+will need to either save/restore their state as well, or they'll have to accept the reality that a
+restored design might not simulate exaclty the same way as the design would have simulated if it hadn't
 been interrupted. This doesn't have to be a problem, but it's something to be aware off.
+
+**Dealing with changed design**
+
+The current code expects that the CXXRTL simulation model remains the same between save and restore. It's
+sufficent for 1 register to change, and it will fail horribly, hopefully with a coredump.
+
+A robust system should deal with these cases gracefully. It could just issue a fatal, and informative, error.
+Or it could even decide to just warn and continue, for the second use case in my introduction, where
+RTL has changed between simulations, but the changed RTL was in reset at the time of the checkpoint.
+
+**Optimized checkpoint file format**
+
+The `save_state` routine is very inefficient, since it just dumps all the hierarchical names in full as well
+as the data itself as an ASCII string. This can probably be optimized by 2 orders of magnitude!
+
 
 # Conclusion
 
