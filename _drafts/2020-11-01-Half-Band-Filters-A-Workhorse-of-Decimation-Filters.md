@@ -24,7 +24,7 @@ attenuation at 10kHz, I want to know the justification for that.
 
 After diving into [CIC filters](/2020/09/30/Moving-Average-and-CIC-Filters.html), 
 the characteristics of the 
-[sigma-delta generated PDM signal of a MEMS microphone](http://localhost:4000/2020/10/04/PDM-Microphones-and-Sigma-Delta-Conversion.html), 
+[sigma-delta generated PDM signal of a MEMS microphone](/2020/10/04/PDM-Microphones-and-Sigma-Delta-Conversion.html), 
 and [learning how to come up with FIR filter coefficients](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html),
 the time has come to start building up the filter architecture.
 
@@ -32,6 +32,13 @@ And for that, we need to come up with a design specification!
 
 
 # References
+
+**My Blog Posts in this Series**
+
+* [An Intuitive Look at Moving Average and CIC Filters](/2020/09/30/Moving-Average-and-CIC-Filters.html)
+* [PDM Microphones and Sigma-Delta A/D Conversion](http://localhost:4000/2020/10/04/PDM-Microphones-and-Sigma-Delta-Conversion.html)
+* [Designing Generic FIR Filters with pyFDA and NumPy](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html)
+* [From Microphone Datasheet to Filter Design Specification](/2020/10/17/From-Microphone-Datasheet-to-Design-Specification.html)
 
 **Filter Design**
 
