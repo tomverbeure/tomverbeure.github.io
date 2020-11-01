@@ -46,7 +46,7 @@ RtBRT has the following unique features:
 
 * MR1, the Secure RISC-V CPU
 
-    The [mathematically proven bug-free MR1 RISC-V CPU](http://localhost:4000/risc-v/2018/11/18/A-Bug-Free-RISC-V-Core-without-Simulation.html), 
+    The [mathematically proven bug-free MR1 RISC-V CPU](/risc-v/2018/11/19/A-Bug-Free-RISC-V-Core-without-Simulation.html),
     which is used to move around the dynamic parts of your scene, is immune to all security attacks related to speculative execution such as 
     Meltdown and Spectre. Unlike most CPUs that are used to render today's games.
 

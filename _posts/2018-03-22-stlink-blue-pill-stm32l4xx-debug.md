@@ -100,5 +100,5 @@ while and not use the on-board STM32L. Or I might even use the STM32F103 as driv
 # Epilogue
 
 I was able to get it work later, by connecting an additional GND wire between the STLink dongle and the
-BlackIce-II board... See [here] http://localhost:4000/2018/03/24/Debugging-My-First-STM32-Program-on-the-BlackIce-II-Board.html).
+BlackIce-II board... See [here](/2018/03/24/Debugging-My-First-STM32-Program-on-the-BlackIce-II-Board.html).
 
