@@ -1,7 +1,7 @@
 ---
 layout: post
-title: Half-Band Filters and How to Design Them
-date:  2020-10-18 00:00:00 -1000
+title: Half-Band Filters, a Workhorse of Decimation Filters
+date:  2020-11-01 00:00:00 -1000
 categories:
 ---
 
