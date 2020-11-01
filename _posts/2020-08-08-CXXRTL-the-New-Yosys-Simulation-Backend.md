@@ -637,6 +637,10 @@ It's already my default simulator for my hobby projects. Give it a try!
 
 # References
 
+My other blog posts about CXXRTL:
+* [Simulation Save/Restore Checkpointing with CXXRTL](/2020/10/26/Simulation-Save-Restore-with-CXXRTL.html)
+
+
 Relevant whitequark tweets:
 * [Initial CXXRTL announcement](https://twitter.com/whitequark/status/1201014573547040769)
 * [Initial black box support with UART example](https://twitter.com/whitequark/status/1251429512732012552)

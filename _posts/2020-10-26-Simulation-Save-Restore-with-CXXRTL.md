@@ -506,5 +506,8 @@ as the data itself as an ASCII string. This can probably be optimized by 2 order
 CXXRTL makes it easy to save and restore a simulation. It's not something that you'll often, but 
 one day, you might run into a use case where it can save a major amount of simulation time.
 
+# References
 
+My other blog posts about CXXRTL:
+* [CXXRTL, a Yosys Simulation Backend](/2020/08/08/CXXRTL-the-New-Yosys-Simulation-Backend.html)
 
