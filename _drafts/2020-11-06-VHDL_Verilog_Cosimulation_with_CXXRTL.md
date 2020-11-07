@@ -411,3 +411,18 @@ I didn't run into major issue, but there are some things to be aware of.
 
 Mixed VHDL/Verilog can now be done with pure open source tools, and it works well!
 
+# References
+
+* [Domipheus Labs - TPU/RPU Series Quick Links](http://labs.domipheus.com/blog/tpu-series-quick-links/)
+
+    A list with all the blog posts about the RPU RISC-V CPU.
+
+* [CXXRTL, a Yosys Simulation Backend](/2020/08/08/CXXRTL-the-New-Yosys-Simulation-Backend.html) 
+* [Simulation Save/Restore Checkpointing with CXXRTL](/2020/10/26/Simulation-Save-Restore-with-CXXRTL.html)
+
+    My earlier blog posts about CXXRTL
+
+* [gHDL Documentation](https://ghdl.readthedocs.io/en/latest/about.html)
+* [ghdl-yosys-plugin](https://github.com/ghdl/ghdl-yosys-plugin)
+
+
