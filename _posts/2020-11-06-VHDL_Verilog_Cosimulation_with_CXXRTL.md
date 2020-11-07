@@ -11,14 +11,12 @@ categories:
 # Introduction
 
 In [my first blog post about CXXRTL](/2020/08/08/CXXRTL-the-New-Yosys-Simulation-Backend.html), I talked
-about how CXXRTL is just a Yosys backend, and that this has the benefit that it can simulate anything
-that has been converted from some source input format (Verilog, blif, VHDL, SystemVerilog) to the
-Yosys' internal RTLIL format.
+about how CXXRTL is just a Yosys backend, and how it can simulate anything that has been converted from some source 
+input format (Verilog, blif, VHDL, SystemVerilog) to Yosys' internal RTLIL format.
 
 Most people think of Yosys as a tool to synthesize Verilog, and that's definitely the dominant use
-case, but in the past years, significant progress has been made in integrating 
-[gHDL](https://ghdl.readthedocs.io/en/latest/about.html), an open source VHDL compiler, into
-Yosys as well.
+case. But in the past years, significant progress has been made in integrating open source VHDL
+compiler [gHDL](https://ghdl.readthedocs.io/en/latest/about.html) into Yosys as well. 
 
 The result of this effort is [ghdl-yosys-plugin](https://github.com/ghdl/ghdl-yosys-plugin). It's not
 part of the main Yosys GitHub repo (yet?), but a stand-alone Yosys plugin that has its own GitHub
@@ -26,16 +24,17 @@ project.
 
 I spent the first 10 years of my career writing VHDL (and, not knowing any better, I was a big fan of it),
 but after moving to the US West Coast, I've been a happy Verilog user. And I want to keep it that way!
-
 But I thought it'd be fun to convert theory into practise, and see how far gHDL and the gHDL Yosys plugin
 have progressed, and if it was possible to simulate a trivial VHDL design with Yosys and CXXRTL.
 
 Taking things a step further, I also tried to run a Verilog/VHDL cosimulation, where one part of the design
 is written in Verilog, and another in VHDL.
 
+The details are below, but the executive summary can be short: everything worked as it should.
+
 # Installating a Yosys + gHDL Combo
 
-If you've already compiled Yosys in the past, installing gHDL and the plug-in is surprisingly easy. On an Ubuntu 20.4 
+If you've already compiled Yosys in the past, installing gHDL and the plug-in is easy. On an Ubuntu 20.4 
 system, it took less than 20 min, and almost all of that was just compilation time.
 
 Here are the steps:
@@ -56,7 +55,7 @@ Here are the steps:
     * Clone ghdl repo and compile
 
         ```
-        git clone https://github.com/ghdl/ghdl.git` 
+        git clone https://github.com/ghdl/ghdl.git
         cd ghdl
         ./configure --prefix=/opt/ghdl
         make install
@@ -87,7 +86,7 @@ Here are the steps:
     `/usr/local/share/yosys/plugins/` directory.
 
 
-And that's really it!
+And that's all there is to it!
 
 # Compiling and Simulating Your First VHDL Code with Yosys
 
@@ -95,24 +94,24 @@ The canonical way to process VHDL code has 2 major steps:
 
 * Analyze the VHDL code
 
-    This step parser the VHDL code, does a bunch of syntactic and semantic checks, and stores the
+    This parses the VHDL code, does a bunch of syntactic and semantic checks, and stores the
     analyzed design objects in a library. The default library is the "work" library.
 
 * Elaborate the analyzed design
 
-    During this step, the various analyzed design objects are merged together, various conditional generation
-    options are executed, interconnections are verified etc.
+    During this step, the various analyzed design objects are merged together, conditional code generates
+    are executed, interconnections are verified etc.
 
 Verilog has the same steps, but they're usually not made explicity.
 
 When using gHDL in combination with Yosys, the regular `ghdl` command (outside of Yosys) is used to analyze
 all the VHDL code into a standard gHDL library. And the `ghdl` command inside Yosys, which was added through
-the plugin, is used to elaborate the design and convert it to Yosys' RTLIL format.
+the plugin, is used to elaborate the design and convert it to RTLIL.
 
 Once available in RTLIL format, running a CXXRTL simulation is no different for VHDL than for a Verilog design.
 
 I converted my trivial [`blink_basic`](https://github.com/tomverbeure/cxxrtl_eval/tree/master/blink_basic) CXXRTL example 
-to VHDL. You can find it in the [`blink_basic_vhdl'](https://github.com/tomverbeure/cxxrtl_eval/tree/master/blink_basic_vhdl)
+to VHDL. You can find it in the [`blink_basic_vhdl`](https://github.com/tomverbeure/cxxrtl_eval/tree/master/blink_basic_vhdl)
 directory.
 
 The design is just an LED connected to a bit of a counter:
@@ -188,11 +187,11 @@ and integration issues, but there's was none of that here: everything just worke
 
 # Cosimulating a VHDL RISC-V CPU inside a Verilog SOC
 
-If you already used gHDL to simulate your pure VHDL designs, there's really no need to use CXXRTL unless
+If you already use gHDL to simulate your pure VHDL designs, there's really no need to use CXXRTL unless
 you depend on one of its specific strengths.
 
-But here's something that no open source simulator has been reserved for expensive proprietary simulators
-for decades: cosimulation of mixed Verilog/VHDL designs! 
+But here's something that no open source simulator has done before. Something that has been reserved for expensive 
+proprietary simulators for decades: cosimulation of mixed Verilog/VHDL designs! 
 
 To demonstate this, I started with [my original RISC-V design](https://github.com/tomverbeure/cxxrtl_eval/tree/master/spinal/src/main/scala/example)
 that I used to benchmark CXXRTL and to demonstrate [simulation save/restore checkpoints](/2020/10/26/Simulation-Save-Restore-with-CXXRTL.html). 
@@ -226,12 +225,12 @@ a pipelining bug in their load/store unit.
 
 I then switched to Colin Riley's (aka [@domipheus](https://twitter.com/domipheus)) RPU. Much like the 
 ubiquitous [picorv32](https://github.com/cliffordwolf/picorv32), it's a very slow RISC-V implementation 
-that only executes one instructions at time, instead of processing multiple instructions in different pipeline 
+that only executes one instructions at a time instead of processing multiple instructions in different pipeline 
 stages. 
 
-You can find the original RPU [here](https://github.com/Domipheus/RPU).
+You can find the RPU repo [here](https://github.com/Domipheus/RPU).
 
-Instead of split instruction and data bus, it only has a single memory bus for both, which is just fine
+Instead of a split instruction and data bus, it only has a single memory bus for both, which is just fine
 for my usage.
 
 **Analyze the VHDL**
@@ -358,8 +357,8 @@ led_green: 0
 ```
 
 The RPU only executes about 1 instruction every 5 clock cycles whereas the
-VexRiscv is a bit less than 1 instruction every 1.1 clock cycles, but other
-than that, everything works just the same!
+VexRiscv needs only about 1.1 clock cycles per instructions, but other
+than that, everything runs just the same!
 
 **Waveforms**
 
@@ -373,7 +372,7 @@ part of the design, and the APB bus of the UART which is written in Verilog:
 
 # Limitations
 
-I didn't run into major issue, but there are some things to be aware of.
+I didn't run into major issues, but there are some things to be aware of.
 
 * VHDL `assert` statements
 
