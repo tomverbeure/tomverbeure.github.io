@@ -19,7 +19,7 @@ case. But in the past years, significant progress has been made in integrating o
 compiler [gHDL](https://ghdl.readthedocs.io/en/latest/about.html) into Yosys as well. 
 
 The result of this effort is [ghdl-yosys-plugin](https://github.com/ghdl/ghdl-yosys-plugin). It's not
-part of the main Yosys GitHub repo due to differening open source licenses, but a stand-alone Yosys plugin
+part of the main Yosys GitHub repo due to differing open source licenses, but a stand-alone Yosys plugin
 that has its own GitHub project.
 
 I spent the first 10 years of my career writing VHDL (and, not knowing any better, I was a big fan of it),
