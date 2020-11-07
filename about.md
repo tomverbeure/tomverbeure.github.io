@@ -13,12 +13,10 @@ works under the hood, or sometimes just instructions on how to install a piece o
 software.
 
 My understanding of things goes up a lot when I write about them, so some posts are primarily
-to educate myself about a topic: don't make any assumptions that I know what I'm talking about.
+to educate myself about a topic: don't assume that I know what I'm talking about!
 
 I can be reached by direct message through Twitter or you can file issues or questions about my
 projects through GitHub.
-
-Enjoy!
 
 Tom
 

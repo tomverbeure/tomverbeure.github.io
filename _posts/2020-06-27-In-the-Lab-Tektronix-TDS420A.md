@@ -30,7 +30,7 @@ command set. So the idea was: make it work on something old, and it will probabl
 
 My requirements were simple: 
 
-* it needed to have a remote control interface. For an old scope, that means [GPIB](http://localhost:4000/2020/06/07/Making-Sense-of-Test-and-Measurement-Protocols.html#gpib--ieee-488).
+* it needed to have a remote control interface. For an old scope, that means [GPIB](/2020/06/07/Making-Sense-of-Test-and-Measurement-Protocols.html#gpib--ieee-488).
 
     There are quite a bit of TDS2xx and TDS3xx series scopes on eBay that don't have a GPIB port, 
     so be careful about that if GPIB is on your wants list as well.

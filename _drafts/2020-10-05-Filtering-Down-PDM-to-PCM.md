@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Filtering Down PDM to PCM
-date:  2020-10-12 00:00:00 -1000
+date:  2020-10-19 00:00:00 -1000
 categories:
 ---
 
@@ -10,12 +10,14 @@ categories:
 
 # Introduction
 
-If you've read my previous two posts in this series, you know that I'm improving my general DSP
-knowledge by applying it to a concrete example of taking in single bit data stream of
-a PDM microphone and converting it into a standard PCM coded samples.
+If you've read my previous three posts in this series, you know that I'm improving my general DSP
+knowledge by applying it to a concrete example of taking in the single-bit data stream of
+a [PDM](https://en.wikipedia.org/wiki/Pulse-density_modulation) microphone and converting it 
+into standard [PCM](https://en.wikipedia.org/wiki/Pulse-code_modulation) samples.
 
-The application itself is only a means to an end, most important is understanding the why and 
-the how of every design decision along the way.
+The application itself is only a means to an end. Most important is understanding the why and 
+how of every design decision along the way: if there's a filter with a 70dB stop band
+attenuation at 10kHz, I want to know the justification for that.
 
 After diving into [CIC filters](/2020/09/30/Moving-Average-and-CIC-Filters.html), 
 the characteristics of the 
@@ -23,212 +25,92 @@ the characteristics of the
 and [learning how to come up with FIR filter coefficients](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html),
 the time has come to start building up the filter architecture.
 
-
-# PDM to PCM Problem Statement
-
-The problem that I want to solve is to convert a PDM signal to a PCM signal while
-maintaining the the quality level of the microphone.
-
-Going forward, I'll use the characteristics of the ST MP34DT01-M microphone of my
-[Adafruit test board](https://www.adafruit.com/product/3492) and let them guide
-the specifications of the filter design.
-
-From [the datasheet](https://cdn-learn.adafruit.com/assets/assets/000/049/977/original/MP34DT01-M.pdf): 
-
-![Microphone Characteristics Table](/assets/pdm/pdm2pcm/mic_characteristics.png)
-
-![Microphone Frequency Response](/assets/pdm/pdm2pcm/mic_freq_response.png)
-
-
-The requirements for our design are:
-
-* An output sample rate of 48kHz
-
-    48kHz is universally supported and probably the most common sample rate for high quality audio, 
-    though it's obviously overkill for a microphone that only goes up to 10kHz.
-
-* 2.4 MHz PDM sample rate 
-
-    The microphone supports a PDM clock rate between 1 and 3.25MHz. 
-
-    We shall soon see that some very efficient filters are perfect for 2x decimation, 
-    so it's best to select a ratio that's divisible by 2 or by 4.
-
-    3.072MHz is 64 times higher and 2.4MHz is 50 times higher than our desired output rate 
-    of 48kHz. The acoustic and electrical characteristics are given for 2.4MHz, so let's
-    choose that.
-
-    It also avoids giving the impression that decimation filters should have a power of 2 ratio, 
-    and a lower clock reduces power consumption too.
-
-* A passband from 0 to 6kHz
-
-    State of the art MEMS microphones have a flat sensitivity curve that goes all the way up 
-    to 20kHz, but this microphone definitely does not fall in that category. The frequency
-    response is only flat between 100Hz and 5kHz, after which it starts going up. And
-    there's not data above 10kHz.
-
-    6kHz seems like a good point to start the transition band.
-
-* A stop band that starts at 10kHz
-
-    Since the specification of the microphone doesn't say anything about behavior above
-    10kHz, I'm simply assuming that this is no-go territory, so that's where the
-    stop band will start.
-
-* The SNR of our output signal in the passband is 58dB.
-
-    The microphone datasheet specifies a 61dB SNR, but decimation will alias higher
-    frequencies into the remaining frequency band. In the case of PDM signals, these higher
-    frequencies contain a lot of noise which will lower the SNR.
-
-    I'm allowing a 3dB SNR deterioration, but this is something with quite a bit of
-    filter design consequences and thus something that needs to be discussed more in
-    depth soon.
-
-* The maximum ripple we're willing to accept in the passband *at the output* is 0.1dB
-
-    This seems to be a pretty typical requirement for high quality audio.
-
-    In a filter architecture with more than 1 filter, each successive filter will impact the
-    passband ripple. As a result, individual filters will need to have tighter specification
-    than this overall ripple.
-
-# Stop Band Attenuation for a Decimation Filter
-
-Most of this blog post had already been written when it suddenly hit me: I had been completely
-wrong about how to determine the stop band attenuation for the decimation filter.
-
-And since that stop band attenuation influences a whole bunch of other filter parameters,
-I had to go back to the drawing board to get things right.
-
-In an earlier [Basics of Decimation](2020/09/30/Moving-Average-and-CIC-Filters.html#intermission-the-basics-of-decimation)
-section about CIC filters, I came really close, and still I missed the most important part:
-
-**Higher decimation ratios require higher stop band attenuation to get the same noise floor.**
-
-In the example below, you can see what happens when you keep the stop band attenuation of
-a decimation filter the same for different decimation ratios:
-
-![Stop Band Attenuation and Decimation](/assets/pdm/pdm2pcm/pdm2pcm-stop_band_attenuation.svg)
-
-Of interest here is the amount of unwanted aliasing noise that was added underneath the
-great signal of interest. In the 2x decimation case, only 1 'unit' of stop band
-noise was added, while it's 3x that for the 4x decimation case.
-
-If we wanted the amount of aliasing noise to be the same for the 2x and the 4x decimation, 
-we'd have to increase the stop band attenuation for the latter.
-
-Let's now put this in numbers for our microphone case.
-
-* The microphone has a 61dB(A) SNR.
-
-    When talking about SNR, it's important to define the frequency range over which the
-    signal and noise power are measured.
-
-    The 'A' of dB(A) gives us a clue: it standards for [A-weighting](https://en.wikipedia.org/wiki/A-weighting).
-
-    When sound is measured over the audible frequency range, the results are weighted by
-    the sensitivy of the ear.
-
-
-* The decimation ratio is 50x.
-
-    We're going from 2.4MHz down to 48kHz.
-
-* The noise level above 10kHz is below -20dB for all frequencies above 10kHz.
-
-    This is almost certainly wrong, but I expect it to be pessimistic with some additional
-    margin.
-
-    Recall the noise slopes of various sigma-delta converters:
-
-    ![Sigma Delta Noise Slopes](/assets/pdm/sigma_delta/noise_slope_different_orders.svg)
-
-    The noise here does not go above -30dB.
-
-
-
-# PDM to PCM First Try: Just Filter the Damn Thing!
-
-Do we really need a complex filter architecture to convert PDM to PCM? Maybe a single equiripple
-filter is sufficient for our needs?
-
-Let's just fill in the numbers and see what happens:
-
-```
-...
-Trying N=1382
-Rpb: 0.094294dB
-Rsb: 59.976587dB
-Trying N=1383
-Rpb: 0.093942dB
-Rsb: 60.020647dB
-Filter order: 1383
-```
-
-After more than a little while, it comes up with a filter that has 1384 taps, and the following
-frequency response graph:
-
-![Just Filter the Damn Thing](/assets/pdm/pdm2pcm/filter_the_damn_thing.svg)
-
-Since this is a decimation filter, we only need to evaluate it for each output sample.
-At 48kHz, this means that we need 48000 * 1384 = 66M multiplications per second.
-
-That's a lot, but that's good if you're looking for a baseline and want to impress people 
-about how you were able to optimize your design!
+And for that, we need to come up with a design specification!
 
 # Decimation is a Divide and Conquer Problem
 
 All other things equal (sampling rate, pass band ripple, stop band attenuation), the number of
-filter taps depends on the size of the transition band, compared to sample rate.
+filter taps depends on the size of the transition band compared to sample rate.
 
-In the example above, the sample rate is 2400 kHz and the transition band is just 4kHz, a ratio
-of 600!
+In the example above, the sample rate is 2304 kHz and the transition band is just 4kHz, a ratio
+of 576!
 
-If we reduce the sample rate by 5 to 384kHz and keep everything else the same, the number of taps
-goes rougly down by 5 as well:
+If we reduce the sample rate by, say, 6 to 384 and keep everything else the same, the number of taps
+goes rougly down by 6 as well:
 
-![Fpdm divided by 5 Frequency Response](/assets/pdm/pdm2pcm/fpdm_div5.svg)
+![Fpdm divided by 6 Frequency Response](/assets/pdm/pdm2pcm/fpdm_div6.svg)
 
-Reducing the number of taps from 1384 down to 278 taps, gives
+Reducing the number of taps from 2216 down to 370 taps, gives:
 
-48000 * 278  = 13M multiplications
+```
+48000 * 370  = 18M muls/s            (6x decimation - from 384 to 48kHz)
+```
 
 But that's not a fair comparison, because to be able use that filter, we first need to
-decimate the signal at the initial sample rate from 1920kHz to 384kHz.
+decimate the original signal from its initial sample rate of 2304kHz to 384kHz.
 
 If we do this in the most naive way possible like any other decimation filter, we create a 
 filter that doesn't touch the pass band and the transition band of the final result, and that 
-filters away everything above the original sample rate divided by 5. 
-In other words: a pass band from 0 to 10kHz, and a stop band that starts at 77kHz. This 
-guarantees that none of the frequencies above 77kHz will alias into the range of 0 to 10kHz 
+filters away everything above 240kHz: 480kHz/2. 
+
+This guarantees that none of the frequencies above 240kHz will alias into the range of 0 to 10kHz 
 after decimation.
 
-Number of taps required? 13!
+Number of taps required? 18!
 
-![Fpdm to Fpdm/5 - Frequency Response](/assets/pdm/pdm2pcm/fpdm_to_fpdm_div5.svg)
+![Fpdm to Fpdm/6 - Frequency Response](/assets/pdm/pdm2pcm/fpdm_to_fpdm_div6.svg)
 
 Total number of multiplications:
 
 ```
-384,000 *  13 =  5M             (5x decimation - from 1920 to 384 kHz)
- 48,000 * 278 = 13M             (8x decimation - from 384 to 48 kHz)
+384,000 *  21 =  8M             (6x decimation - from 2400 to 384 kHz)
+ 48,000 * 370 = 18M             (8x decimation - from  384 to  48 kHz)
 -----------------------------------
-                18M multiplications/s
+                26M multiplications/s
 ```
 
 By splitting up the dumb initial filter into 2 filters, we've reduced the number of multiplications from
-66M downto 18M, a factor of more than 3!
+106M downto 26M, a factor of 4! 
 
-If we can get that kind of savings splitting up a 40x decimation filter into a 2 filters, there must
-be similar optimization possible by splitting up that 8x decimation filter. 
+In this case, I randomly choose to split 48x decimator into a 6x and an 8x decimator, but
+I could have chosen to split it up in a 12x followed by a 4x decimatior:
 
-There must be some kind of optimal arrangment that results in a minimal number of multiplications
-to get from our initial to our desired sample rate.
 
-But before we look at that, some clarifications and corrections must be made about specifying the right 
-decimation filter parameters.
+```
+192,000 *  52 = 10M             (12x decimation - from 2400 to 192 kHz)
+ 48,000 * 186 = 23M             ( 4x decimation - from  192 to  48 kHz)
+-----------------------------------
+                33M multiplications/s
+```
+
+Or a 3x followed by a 16x decimator:
+
+```
+768,000 *   9 =  7M             ( 3x decimation - from 2400 to 768 kHz)
+ 48,000 * 740 = 35M             (16x decimation - from  768 to  48 kHz)
+-----------------------------------
+                42M multiplications/s
+```
+
+Or 8x followed by 6x:
+
+```
+288,000 *  29 =  8M             ( 8x decimation - from 2400 to 288 kHz)
+ 48,000 * 277 = 13M             ( 6x decimation - from  288 to  48 kHz)
+-----------------------------------
+                21M multiplications/s
+```
+
+Starting from 106M, we're now more than 5 times better!
+
+But wait, there's more!
+
+What if we split the 8x/6x filter into 2x/4x/6x? Or even 2x/2x/2x/2x/3x?
+
+There must be some optimal configuration!
+
+Yes, of course, but before we go down that road, we first need to make some significant general 
+optimizations. 
 
 # Optimal Pass Band / Stop Band Limits for Decimators
 
@@ -250,19 +132,19 @@ In this section, we'll assume the following parameters:
 
 The ratio of incoming and outoing sample rate is 6, so we need a 6x decimating filter.
 
-The fat black line below shows the frequence response if we use a single filter:
+The fat black line below shows the frequency response if we use a single filter:
 
 ![Direct 6x Decimation Filter](/assets/pdm/pdm2pcm/pdm2pcm-div6_decimation_filter.svg)
 
 We already saw earlier that 2 less aggressive filters result in a lower number of taps (and thus
-multiplications) and 1 more aggressive filter. In this particular example, that means we can
+multiplications) than 1 more aggressive filter. In this particular example, that means we can
 either decimate by 2x first and 3x after that, or the other way around.
 
 The figure below shows the two paths:
 
 ![Cascaded Decimation Steps](/assets/pdm/pdm2pcm/pdm2pcm-cascaded_decimation.svg)
 
-There are 2 major things of note:
+There are 3 major things of note:
 
 1. Naive vs smart filtering in the first stage 
 
@@ -272,7 +154,7 @@ There are 2 major things of note:
 
     But that is too aggressive!
 
-    What we can do instead is start of the stop band of the first filter at *Fsample/n* - *Fsb*.
+    What we can do instead is start the stop band of the first filter at *(Fsample/n - Fsb)*.
 
     This expands the transition band by the area marked with the green rectangle and makes
     the first stage decimation filter considerably less steep. This is especially true for
@@ -307,7 +189,7 @@ There are 2 major things of note:
 
 # Passband Ripple and Stop Band Attenuation for Cascaded Filters
 
-We're shooting for an overall pass band ripple of 0.1dB and a stop band attenuation of 60dB. 
+We're shooting for an overall pass band ripple of 0.1dB and a stop band attenuation of 89dB. 
 
 When there's only 1 filter, meeting that goal is a matter of specifying that as a filter design parameter.
 
@@ -318,18 +200,25 @@ In their 1975 paper
 Crochiere and Rabiner write the following:
 
 > As it is desired that the overall pass band ripple for the composite of K stages be maintained 
-> within 1+-delta it is necesary to require more severe frequency constraints on the individual filters
-> in the cascade. Aconvenient choice which will satisfy this requirement is to specify the pass band
-> ripple constraints for each stage *i* to be within 1+delta/K.
+> within *(1+-delta)* it is necesary to require more severe frequency constraints on the individual filters
+> in the cascade. A convenient choice which will satisfy this requirement is to specify the pass band
+> ripple constraints for each stage *i* to be within *(1+delta/K)*.
+
 
 In other words: if we split the filter into 3 stages, they suggest to split the joint passband ripple of 0.1dB into
-3 pass band ripples of ~0.03dB.
+3 smaller pass band ripples.
+
+``` 
+    Ripple_single_db = 0.1
+    Ripple_single = 10^(0.1/20)
+    Ripple_div3 = ((Ripple_single-1) / 3)+1
+    Ripple_div3_db = 20*log10(((Ripple_single-1) / 3)+1)
+    Ripple_div3_db = 20*log10(((1.0116-1) / 3)+1)
+    Ripple_div3_db = 0.033dB
+```
 
 (Note that close to 1, *20 * log10(x)* ~ *x-1*. Since pass band ripple is a deviation around 1, we can simply
 divide the dB number without having to convert from dB to linear and back.)
-
-In practise, this will create a joint pass band ripple that's a bit lower than specified because it's
-unlikely that all 3 filters will have peaks and throughs at the same location.
 
 Now for the stop band. From the same paper:
 
@@ -337,20 +226,8 @@ Now for the stop band. From the same paper:
 > constraint must be imposed on each of the individual low-pass filter as well, in order to suppress
 > the effects of aliasing.
 
-This confused me since as many frequency range will be aliased onto final signal as the decimation
-ratio. And you need to account for that.
-
-But then I realized that I whether you use a single filter or multiple ones, you always need to
-take the decimation ratio into account when specifying the stop band attenuation.
-
-Let's use this on our example: we want 60dB stop band attenuation. When reducing the sample rate from
-1920kHz to 48kHz, there's a 40x decimation ratio. Our filter needs to correct for that: 
-
-```
--60dB = 0.001 / 40 = 0.0000025 -> -72dB
-```
-
-Going forward, all 
+This is much easier: we calculated a stop band attenuation of 89dB. We have to use the same
+attenuation for each filter in the cascade.
 
 
 # Major Sample Rate Reduction with a CIC Filter
@@ -480,6 +357,10 @@ that goes from a pass band to the stop band.
     The [website of this professor](https://www.cs.tut.fi/~ts/) has a lot of course notes online. They are 
     all worth reading.
 
+* [Efficient Multirate Realization for Narrow Transition-Band FIR Filters](https://www.cs.tut.fi/~ts/Part4_Tor_Tapio1.pdf)
+
+    XXX Need to study this...
+
 **Decimation**
 
 * [Optimum FIR Digital Filter Implementations for Decimation, Interpolation, and Narrow-Band Filtering](https://web.ece.ucsb.edu/Faculty/Rabiner/ece259/Reprints/087_optimum%20fir%20digital%20filters.pdf)
@@ -504,5 +385,8 @@ that goes from a pass band to the stop band.
 
 * [Understanding Microphone Sensitivity](https://www.analog.com/en/analog-dialogue/articles/understanding-microphone-sensitivity.html)
 
+* [Digital encoding requirements for high dynamic range microphones](https://www.infineon.com/dgdl/Infineon-AN556%20Digital%20encoding%20requirements%20for%20high%20dynamic%20range%20microphones-AN-v01_00-EN.pdf?fileId=5546d4626102d35a01612d1e33876ad8)
+
+* [Microphone Specifications Explained](https://invensense.tdk.com/wp-content/uploads/2015/02/AN-1112-v1.1.pdf)
 
 
