@@ -193,7 +193,7 @@ you depend on one of its specific strengths.
 But here's something that no open source simulator has done before. Something that has been reserved for expensive 
 proprietary simulators for decades: cosimulation of mixed Verilog/VHDL designs! 
 
-*I stand corrected about the claim above: it's a pretty complicated hack compared to the seemless VHDL/Verilog
+*I stand corrected about the claim above: it's a pretty complicated hack compared to the seamless VHDL/Verilog
 cosimulation that's possible with CXXRTL, but [Robert Ou](robertou.com) cobbled a 
 [mixed Verilog VHDL simulation](https://github.com/rqou/myhdl-vhdl-verilog-test) together with ghdl, Icarus
 Verilog, and some VPI glue.*
