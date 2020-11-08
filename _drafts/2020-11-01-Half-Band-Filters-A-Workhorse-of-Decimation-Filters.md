@@ -10,25 +10,36 @@ categories:
 
 # Introduction
 
-Half-band 
+The 5th part in my ongoing series about converting the single-bit data stream of a 
+[PDM](https://en.wikipedia.org/wiki/Pulse-density_modulation) microphone and converting it 
+into standard [PCM](https://en.wikipedia.org/wiki/Pulse-code_modulation) samples. (See below
+in the [References](#references) section for the other installments.)
+
+Earlier, I already discussed [how to design generic FIR filters](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html).
+
+Today, I want to impose some restrictions on the filter, which makes it less generic, but
+we get something very valuable in return: an almost 50% reduction in the number of multiplications!
+
+# What is a Half-Band Filter?
+
+According to [Wikipedia](https://en.wikipedia.org/wiki/Half-band_filter),
+"a half-band filter is a low-pass filter that reduces the maximum bandwidth 
+of sampled data by a factor of 2 (one octave)."
+
+When we start out with a sample rate *Fs*, the bandwidth of that signal goes from
+0 to *Fs/2*. A half-band filter is used to reduce the bandwidth to *Fs/4*.
+
+By itself, this is nothing special: you could do that with a generic FIR filter.
+
+But something very interesting happens when you make the magnitude frequency response 
+of the filter symmetric around the *Fs/4* frequency, both in terms of where the
+pass band ends and the stop band starts, and in terms of the ripple in the pass band
+and stop band: in this case, *the coefficient of every other filter tap, except for the 
+center coefficient, becomes zero*.
+
+In other words, for an FIR filter with n taps (where n is odd, and 
 
 
-If you've read my previous three posts in this series, you know that I'm improving my general DSP
-knowledge by applying it to a concrete example of taking in the single-bit data stream of
-a [PDM](https://en.wikipedia.org/wiki/Pulse-density_modulation) microphone and converting it 
-into standard [PCM](https://en.wikipedia.org/wiki/Pulse-code_modulation) samples.
-
-The application itself is only a means to an end. Most important is understanding the why and 
-how of every design decision along the way: if there's a filter with a 70dB stop band
-attenuation at 10kHz, I want to know the justification for that.
-
-After diving into [CIC filters](/2020/09/30/Moving-Average-and-CIC-Filters.html), 
-the characteristics of the 
-[sigma-delta generated PDM signal of a MEMS microphone](/2020/10/04/PDM-Microphones-and-Sigma-Delta-Conversion.html), 
-and [learning how to come up with FIR filter coefficients](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html),
-the time has come to start building up the filter architecture.
-
-And for that, we need to come up with a design specification!
 
 
 # References
