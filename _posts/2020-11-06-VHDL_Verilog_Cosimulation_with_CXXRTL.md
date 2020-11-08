@@ -183,12 +183,12 @@ cycle 896 - led: 1, counter: 897
 ```
 
 Whenever I'm dealing with projects that require tying together different tools, I expect a lot of hassle with compilation
-and integration issues, but there's was none of that here: everything just worked&trade;!
+and integration issues, but there's was none of that here: everything just worked&trade;.
 
 # Cosimulating a VHDL RISC-V CPU inside a Verilog SOC
 
 If you already use gHDL to simulate your pure VHDL designs, there's really no need to use CXXRTL unless
-you depend on one of its specific strengths.
+you need on one of its unique capabilities.
 
 But here's something that no open source simulator has done before. Something that has been reserved for expensive 
 proprietary simulators for decades: cosimulation of mixed Verilog/VHDL designs! 
@@ -216,7 +216,7 @@ You can find everything in the [rpu_vhdl directory](https://github.com/tomverbeu
 of my [cxxrtl_eval](https://github.com/tomverbeure/cxxrtl_eval) GitHub repo.
 
 [`./run.sh`](https://github.com/tomverbeure/cxxrtl_eval/blob/master/rpu_vhdl/run.sh) is 
-all you need to compile and simulate!
+all you need to compile and simulate.
 
 **VectorBlox RISC-V CPU**
 
@@ -244,7 +244,7 @@ This is just an extension of the earlier example.
 
 Note that I'm using VHDL-2008 (the default is VHDL-93). This is not necessary for this design, but
 it was necessary to analyze the ORCA design. If you later run the `ghdl` command instead Yosys, 
-make sure to specify the matching standard version as well!
+make sure to specify the matching standard version as well.
 
 ```
 RPU=./RPU/vhdl/
@@ -292,7 +292,7 @@ was required in the wrapper:
   end
 ```
 
-I didn't wire up an interrupts, etc. This is just a basic example!
+I didn't wire up an interrupts, etc. since this is just a basic proof-of-concept example.
 
 **Processing in Yosys**
 
@@ -326,7 +326,7 @@ clang++-9 -g -O3 -I`yosys-config --datdir`/include  \
 
 The result is a `./tb` executable binary.
 
-**Simulate!!!**
+**Simulate**
 
 ```
 > ./tb 2 waves.vcd
@@ -363,7 +363,7 @@ led_green: 0
 
 The RPU only executes about 1 instruction every 5 clock cycles whereas the
 VexRiscv needs only about 1.1 clock cycles per instructions, but other
-than that, everything runs just the same!
+than that, everything runs just the same.
 
 **Waveforms**
 
@@ -397,13 +397,16 @@ I didn't run into major issues, but there are some things to be aware of.
 
     Since Yosys is ultimately a synthesis tool (in the case of CXXRTL, it synthesizes to
     C++), these kind of change are dropped. Don't use gHDL and CXXRTL to verify that
-    range constraints are met during simulation!
+    range constraints are met during simulation.
+
+    *A useful potential enhancement of `ghdl` plugin would be automatically insert range checking
+    assertions for all limited range numerical types.*
 
 * VHDL Records etc
 
     I didn't try this myself, but the `ghdl` plugin flattens complex types into a single vector.
 
-    This can make debugging waveforms very hard!
+    This can make debugging waveforms very hard.
 
 * Case-sensitivity
 
