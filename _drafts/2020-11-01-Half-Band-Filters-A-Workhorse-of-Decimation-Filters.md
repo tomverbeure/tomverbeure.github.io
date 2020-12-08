@@ -39,9 +39,6 @@ center coefficient, becomes zero*.
 
 In other words, for an FIR filter with n taps (where n is odd, and 
 
-
-
-
 # References
 
 **My Blog Posts in this Series**
@@ -52,6 +49,12 @@ In other words, for an FIR filter with n taps (where n is odd, and
 * [From Microphone Datasheet to Filter Design Specification](/2020/10/17/From-Microphone-Datasheet-to-Design-Specification.html)
 
 **Filter Design**
+
+* [A 'trick' for the design of FIR half-band filters](https://authors.library.caltech.edu/5892/1/VAIieeetcs87a.pdf)
+
+    Key paper that describes how to transform the parameters of a half-band filter to a different FIR filter
+    with 1/2 of the filter taps, use the Remez algorithms to calculate those coefficents, and then use them
+    for the half-band filter.
 
 * [Halfband Filter Design with Python/SciPy](https://www.dsprelated.com/showcode/270.php)
 
