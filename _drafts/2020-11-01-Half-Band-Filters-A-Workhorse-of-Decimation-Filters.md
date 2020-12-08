@@ -10,14 +10,14 @@ categories:
 
 # Introduction
 
-The 5th part in my ongoing series about converting the single-bit data stream of a 
+This is the 5th part in my ongoing series about converting the single-bit data stream of a 
 [PDM](https://en.wikipedia.org/wiki/Pulse-density_modulation) microphone and converting it 
-into standard [PCM](https://en.wikipedia.org/wiki/Pulse-code_modulation) samples. (See below
-in the [References](#references) section for the other installments.)
+into standard [PCM](https://en.wikipedia.org/wiki/Pulse-code_modulation) samples. Check out 
+the the [References](#references) section below for the other installments.
 
 Earlier, I already discussed [how to design generic FIR filters](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html).
 
-Today, I want to impose some restrictions on the filter, which makes it less generic, but
+In this installment, I impose some restrictions on the filter, which makes it less generic, but
 we get something very valuable in return: an almost 50% reduction in the number of multiplications!
 
 # What is a Half-Band Filter?
@@ -32,12 +32,22 @@ When we start out with a sample rate *Fs*, the bandwidth of that signal goes fro
 By itself, this is nothing special: you could do that with a generic FIR filter.
 
 But something very interesting happens when you make the magnitude frequency response 
-of the filter symmetric around the *Fs/4* frequency, both in terms of where the
-pass band ends and the stop band starts, and in terms of the ripple in the pass band
-and stop band: in this case, *the coefficient of every other filter tap, except for the 
-center coefficient, becomes zero*.
+of the filter symmetric both along the frequency axis and the magnitude response axis.
+The pass band width is the same as the stop band width, the pass band and stop band
+ripple is the same, the magnitude response behavior in the transition band is symmetric
+as well.
 
-In other words, for an FIR filter with n taps (where n is odd, and 
+![Half Band Symmetry](/assets/pdm/halfband/halfband-half_band_symmetry.svg)
+
+In this case, **the coefficient of every other filter tap, except for the 
+center coefficient, becomes zero**. Like most FIR filters, coefficients will be
+symmetric around the center coefficent as well. And the center coefficient has a value
+of 0.5.
+
+You can easily check this out with the [pyFDA](https://github.com/chipmuenk/pyfda) tool (which
+I introduced in [this blog post](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html)).
+
+
 
 # References
 
