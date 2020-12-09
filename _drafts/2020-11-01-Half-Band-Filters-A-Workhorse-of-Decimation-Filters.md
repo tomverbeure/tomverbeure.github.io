@@ -33,9 +33,7 @@ By itself, this is nothing special: you could do that with a generic FIR filter.
 
 But something very interesting happens when you make the magnitude frequency response 
 of the filter symmetric both along the frequency axis and the magnitude response axis.
-The pass band width is the same as the stop band width, the pass band and stop band
-ripple is the same, the magnitude response behavior in the transition band is symmetric
-as well.
+
 
 ![Half Band Symmetry](/assets/pdm/halfband/halfband-half_band_symmetry.svg)
 
@@ -44,10 +42,91 @@ center coefficient, becomes zero**. Like most FIR filters, coefficients will be
 symmetric around the center coefficent as well. And the center coefficient has a value
 of 0.5.
 
-You can easily check this out with the [pyFDA](https://github.com/chipmuenk/pyfda) tool (which
-I introduced in [this blog post](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html)).
+To satisfy this symmetry condition, width of the pass band must be the same as the width of the stop band,
+and the ripple in the pass and stop band must be the same too. An automatic consequence of
+these requirements is that the transition band will be symmetric around 1/4th of the sample rate,
+and the value of the magnitude response graph at this frequency will be exactly 0.5 (assuming
+the passband magnitude is 1.)
 
+# Designing a Half-Band FIR filter with pyFDA
 
+You can easily check this out with [pyFDA](https://github.com/chipmuenk/pyfda). 
+
+When I wrote about pyFDA in tool in a previous [blog post](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html)
+to design a low pass FIR filter, I specified a desired pass band and stop band attenuation, let pyFDA 
+figure out all the rest, and had it come up with the order of the filter and associated tap
+coefficients.
+
+What happens behind the scenes was the following: pyFDA uses the standard [Parks-McClellan filter
+design algorithm](https://en.wikipedia.org/wiki/Parks%E2%80%93McClellan_filter_design_algorithm) which is, 
+in turn, a variation of the [Remez exchange algorithm](https://en.wikipedia.org/wiki/Remez_algorithm),
+an iterative way to find approximations of functions.
+
+The [Remez algorithm as implemented in NumPy](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.remez.html)
+has a list of frequency bands with associated gains as parameter, but also a weighing factor. This
+weighing factor determines the relative priority of frequency bands during coefficient
+optimization. The weight factors are directly related to the final ripple (and thus the
+attenuation factor) of the each frequency band.
+
+In the case of half-band filter, the ripple for the pass-band and the stop-band is the same. And thus
+the weighting factor is the same as well. The end result is that there is really only 1
+factor to play with if we want a filter performance: the order of the filter.
+
+In pyFDA, we can now calculate a half-band filter as follows:
+
+* Enter the pass band and stop band frequencies.
+
+    Make sure that the width of both bands are the same.
+
+    For example, when the frequency using is from 0 to 1/2, and you
+    have a pass band of 0.2, the stop band must be 0.3 (=0.5 - 0.2).
+
+* Deselect the "Order: Minimum" option.
+
+    As a result of this, we can now manually enter N, the order of the filter, and the
+    Weights of the pass band (Wpb and Wsb). We can not enter the attenuation parameters
+    (Apb and Asb) any more.
+
+* Enter the desired filter order N
+
+    Choose a number that's a multiple of 2, but not a multiple of 4.
+
+    Let's start with a value of 10.
+
+* Enter a value of 1 for both Wpb and Wsb.
+
+The result will be as follows:
+
+XXX screenshot
+
+If you didn't change the default settings, you'll see in the Magnitude Frequency
+Response graph: 
+
+XXX screenshot
+
+If you're wondering why this doesn't look symmetric at all, change the units from
+*dB* to *V*, you'll be greeted with this:
+
+XXX screenshot
+
+Notice how the ripple in the pass band is identical to the ripple in the stop band, 
+after taking into account that the negative ripple in the stop band comes out as
+positive because the magnitude response graph uses absolute values.
+
+Click on `h[n]` tab in the right pane for the filter coefficients:
+
+XXXX
+
+As promised, except for the center tap, 50% of the coefficients are 0. And the center tap is 0.5.
+
+Or are they? When you click select the `b,a` tab in the left pane, you get the coefficients
+listed in floating point format:
+
+XXX
+
+While they are close to 0, they are not quite that. You can easily fix that by just clamping
+these coefficient to 0, but does that feel right to you? For half-band filters of a high order,
+doing
 
 # References
 
