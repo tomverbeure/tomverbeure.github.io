@@ -84,7 +84,7 @@ In pyFDA, we can now calculate a half-band filter as follows:
 * Deselect the "Order: Minimum" option.
 
     As a result of this, we can now manually enter N, the order of the filter, and the
-    Weights of the pass band (Wpb and Wsb). We can not enter the attenuation parameters
+    weights of the pass band (Wpb and Wsb). We can not enter the attenuation parameters
     (Apb and Asb) any more.
 
 * Enter the desired filter order N
@@ -97,17 +97,18 @@ In pyFDA, we can now calculate a half-band filter as follows:
 
 The result will be as follows:
 
-XXX screenshot
+![pyFDA half-band parameters](/assets/pdm/halfband/halfband-pyFDA_parameters.png)
 
 If you didn't change the default settings, you'll see in the Magnitude Frequency
 Response graph: 
 
-XXX screenshot
+![pyFDA magnitude response graph - dB](/assets/pdm/halfband/halfband-pyFDA_dB_response.png)
+
 
 If you're wondering why this doesn't look symmetric at all, change the units from
 *dB* to *V*, you'll be greeted with this:
 
-XXX screenshot
+![pyFDA magnitude response graph - V](/assets/pdm/halfband/halfband-pyFDA_linear_response.png)
 
 Notice how the ripple in the pass band is identical to the ripple in the stop band, 
 after taking into account that the negative ripple in the stop band comes out as
@@ -115,18 +116,21 @@ positive because the magnitude response graph uses absolute values.
 
 Click on `h[n]` tab in the right pane for the filter coefficients:
 
-XXXX
+![pyFDA impluse response](/assets/pdm/halfband/halfband-pyFDA_coefficients_graph.png)
 
 As promised, except for the center tap, 50% of the coefficients are 0. And the center tap is 0.5.
 
 Or are they? When you click select the `b,a` tab in the left pane, you get the coefficients
 listed in floating point format:
 
-XXX
+![pyFDA coefficients](/assets/pdm/halfband/halfband-pyFDA_coefficients_numbers.png)
 
-While they are close to 0, they are not quite that. You can easily fix that by just clamping
-these coefficient to 0, but does that feel right to you? For half-band filters of a high order,
-doing
+While they are close to but not quite 0. You can easily fix that by just clamping
+these coefficients to 0, but does that feel right to you? For half-band filters of a high order
+with a high attenuation, this will almost certainly change the performance characteristice in
+some subtle way.
+
+There must be a better way to go about this!
 
 # References
 
