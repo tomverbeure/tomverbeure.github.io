@@ -11,14 +11,16 @@ categories:
 # Introduction
 
 This is the 5th part in my ongoing series about converting the single-bit data stream of a 
-[PDM](https://en.wikipedia.org/wiki/Pulse-density_modulation) microphone and converting it 
-into standard [PCM](https://en.wikipedia.org/wiki/Pulse-code_modulation) samples. Check out 
-the the [References](#references) section below for the other installments.
+[PDM](https://en.wikipedia.org/wiki/Pulse-density_modulation) microphone into standard 
+[PCM](https://en.wikipedia.org/wiki/Pulse-code_modulation) samples. 
+Check out the the [References](#references) section below for the other installments.
 
 Earlier, I already discussed [how to design generic FIR filters](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html).
-
-In this installment, I impose some restrictions on the filter, which makes it less generic, but
+In this installment, I impose some restrictions on the filter, which makes them less generic, but
 we get something very valuable in return: an almost 50% reduction in the number of multiplications!
+
+*The plots below were all generated with Numeric Python scripts. You can find the code 
+[here](https://github.com/tomverbeure/pdm/tree/master/modeling/halfband).*
 
 # What is a Half-Band Filter?
 
@@ -32,8 +34,7 @@ When we start out with a sample rate *Fs*, the bandwidth of that signal goes fro
 By itself, this is nothing special: you could do that with a generic FIR filter.
 
 But something very interesting happens when you make the magnitude frequency response 
-of the filter symmetric both along the frequency axis and the magnitude response axis.
-
+of the filter symmetric both along the frequency axis and along the magnitude response axis.
 
 ![Half Band Symmetry](/assets/pdm/halfband/halfband-half_band_symmetry.svg)
 
@@ -42,24 +43,30 @@ center coefficient, becomes zero**. Like most FIR filters, coefficients will be
 symmetric around the center coefficent as well. And the center coefficient has a value
 of 0.5.
 
-To satisfy this symmetry condition, width of the pass band must be the same as the width of the stop band,
-and the ripple in the pass and stop band must be the same too. An automatic consequence of
-these requirements is that the transition band will be symmetric around 1/4th of the sample rate,
-and the value of the magnitude response graph at this frequency will be exactly 0.5 (assuming
-the passband magnitude is 1.)
+Here's an example of a some random half-band filter: 
+
+![Half Band Example](/assets/pdm/halfband/half_band_example.svg)
+
+You can see how everything in the linear(!) magnitude response graph is perfectly
+symmetric around the point at (0.25, 0.5): the size of the pass band and stop band.
+The height of the ripple in the pass band and stop band. The number of zero crossings
+through 1.0 and 0.0 in the pass band and stop band, etc.
+
+And except for the center coefficient, all odd coefficients are indeed 0.
+
+Half-band filters are extremely useful in decimation filters. But before getting into that,
+let's first see how to design them.
 
 # Designing a Half-Band FIR filter with pyFDA
 
-You can easily check this out with [pyFDA](https://github.com/chipmuenk/pyfda). 
+You can easily design your own half-band filters with [pyFDA](https://github.com/chipmuenk/pyfda). 
 
 When I wrote about pyFDA in tool in a previous [blog post](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html)
-to design a low pass FIR filter, I specified a desired pass band and stop band attenuation, let pyFDA 
+about how to design a low pass FIR filter, I specified a desired pass band and stop band attenuation, let pyFDA 
 figure out all the rest, and had it come up with the order of the filter and associated tap
-coefficients.
-
-What happens behind the scenes was the following: pyFDA uses the standard [Parks-McClellan filter
-design algorithm](https://en.wikipedia.org/wiki/Parks%E2%80%93McClellan_filter_design_algorithm) which is, 
-in turn, a variation of the [Remez exchange algorithm](https://en.wikipedia.org/wiki/Remez_algorithm),
+coefficients. What happens behind the scenes in that case is the following: pyFDA uses the standard [Parks-McClellan filter
+design algorithm](https://en.wikipedia.org/wiki/Parks%E2%80%93McClellan_filter_design_algorithm) which is
+a variation of the [Remez exchange algorithm](https://en.wikipedia.org/wiki/Remez_algorithm),
 an iterative way to find approximations of functions.
 
 The [Remez algorithm as implemented in NumPy](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.remez.html)
@@ -68,18 +75,20 @@ weighing factor determines the relative priority of frequency bands during coeff
 optimization. The weight factors are directly related to the final ripple (and thus the
 attenuation factor) of the each frequency band.
 
-In the case of half-band filter, the ripple for the pass-band and the stop-band is the same. And thus
-the weighting factor is the same as well. The end result is that there is really only 1
+In the case of half-band filter, the ripple for the pass-band and the stop-band **has** to be the same. 
+Consequently, the weighting factors must the same as well. The end result is that there is really only 1
 factor to play with if we want a filter performance: the order of the filter.
 
 In pyFDA, we can now calculate a half-band filter as follows:
+
+![pyFDA half-band parameters](/assets/pdm/halfband/halfband-pyFDA_parameters.png)
 
 * Enter the pass band and stop band frequencies.
 
     Make sure that the width of both bands are the same.
 
-    For example, when the frequency using is from 0 to 1/2, and you
-    have a pass band of 0.2, the stop band must be 0.3 (=0.5 - 0.2).
+    For example, when the frequency range goes from 0 to 1/2, and you
+    have a pass band that ends at 0.2, the stop band must start at 0.3 (= 0.5 - 0.2).
 
 * Deselect the "Order: Minimum" option.
 
@@ -91,13 +100,9 @@ In pyFDA, we can now calculate a half-band filter as follows:
 
     Choose a number that's a multiple of 2, but not a multiple of 4.
 
-    Let's start with a value of 10.
+    Let's start with a value of 10, which corresponds to 11 coefficients.
 
-* Enter a value of 1 for both Wpb and Wsb.
-
-The result will be as follows:
-
-![pyFDA half-band parameters](/assets/pdm/halfband/halfband-pyFDA_parameters.png)
+* Enter a value of 1 for both Wpb and Wsb, the ripple weigths for pass and stop band
 
 If you didn't change the default settings, you'll see in the Magnitude Frequency
 Response graph: 
@@ -110,7 +115,7 @@ If you're wondering why this doesn't look symmetric at all, change the units fro
 
 ![pyFDA magnitude response graph - V](/assets/pdm/halfband/halfband-pyFDA_linear_response.png)
 
-Notice how the ripple in the pass band is identical to the ripple in the stop band, 
+One again, the ripple in the pass band is identical to the ripple in the stop band, 
 after taking into account that the negative ripple in the stop band comes out as
 positive because the magnitude response graph uses absolute values.
 
@@ -118,19 +123,110 @@ Click on `h[n]` tab in the right pane for the filter coefficients:
 
 ![pyFDA impluse response](/assets/pdm/halfband/halfband-pyFDA_coefficients_graph.png)
 
-As promised, except for the center tap, 50% of the coefficients are 0. And the center tap is 0.5.
+And, again, except for the center tap, 50% of the coefficients are 0.
 
 Or are they? When you click select the `b,a` tab in the left pane, you get the coefficients
 listed in floating point format:
 
 ![pyFDA coefficients](/assets/pdm/halfband/halfband-pyFDA_coefficients_numbers.png)
 
-While they are close to but not quite 0. You can easily fix that by just clamping
-these coefficients to 0, but does that feel right to you? For half-band filters of a high order
-with a high attenuation, this will almost certainly change the performance characteristice in
+The coefficients are very close to but not quite 0. You can easily fix that by just clamping
+these coefficients to 0, but that does feel right, does it? For high order half-band filters 
+with a high attenuation, this will almost certainly change the performance characteristics in
 some subtle way.
 
-There must be a better way to go about this!
+There must be a better way to go about this! 
+
+# Designing Perfect-Zero Half-Band Filters with a Trick
+
+Today, the Parks-McClellan/Remez algorithm to calculate FIR coefficients is fast enough even
+for very high order FIR filters. Even when implemented in Python.
+
+This was definitely not that case in 1987. Back then, Vaidyanathan and Nguyen
+observed in [A "Trick" for the Design of FIR Half-Band Filters](https://authors.library.caltech.edu/5892/1/VAIieeetcs87a.pdf)
+that you can reduce the number of coefficients to calculate by (almost) 50% by transforming 
+the half-band filter specification into a different FIR filter.
+
+You'll have to read the paper if you want to understand the details (it's not super complicated), but
+the procedure is very simple.
+
+Give a half-band filter specification with the following parameters:
+
+* Filter order: *N* (and thus N+1 taps)
+    * N must be a multiple of 2 but not a multiple of 4
+* Sample rate: *Fs*
+* Pass band: from 0 to *Fpb*
+* Stop band: from *Fs*/2-*Fpb* to *Fs*/2
+
+Design a regular FIR filter with these parameters:
+
+* Filter order: *N*/2
+* Sample rate: *Fs*
+* Pass band: from * to *2 x Fpb*
+* Stop band: from *Fs*/2 to *Fs*/2
+
+The previous pyFDA example now has N halved from 10 to 5, Fpb doubled from 0.2 to 0.4, and Fsb is
+fixed at 0.4:
+
+![pyFDA coefficients](/assets/pdm/halfband/halfband-pyFDA_with_a_trick.png)
+
+The stop band is gone now, but the pass band behavior of the magnitude frequence response graph has the same
+shape at the previous one.
+
+And here are the coefficients:
+
+![pyFDA coefficients](/assets/pdm/halfband/halfband-pyFDA_with_a_trick_coefficients.png)
+
+There are no zeros anymore, and values are exactly double of the non-zero coeffients of the 
+values that were calculated without the trick! E.g. coefficient zero is 0.1075 vs 0.05372
+earlier.
+
+All that's left now to get the half band filter coefficients is to divide the number above by half, 
+insert a zero between each coefficient, except for the center coefficient which needs to be set to 0.5.
+
+# Half-Band Filter Design with NumPy
+
+Just like generic FIR filters, a filter design script over a GUI. The code uses the trick
+and is straightforward:
+
+```python
+def half_band_calc_filter(Fs, Fpb, N):
+    assert Fpb < Fs/4, "A half-band filter requires that Fpb is smaller than Fs/4"
+    assert N % 2 == 0, "Filter order N must be a multiple of 2"
+    assert N % 4 != 0, "Filter order N must not be a multiple of 4"
+
+    g = signal.remez(
+            N//2+1,
+            [0., 2*Fpb/Fs, .5, .5],         # The Trick
+            [1, 0],
+            [1, 1]
+            )
+
+    # Insert zeros
+    h = [item for sublist in zip(g, zeros) for item in sublist][:-1]
+    # Half coefficients
+    h = np.array(h)/2
+    # Set center tap
+    h[N//2] = 0.5
+```
+
+To find the minimal filter order that satisfies both pass band and stop band attenuation,
+just increase the filter order until that condition is valid:
+
+```python
+def half_band_find_optimal_N(Fs, Fpb, Apb, Asb, Nmin = 2, Nmax = 1000):
+    for N in range(Nmin, Nmax, 4):
+        print("Trying N=%d" % N)
+    github
+        (h, w, H, Rpb, Rsb, Hpb_min, Hpb_max, Hsb_max) = half_band_calc_filter(Fs, Fpb, N)
+        if -dB20(Rpb) <= Apb and -dB20(Rsb) >= Asb:
+            return N
+
+    return None
+```
+
+    github
+
 
 # References
 
@@ -166,7 +262,11 @@ There must be a better way to go about this!
 
 * [Efficient Multirate Realization for Narrow Transition-Band FIR Filters](https://www.cs.tut.fi/~ts/Part4_Tor_Tapio1.pdf)
 
-    XXX Need to study this...
+    I need to study this...
+
+**Code**
+
+* [Code to generate the figures in this blog post](https://github.com/tomverbeure/pdm/tree/master/modeling/halfband)
 
 **Decimation**
 
@@ -174,36 +274,8 @@ There must be a better way to go about this!
 
     Paper that discusses how to size cascaded filter to optimized for FIR filter complexity.
 
-* [Seamlessly Interfacing MEMS Microphones with Blackfin Processors](https://www.analog.com/media/en/technical-documentation/application-notes/EE-350rev1.pdf)
-
-    Analog Devices application note. C code can be found[here](https://www.analog.com/media/en/technical-documentation/application-notes/EE350v01.zip)
-
-* [The size of an FIR filter for PDM-PCM conversion](https://www.dsprelated.com/thread/11806/the-size-of-an-fir-filter-for-pdm-pcm-conversion)
-
-    Discussion about PDM to PCM conversion on DSPrelated.com.
-
-* XMOS Microphone array library
-
-    https://www.xmos.ai/download/lib_mic_array-%5buserguide%5d(3.0.1rc1).pdf
-
-    Lots of technical info about PDM to PCM decimation.
-
-**Sensitivity**
-
-* [Sensitivity Analysis and Architectural Comparison of Narrow-band Sharp-transition Digital Filters](https://core.ac.uk/download/pdf/10195225.pdf)
-
-    Thesis about different filter structures for IIR filters and the impact of fixed precision, quantization etc.
-
 **Implementation**
 
 * [Digital Filter Structures](http://www.ee.ic.ac.uk/hp/staff/dmb/courses/DSPDF/01000_Structures.pdf)
-
-**Microphones**
-
-* [Understanding Microphone Sensitivity](https://www.analog.com/en/analog-dialogue/articles/understanding-microphone-sensitivity.html)
-
-* [Digital encoding requirements for high dynamic range microphones](https://www.infineon.com/dgdl/Infineon-AN556%20Digital%20encoding%20requirements%20for%20high%20dynamic%20range%20microphones-AN-v01_00-EN.pdf?fileId=5546d4626102d35a01612d1e33876ad8)
-
-* [Microphone Specifications Explained](https://invensense.tdk.com/wp-content/uploads/2015/02/AN-1112-v1.1.pdf)
 
 
