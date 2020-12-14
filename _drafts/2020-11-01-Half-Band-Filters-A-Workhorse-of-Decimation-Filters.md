@@ -225,7 +225,18 @@ def half_band_find_optimal_N(Fs, Fpb, Apb, Asb, Nmin = 2, Nmax = 1000):
     return None
 ```
 
-    github
+The code above is available on [GitHub](https://github.com/tomverbeure/pdm/blob/42228bac480c84e9daf235e55b16cb193884d747/modeling/halfband/filter_lib.py#L54-L107).
+
+# Using Half-Band Filters in Decimating Filters
+
+With the design details out of the way, it's time to understand why half-band filters
+are particularly useful for decimation filters.
+
+Let's first get out of the way that even more than the CIC filters about which I wrote earlier,
+half-band filters are actually terrible when used stand-alone.
+
+
+
 
 
 # References
