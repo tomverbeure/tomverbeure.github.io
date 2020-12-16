@@ -303,9 +303,10 @@ output sample rate of the final FIR filter remains at 48kHz.
 We've reduced the number of multiplications by ~20%. That's good, but it's not
 spectacular. However, that's because the overall decimation ratio is relatively
 small. We can see that the number of multiplication needs for the final FIR filter
-is almost 50% of what it used to be.
+is almost 50% of what it used to be. Whether or not this 20% reduction is worth
+the complexity of having 2 stages vs just 1 will depend on the application.
 
-For higher decimation ratios that contains factors of 2, the following will happen:
+For higher decimation ratios that contain multiple factors of 2, the following will happen:
 
 * there will be more half-band stages, which will tilt the share of filtering work
   towards the more efficient half-band filters
@@ -321,7 +322,7 @@ a CIC filter, which doesn't require any multiplications at all, but that's for l
 
 # Conclusion
 
-Half-band filters are an essential tool to reduce the number of calculations in a multi-stage
+Half-band filters are a tool to reduce the number of calculations in a multi-stage
 decimation filter. In this blog post, I focused on decimation filters only, but they are
 just as useful for interpolation filters.
 
