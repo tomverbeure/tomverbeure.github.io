@@ -43,7 +43,7 @@ center coefficient, becomes zero**. For linear phase filters, coefficients will 
 symmetric around the center tap as well, with the center coefficient having a value
 of 0.5.
 
-Here's an example of a some random half-band filter: 
+Here's an example of some random half-band filter: 
 
 ![Half Band Example](/assets/pdm/halfband/half_band_example.svg)
 
