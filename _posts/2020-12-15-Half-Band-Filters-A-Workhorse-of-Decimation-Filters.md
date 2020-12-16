@@ -282,19 +282,36 @@ For a single stage 6x decimation filter, we'd end up with an FIR filter of order
 in:
 
 ```
-288000 * 81 = 23,328,000 mul/s
+48000 * 81 = 3,888,000 mul/s
 ```
+
+Note how I'm multiplying the number of coefficients by the output sample rate of the filter,
+not the input sample rate!
 
 Splitting things up in a 2x half band and a 3x FIR filter, we get a half-band filter of 
 order 14, and an FIR filter of order 40:
 
 ```
-Half band: 288000 * (14/2+1) = 2,304,000 muls/s
-FIR:       144000 * 41       = 5,904,000 muls/s
-Total:                         8,208,000 muls/s
+Half band: 144000 * (14/2+1) = 1,152,000 muls/s
+FIR:        48000 * 41       = 1,968,000 muls/s
+Total:                         3,120,000 muls/s
 ```
 
-We've reduced the number of multiplications by a factor of almost 3!
+In this case, the intermediate output sample rate of the half-band filter is 144kHz. The 
+output sample rate of the final FIR filter remains at 48kHz.
+
+We've reduced the number of multiplications by ~20%. That's good, but it's not
+spectacular. However, that's because the overall decimation ratio is relatively
+small. We can see that the number of multiplication needs for the final FIR filter
+is almost 50% of what it used to be.
+
+For higher decimation ratios that contains factors of 2, the following will happen:
+
+* there will be more half-band stages, which will tilt the share of filtering work
+  towards the more efficient half-band filters
+* the steepness of the first half-band filter will be lower, which will reduce the
+  number of coefficients for the first stage. Since that stage has the highest
+  output sample rate, this effect will have a big impact on the number of multiplications.
 
 In my previous blog post, I specified a PDM data rate of 2304kHz and an output PCM
 sample rate of 48kHz. I choose that ratio of 48 specifically because 48=3*16, which
