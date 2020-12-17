@@ -149,7 +149,7 @@ the half-band filter specification into a different FIR filter.
 You'll have to read the paper if you want to understand the details (it's not super complicated), but
 the procedure is very simple.
 
-Give a half-band filter specification with the following parameters:
+Given a half-band filter specification with the following parameters:
 
 * Filter order: *N* (and thus N+1 taps)
     * N must be a multiple of 2 but not a multiple of 4
