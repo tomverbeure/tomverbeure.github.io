@@ -10,22 +10,20 @@ categories:
 
 # Introduction
 
-If you've read my previous three posts in this series, you know that I'm improving my general DSP
-knowledge by applying it to a concrete example of taking in the single-bit data stream of
-a [PDM](https://en.wikipedia.org/wiki/Pulse-density_modulation) microphone and converting it 
-into standard [PCM](https://en.wikipedia.org/wiki/Pulse-code_modulation) samples.
+Welcome to episode 6 of my series of blog posts in which design the full signal 
+processing pipeline to convert the output of a [PDM](https://en.wikipedia.org/wiki/Pulse-density_modulation) 
+microphone into standard [PCM](https://en.wikipedia.org/wiki/Pulse-code_modulation) samples. 
 
-The application itself is only a means to an end. Most important is understanding the why and 
-how of every design decision along the way: if there's a filter with a 70dB stop band
-attenuation at 10kHz, I want to know the justification for that.
+The goal of this series is to improve my general DSP knowledge. The application itself is 
+only a means to an end. Most important is understanding the why and how of every single design 
+decision along the way: if there's a filter with stop band attenuation X that starts at
+frequency Y, I want to know the justification for that.
 
-After diving into [CIC filters](/2020/09/30/Moving-Average-and-CIC-Filters.html), 
-the characteristics of the 
-[sigma-delta generated PDM signal of a MEMS microphone](/2020/10/04/PDM-Microphones-and-Sigma-Delta-Conversion.html), 
-and [learning how to come up with FIR filter coefficients](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html),
-the time has come to start building up the filter architecture.
+After 5 earlier episodes in which I went over the different filter types and design
+techniques, and microphone specifications, it's finally time to bring everything
+together into a concrete design that can be implemented on an FPGA or a DSP.
 
-And for that, we need to come up with a design specification!
+Check out the the [References](#references) section below for the other installments.
 
 # Decimation is a Divide and Conquer Problem
 
@@ -340,22 +338,15 @@ that goes from a pass band to the stop band.
 
 # References
 
+**My Blog Posts in this Series**
+
+* [An Intuitive Look at Moving Average and CIC Filters](/2020/09/30/Moving-Average-and-CIC-Filters.html)
+* [PDM Microphones and Sigma-Delta A/D Conversion](/2020/10/04/PDM-Microphones-and-Sigma-Delta-Conversion.html)
+* [Designing Generic FIR Filters with pyFDA and NumPy](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html)
+* [From Microphone Datasheet to Filter Design Specification](/2020/10/17/From-Microphone-Datasheet-to-Design-Specification.html)
+* [Half-Band Filters, a Workhorse of Decimation Filters](/2020/12/15/Half-Band-Filters-A-Workhorse-of-Decimation-Filters.html)
+
 **Filter Design**
-
-* [Halfband Filter Design with Python/SciPy](https://www.dsprelated.com/showcode/270.php)
-
-    Simple example that shows how to calculate half-band filter coefficients with NumPy using the Remez
-    algorithm and with a windowed sinc filter. However, it doesn't discuss how to calculate the weights
-    of the Remez algorithm.
-
-* [Multiplier-Free Half-Band Filters](https://www.cs.tut.fi/~ts/sldsp_part2_identical_subfilters_halfband.pdf)
-
-    Excellent discussion about half band filters, ways to design them, and how to design them without
-    multipliers. Also has an extensive example on how to convert from PDM to PCM with a CIC filter followed
-    by 4 half band filters.
-
-    The [website of this professor](https://www.cs.tut.fi/~ts/) has a lot of course notes online. They are 
-    all worth reading.
 
 * [Efficient Multirate Realization for Narrow Transition-Band FIR Filters](https://www.cs.tut.fi/~ts/Part4_Tor_Tapio1.pdf)
 
@@ -380,13 +371,4 @@ that goes from a pass band to the stop band.
     https://www.xmos.ai/download/lib_mic_array-%5buserguide%5d(3.0.1rc1).pdf
 
     Lots of technical info about PDM to PCM decimation.
-
-**Microphones**
-
-* [Understanding Microphone Sensitivity](https://www.analog.com/en/analog-dialogue/articles/understanding-microphone-sensitivity.html)
-
-* [Digital encoding requirements for high dynamic range microphones](https://www.infineon.com/dgdl/Infineon-AN556%20Digital%20encoding%20requirements%20for%20high%20dynamic%20range%20microphones-AN-v01_00-EN.pdf?fileId=5546d4626102d35a01612d1e33876ad8)
-
-* [Microphone Specifications Explained](https://invensense.tdk.com/wp-content/uploads/2015/02/AN-1112-v1.1.pdf)
-
 
