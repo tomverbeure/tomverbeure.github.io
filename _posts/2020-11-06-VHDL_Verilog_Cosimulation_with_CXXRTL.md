@@ -32,7 +32,7 @@ is written in Verilog, and another in VHDL.
 
 The details are below, but the executive summary can be short: everything worked as it should.
 
-# Installating a Yosys + gHDL Combo
+# Installing a Yosys + gHDL Combo
 
 If you've already compiled Yosys in the past, installing gHDL and the plug-in is easy. On an Ubuntu 20.4 
 system, it took less than 20 min, and almost all of that was just compilation time.
