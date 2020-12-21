@@ -579,6 +579,10 @@ The architecture of decimation pipeline is now complete, but there are still thi
 * [Half-Band Filters, a Workhorse of Decimation Filters](/2020/12/15/Half-Band-Filters-A-Workhorse-of-Decimation-Filters.html)
 * [Design of a Multi-Stage PDM to PCM Decimation Pipeline](/2020/12/20/Design-of-a-Multi-Stage-PDM-to-PCM-Decimation-Pipeline.html)
 
+**Code**
+
+* [NumPy Code](https://github.com/tomverbeure/pdm/tree/master/modeling/pdm2pcm) used to create plots and graphs of this blog post.
+
 **Decimation**
 
 * [Optimum FIR Digital Filter Implementations for Decimation, Interpolation, and Narrow-Band Filtering](https://web.ece.ucsb.edu/Faculty/Rabiner/ece259/Reprints/087_optimum%20fir%20digital%20filters.pdf)
