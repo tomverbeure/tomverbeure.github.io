@@ -557,9 +557,14 @@ Here are some conclusions based on the table above:
 * play around with the pass band ripple portion that's assigned to the CIC filter to find the
   optimal solution
 
-Here's a pretty diagram that shows the sequence of all operations:
+
+This drawing shows all the operations of the final pipeline:
 
 ![All Filter Operations](/assets/pdm/pdm2pcm/pdm2pcm-all_filter_operations.svg)
+
+And here are the magnitude frequency plot and impluse response of all the filter components:
+
+![All Filter Plots](/assets/pdm/pdm2pcm/pdm2pcm_filters.svg)
 
 # Coming Up
 
