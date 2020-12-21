@@ -72,7 +72,7 @@ But what when multiple filters are cascaded?
 **Pass Band Ripple**
 
 In their 1975 paper 
-["Optimum FIR Digital Filter Implementations for Decimation, Interpolation, and Narrow-Band Filtering](https://web.ece.ucsb.edu/Faculty/Rabiner/ece259/Reprints/087_optimum%20fir%20digital%20filters.pdf),
+["Optimum FIR Digital Filter Implementations for Decimation, Interpolation, and Narrow-Band Filtering"](https://web.ece.ucsb.edu/Faculty/Rabiner/ece259/Reprints/087_optimum%20fir%20digital%20filters.pdf),
 Crochiere and Rabiner write the following:
 
 > As it is desired that the overall pass band ripple for the composite of K stages be maintained 
@@ -565,8 +565,8 @@ Here's a pretty diagram that shows the sequence of all operations:
 
 The architecture of decimation pipeline is now complete, but there's still things of to come:
 
-* we need to convert theory to practise, implement everything to RTL, and run things on an FPGA
-* we need to see if a CIC compensation filter would reduce the number of multiplications even more
+* convert theory to practise, implement everything to RTL, and run things on an FPGA
+* check how a CIC compensation filter would reduce the number of multiplications even more
 
 # References
 
@@ -577,12 +577,7 @@ The architecture of decimation pipeline is now complete, but there's still thing
 * [Designing Generic FIR Filters with pyFDA and NumPy](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html)
 * [From Microphone Datasheet to Filter Design Specification](/2020/10/17/From-Microphone-Datasheet-to-Design-Specification.html)
 * [Half-Band Filters, a Workhorse of Decimation Filters](/2020/12/15/Half-Band-Filters-A-Workhorse-of-Decimation-Filters.html)
-
-**Filter Design**
-
-* [Efficient Multirate Realization for Narrow Transition-Band FIR Filters](https://www.cs.tut.fi/~ts/Part4_Tor_Tapio1.pdf)
-
-    XXX Need to study this...
+* [Design of a Multi-Stage PDM to PCM Decimation Pipeline](/2020/12/20/Design-of-a-Multi-Stage-PDM-to-PCM-Decimation-Pipeline.html)
 
 **Decimation**
 
@@ -592,15 +587,12 @@ The architecture of decimation pipeline is now complete, but there's still thing
 
 * [Seamlessly Interfacing MEMS Microphones with Blackfin Processors](https://www.analog.com/media/en/technical-documentation/application-notes/EE-350rev1.pdf)
 
-    Analog Devices application note. C code can be found[here](https://www.analog.com/media/en/technical-documentation/application-notes/EE350v01.zip)
-
-* [The size of an FIR filter for PDM-PCM conversion](https://www.dsprelated.com/thread/11806/the-size-of-an-fir-filter-for-pdm-pcm-conversion)
-
-    Discussion about PDM to PCM conversion on DSPrelated.com.
+    Analog Devices application note. C code can be found [here](https://www.analog.com/media/en/technical-documentation/application-notes/EE350v01.zip)
 
 * XMOS Microphone array library
 
     https://www.xmos.ai/download/lib_mic_array-%5buserguide%5d(3.0.1rc1).pdf
 
     Lots of technical info about PDM to PCM decimation.
+
 
