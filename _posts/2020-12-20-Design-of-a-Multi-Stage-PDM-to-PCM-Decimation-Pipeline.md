@@ -563,10 +563,10 @@ Here's a pretty diagram that shows the sequence of all operations:
 
 # Coming Up
 
-The architecture of decimation pipeline is now complete, but there's still things of to come:
+The architecture of decimation pipeline is now complete, but there are still things to come:
 
 * convert theory to practise, implement everything to RTL, and run things on an FPGA
-* check how a CIC compensation filter would reduce the number of multiplications even more
+* check if a CIC compensation filter would reduce the number of multiplications even more
 
 # References
 
