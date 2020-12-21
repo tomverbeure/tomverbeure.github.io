@@ -117,10 +117,10 @@ filter specification.
 
 **Pass band ripple and decimation ratio**
 
-Our overall filter has a decimation ratio of 48, and thus 8 possible CIC decimation
-ratios: 2, 4, 6, 8, 12, 16, 24, 48.
+Our overall filter has a decimation ratio of 48, and thus 9 possible CIC decimation
+ratios: 2, 3, 4, 6, 8, 12, 16, 24, 48.
 
-For a 5 stage configuration, these 8 options give the following magnitude frequency plots:
+For a 5 stage configuration, these 9 options give the following magnitude frequency plots:
 
 ![All decimation ratios for a 5 stage CIC filter](/assets/pdm/pdm2pcm/cic_ratios_overview.svg)
 
@@ -173,75 +173,84 @@ their ripple. The entries in green are the ones that don't violate the 0.05dB ma
 </tr>
 <tr>
     <th>2</th>
-    <td style="background-color:#a0e0a0">-0.00030</td>
-    <td style="background-color:#a0e0a0">-0.00059</td>
-    <td style="background-color:#a0e0a0">-0.00089</td>
-    <td style="background-color:#a0e0a0">-0.00118</td>
-    <td style="background-color:#a0e0a0">-0.00148</td>
-    <td style="background-color:#a0e0a0">-0.00177</td>
+    <td style="background-color:#a0e0a0">-0.0003</td>
+    <td style="background-color:#a0e0a0">-0.0006</td>
+    <td style="background-color:#a0e0a0">-0.0009</td>
+    <td style="background-color:#a0e0a0">-0.0012</td>
+    <td style="background-color:#a0e0a0">-0.0015</td>
+    <td style="background-color:#a0e0a0">-0.0018</td>
+</tr>
+<tr>
+    <th>3</th>
+    <td style="background-color:#a0e0a0">-0.0008</td>
+    <td style="background-color:#a0e0a0">-0.0016</td>
+    <td style="background-color:#a0e0a0">-0.0024</td>
+    <td style="background-color:#a0e0a0">-0.0032</td>
+    <td style="background-color:#a0e0a0">-0.0039</td>
+    <td style="background-color:#a0e0a0">-0.0047</td>
 </tr>
 <tr>
     <th>4</th>
-    <td style="background-color:#a0e0a0">-0.00148</td>
-    <td style="background-color:#a0e0a0">-0.00295</td>
-    <td style="background-color:#a0e0a0">-0.00443</td>
-    <td style="background-color:#a0e0a0">-0.00591</td>
-    <td style="background-color:#a0e0a0">-0.00738</td>
-    <td style="background-color:#a0e0a0">-0.00886</td>
+    <td style="background-color:#a0e0a0">-0.0015</td>
+    <td style="background-color:#a0e0a0">-0.0030</td>
+    <td style="background-color:#a0e0a0">-0.0044</td>
+    <td style="background-color:#a0e0a0">-0.0059</td>
+    <td style="background-color:#a0e0a0">-0.0074</td>
+    <td style="background-color:#a0e0a0">-0.0089</td>
 </tr>
 <tr>
     <th>6</th>
-    <td style="background-color:#a0e0a0">-0.00345</td>
-    <td style="background-color:#a0e0a0">-0.00689</td>
-    <td style="background-color:#a0e0a0">-0.01034</td>
-    <td style="background-color:#a0e0a0">-0.01379</td>
-    <td style="background-color:#a0e0a0">-0.01723</td>
-    <td style="background-color:#a0e0a0">-0.02068</td>
+    <td style="background-color:#a0e0a0">-0.0034</td>
+    <td style="background-color:#a0e0a0">-0.0069</td>
+    <td style="background-color:#a0e0a0">-0.0103</td>
+    <td style="background-color:#a0e0a0">-0.0138</td>
+    <td style="background-color:#a0e0a0">-0.0172</td>
+    <td style="background-color:#a0e0a0">-0.0207</td>
 </tr>
 <tr>
     <th>8</th>
-    <td style="background-color:#a0e0a0">-0.00620</td>
-    <td style="background-color:#a0e0a0">-0.01240</td>
-    <td style="background-color:#a0e0a0">-0.01860</td>
-    <td style="background-color:#a0e0a0">-0.02480</td>
-    <td style="background-color:#a0e0a0">-0.03101</td>
-    <td style="background-color:#a0e0a0">-0.03721</td>
+    <td style="background-color:#a0e0a0">-0.0062</td>
+    <td style="background-color:#a0e0a0">-0.0124</td>
+    <td style="background-color:#a0e0a0">-0.0186</td>
+    <td style="background-color:#a0e0a0">-0.0248</td>
+    <td style="background-color:#a0e0a0">-0.0310</td>
+    <td style="background-color:#a0e0a0">-0.0372</td>
 </tr>
 <tr>
     <th>12</th>
-    <td style="background-color:#a0e0a0">-0.01411</td>
-    <td style="background-color:#a0e0a0">-0.02821</td>
-    <td style="background-color:#a0e0a0">-0.04232</td>
-    <td style="background-color:#e0a0a0">-0.05642</td>
-    <td style="background-color:#e0a0a0">-0.07053</td>
-    <td style="background-color:#e0a0a0">-0.08463</td>
+    <td style="background-color:#a0e0a0">-0.0141</td>
+    <td style="background-color:#a0e0a0">-0.0282</td>
+    <td style="background-color:#a0e0a0">-0.0423</td>
+    <td style="background-color:#e0a0a0">-0.0564</td>
+    <td style="background-color:#e0a0a0">-0.0705</td>
+    <td style="background-color:#e0a0a0">-0.0846</td>
 </tr>
 <tr>
     <th>16</th>
-    <td style="background-color:#a0e0a0">-0.02511</td>
-    <td style="background-color:#e0a0a0">-0.05022</td>
-    <td style="background-color:#e0a0a0">-0.07533</td>
-    <td style="background-color:#e0a0a0">-0.10044</td>
-    <td style="background-color:#e0a0a0">-0.12555</td>
-    <td style="background-color:#e0a0a0">-0.15066</td>
+    <td style="background-color:#a0e0a0">-0.0251</td>
+    <td style="background-color:#e0a0a0">-0.0502</td>
+    <td style="background-color:#e0a0a0">-0.0753</td>
+    <td style="background-color:#e0a0a0">-0.1004</td>
+    <td style="background-color:#e0a0a0">-0.1256</td>
+    <td style="background-color:#e0a0a0">-0.1507</td>
 </tr>
 <tr>
     <th>24</th>
-    <td style="background-color:#e0a0a0">-0.05677</td>
-    <td style="background-color:#e0a0a0">-0.11355</td>
-    <td style="background-color:#e0a0a0">-0.17032</td>
-    <td style="background-color:#e0a0a0">-0.22709</td>
-    <td style="background-color:#e0a0a0">-0.28387</td>
-    <td style="background-color:#e0a0a0">-0.34064</td>
+    <td style="background-color:#e0a0a0">-0.0568</td>
+    <td style="background-color:#e0a0a0">-0.1135</td>
+    <td style="background-color:#e0a0a0">-0.1703</td>
+    <td style="background-color:#e0a0a0">-0.2271</td>
+    <td style="background-color:#e0a0a0">-0.2839</td>
+    <td style="background-color:#e0a0a0">-0.3406</td>
 </tr>
 <tr>
     <th>48</th>
-    <td style="background-color:#e0a0a0">-0.21903</td>
-    <td style="background-color:#e0a0a0">-0.43807</td>
-    <td style="background-color:#e0a0a0">-0.65710</td>
-    <td style="background-color:#e0a0a0">-0.87614</td>
-    <td style="background-color:#e0a0a0">-1.09517</td>
-    <td style="background-color:#e0a0a0">-1.31420</td>
+    <td style="background-color:#e0a0a0">-0.2190</td>
+    <td style="background-color:#e0a0a0">-0.4381</td>
+    <td style="background-color:#e0a0a0">-0.6571</td>
+    <td style="background-color:#e0a0a0">-0.8761</td>
+    <td style="background-color:#e0a0a0">-1.0952</td>
+    <td style="background-color:#e0a0a0">-1.3142</td>
 </tr>
 </table>
 
@@ -289,6 +298,15 @@ parameters have sufficient attenuation at the stop band frequency of 10kHz:
     <td style="background-color:#a0e0a0">-149.3</td>
     <td style="background-color:#a0e0a0">-186.6</td>
     <td style="background-color:#a0e0a0">-223.9</td>
+</tr>
+<tr>
+    <th>3</th>
+    <td style="background-color:#e0a0a0">-36.0</td>
+    <td style="background-color:#e0a0a0">-72.0</td>
+    <td style="background-color:#a0e0a0">-108.0</td>
+    <td style="background-color:#a0e0a0">-144.0</td>
+    <td style="background-color:#a0e0a0">-180.0</td>
+    <td style="background-color:#a0e0a0">-216.0</td>
 </tr>
 <tr>
     <th>4</th>
@@ -377,75 +395,84 @@ pass band and stop band requirements:
 </tr>
 <tr>
     <th>2</th>
-    <td style="background-color:#e0a0a0">-0.000<br/>-37.3</td>
-    <td style="background-color:#e0a0a0">-0.001<br/>-74.6</td>
-    <td style="background-color:#a0e0a0">-0.001<br/>-112.0</td>
-    <td style="background-color:#a0e0a0">-0.001<br/>-149.3</td>
-    <td style="background-color:#a0e0a0">-0.001<br/>-186.6</td>
-    <td style="background-color:#a0e0a0">-0.002<br/>-223.9</td>
+    <td style="background-color:#e0a0a0">-0.0003<br/>-37.3</td>
+    <td style="background-color:#e0a0a0">-0.0006<br/>-74.6</td>
+    <td style="background-color:#a0e0a0">-0.0009<br/>-112.0</td>
+    <td style="background-color:#a0e0a0">-0.0012<br/>-149.3</td>
+    <td style="background-color:#a0e0a0">-0.0015<br/>-186.6</td>
+    <td style="background-color:#a0e0a0">-0.0018<br/>-223.9</td>
+</tr>
+<tr>
+    <th>3</th>
+    <td style="background-color:#e0a0a0">-0.0008<br/>-36.0</td>
+    <td style="background-color:#e0a0a0">-0.0016<br/>-72.0</td>
+    <td style="background-color:#a0e0a0">-0.0024<br/>-108.0</td>
+    <td style="background-color:#a0e0a0">-0.0032<br/>-144.0</td>
+    <td style="background-color:#a0e0a0">-0.0039<br/>-180.0</td>
+    <td style="background-color:#a0e0a0">-0.0047<br/>-216.0</td>
 </tr>
 <tr>
     <th>4</th>
-    <td style="background-color:#e0a0a0">-0.001<br/>-34.2</td>
-    <td style="background-color:#e0a0a0">-0.003<br/>-68.4</td>
-    <td style="background-color:#a0e0a0">-0.004<br/>-102.6</td>
-    <td style="background-color:#a0e0a0">-0.006<br/>-136.8</td>
-    <td style="background-color:#a0e0a0">-0.007<br/>-171.0</td>
-    <td style="background-color:#a0e0a0">-0.009<br/>-205.2</td>
+    <td style="background-color:#e0a0a0">-0.0015<br/>-34.2</td>
+    <td style="background-color:#e0a0a0">-0.0030<br/>-68.4</td>
+    <td style="background-color:#a0e0a0">-0.0044<br/>-102.6</td>
+    <td style="background-color:#a0e0a0">-0.0059<br/>-136.8</td>
+    <td style="background-color:#a0e0a0">-0.0074<br/>-171.0</td>
+    <td style="background-color:#a0e0a0">-0.0089<br/>-205.2</td>
 </tr>
 <tr>
     <th>6</th>
-    <td style="background-color:#e0a0a0">-0.003<br/>-31.1</td>
-    <td style="background-color:#e0a0a0">-0.007<br/>-62.2</td>
-    <td style="background-color:#a0e0a0">-0.010<br/>-93.3</td>
-    <td style="background-color:#a0e0a0">-0.014<br/>-124.4</td>
-    <td style="background-color:#a0e0a0">-0.017<br/>-155.5</td>
-    <td style="background-color:#a0e0a0">-0.021<br/>-186.6</td>
+    <td style="background-color:#e0a0a0">-0.0034<br/>-31.1</td>
+    <td style="background-color:#e0a0a0">-0.0069<br/>-62.2</td>
+    <td style="background-color:#a0e0a0">-0.0103<br/>-93.3</td>
+    <td style="background-color:#a0e0a0">-0.0138<br/>-124.4</td>
+    <td style="background-color:#a0e0a0">-0.0172<br/>-155.5</td>
+    <td style="background-color:#a0e0a0">-0.0207<br/>-186.6</td>
 </tr>
 <tr>
     <th>8</th>
-    <td style="background-color:#e0a0a0">-0.006<br/>-28.7</td>
-    <td style="background-color:#e0a0a0">-0.012<br/>-57.4</td>
-    <td style="background-color:#e0a0a0">-0.019<br/>-86.1</td>
-    <td style="background-color:#a0e0a0">-0.025<br/>-114.8</td>
-    <td style="background-color:#a0e0a0">-0.031<br/>-143.5</td>
-    <td style="background-color:#a0e0a0">-0.037<br/>-172.2</td>
+    <td style="background-color:#e0a0a0">-0.0062<br/>-28.7</td>
+    <td style="background-color:#e0a0a0">-0.0124<br/>-57.4</td>
+    <td style="background-color:#e0a0a0">-0.0186<br/>-86.1</td>
+    <td style="background-color:#a0e0a0">-0.0248<br/>-114.8</td>
+    <td style="background-color:#a0e0a0">-0.0310<br/>-143.5</td>
+    <td style="background-color:#a0e0a0">-0.0372<br/>-172.2</td>
 </tr>
 <tr>
     <th>12</th>
-    <td style="background-color:#e0a0a0">-0.014<br/>-25.2</td>
-    <td style="background-color:#e0a0a0">-0.028<br/>-50.3</td>
-    <td style="background-color:#e0a0a0">-0.042<br/>-75.5</td>
-    <td style="background-color:#e0a0a0">-0.056<br/>-100.6</td>
-    <td style="background-color:#e0a0a0">-0.071<br/>-125.8</td>
-    <td style="background-color:#e0a0a0">-0.085<br/>-150.9</td>
+    <td style="background-color:#e0a0a0">-0.0141<br/>-25.2</td>
+    <td style="background-color:#e0a0a0">-0.0282<br/>-50.3</td>
+    <td style="background-color:#e0a0a0">-0.0423<br/>-75.5</td>
+    <td style="background-color:#e0a0a0">-0.0564<br/>-100.6</td>
+    <td style="background-color:#e0a0a0">-0.0705<br/>-125.8</td>
+    <td style="background-color:#e0a0a0">-0.0846<br/>-150.9</td>
 </tr>
 <tr>
     <th>16</th>
-    <td style="background-color:#e0a0a0">-0.025<br/>-22.6</td>
-    <td style="background-color:#e0a0a0">-0.050<br/>-45.2</td>
-    <td style="background-color:#e0a0a0">-0.075<br/>-67.7</td>
-    <td style="background-color:#e0a0a0">-0.100<br/>-90.3</td>
-    <td style="background-color:#e0a0a0">-0.126<br/>-112.9</td>
-    <td style="background-color:#e0a0a0">-0.151<br/>-135.5</td>
+    <td style="background-color:#e0a0a0">-0.0251<br/>-22.6</td>
+    <td style="background-color:#e0a0a0">-0.0502<br/>-45.2</td>
+    <td style="background-color:#e0a0a0">-0.0753<br/>-67.7</td>
+    <td style="background-color:#e0a0a0">-0.1004<br/>-90.3</td>
+    <td style="background-color:#e0a0a0">-0.1256<br/>-112.9</td>
+    <td style="background-color:#e0a0a0">-0.1507<br/>-135.5</td>
 </tr>
 <tr>
     <th>24</th>
-    <td style="background-color:#e0a0a0">-0.057<br/>-18.8</td>
-    <td style="background-color:#e0a0a0">-0.114<br/>-37.7</td>
-    <td style="background-color:#e0a0a0">-0.170<br/>-56.5</td>
-    <td style="background-color:#e0a0a0">-0.227<br/>-75.3</td>
-    <td style="background-color:#e0a0a0">-0.284<br/>-94.2</td>
-    <td style="background-color:#e0a0a0">-0.341<br/>-113.0</td>
+    <td style="background-color:#e0a0a0">-0.0568<br/>-18.8</td>
+    <td style="background-color:#e0a0a0">-0.1135<br/>-37.7</td>
+    <td style="background-color:#e0a0a0">-0.1703<br/>-56.5</td>
+    <td style="background-color:#e0a0a0">-0.2271<br/>-75.3</td>
+    <td style="background-color:#e0a0a0">-0.2839<br/>-94.2</td>
+    <td style="background-color:#e0a0a0">-0.3406<br/>-113.0</td>
 </tr>
 <tr>
     <th>48</th>
-    <td style="background-color:#e0a0a0">-0.219<br/>-12.2</td>
-    <td style="background-color:#e0a0a0">-0.438<br/>-24.4</td>
-    <td style="background-color:#e0a0a0">-0.657<br/>-36.6</td>
-    <td style="background-color:#e0a0a0">-0.876<br/>-48.8</td>
-    <td style="background-color:#e0a0a0">-1.095<br/>-61.0</td>
-    <td style="background-color:#e0a0a0">-1.314<br/>-73.2</td>
+    <td style="background-color:#e0a0a0">-0.2190<br/>-12.2</td>
+    <td style="background-color:#e0a0a0">-0.4381<br/>-24.4</td>
+    <td style="background-color:#e0a0a0">-0.6571<br/>-36.6</td>
+    <td style="background-color:#e0a0a0">-0.8761<br/>-48.8</td>
+    <td style="background-color:#e0a0a0">-1.0952<br/>-61.0</td>
+    <td style="background-color:#e0a0a0">-1.3142<br/>-73.2</td>
 </tr>
 </table>
 
