@@ -35,7 +35,7 @@ with open('DMT_spreadsheet.csv', newline='') as csv_file:
 
         dmt_entry =  {
                 "h_active"      : int(row[0]),
-                "v_pixels"      : int(row[1]),
+                "v_active"      : int(row[1]),
                 "v_freq"        : float(row[2]),
                 "interlaced"    : (row[3] == "Interlaced"),
                 "adopted"       : row[4],

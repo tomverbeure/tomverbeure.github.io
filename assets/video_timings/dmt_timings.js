@@ -1,4 +1,4 @@
-[
+var dmt_timings = [
   {
     "h_active": 640,
     "v_active": 350,
