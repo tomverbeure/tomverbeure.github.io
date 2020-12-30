@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import csv
+import json
 
 import pprint
 pp = pprint.PrettyPrinter(indent=4)
@@ -81,3 +82,6 @@ with open('DMT_spreadsheet.csv', newline='') as csv_file:
         dmt_table.append(dmt_entry)
 
 pp.pprint(dmt_table)
+
+with open("dmt_timings.json", "w") as dmt_timings_json:
+    json.dump(dmt_table, dmt_timings_json, indent=2)
