@@ -61,7 +61,7 @@ transfer functions for each filter together (in the dB domain).
 
 You can see the result in the plot below:
 
-![Transfer Functions Combined at Each Step](/assets/pdm/pdm_pcm2rtl/pdm_pcm2rtl_joint_filters.svg)
+![Transfer Functions Combined at Each Step - Freq Domain](/assets/pdm/pdm_pcm2rtl/pdm_pcm2rtl_joint_filters.svg)
 
 *Note that the scale of the Y axis is different for the left and the right column!*
 
@@ -119,6 +119,13 @@ the final joint impulse response for the original input sample rate is calculate
 Once there, you can create the frequency magnitude plot just like for any other given
 impulse response.
 
+For completeness, I'm showing the resulting graph. If you compare them closely to the one
+generated using the frequency domain method, you'll see some minor differences due to differenes
+in number sample points per graph and rounding errors. You'll also notice the the left column
+doesn't have the individual filters unfolded. But other than that, they are identical,
+as expected.
+
+![Transfer Functions Combined at Each Step - Time Domain](/assets/pdm/pdm_pcm2rtl/pdm_pcm2rtl_joint_filters_alt.svg)
 
 # CIC Bit Widths
 
