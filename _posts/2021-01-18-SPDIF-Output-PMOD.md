@@ -16,7 +16,9 @@ is [S/PDIF](https://en.wikipedia.org/wiki/S/PDIF). The format supports coaxial c
 optical fiber as transport medium. I'm using optical because of the coolness factor
 (and because it once again doesn't require any analog consideration.)
 
-S/PDIF to analog converters can be found on Amazon for ~$10. 
+S/PDIF to analog converters can be found on Amazon for ~$12. 
+
+![S/PDIF to Analog converter](/assets/spdif_pmod/musou_spdif_converter.jpg)
 
 Optical S/PDIF works fine with pretty much any regular LED on a development board. You don't even 
 need a special interface: [@ultraembedded](https://twitter.com/ultraembedded) showed how you
