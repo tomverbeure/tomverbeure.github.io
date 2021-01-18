@@ -32,7 +32,7 @@ experiment:
 But that's obviously not a long term solution.
 
 My [PDM-to-PCM microphone series of blog posts](/2020/12/20/Design-of-a-Multi-Stage-PDM-to-PCM-Decimation-Pipeline.html) 
-has moved to the implementation stage, and that means I need something to check the results. I hadn't design 
+has moved to the implementation stage, and that means I need something to check the results. I hadn't designed 
 a PCB in a while, so I sat down one evening to crank out an optical S/PDIF output PMOD.
 
 All PCB and RTL files can be found in [this GitHub repo](https://github.com/tomverbeure/spdif_pmod).
@@ -43,8 +43,8 @@ This is the result:
 
 ![S/PDIF Populatd PCB](/assets/spdif_pmod/spdif_populated_pcb.jpg)
 
-I handsoldered it and it looks terrible, but it works... (Next time, I'll just spinkle around some solder
-paste and use a heat gun.)
+I handsoldered the 2 layer PCB and it looks terrible, but it works. Next time, I'll just spinkle around some solder
+paste and use a heat gun.
 
 Plugging in a TOSLINK optical cable is much easier than holding it above an LED!
 
