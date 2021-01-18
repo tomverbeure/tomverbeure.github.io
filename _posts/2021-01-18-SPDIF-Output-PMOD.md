@@ -12,7 +12,7 @@ categories:
 
 Analog design isn't my strength, so when I do audio experiments with an FPGA, I prefer to
 send out the audio signal in digital format. One pretty common format
-is [S/PDIF](https://en.wikipedia.org/wiki/S/PDIF).The format supports coaxial and
+is [S/PDIF](https://en.wikipedia.org/wiki/S/PDIF). The format supports coaxial cable and
 optical fiber as transport medium. I'm using optical because of the coolness factor
 (and because it once again doesn't require any analog consideration.)
 
@@ -29,9 +29,9 @@ experiment:
 
 But that's obviously not a long term solution.
 
-My PDM-to-PCM microphone series of blog posts has moved to the implementation stage,
-and that means I need something to check the results.  I hadn't design a PCB in a while, so 
-I sat down one evening to crank out an optical S/PDIF output PMOD.
+My [PDM-to-PCM microphone series of blog posts](/2020/12/20/Design-of-a-Multi-Stage-PDM-to-PCM-Decimation-Pipeline.html) 
+has moved to the implementation stage, and that means I need something to check the results. I hadn't design 
+a PCB in a while, so I sat down one evening to crank out an optical S/PDIF output PMOD.
 
 All PCB and RTL files can be found in [this GitHub repo](https://github.com/tomverbeure/spdif_pmod).
 
@@ -95,6 +95,9 @@ to simulate the whole thing. The testbench is not self-checking. You'll need to 
 that things are working...
 
 The Max10 design uses a PLL to create a 6.144MHz clock out of the 50MHz oscillator clock.
+
+If you don't want to generate the Verilog files yourself, you can find `SpdifTop.v` (the Max10 FPGA
+design) and `SpdifOut.v` (the block level module for simulation) [here](https://github.com/tomverbeure/spdif_pmod/blob/main/fpga/spinal/).
 
 # Future Improvements
 
