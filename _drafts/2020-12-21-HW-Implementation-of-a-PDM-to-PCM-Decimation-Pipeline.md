@@ -127,6 +127,10 @@ as expected.
 
 ![Transfer Functions Combined at Each Step - Time Domain](/assets/pdm/pdm_pcm2rtl/pdm_pcm2rtl_joint_filters_alt.svg)
 
+# Filter Architecture Selection
+
+
+
 # CIC Bit Widths
 
 The [formula](/2020/09/30/Moving-Average-and-CIC-Filters.html#the-size-of-the-delay-elements-in-a-cic-filter)
@@ -138,17 +142,33 @@ In our case, with a decimation ratio of 12 and 4 stages, this becomes:
 
 *nr bits = 1 + roundUp(4 * log2(1 * 12)) = 17*
 
-The design specification required a 16-bit dynamic range, so we can drop 1 bit at the output of the
-CIC filter.
+The design specification required a 16-bit dynamic range, and just like low pass filtering in the CIC
+increased the number of bits of the outgoing sample word, further downstream low pass filtering show
+do even more of that.
 
-CIC filters are normally implemented with integer-only operations, so the only place where
-there will ever be a loss is that LSB. Rather than implementing an integer based CIC filter model in 
-NumPy, I treat it as a non-recursive generic FIR filter with imprefect floating point coefficients
+But the problem is: I don't quite understand how that works!
 
-# Half-Band and FIR filter
+But I do know the following:
 
-Since the input is 16 bits, I'll keep the output 16 bits as well.
+* after each half-band or generic FIR operation, a whole lot of lower bits will need to be
+  dropped. 
 
+    This is because the mulplier-accumulate logic for the FIR operation will have
+    a width that is at least the sum of the width of the coefficients and the incoming samples.
+
+    At end of each filter, this will need to be paired down again. These truncation operations will
+    have some impact.
+
+* FPGAs don't have a large freedom by which memory width and multiplier operand size can be selected.
+
+    If I need a memory to store and receive 16-bit samples, and the memory width is 18 bits wide,
+    then there's no point in using less.
+
+Since I am targeting FPGAs, I won't drop any bits from the CIC output and stick to 17 bits.
+
+# Half-Band and FIR Filter Coefficients
+
+The coefficients for the half-band and generic FIR 
 The question is how many bits to keep for the coefficients for the half-band and generic FIR filter.
 
 
