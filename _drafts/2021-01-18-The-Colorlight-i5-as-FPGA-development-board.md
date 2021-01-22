@@ -133,6 +133,8 @@ Let's first go over characterstics of the module itself:
     Not exactly a heavy duty one, but a piece of metal that squeezes against the FPGA and
     the two Ethernet transceivers. Much better than nothing!
 
+    ![Board and Heatsink](/assets/colorlight_i5/heatsink_removed.jpg)
+
     The heat sink is pretty easy to remove without damaging the board.
 
 
@@ -147,21 +149,25 @@ For the i5 board, V6.0 and V7.0 are pinout compatible too, with the exception of
 As I wrote earlier, the development board can be [bought on AliExpress](https://www.aliexpress.com/item/1005001686186007.html), 
 but only as a package deal: $50 for the development board and the i5 module, with free shipping.
 
+![Development Board Annotated](/assets/colorlight_i5/development_board-annotated.jpg)
+
 It has the following features:
 
 * DDR2-SODIMM socket for the i5 module
-* 1x 30-pin connector for Ethernet
+* 1x 30-pin connector for Ethernet (purple)
     
     This connector has the 2x 4 differential Ethernet pairs. 
 
-* 4x 30-pin connectors for generic GPIOs
+* 4x 30-pin connectors for generic GPIOs (yellow)
 
     Each connector has 20 GPIOs, ground, 3V3, and 5V pins. The
     pins are smartly organized so that the connector is also compatible
-    with 2 side-by-side PMOD connectors. In this case, the number
-    of usable GPIOs drops to 16, 8 for each PMOD.
+    with 2 side-by-side PMOD connectors. In this case, the center pins
+    can't be used and the number of usable GPIOs drops to 16, 8 for each PMOD.
 
-* 1x 30-pin mixed-use connector for generic GPIOs + special functions
+    ![Board with double PMOD](/assets/colorlight_i5/board_with_double_PMOD.jpg)
+
+* 1x 30-pin mixed-use connector for generic GPIOs + special functions (orange)
 
     Just like the 4 earlier connectors, there are 20 GPIOs on this connector,
     in the same configuration, but 6 of the GPIOs have been assigned
@@ -200,10 +206,9 @@ It has the following features:
     PC. On the other, it controls JTAG, UART, and SPI pins to the Colorlight
     module. It also controls 2 LEDs.
 
-    The user is not supposed to reflash the MCU with custom firmware, and there
-    are no provision to do so. But I still expected there to be test pins
-    to factory flash the MCU. It took me quite a while to figure out that 
-    there are 4 test pins right underneath the USB C connector!
+    The user is not supposed to reflash the MCU with custom firmware, but if
+    you're so inclined, the SWD pins to do so are located underneath the
+    USB connector (on the other side of the board.)
 
 * USB 5V -> 3.3V voltage regulator
 
@@ -223,20 +228,24 @@ It has the following features:
 
 * JTAG Pogo Pins 
 
-    The i5 module has easy accessible JTAG test points, but they are not connected to the SODIMM
+    While the i5 module has easy accessible JTAG test points, they are not connected to the SODIMM
     connector. The development board makes the connection with the test points with 4 pogo pins.
     It's an elegant solution that removes the need for any soldering.
 
 # First Impressions
 
-The package arrived with the i5 module (mine is revision V7.0), the development board, a USB C cable, and 6 30-pin
+The package arrived with the i5 module (mine is revision V7.0), the development board, a USB C cable, and the 6 30-pin
 connectors that you need to solder yourself. 
 
-I'm not well qualified to judge the quality of the PCB, but looks well made to me.
+![Box Contents](/assets/colorlight_i5/box_contents.jpg)
+
+I'm not well qualified to judge the quality of the PCB, but it looks well made to me.
 
 After inserting the 30-pin connectors into the PCB (it's a bit of a hassle that requires
 wiggling), I noticed a minor issue: my HDMI cable doesn't fit between the 2 30-pin connectors
 that surround the HDMI connector. As a result, the cable can't be plugged in completely.
+
+![HDMI doesn't fit](/assets/colorlight_i5/hdmi_doesnt_fit.jpg)
 
 It still goes in deep enough to make an electrical connector, but it's not ideal.
 
@@ -244,7 +253,9 @@ The box doesn't contain any documentation, not even a leaflet with a URL. You ha
 do with Google or a link on the AliExpress product page to a GitHub repo.
 
 Without further instructions, I plugged in USB cable into the board and my PC, some LEDs came up
-and I heard a little sound: my PC told me that it has seen a new USB drive. So far so good!
+and I heard a little sound: my PC told me that it had seen a new "DAPLINK" USB drive. So far so good!
+
+![DAPLINK USB drive](/assets/colorlight_i5/DAPLINK_attached_drive.png)
 
 
 # Design Documentation
