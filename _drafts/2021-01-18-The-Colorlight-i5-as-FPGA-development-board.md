@@ -17,18 +17,20 @@ but a few were not, and yet they are a good match.
 One board that falls in the latter category is the 
 [Colorlight i5](https://www.colorlight-led.com/product/colorlight-i5-led-display-receiver-card.html).
 
+![Colorlight i5](/assets/colorlight_i5/colorlight_i5.jpg)
+
 Like other members of the Colorlight family (the [Colorlight 5A-75B](https://github.com/q3k/chubby75) 
-comes to mind), these FPGA boards are 'real' products that design to be used as controllers for large 
-LED video panels. And that's a huge plus, because in FPGA land, high volume results in low cost, usually 
+comes to mind), these FPGA boards are 'real' products that are designed to be used as controllers for large 
+LED video panels. And that's a huge plus, because in FPGA land, high volume means low cost, usually 
 much lower than buying individual components on Digikey or Mouser.
 
-What especially attractive about the Colorlight i5 is that it is designed as a plug-in card, with a
-reapproriated DDR2 DIMM slot connector. Even better is that nothing about this module seems to be
-tailored specifically for LED panels: unlike the 5A-75B, there are no unidirectional 3V3 to 5V
-level shifters. FPGA GPIO pins are routed straight to the DIMM connector and can be used any way 
-you want.
+The Colorlight i5 is especially attractive because it's a plug-in card, with a reappropriated DDR2 SODIMM 
+connector. Even better is that nothing about this module seems to be tailored specifically for LED panels: unlike 
+the 5A-75B, there are no unidirectional 3V3 to 5V level shifters. FPGA GPIO pins are routed straight to the 
+SODIMM connector and can be used any way you want.
 
-
+The Colorlight i5 uses a Lattice ECP5U-25, an FPGA that's supported by the Yosys/NextPNR open source
+tool flow, an extra bonus.
 
 That said, there's still a hurdle to using it as a hobby FPGA platform: you need a way to power it,
 there are no easy usable GPIO connectors (such as PMOD connectors), and while are easily accessible
@@ -40,11 +42,15 @@ Or...
 you could use the Colorlight i5 development board that's by [Muse Lab](https://www.muselab-tech.com/) 
 on [their AliExpress webstore](https://www.aliexpress.com/item/1005001686186007.html).
 
+![Colorlight i5 Development Board](/assets/colorlight_i5/development_board.jpg)
+
 I bought their Colorlight i5 module + development board combo for $50 and gave it a try. 
 
 # The Colorlight i5 Module 
 
 Let's first go over characterstics of the module itself:
+
+![Colorlight i5 Top Annotated](/assets/colorlight_i5/i5-top-annotated.jpg)
 
 * Low Cost: $30 and up
 
@@ -52,27 +58,24 @@ Let's first go over characterstics of the module itself:
     buying at least 3. For $35, you can get them with free shipping on AliExpress. That's
     still a fantastic deal for what you get.
 
-* Lattice ECP5 LFE5U-25F FPGA in a 381 caBGA package
+* Lattice ECP5 LFE5U-25F FPGA
 
-    This is huge, because it's one of the few FPGAs for which there's an end-to-end open source
-    toolchain.
-
-    Some FPGA specifications:
+    Specifications:
     * 24K LUTs
     * 56x sysMEM block RAMs (of 18Kb each), good for up to 126KByte of on-chip RAM
     * 194Kb of distributed RAM
     * 28x 18x18 multipliers
     * 2 PLLs, 2 DLLs
     * 0 SERDES
+    * 381 caBGA package
 
     The -25 version is one of the smaller versions in the ECP5 family, but it's still enough
     for many applications. You can comfortably fit a VexRiscv based Linux SOC in there.
 
 * EtronTech EM638325-6H 2M x 32bit SDRAM, 166MHz
 
-    Non-DDR SDRAM is getting old and slow, but it's more than sufficient for most hobby
-    projects. It's also much easier to use because there's usually no trickery required with
-    complex PLL/DLL configurations.
+    Non-DDR SDRAM is ancient and slow now, but sufficient for most hobby projects. It's also much 
+    easier to use because there's usually no trickery required with complex PLL/DLL configurations.
 
 * 2x Broadcom B50612D 1Gb Ethernet Transceivers
 
@@ -80,13 +83,13 @@ Let's first go over characterstics of the module itself:
 
     The PHYs are using an RGMII MAC interface. 
 
-    The module only contains the transceivers, but not the Ethernet transformers or 
-    RJ45 connectors. The 2x 4 differentials pairs are routed to the DDR DIMM pins. 
+    The module only contains the transceivers, not the Ethernet transformers or 
+    RJ45 connectors. The 2x 4 differentials pairs are routed to the DDR SODIMM pins. 
 
 * GD25B16C 16Mbit Quad SPI Serial Flash
 
-    The [Lattice ECP5 sysCONFIG Usage Guide](http://www.latticesemi.com/~/media/LatticeSemi/Documents/ApplicationNotes/EH/TN1260.pdf)
-    lists a maximum uncompressed bitstream size of 5.42Mb. That leaves more than 11Mb or ~1.4MByte for
+    According to the [Lattice ECP5 sysCONFIG Usage Guide](http://www.latticesemi.com/~/media/LatticeSemi/Documents/ApplicationNotes/EH/TN1260.pdf),
+    the FPGA has a maximum uncompressed bitstream size of 5.42Mb. That leaves more than 11Mb or ~1.4MByte for
     user applications.
 
 * 25MHz Oscillator
@@ -103,6 +106,9 @@ Let's first go over characterstics of the module itself:
     4 JTAG test points are not marked as such but they are easy to solder and accessible.
 
 * 3x Mystery CD4051B 8 Channel Analog Multiplexer/Demultiplexer 
+
+    These are only present on V7.0 of the board, not on V6.0. It's functionality hasn't been
+    reverse engineered yet, but some of the demultiplexed ports are going to the SODIMM pins.
 
 * DDR2-SODIMM Connector
 
@@ -127,17 +133,14 @@ Let's first go over characterstics of the module itself:
     Not exactly a heavy duty one, but a piece of metal that squeezes against the FPGA and
     the two Ethernet transceivers. Much better than nothing!
 
-    It's pretty easy to remove without damaging the board.
+    The heat sink is pretty easy to remove without damaging the board.
 
 
 There's a lot to work with here. What's even better is that there is the potential for future
-upgrades: Colorlight has the i6, i9, and i9+ modules, which, except for the mystery pins, have the
-same pinout. For example, the i9 board has a Lattice ECP5-45 FPGA, and the i9+ a Xilinx Artix A50T.
+upgrades: Colorlight has the i6, i9, and i9+ modules with the same pinout as the i5.
+same pinout. The i9 board has a Lattice ECP5-45 FPGA, and the i9+ a Xilinx Artix A50T.
 
-There are different versions of the i5 board: I know about a V6.0 and a V7.0. They are supposed to
-have the same SODIMM pinout and FPGA connectivity. While the high version number suggests a fair
-amount of design churn, on the flip side, it can also indicate that this module has had enough
-revisions to make the design reliable at volume. Who knows...
+For the i5 board, V6.0 and V7.0 are pinout compatible too, with the exception of the mystery pins.
 
 # Features of the Muse Lab Development Board 
 
