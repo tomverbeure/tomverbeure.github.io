@@ -507,7 +507,7 @@ replugging the USB cable, the green LED should be blinking right away.
 
 There are a few other demo bitstreams.
 
-**hdmi_div.bit**
+**hdmi_dvi.bit**
 
 This bitstream sends a 640x480/60Hz test image to the HDMI connector.
 
