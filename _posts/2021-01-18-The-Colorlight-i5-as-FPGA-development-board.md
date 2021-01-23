@@ -1,7 +1,7 @@
 ---
 layout: post
-title: Getting Started with ECP5 FPGAs and the Colorlight i5 FPGA Development Board
-date:  2021-01-8 00:00:00 -1000
+title: Getting Started with ECP5 FPGAs on the Colorlight i5 FPGA Development Board
+date:  2021-01-22 00:00:00 -1000
 categories:
 ---
 
