@@ -57,7 +57,7 @@ Let's first go over characterstics of the module itself:
 
 * Low Cost: $30 and up
 
-    I've seen these modules for $18.50, but with a $25 shipping fee, which makes it only attactive if you're
+    I've seen these modules for $18.50, but with a $25 shipping fee, which makes it only attractive if you're
     buying at least 3. For $35, you can get them with free shipping on AliExpress. That's
     still a fantastic deal for what you get.
 
@@ -67,13 +67,13 @@ Let's first go over characterstics of the module itself:
     * 24K LUTs
     * 56x sysMEM block RAMs (of 18Kb each), good for up to 126KByte of on-chip RAM
     * 194Kb of distributed RAM
-    * 28x 18x18 multipliers
+    * 28x DSPs with 18x18 multiplier and 36-bit accumulator
     * 2 PLLs, 2 DLLs
     * 0 SERDES
     * 381 caBGA package
 
     The -25 version is one of the smaller versions in the ECP5 family, but it's still enough
-    for many applications. You can comfortably fit a VexRiscv based Linux SOC in there.
+    for many applications. You can comfortably fit a VexRiscv-based Linux SOC in there.
 
 * EtronTech EM638325-6H 2M x 32bit SDRAM, 166MHz
 
@@ -102,7 +102,7 @@ Let's first go over characterstics of the module itself:
 
 * 25MHz Oscillator
 
-    The Ethernet transceivers require a 25MHz oscillator. It also goes to the FPGA its only external clock
+    The Ethernet transceivers require a 25MHz oscillator. It also goes to the FPGA as its only external clock
     input.
 
 * 2 LEDs
