@@ -11,7 +11,7 @@ categories:
 # Introduction
 
 There are hundreds of FPGA development boards out there, and I don't dare to count but I must own a
-considerably fraction of them. Most of these are designed deliberately for development purposes, 
+considerable fraction of them. Most of these are designed deliberately for development purposes, 
 but a few are not, and yet they can sometimes be a good match.
 
 One board that falls in this category is the 
