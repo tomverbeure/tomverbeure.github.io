@@ -208,3 +208,10 @@ The question is how many bits to keep for the coefficients for the half-band and
 
     Lots of technical info about PDM to PCM decimation.
 
+
+** PDM to I2S Conversion Chips
+
+* [ADAU7002](https://www.analog.com/en/products/adau7002.html)
+
+    Lots of interesting data points and filter graphs.
+
