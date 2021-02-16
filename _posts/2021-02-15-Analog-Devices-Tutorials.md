@@ -180,4 +180,13 @@ Enjoy!
 * [MT-229 - Quantization Noise: An Expanded Derivation of the Equation, SNR = 6.02 N + 1.76 dB](https://www.analog.com/media/en/training-seminars/tutorials/MT-229.pdf)
 * [MT-230 - Noise Considerations in High Speed Converter Signal Chains](https://www.analog.com/media/en/training-seminars/tutorials/MT-230.pdf)
 
+# Various Other Educational Material
+
+* [ADALM2000 Based Lab Activity Material, Electronics I and II](https://wiki.analog.com/university/courses/electronics/labs)
+
+    Basic lab exercises. It uses the ADALM2000 module, but other basic instruments can be used
+    just as well.
+
+
+
 
