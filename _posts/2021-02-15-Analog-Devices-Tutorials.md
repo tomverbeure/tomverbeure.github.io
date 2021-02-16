@@ -36,6 +36,11 @@ So check out the 3 links below first!
 * [Mixed Signal Electronics Systems](https://www.analog.com/en/education/education-library/tutorials/mixed-signal-electronics-systems.html)
 * [Filter Design Tutorial](https://www.analog.com/en/education/education-library/tutorials/signals-and-systems.html)
 
+**Update 2**
+
+[Robin Getz](https://twitter.com/robinlgetz) from Analog Devices [pointed me](https://twitter.com/robinlgetz/status/1361716511325446149)
+to a list on their wiki page: [University Program only teaching materials](https://wiki.analog.com/university/courses/tutorials/index).
+
 # Walt Kester Series
 
 * [MT-001 - Taking the Mystery out of the Infamous Formula, "SNR = 6.02N + 1.76dB," and Why You Should Care](https://www.analog.com/media/en/training-seminars/tutorials/MT-001.pdf)
