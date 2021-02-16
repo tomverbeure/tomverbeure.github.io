@@ -8,6 +8,38 @@ categories:
 * TOC
 {:toc}
 
+# SNR calculation from FFT
+
+* max scale sine wave
+* quantize with (say) 16 bits
+* N samples
+* N-sample FFT
+* theoretical quantization SNR over the full Nyquist range for sine wave and no window function = 6.02 * 16 + 1.76 = 98.08dB
+* This gets split over N/2 FFT frequency buckets
+    * linear power: Power(SNR) / (N/2)
+    * db: db10(SNR) - db10(N/2)
+
+Reverse:
+* Sample input at sample rate X
+* Take FFT
+* Actually, take multiple FFTs and average to get narrower noise floor
+* Check where main signal is
+* Ignore FFT value for main signal and harmonics (use average noise floor instead?)
+    * don't exclude harmonics if you want SINAD (signal to noise and distortion ratio)
+* Add up all remaining FFT values 
+
+Example, using data from MT-003:
+
+* FFT noise floor: -110dB
+* 8192 samples
+* convert dB to linear power: 10*log10(10^(-110/10) * 8192/2) =  73.9dB -> 74dB
+    * In this case, I multiply by 4096, but I could have also just added all the values in the real world, when, 
+      for example there's no noise floor with a fixed value.
+
+When using a window, the FFT value must be multiplied by a correction factor.
+This correction factor is different when correction for amplitude than for correcting for energy.
+
+E.g. when calculation RMS value from an FFT -> use energy correction.
 
 # References
 
