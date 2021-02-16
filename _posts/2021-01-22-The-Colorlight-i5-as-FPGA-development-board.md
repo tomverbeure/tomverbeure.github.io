@@ -776,6 +776,9 @@ Some miscellaneous findings:
 
     This issue can easily be solved with a few more tables in the documentation.
 
+    **I created my own FPGA pin to connector mapping diagram. You can find it 
+      [here](https://tomverbeure.github.io/2021/01/30/Colorlight-i5-Extension-Board-Pin-Mapping.html)**
+
 * Limited FPGA PLL support
 
     This is a limitation of the ECP5 open source flow.
@@ -826,4 +829,5 @@ a significantly higher price.
 * [Item on AliExpress](https://www.aliexpress.com/item/1005001686186007.html)
 * [Official Development Board GitHub Repo](https://github.com/wuxx/Colorlight-FPGA-Projects)
 * [Colorlight i5 Tips GitHub Repo](https://github.com/kazkojima/colorlight-i5-tips)
+* [Colorlight i5 Extension Board Pin Mapping](https://tomverbeure.github.io/2021/01/30/Colorlight-i5-Extension-Board-Pin-Mapping.html)
 
