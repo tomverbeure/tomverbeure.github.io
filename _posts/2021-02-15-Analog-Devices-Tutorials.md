@@ -5,19 +5,27 @@ date:  2021-02-15 00:00:00 -1000
 categories:
 ---
 
-While googling about various signal processing topics, a number of tutorials written by Walt Kester
-came up high in the search results. They were excellent, and usually answered my questions.
+* TOC
+{:toc}
 
-This made me chech if there were more tutorials like them.
+# Introduction
 
-Turn out: the Analog Devices has tons of tutorials, but there's no easy to use index, and their
-website search function is a bit of a disaster (this is pretty much the rule for any corporate
-website out there...)
+While googling about various signal processing topics, a number of tutorials on the Analog Devices
+website, written by Walt Kester, came up high in the search results. They were excellent, and usually 
+answered my questions.
 
-So to compensate for their lack of website organization, I present here all the tutorials on the
-Analog Devices website that I could find by simply incrementing the tutorial number in the URL.
+This made me check if what other tutorials were on their website.
 
-Walt Kester Series:
+Turns out: the Analog Devices has tons of tutorials, but there's no easy to use index, and their
+website search function is a bit of a disaster, as is usually the case for pretty much any corporate
+website out there...
+
+So to make sure I didn't miss any of their education content, I spent a good hour incrementing
+the number of their URLs to compile a list of all the tutorials on the Analog Devices website.
+
+Enjoy!
+
+# Walt Kester Series
 
 * [MT-001 - Taking the Mystery out of the Infamous Formula, "SNR = 6.02N + 1.76dB," and Why You Should Care](https://www.analog.com/media/en/training-seminars/tutorials/MT-001.pdf)
 
@@ -54,7 +62,7 @@ Walt Kester Series:
 * [MT-030 - Resolver-to-Digital Converters](https://www.analog.com/media/en/training-seminars/tutorials/MT-030.pdf)
 * [MT-031 - Grounding Data Converters and Solving the Mystery of "AGND" and "DGND"](https://www.analog.com/media/en/training-seminars/tutorials/MT-031.pdf)
 
-Opamp Series:
+# Opamp Series
 
 * [MT-032 - Ideal Voltage Feedback (VFB) Op Amp](https://www.analog.com/media/en/training-seminars/tutorials/MT-032.pdf)
 * [MT-033 - Voltage Feedback Op Amp Gain and Bandwidth](https://www.analog.com/media/en/training-seminars/tutorials/MT-033.pdf)
@@ -86,7 +94,7 @@ Opamp Series:
 * [MT-059 - Compensating for the Effects of Input Capacitance on VFB and CFB Op Amps Used in Current-to-Voltage Converters](https://www.analog.com/media/en/training-seminars/tutorials/MT-059.pdf)
 * [MT-060 - Choosing Between Voltage Feedback (VFB) and Current Feedback (CFB) Op Amps](https://www.analog.com/media/en/training-seminars/tutorials/MT-060.pdf)
 
-In-Amp Series:
+# In-Amp Series
 
 * [MT-061 - Instrumentation Amplifier (In-Amp) Basics](https://www.analog.com/media/en/training-seminars/tutorials/MT-061.pdf)
 * [MT-062 - Basic Two Op Amp In-Amp Configuration](https://www.analog.com/media/en/training-seminars/tutorials/MT-062.pdf)
@@ -98,6 +106,8 @@ In-Amp Series:
 * [MT-068 - Difference and Current Sense Amplifiers](https://www.analog.com/media/en/training-seminars/tutorials/MT-068.pdf)
 * [MT-069 - In-Amp Input Overvoltage Protection](https://www.analog.com/media/en/training-seminars/tutorials/MT-069.pdf)
 * [MT-070 - In-Amp Input RFI Protection](https://www.analog.com/media/en/training-seminars/tutorials/MT-070.pdf)
+
+# Other stuff...
 
 * [MT-071 - Analog Isolation Amplifiers](https://www.analog.com/media/en/training-seminars/tutorials/MT-071.pdf)
 * [MT-072 - Precision Variable Gain Amplifiers (VGAs)](https://www.analog.com/media/en/training-seminars/tutorials/MT-072.pdf)
@@ -139,7 +149,7 @@ In-Amp Series:
 * [MT-201 - Interfacing FPGAs to an ADC Converter’s Digital Data Output](https://www.analog.com/media/en/training-seminars/tutorials/MT-201.pdf)
 
 
-Filter Series:
+# Filter Series
 
 * [MT-202 - Allpass Filters](https://www.analog.com/media/en/training-seminars/tutorials/MT-202.pdf)
 * [MT-203 - Bainter Notch Filters](https://www.analog.com/media/en/training-seminars/tutorials/MT-203.pdf)
