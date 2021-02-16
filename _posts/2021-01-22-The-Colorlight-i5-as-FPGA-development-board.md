@@ -41,11 +41,13 @@ of wires to make things work.
 Or...
 
 you could go to the [AliExpress webstore](https://www.aliexpress.com/item/1005001686186007.html) of
-[Muse Lab](https://www.muselab-tech.com/) and buy their Colorlight i5 development board.
+[Muse Lab](https://www.muselab-tech.com/) and buy their Colorlight i5 development board. 
 
 ![Colorlight i5 Development Board](/assets/colorlight_i5/development_board.jpg)
 
-I bought their Colorlight i5 module + development board combo for $50 and gave it a try. 
+Muse Lab also sells a number of other interesting hobby FPGA boards, such as the ICE40 UP5K based 
+[iCESugar](https://www.aliexpress.com/item/4001201771358.html), but the ECP5 FPGA on Colorlight i5 
+has a much larger capacity, so I bought their module + development board combo for $50 and gave it a try. 
 
 # The Colorlight i5 Module 
 
@@ -188,6 +190,11 @@ It has the following features:
     a potential FPGA debug console, and, presumably to progam the SPI
     flash on the board.
 
+    As I write this, the MCU doesn't use the SPI pins, so it's something that
+    could be used, in theory, for data transfers between the FPGA and MCU (
+    and then the host PC) at higher rates than the UART. But this would obviously 
+    require custom STM32 firmware.
+
 * HDMI connector - video out only
 
     This one is a surprise, since the FPGA on the module does not support
@@ -219,7 +226,11 @@ It has the following features:
 
     The user is not supposed to reflash the MCU with custom firmware, but if
     you're so inclined, the SWD pins to do so are located underneath the
-    USB connector (on the other side of the PCB.)
+    USB connector (on the other side of the PCB.) You'd need one of those
+    STLink programming dongles that [I wrote about](https://tomverbeure.github.io/2018/03/22/stlink-blue-pill-stm32l4xx-debug.html#stlink-dongle) 
+    a couple of years ago.  If you even need to reflash
+    the STM32 firmware to it original stage, you can find the binary image 
+    [here](https://github.com/wuxx/Colorlight-FPGA-Projects/blob/master/firmware/flash_image_20201029.bin).
 
 * USB 5V -> 3.3V voltage regulator
 
@@ -765,6 +776,9 @@ Some miscellaneous findings:
 
     This issue can easily be solved with a few more tables in the documentation.
 
+    **I created my own FPGA pin to connector mapping diagram. You can find it 
+      [here](https://tomverbeure.github.io/2021/01/30/Colorlight-i5-Extension-Board-Pin-Mapping.html)**
+
 * Limited FPGA PLL support
 
     This is a limitation of the ECP5 open source flow.
@@ -815,4 +829,5 @@ a significantly higher price.
 * [Item on AliExpress](https://www.aliexpress.com/item/1005001686186007.html)
 * [Official Development Board GitHub Repo](https://github.com/wuxx/Colorlight-FPGA-Projects)
 * [Colorlight i5 Tips GitHub Repo](https://github.com/kazkojima/colorlight-i5-tips)
+* [Colorlight i5 Extension Board Pin Mapping](https://tomverbeure.github.io/2021/01/30/Colorlight-i5-Extension-Board-Pin-Mapping.html)
 
