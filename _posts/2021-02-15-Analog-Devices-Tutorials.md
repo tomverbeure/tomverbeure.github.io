@@ -25,6 +25,17 @@ the number of their URLs to compile a list of all the tutorials on the Analog De
 
 Enjoy!
 
+**Update**
+
+Well, I was wrong: some (most? all?) of these tutorials are actually listed on Analog Device's website,
+grouped logically together!
+
+So check out the 3 links below first!
+
+* [Analog Electronics Series](https://www.analog.com/en/education/education-library/tutorials/analog-electronics.html)
+* [Mixed Signal Electronics Systems](https://www.analog.com/en/education/education-library/tutorials/mixed-signal-electronics-systems.html)
+* [Filter Design Tutorial](https://www.analog.com/en/education/education-library/tutorials/signals-and-systems.html)
+
 # Walt Kester Series
 
 * [MT-001 - Taking the Mystery out of the Infamous Formula, "SNR = 6.02N + 1.76dB," and Why You Should Care](https://www.analog.com/media/en/training-seminars/tutorials/MT-001.pdf)
