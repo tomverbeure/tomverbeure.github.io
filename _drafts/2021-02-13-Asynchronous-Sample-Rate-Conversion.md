@@ -99,3 +99,42 @@ categories:
 
     Shows impact of jitter on SNR. Many graphs.
 
+
+**More Links**
+
+Needs to be curated...
+
+* [TI - Understanding Signal to Noise Ratio (SNR) and Noise Spectral Density (NSD) in High Speed Data Converters](https://training.ti.com/understanding-signal-noise-ratio-snr-and-noise-spectral-density-nsd-high-speed-data-converters)
+
+    Also has a link to PDF file with all the slides.
+* [Oregon State - SNR Calculation and Spectral Estimation](http://classes.engr.oregonstate.edu/eecs/spring2017/ece627/Lecture%20Notes/FFT%20for%20delta-sigma%20spectrum%20estimation.pdf)
+* [National Instruments - The Fundamentals of FFT-Based Signal Analysis and Measurement](https://www.sjsu.edu/people/burford.furman/docs/me120/FFT_tutorial_NI.pdf)
+* [Analog-to-Digital Converter Testing](https://www.mit.edu/~klund/A2Dtesting.pdf), K. Lundberg
+
+    Extensive information about A/D testing. In section 2.2, it has the crucial observation that the
+    test signals should have an integer number of cycles over the sample period **but that the
+    number of cycles should be odd and prime, so that there is no common number between the number
+    of input periods and the number of samples in the data record.**
+
+    Links to the FJ Harris paper below on how to deal with windowing, if you need it.
+
+* [On the Use of Windows for Harmonic Analysis With the Discrete Fourier Transform](https://www.researchgate.net/publication/2995027_On_the_Use_of_Windows_for_Harmonic_Analysis_With_the_Discrete_Fourier_Transform), FJ Harris
+
+* [Jitter etc](http://www.jitter.de/english/how.html)
+
+    Talks about *not* using ASRC to de-jitter.
+
+
+dsp.stackexchange.com
+
+* [Answer to my question on dsp.stackexchange](https://dsp.stackexchange.com/questions/70154/quantization-snr-of-sine-wave-doesnt-match-1-761-6-02-q/70158#70158)
+* [FFT to spectrum in decibel](https://dsp.stackexchange.com/a/32080/52155)
+
+    How to calibrate an FFT for windowing function to get dBFS etc.
+
+* [Measure the SNR of a signal in the frequency domain?](https://dsp.stackexchange.com/a/14864/52155)
+* [How to calculate the Signal-To-Noise Ratio](https://dsp.stackexchange.com/a/17875/52155)
+
+    
+    
+
