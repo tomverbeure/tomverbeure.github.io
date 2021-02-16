@@ -93,4 +93,9 @@ categories:
     * Up to 32 bits
     * $11.45
 
+**SNR Calculation**
+
+* [Digital Audio Jitter Fundamentals](https://www.audiosciencereview.com/forum/index.php?threads/digital-audio-jitter-fundamentals-part-2.1926/)
+
+    Shows impact of jitter on SNR. Many graphs.
 
