@@ -14,7 +14,7 @@ While googling about various signal processing topics, a number of tutorials on 
 website, written by Walt Kester, came up high in the search results. They were excellent, and usually 
 answered my questions.
 
-This made me check if what other tutorials were on their website.
+This made me check what other tutorials there were on their website.
 
 Turns out: the Analog Devices has tons of tutorials, but there's no easy to use index, and their
 website search function is a bit of a disaster, as is usually the case for pretty much any corporate
