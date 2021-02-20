@@ -47,20 +47,49 @@ It's a discontinued product now, but two of the listed features on its product w
 
 In other words, it satisfies the 2 requirements that I mentioned above.
 
-One minor details is that this kind of equipment is a little expensive. At the time of writing this,
+One minor detail is that this kind of equipment is a little expensive. At the time of writing this,
 [Prosound and Stage Lighting](https://www.pssl.com/products/tascam-cd9010cf-broadcast-cd-player-with-cf) still
 had a product page up that lists the product at $4000, after a $500 discount.
 
-*These kind of prices are obviously way too low for the true audio fanatic, who could choose to go for
-something like a [Esoteric K-01XD](https://www.esoteric.jp/en/product/k-01xd/feature) CD player and DAC, which
-also has a external clock input and goes for $31,750 at 
-[Audiophile Experts](https://www.audiophileexperts.com/collections/esoteric-gallery/products/esoteric-k-01xd-super-audio-cd-player).
-It's the perfect match for a $27,750 
-[Esoteric G-01X Master Clock Generator](https://www.audiophileexperts.com/collections/esoteric-gallery/products/esoteric-g-01x-master-clock-generator)!*
+I googled around a bit, but I wasn't able to find cheaper CD players with external clock input,
+so something else must be done to work around the lack of sources with a common clock input.
 
-![Esoteric K-01XD Block Diagram](/assets/asrc/esoteric-k-01xd_block_diagram_pc.jpg)
+The answer is **asynchronous sample rate conversion** (ASRC).
 
+ASRC is a digital technique that accepts a input signal with one clock, and resamples it to
+a completely independent new clock, while retaining as much as possible the characteristics
+of the original signal.
 
+You can buy audio ASRC chips on Digikey at prices that range between $10 and $20. Good examples
+are the Analog Devices AD1895 and AD1896, the Texas Instruments SRC4382 and SRC4192,
+the Cirrus Logic CS8421, and others. 
+
+![AD1896 Block Diagram](/assets/asrc/AD1896_block_diagram.png)
+*<center>AD1896 Block Diagram</center>*
+
+If you need ASRC in your audio projects, I wouldn't hesistate to use one of those chips.
+
+When you want to combine ASRC with DSP processing, you could choose the Analog Devices ADSP-21364
+DSP, which contains 4 SRC cores that copy the functionatilty of the AD1896.
+
+But what if you want to build an ASRC device yourself, from scratch? Not necessarily because it'll better
+than commercial offerings, but maybe because you have sufficient unused logic available on your
+FPGA and adding a discrete ASRC device would be a waste? Or simply because you want to use it as a
+crutch to learn about a whole bunch of different DSP techniques that must be brought together to
+make it happen.
+
+The latter was my motivation. Like my PDM to PCM conversion series, I want to understand ASRC from
+start to finish, leaving no question unanswered.
+
+There is quite a bit of literature available about ASRC, but I wasn't able to find a concrete
+implementation in C, Verilog, or even Matlab or NumPy. One of the goals of this series is to
+fix that. Definitely a NumPy model, but maybe also something that can be run on a DSP or inside
+and FPGA.
+
+*This is redundant for those who've read my previous DSP topics, but in case there are newcomers:
+I'm a DSP beginner. My blog posts are a structured record of a chaotic learning process. Writing
+about a topic forces me to understand things much better than what would normally be required, but
+there's a very high chance that I'm making some basic mistakes here and there. Keep that in mind!*
 
 
 # SNR calculation from FFT
