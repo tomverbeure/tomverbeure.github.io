@@ -8,6 +8,61 @@ categories:
 * TOC
 {:toc}
 
+# Introduction
+
+Imagine the following situation: you have a number of different audio sources that
+provide audio in digital from but at different sample rate. Say, one source is
+a CD player which delivers 16-bit PCM samples at 44.1kHz, the other source is
+a BlueRay player with 24-bit PCM samples at 48kHz.
+
+Now you want to mix these audio streams into something new.
+
+How would you go about that?
+
+You'd first need to find common ground: convert the incoming streams so that
+they both have exactly the same sample rate, all the time. In other words, you'd
+have to make sure that the 2 audio streams are synchronous to each other.
+
+This requires the following: 
+
+* a common clock reference that is used by all streams 
+* a way to convert the incoming sample streams to one agreed upon shared sample rate
+
+The common clock reference doesn't need to be the same or even some kind of integer
+multiple of the sample clock: what matter is the different audio stream one way or the
+other have drived their sample rate from this reference clock.
+
+In professional audio production, this is done by having a primary clock generator and
+feeding this clock to all other secondary devices. Generating a clock is pretty easy, 
+so all you need are playback devices with a clock input.
+
+A good example of this is the [Tascam CD-9010CF](https://tascam.com/us/product/cd-9010/feature) broadcast CD player.
+
+![CD9010CF](/assets/asrc/Tascam_CD-9010CF.jpg)
+
+It's a discontinued product now, but two of the listed features on its product website are:
+
+* 1 BNC word-clock input (44.1/48kHz) 
+* Sample Rate Converter plays 44.1kHz audio source at 48kHz when the incoming word clock sample rate is 48kHz
+
+In other words, it satisfies the 2 requirements that I mentioned above.
+
+One minor details is that this kind of equipment is a little expensive. At the time of writing this,
+[Prosound and Stage Lighting](https://www.pssl.com/products/tascam-cd9010cf-broadcast-cd-player-with-cf) still
+had a product page up that lists the product at $4000, after a $500 discount.
+
+*These kind of prices are obviously way too low for the true audio fanatic, who could choose to go for
+something like a [Esoteric K-01XD](https://www.esoteric.jp/en/product/k-01xd/feature) CD player and DAC, which
+also has a external clock input and goes for $31,750 at 
+[Audiophile Experts](https://www.audiophileexperts.com/collections/esoteric-gallery/products/esoteric-k-01xd-super-audio-cd-player).
+It's the perfect match for a $27,750 
+[Esoteric G-01X Master Clock Generator](https://www.audiophileexperts.com/collections/esoteric-gallery/products/esoteric-g-01x-master-clock-generator)!*
+
+![Esoteric K-01XD Block Diagram](/assets/asrc/esoteric-k-01xd_block_diagram_pc.jpg)
+
+
+
+
 # SNR calculation from FFT
 
 * max scale sine wave
@@ -156,6 +211,10 @@ Needs to be curated...
 
     Talks about *not* using ASRC to de-jitter.
 
+* [IEEE Std 1241-2010 - IEEE Standard for Terminology and Test Methods for Analog-to-Digital Converters](http://class.ece.iastate.edu/djchen/ee509/2018/IEEE1241-2011.pdf)
+
+    Has sections about FFT, windowing etc.
+
 
 dsp.stackexchange.com
 
@@ -167,6 +226,4 @@ dsp.stackexchange.com
 * [Measure the SNR of a signal in the frequency domain?](https://dsp.stackexchange.com/a/14864/52155)
 * [How to calculate the Signal-To-Noise Ratio](https://dsp.stackexchange.com/a/17875/52155)
 
-    
-    
-
+`
