@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Things I learned about NumPy, FFTs, and Spectral Analysis
+title: Things I learned about NumPy, FFTs, Spectral Analysis, and More
 date:  2021-02-23 00:00:00 -1000
 categories:
 ---
@@ -64,4 +64,14 @@ is there spectral leakage at all?
 The reason because of `endpoint`, parameter of the `linspace` function that has a default
 value of `True`. When `True`, `linspace` returns values that go from `start` to `stop` 
 **with `stop` included**.
+
+# Quantization noise SNR is not the same as noise floor
+
+# Noise in an A/D converter can be useful
+
+# Use the right FFT window
+
+# Use np.round instead of np.floor
+
+
 
