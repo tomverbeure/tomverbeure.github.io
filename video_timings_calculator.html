@@ -1,0 +1,843 @@
+
+<html>
+    <head>
+        <title>Video Timings Calculator</title>
+        <script src="assets/javascript/jquery-3.4.1.min.js" type="text/javascript"></script>
+    </head>
+    <body>
+        <script>
+
+            var predefined_modes = [
+                    { name: "8K / 144"              , horiz_pixels : 7680, vert_pixels : 4320, refresh_rate: 144 },
+                    { name: "8K / 120"              , horiz_pixels : 7680, vert_pixels : 4320, refresh_rate: 120 },
+                    { name: "8K / 60"               , horiz_pixels : 7680, vert_pixels : 4320, refresh_rate:  60 },
+                    { name: "5K / 144"              , horiz_pixels : 5120, vert_pixels : 2880, refresh_rate: 144 },
+                    { name: "5K / 120"              , horiz_pixels : 5120, vert_pixels : 2880, refresh_rate: 120 },
+                    { name: "5K / 60"               , horiz_pixels : 5120, vert_pixels : 2880, refresh_rate:  60 },
+                    { name: "4K / 165"              , horiz_pixels : 3840, vert_pixels : 2160, refresh_rate: 165 },
+                    { name: "4K / 144"              , horiz_pixels : 3840, vert_pixels : 2160, refresh_rate: 144 },
+                    { name: "4K / 120"              , horiz_pixels : 3840, vert_pixels : 2160, refresh_rate: 120 },
+                    { name: "4K / 60"               , horiz_pixels : 3840, vert_pixels : 2160, refresh_rate:  60 },
+                    { name: "3440x1440 / 240"       , horiz_pixels : 3440, vert_pixels : 1440, refresh_rate: 240 },
+                    { name: "3440x1440 / 200"       , horiz_pixels : 3440, vert_pixels : 1440, refresh_rate: 200 },
+                    { name: "3440x1440 / 165"       , horiz_pixels : 3440, vert_pixels : 1440, refresh_rate: 165 },
+                    { name: "3440x1440 / 120"       , horiz_pixels : 3440, vert_pixels : 1440, refresh_rate: 120 },
+                    { name: "3440x1440 / 60"        , horiz_pixels : 3440, vert_pixels : 1440, refresh_rate:  60 },
+                    { name: "1440p / 165"           , horiz_pixels : 2560, vert_pixels : 1440, refresh_rate: 165 },
+                    { name: "1440p / 120"           , horiz_pixels : 2560, vert_pixels : 1440, refresh_rate: 120 },
+                    { name: "1440p / 60"            , horiz_pixels : 2560, vert_pixels : 1440, refresh_rate:  60 },
+                    { name: "1920x1200 / 60"        , horiz_pixels : 1920, vert_pixels : 1200, refresh_rate:  60 },
+                    { name: "1080p / 360"           , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate: 360 },
+                    { name: "1080p / 240"           , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate: 240 },
+                    { name: "1080p / 144"           , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate: 144 },
+                    { name: "1080p / 120"           , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate: 120 },
+                    { name: "1080p / 60"            , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate:  60 },
+                    { name: "720p / 60"             , horiz_pixels : 1280, vert_pixels :  720, refresh_rate:  60 },
+                    { name: "640x480 / 60"          , horiz_pixels :  640, vert_pixels :  480, refresh_rate:  60 },
+                    { name: "640x480 / 50"          , horiz_pixels :  640, vert_pixels :  480, refresh_rate:  50 },
+                    { name: "320x200 / 60"          , horiz_pixels :  320, vert_pixels :  200, refresh_rate:  60 },
+                    { name: "160x100 / 60"          , horiz_pixels :  160, vert_pixels :  100, refresh_rate:  60 },
+                ];
+
+            function check_integer(value, result_id) {
+                var n = Number(value)
+                if (Number.isInteger(n)){
+                    $(result_id).text("Ok");
+                    return true;
+                }
+                else{
+                    $(result_id).text("Enter integer!");
+                    return false;
+                }
+            }
+
+            var CLOCK_STEP;
+            var H_SYNC_PER              = 0.08;
+            var MIN_V_PORCH_RND         = 3;
+            var MIN_V_BPORCH;
+            var MIN_VSYNC_BP            = 550;
+            var RB_H_BLANK              = 160;
+            var RB_H_SYNC               = 32;
+            var RB_MIN_V_BLANK          = 460;
+            var RB_V_FPORCH             = 3;
+            var MARGIN_PER              = 1.8;
+            var C_PRIME                 = 30;
+            var M_PRIME                 = 300;
+
+            var CELL_GRAN               = 8;
+            var CELL_GRAN_RND;
+
+            var IP_FREQ_RQD;
+            var V_FIELD_RATE_RQD;
+            var MARGINS_RQD;
+
+            var H_PIXELS;
+            var H_PIXELS_RND;
+            var LEFT_MARGIN;
+            var RIGHT_MARGIN;
+            var TOTAL_ACTIVE_PIXELS;
+            var V_LINES;
+            var V_LINES_RND;
+            var TOP_MARGIN;
+            var BOT_MARGIN;
+
+            var INTERLACE;
+
+            var ASPECT_RATIO;
+            var V_SYNC_RND;
+
+            var H_PERIOD_EST;
+            var V_SYNC_BP;
+            var V_BACK_PORCH;
+            var TOTAL_V_LINES;
+            var IDEAL_DUTY_CYCLE;
+            var H_BLANK;
+            var TOTAL_PIXELS;
+            var ACT_PIXEL_FREQ;
+            var ACT_H_FREQ;
+            var ACT_FIELD_RATE;
+            var ACT_FRAME_RATE;
+            var V_BLANK;
+
+            function calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, reduced_blanking, video_optimized){
+
+                if (reduced_blanking == "cvt"){
+                    CLOCK_STEP          = 0.25;
+                    MIN_V_BPORCH        = 6;
+                    RB_H_BLANK          = 160;
+                    RB_H_SYNC           = 32;
+                    RB_MIN_V_BLANK      = 460;
+                    RB_V_FPORCH         = 3;
+                    REFRESH_MULTIPLIER  = 1;
+                }
+                else if (reduced_blanking == "cvt_rb"){
+                    CLOCK_STEP          = 0.25;
+                    MIN_V_BPORCH        = 6;
+                    RB_H_BLANK          = 160;
+                    RB_H_SYNC           = 32;
+                    RB_MIN_V_BLANK      = 460;
+                    RB_V_FPORCH         = 3;
+                    REFRESH_MULTIPLIER  = 1;
+                }
+                else if (reduced_blanking == "cvt_rb2"){
+                    CLOCK_STEP          = 0.001;
+                    MIN_V_BPORCH        = 6;
+                    RB_H_BLANK          = 80;
+                    RB_H_SYNC           = 32;
+                    RB_MIN_V_BLANK      = 460;
+                    RB_V_FPORCH         = 1;
+                    REFRESH_MULTIPLIER  = video_optimized ? 1000/1001 : 1;
+                }
+
+                // Input parameters
+                H_PIXELS            = horiz_pixels;
+                V_LINES             = vert_pixels;
+                IP_FREQ_RQD         = refresh_rate;
+                MARGINS_RQD         = margins;
+                INT_RQD             = interlaced;
+
+                CELL_GRAN_RND       = Math.floor(CELL_GRAN);
+
+                // 5.2 Computation of Common Parameters
+                V_FIELD_RATE_RQD    = INT_RQD ? IP_FREQ_RQD * 2 : IP_FREQ_RQD;
+
+                H_PIXELS_RND        = Math.floor(H_PIXELS / CELL_GRAN_RND) * CELL_GRAN_RND;
+
+                LEFT_MARGIN         = MARGINS_RQD ? (Math.floor((H_PIXELS_RND * MARGIN_PER / 100) / CELL_GRAN_RND) * CELL_GRAN_RND) : 0;
+                RIGHT_MARGIN        = LEFT_MARGIN;
+
+                TOTAL_ACTIVE_PIXELS = H_PIXELS_RND + LEFT_MARGIN + RIGHT_MARGIN;
+
+                V_LINES_RND         = INT_RQD ? Math.floor(V_LINES / 2) : Math.floor(V_LINES);
+
+                TOP_MARGIN          = MARGINS_RQD ? Math.floor(V_LINES_RND * MARGIN_PER / 100) : 0;
+                BOT_MARGIN          = TOP_MARGIN;
+
+                INTERLACE           = INT_RQD ? 0.5 : 0;
+
+                // Calculate Aspect Ratio
+                var ver_pixels = INT_RQD ? 2 * V_LINES_RND : V_LINES_RND;
+                var hor_pixels_4_3   = CELL_GRAN_RND * Math.round(ver_pixels *  4 /  3) / CELL_GRAN_RND;
+                var hor_pixels_16_9  = CELL_GRAN_RND * Math.round(ver_pixels * 16 /  9) / CELL_GRAN_RND;
+                var hor_pixels_16_10 = CELL_GRAN_RND * Math.round(ver_pixels * 16 / 10) / CELL_GRAN_RND;
+                var hor_pixels_5_4   = CELL_GRAN_RND * Math.round(ver_pixels *  5 /  4) / CELL_GRAN_RND;
+                var hor_pixels_15_9  = CELL_GRAN_RND * Math.round(ver_pixels * 15 /  9) / CELL_GRAN_RND;
+                var hor_pixels_43_18 = CELL_GRAN_RND * Math.round(ver_pixels * 43 / 18) / CELL_GRAN_RND;
+                var hor_pixels_64_27 = CELL_GRAN_RND * Math.round(ver_pixels * 64 / 27) / CELL_GRAN_RND;
+                var hor_pixels_12_5  = CELL_GRAN_RND * Math.round(ver_pixels * 12 /  5) / CELL_GRAN_RND;
+
+                ASPECT_RATIO = (hor_pixels_4_3   == H_PIXELS_RND) ? "4:3"   :
+                               (hor_pixels_16_9  == H_PIXELS_RND) ? "16:9"  :
+                               (hor_pixels_16_10 == H_PIXELS_RND) ? "16:10" :
+                               (hor_pixels_5_4   == H_PIXELS_RND) ? "5:4"   :
+                               (hor_pixels_15_9  == H_PIXELS_RND) ? "15:9"  :
+                               // Following aspect ratios are not defined by the spec...
+                               (hor_pixels_43_18 == H_PIXELS_RND) ? "43:18" :
+                               (hor_pixels_64_27 == H_PIXELS_RND) ? "64:27" :
+                               (hor_pixels_12_5  == H_PIXELS_RND) ? "12:5"  :
+                                                                    "Unknown";
+                // V_SYNC_RND depends on aspect ratio and reduced blanking
+                if      (reduced_blanking == "cvt_rb2") V_SYNC_RND = 8;
+                else if (ASPECT_RATIO == "4:3")       V_SYNC_RND = 4;
+                else if (ASPECT_RATIO == "16:9")      V_SYNC_RND = 5;
+                else if (ASPECT_RATIO == "16:10")     V_SYNC_RND = 6;
+                else if (ASPECT_RATIO == "5:4")       V_SYNC_RND = 7;
+                else if (ASPECT_RATIO == "15:9")      V_SYNC_RND = 7;
+                else                                  V_SYNC_RND = 10;
+
+                if (reduced_blanking == "cvt"){
+                    // 5.3 Computation of CRT Timing Parameters
+                    H_PERIOD_EST = ((1 / V_FIELD_RATE_RQD) - MIN_VSYNC_BP / 1000000.0) / (V_LINES_RND + (2 * TOP_MARGIN) + MIN_V_PORCH_RND + INTERLACE) * 1000000.0;
+
+                    V_SYNC_BP = Math.floor(MIN_VSYNC_BP / H_PERIOD_EST) + 1;
+                    if (V_SYNC_BP < (V_SYNC_RND + MIN_V_BPORCH)){
+                        V_SYNC_BP = V_SYNC_RND + MIN_V_BPORCH;
+                    }
+
+                    V_BLANK = V_SYNC_BP + MIN_V_PORCH_RND;
+                    V_FRONT_PORCH = MIN_V_PORCH_RND;
+                    V_BACK_PORCH = V_SYNC_BP - V_SYNC_RND;
+
+                    TOTAL_V_LINES = V_LINES_RND + TOP_MARGIN + BOT_MARGIN + V_SYNC_BP + INTERLACE + MIN_V_PORCH_RND;
+
+                    IDEAL_DUTY_CYCLE = C_PRIME - (M_PRIME * H_PERIOD_EST/1000);
+
+                    if (IDEAL_DUTY_CYCLE < 20){
+                        H_BLANK = Math.floor(TOTAL_ACTIVE_PIXELS * 20 / (100-20) / (2 * CELL_GRAN_RND)) * (2 * CELL_GRAN_RND);
+                    }
+                    else{
+                        H_BLANK = Math.floor(TOTAL_ACTIVE_PIXELS * IDEAL_DUTY_CYCLE / (100 - IDEAL_DUTY_CYCLE) / (2 * CELL_GRAN_RND)) * (2 * CELL_GRAN_RND);
+                    }
+                    TOTAL_PIXELS = TOTAL_ACTIVE_PIXELS + H_BLANK;
+
+                    H_SYNC = Math.floor(H_SYNC_PER * TOTAL_PIXELS / CELL_GRAN_RND) * CELL_GRAN_RND;
+                    H_BACK_PORCH = H_BLANK / 2;
+                    H_FRONT_PORCH = H_BLANK - H_SYNC - H_BACK_PORCH;
+
+                    ACT_PIXEL_FREQ = CLOCK_STEP * Math.floor(TOTAL_PIXELS / H_PERIOD_EST / CLOCK_STEP);
+
+                }
+                else{
+                    H_PERIOD_EST = ((1000000 / V_FIELD_RATE_RQD) - RB_MIN_V_BLANK) / (V_LINES_RND + TOP_MARGIN + BOT_MARGIN);
+                    H_BLANK = RB_H_BLANK;
+
+                    VBI_LINES = Math.floor(RB_MIN_V_BLANK / H_PERIOD_EST) + 1;
+
+                    RB_MIN_VBI = RB_V_FPORCH + V_SYNC_RND + MIN_V_BPORCH;
+                    ACT_VBI_LINES = (VBI_LINES < RB_MIN_VBI) ? RB_MIN_VBI : VBI_LINES;
+
+                    TOTAL_V_LINES = ACT_VBI_LINES + V_LINES_RND + TOP_MARGIN + BOT_MARGIN + INTERLACE;
+
+                    TOTAL_PIXELS = RB_H_BLANK + TOTAL_ACTIVE_PIXELS;
+
+                    ACT_PIXEL_FREQ = CLOCK_STEP * Math.floor((V_FIELD_RATE_RQD * TOTAL_V_LINES * TOTAL_PIXELS / 1000000 * REFRESH_MULTIPLIER) / CLOCK_STEP);
+
+                    if (reduced_blanking == "cvt_rb2"){
+                        V_BLANK = ACT_VBI_LINES;
+                        V_FRONT_PORCH = ACT_VBI_LINES - V_SYNC_RND - 6;
+                        V_BACK_PORCH  = 6;
+
+                        H_SYNC = 32;
+                        H_BACK_PORCH = 40;
+                        H_FRONT_PORCH = H_BLANK - H_SYNC - H_BACK_PORCH;
+                    }
+                    else{
+                        V_BLANK = ACT_VBI_LINES;
+                        V_FRONT_PORCH = 3;
+                        V_BACK_PORCH  = ACT_VBI_LINES - V_FRONT_PORCH - V_SYNC_RND;
+
+                        H_SYNC = 32;
+                        H_BACK_PORCH = 80;
+                        H_FRONT_PORCH = H_BLANK - H_SYNC - H_BACK_PORCH;
+                    }
+                }
+
+                ACT_H_FREQ     = 1000 * ACT_PIXEL_FREQ / TOTAL_PIXELS;
+                ACT_FIELD_RATE = 1000 * ACT_H_FREQ / TOTAL_V_LINES;
+                ACT_FRAME_RATE = INT_RQD ? ACT_FIELD_RATE / 2 : ACT_FIELD_RATE;
+            }
+
+
+        </script>
+        <h1>Video Timings Calculator</h1>
+
+        For more information, see <a href="/2019/08/03/Video-Timings-Calculator.html">this blog post</a>.
+
+        <h2>Input Parameters</h2>
+            <form id="parameters">
+                <table>
+                    <tr>
+                        <td><label>Predefined Mode</label></td>
+                        <td><select id="predefined_mode" name="predefined_mode"><option>None</option></select></td>
+                    </tr>
+                    <tr>
+                        <td><label>Horizontal Pixels</label></td>
+                        <td><input id="horiz_pixels" type="text" value="640" /></td>
+                        <td><label id="horiz_valid">Ok</label></td>
+                    </tr>
+                    <tr>
+                        <td><label>Vertical Pixels</label></td>
+                        <td><input id="vert_pixels" type="text" value="480" /></td>
+                        <td><label id="vert_valid">Ok</label></td>
+                    </tr>
+                    <tr>
+                        <td><label>Refresh Rate (Hz)</label></td>
+                        <td><input id="refresh_rate" type="text" value="60" /></td>
+                        <td><label id="refresh_valid">Ok</label></td>
+                    </tr>
+                    <tr>
+                        <td><label>Margins</label></td>
+                        <td><select id="margins" name="margins"><option value="y">Yes</option><option value="n" selected>No</option></select>
+                    </tr>
+                    <tr>
+                        <td><label>Interlaced</label></td>
+                        <td><select id="interlaced" name="interlaced"><option value="y">Yes</option><option value="n" selected>No</option></select>
+                    </tr>
+                    <tr>
+                        <td><label>Bits per Component</label></td>
+                        <td><select id="bpc" name="bpc">
+                                <option value="8" selected>8</option>
+                                <option value="10">10</option>
+                                <option value="12">12</option>
+                                <option value="16">16</option></select>
+                    </tr>
+                    <tr>
+                        <td><label>Color Format</label></td>
+                        <td><select id="color_fmt" name="color_fmt">
+                                <option value="rgb444" selected>RGB 4:4:4</option>
+                                <option value="yuv444">YUV 4:4:4</option>
+                                <option value="yuv422">YUV 4:2:2</option>
+                                <option value="yuv420">YUV 4:2:0</option></select>
+                    </tr>
+                </table>
+            </form>
+
+            <script type="text/javascript">
+                $('#predefined_mode').change( function(){ fill_predefined_parameters($('#predefined_mode').val());   update_status(); })
+                $('#horiz_pixels').change( function(){ check_integer($('#horiz_pixels').val(), '#horiz_valid');   update_status(); })
+                $('#vert_pixels') .change( function(){ check_integer($('#vert_pixels') .val(), '#vert_valid');    update_status(); })
+                $('#refresh_rate').change( function(){ check_integer($('#refresh_rate').val(), '#refresh_valid'); update_status(); })
+                $('#margins')     .change( function(){ update_status(); })
+                $('#interlaced')  .change( function(){ update_status(); })
+                $('#bpc')         .change( function(){ update_status(); })
+                $('#color_fmt')   .change( function(){ update_status(); })
+            </script>
+        <h2>Timings</h2>
+
+            <form id="timings">
+            <table>
+                <tr>
+                    <th></th>
+                    <th>CVT</th>
+                    <th>CVT-RB</th>
+                    <th>CVT-RBv2</th>
+                    <th>Custom</th>
+                    <th></th>
+                </tr>
+                <tr>
+                    <td><label>Aspect Ratio</label></td>
+                    <td><label id="cvt-aspect_ratio"></label></td>
+                    <td><label id="cvt_rb-aspect_ratio"></label></td>
+                    <td><label id="cvt_rb2-aspect_ratio"></label></td>
+                    <td><label id="custom-aspect_ratio"></label></td>
+                </tr>
+                <tr>
+                    <td><label>Pixel Clock</label></td>
+                    <td><label id="cvt-pclock"></label></td>
+                    <td><label id="cvt_rb-pclock"></label></td>
+                    <td><label id="cvt_rb2-pclock"></label></td>
+                    <td><label id="custom-pclock"></label></td>
+                    <td><label>MHz</label></td>
+                </tr>
+                <tr>
+                    <td><label>H Total</label></td>
+                    <td><label id="cvt-htotal"></label></td>
+                    <td><label id="cvt_rb-htotal"></label></td>
+                    <td><label id="cvt_rb2-htotal"></label></td>
+                    <td><label id="custom-htotal"></label></td>
+                    <td><label>Pixels</label></td>
+                </tr>
+                <tr>
+                    <td><label>H Pixels</label></td>
+                    <td><label id="cvt-hpixels"></label></td>
+                    <td><label id="cvt_rb-hpixels"></label></td>
+                    <td><label id="cvt_rb2-hpixels"></label></td>
+                    <td><label id="custom-hpixels"></label></td>
+                    <td><label>Pixels</label></td>
+                </tr>
+                <tr>
+                    <td><label>H Blank</label></td>
+                    <td><label id="cvt-hblank"></label></td>
+                    <td><label id="cvt_rb-hblank"></label></td>
+                    <td><label id="cvt_rb2-hblank"></label></td>
+                    <td><input id="custom-hblank" type="text" value="80" /></td>
+                    <td><label>Pixels</label></td>
+                </tr>
+                <tr>
+                    <td><label>H Front Porch</label></td>
+                    <td><label id="cvt-hfront"></label></td>
+                    <td><label id="cvt_rb-hfront"></label></td>
+                    <td><label id="cvt_rb2-hfront"></label></td>
+                    <td></td>
+                    <td><label>Pixels</label></td>
+                </tr>
+                <tr>
+                    <td><label>H Sync</label></td>
+                    <td><label id="cvt-hsync"></label></td>
+                    <td><label id="cvt_rb-hsync"></label></td>
+                    <td><label id="cvt_rb2-hsync"></label></td>
+                    <td></td>
+                    <td><label>Pixels</label></td>
+                </tr>
+                <tr>
+                    <td><label>H Back Porch</label></td>
+                    <td><label id="cvt-hback"></label></td>
+                    <td><label id="cvt_rb-hback"></label></td>
+                    <td><label id="cvt_rb2-hback"></label></td>
+                    <td></td>
+                    <td><label>Pixels</label></td>
+                </tr>
+                <tr>
+                    <td><label>H Freq</label></td>
+                    <td><label id="cvt-hfreq"></label></td>
+                    <td><label id="cvt_rb-hfreq"></label></td>
+                    <td><label id="cvt_rb2-hfreq"></label></td>
+                    <td><label id="custom-hfreq"></label></td>
+                    <td><label>kHz</label></td>
+                </tr>
+                <tr>
+                    <td><label>H Period</label></td>
+                    <td><label id="cvt-hperiod"></label></td>
+                    <td><label id="cvt_rb-hperiod"></label></td>
+                    <td><label id="cvt_rb2-hperiod"></label></td>
+                    <td><label id="custom-hperiod"></label></td>
+                    <td><label>us</label></td>
+                </tr>
+
+                <tr>
+                    <td><label>V Total</label></td>
+                    <td><label id="cvt-vtotal"></label></td>
+                    <td><label id="cvt_rb-vtotal"></label></td>
+                    <td><label id="cvt_rb2-vtotal"></label></td>
+                    <td><label id="custom-vtotal"></label></td>
+                    <td><label>Pixels</label></td>
+                </tr>
+                <tr>
+                    <td><label>V Pixels</label></td>
+                    <td><label id="cvt-vpixels"></label></td>
+                    <td><label id="cvt_rb-vpixels"></label></td>
+                    <td><label id="cvt_rb2-vpixels"></label></td>
+                    <td><label id="custom-vpixels"></label></td>
+                    <td><label>Pixels</label></td>
+                </tr>
+                <tr>
+                    <td><label>V Blank</label></td>
+                    <td><label id="cvt-vblank"></label></td>
+                    <td><label id="cvt_rb-vblank"></label></td>
+                    <td><label id="cvt_rb2-vblank"></label></td>
+                    <td><input id="custom-vblank" type="text" value="6" /></td>
+                    <td><label>Pixels</label></td>
+                </tr>
+                <tr>
+                    <td><label>V Front Porch</label></td>
+                    <td><label id="cvt-vfront"></label></td>
+                    <td><label id="cvt_rb-vfront"></label></td>
+                    <td><label id="cvt_rb2-vfront"></label></td>
+                    <td></td>
+                    <td><label>Pixels</label></td>
+                </tr>
+                <tr>
+                    <td><label>V Sync</label></td>
+                    <td><label id="cvt-vsync"></label></td>
+                    <td><label id="cvt_rb-vsync"></label></td>
+                    <td><label id="cvt_rb2-vsync"></label></td>
+                    <td></td>
+                    <td><label>Pixels</label></td>
+                </tr>
+                <tr>
+                    <td><label>V Back Porch</label></td>
+                    <td><label id="cvt-vback"></label></td>
+                    <td><label id="cvt_rb-vback"></label></td>
+                    <td><label id="cvt_rb2-vback"></label></td>
+                    <td></td>
+                    <td><label>Pixels</label></td>
+                </tr>
+                <tr>
+                    <td><label>V Freq</label></td>
+                    <td><label id="cvt-vfreq"></label></td>
+                    <td><label id="cvt_rb-vfreq"></label></td>
+                    <td><label id="cvt_rb2-vfreq"></label></td>
+                    <td><label id="custom-vfreq"></label></td>
+                    <td><label>Hz</label></td>
+                </tr>
+                <tr>
+                    <td><label>V Period</label></td>
+                    <td><label id="cvt-vperiod"></label></td>
+                    <td><label id="cvt_rb-vperiod"></label></td>
+                    <td><label id="cvt_rb2-vperiod"></label></td>
+                    <td><label id="custom-vperiod"></label></td>
+                    <td><label>ms</label></td>
+                </tr>
+                <tr>
+                    <td><label>Total BW</label></td>
+                    <td><label id="cvt-total_bw"></label></td>
+                    <td><label id="cvt_rb-total_bw"></label></td>
+                    <td><label id="cvt_rb2-total_bw"></label></td>
+                    <td><label id="custom-total_bw"></label></td>
+                    <td><label>Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>Active BW</label></td>
+                    <td><label id="cvt-active_bw"></label></td>
+                    <td><label id="cvt_rb-active_bw"></label></td>
+                    <td><label id="cvt_rb2-active_bw"></label></td>
+                    <td><label id="custom-active_bw"></label></td>
+                    <td><label>Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>DisplayPort 2.0 (20 GHz)</label></td>
+                    <td><label id="cvt-dp_2"></label></td>
+                    <td><label id="cvt_rb-dp_2"></label></td>
+                    <td><label id="cvt_rb2-dp_2"></label></td>
+                    <td><label id="custom-dp_2"></label></td>
+                    <td><label>Max BW 77,575 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>DisplayPort HBR3 (8.1 GHz)</label></td>
+                    <td><label id="cvt-dp_hbr3"></label></td>
+                    <td><label id="cvt_rb-dp_hbr3"></label></td>
+                    <td><label id="cvt_rb2-dp_hbr3"></label></td>
+                    <td><label id="custom-dp_hbr3"></label></td>
+                    <td><label>Max BW 25,920 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>DisplayPort HBR2 (5.4 GHz)</label></td>
+                    <td><label id="cvt-dp_hbr2"></label></td>
+                    <td><label id="cvt_rb-dp_hbr2"></label></td>
+                    <td><label id="cvt_rb2-dp_hbr2"></label></td>
+                    <td><label id="custom-dp_hbr2"></label></td>
+                    <td><label>Max BW 17,280 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>DisplayPort HBR (2.7 GHz)</label></td>
+                    <td><label id="cvt-dp_hbr"></label></td>
+                    <td><label id="cvt_rb-dp_hbr"></label></td>
+                    <td><label id="cvt_rb2-dp_hbr"></label></td>
+                    <td><label id="custom-dp_hbr"></label></td>
+                    <td><label>Max BW 8,640 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>DisplayPort RBR (1.64 GHz)</label></td>
+                    <td><label id="cvt-dp_rbr"></label></td>
+                    <td><label id="cvt_rb-dp_rbr"></label></td>
+                    <td><label id="cvt_rb2-dp_rbr"></label></td>
+                    <td><label id="custom-dp_rbr"></label></td>
+                    <td><label>Max BW 5,240 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>HDMI 2.1 FRL (12 GHz)</label></td>
+                    <td><label id="cvt-hdmi2_1_12g"></label></td>
+                    <td><label id="cvt_rb-hdmi2_1_12g"></label></td>
+                    <td><label id="cvt_rb2-hdmi2_1_12g"></label></td>
+                    <td><label id="custom-hdmi2_1_12g"></label></td>
+                    <td><label>Max BW 42,667 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>HDMI 2.1 FRL (10 GHz)</label></td>
+                    <td><label id="cvt-hdmi2_1_10g"></label></td>
+                    <td><label id="cvt_rb-hdmi2_1_10g"></label></td>
+                    <td><label id="cvt_rb2-hdmi2_1_10g"></label></td>
+                    <td><label id="custom-hdmi2_1_10g"></label></td>
+                    <td><label>Max BW 35,556 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>HDMI 2.1 FRL (8 GHz)</label></td>
+                    <td><label id="cvt-hdmi2_1_8g"></label></td>
+                    <td><label id="cvt_rb-hdmi2_1_8g"></label></td>
+                    <td><label id="cvt_rb2-hdmi2_1_8g"></label></td>
+                    <td><label id="custom-hdmi2_1_8g"></label></td>
+                    <td><label>Max BW 28,444 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>HDMI 2.1 FRL (6 GHz)</label></td>
+                    <td><label id="cvt-hdmi2_1_6g"></label></td>
+                    <td><label id="cvt_rb-hdmi2_1_6g"></label></td>
+                    <td><label id="cvt_rb2-hdmi2_1_6g"></label></td>
+                    <td><label id="custom-hdmi2_1_6g"></label></td>
+                    <td><label>Max BW 21,333 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>HDMI 2.0 (600 MHz)</label></td>
+                    <td><label id="cvt-hdmi2_0"></label></td>
+                    <td><label id="cvt_rb-hdmi2_0"></label></td>
+                    <td><label id="cvt_rb2-hdmi2_0"></label></td>
+                    <td><label id="custom-hdmi2_0"></label></td>
+                    <td><label>Max BW 14,400 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>HDMI 1.3/1.4 (340 MHz)</label></td>
+                    <td><label id="cvt-hdmi1_3"></label></td>
+                    <td><label id="cvt_rb-hdmi1_3"></label></td>
+                    <td><label id="cvt_rb2-hdmi1_3"></label></td>
+                    <td><label id="custom-hdmi1_3"></label></td>
+                    <td><label>Max BW 8,160 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>HDMI 1.0/1.1/1.2 (165 MHz)</label></td>
+                    <td><label id="cvt-hdmi1_0"></label></td>
+                    <td><label id="cvt_rb-hdmi1_0"></label></td>
+                    <td><label id="cvt_rb2-hdmi1_0"></label></td>
+                    <td><label id="custom-hdmi1_0"></label></td>
+                    <td><label>Max BW 3,960 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>DVI-DL (330 MHz)</label></td>
+                    <td><label id="cvt-dvi_dl"></label></td>
+                    <td><label id="cvt_rb-dvi_dl"></label></td>
+                    <td><label id="cvt_rb2-dvi_dl"></label></td>
+                    <td><label id="custom-dvi_dl"></label></td>
+                    <td><label>Max BW 7,920 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>DVI-D</label></td>
+                    <td><label id="cvt-dvi_d"></label></td>
+                    <td><label id="cvt_rb-dvi_d"></label></td>
+                    <td><label id="cvt_rb2-dvi_d"></label></td>
+                    <td><label id="custom-dvi_d"></label></td>
+                    <td><label>Max BW 3960 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>RFC4175/100M Ethernet</label></td>
+                    <td><label id="cvt-rfc4175_eth100m"></label></td>
+                    <td><label id="cvt_rb-rfc4175_eth100m"></label></td>
+                    <td><label id="cvt_rb2-rfc4175_eth100m"></label></td>
+                    <td><label id="custom-rfc4175_eth100m"></label></td>
+                    <td><label id="max_rfc4175_eth100m"></label></td>
+                </tr>
+                <tr>
+                    <td><label>RFC4175/1 GigE</label></td>
+                    <td><label id="cvt-rfc4175_eth1g"></label></td>
+                    <td><label id="cvt_rb-rfc4175_eth1g"></label></td>
+                    <td><label id="cvt_rb2-rfc4175_eth1g"></label></td>
+                    <td><label id="custom-rfc4175_eth1g"></label></td>
+                    <td><label id="max_rfc4175_eth1g"></label></td>
+                </tr>
+                <tr>
+                    <td><label>RFC4175/10 GigE</label></td>
+                    <td><label id="cvt-rfc4175_eth10g"></label></td>
+                    <td><label id="cvt_rb-rfc4175_eth10g"></label></td>
+                    <td><label id="cvt_rb2-rfc4175_eth10g"></label></td>
+                    <td><label id="custom-rfc4175_eth10g"></label></td>
+                    <td><label id="max_rfc4175_eth10g"></label></td>
+                </tr>
+            </table>
+            </form>
+
+            <script type="text/javascript">
+
+                $('#custom-hblank').change( function(){  update_status(); });
+                $('#custom-vblank').change( function(){  update_status(); });
+
+                function fill_predefined_parameters(mode_name){
+                    predefined_modes.forEach(function(mode, index){
+                        if (mode['name'] == mode_name){
+                            $('#horiz_pixels').val(mode['horiz_pixels']);
+                            $('#vert_pixels').val(mode['vert_pixels']);
+                            $('#refresh_rate').val(mode['refresh_rate']);
+                        }
+                    });
+                }
+
+                function update_status(){
+                    var horiz_pixels        = Number($('#horiz_pixels').val());
+                    var vert_pixels         = Number($('#vert_pixels'). val());
+                    var refresh_rate        = Number($('#refresh_rate').val());
+                    var margins             = $('#margins').val()    == "y";
+                    var interlaced          = $('#interlaced').val() == "y";
+                    var bpc                 = Number($('#bpc').val());
+                    var color_fmt           = $('#color_fmt').val();
+
+                    var color_fmt_multiplier = (color_fmt == "rgb444") ? 3   :
+                                               (color_fmt == "yuv444") ? 3   :
+                                               (color_fmt == "yuv422") ? 2   :
+                                               (color_fmt == "yuv420") ? 1.5 : 0;
+
+                    var standards = [ "cvt", "cvt_rb", "cvt_rb2", "custom" ];
+                    standards.forEach(function(standard, index){
+
+                        if (standard != "custom"){
+                            calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, standard, false);
+
+                            hactive         = TOTAL_ACTIVE_PIXELS;
+                            hblank          = H_BLANK;
+                            htotal          = TOTAL_PIXELS;
+
+                            vactive         = V_LINES_RND;
+                            vblank          = V_BLANK;
+                            vtotal          = TOTAL_V_LINES;
+
+                            pclock          = ACT_PIXEL_FREQ * 1000000;
+                        }
+                        else {
+                            hactive         = horiz_pixels;
+                            hblank          = Number($('#custom-hblank').val());
+                            htotal          = horiz_pixels + hblank;
+
+                            vactive         = vert_pixels;
+                            vblank          = Number($('#custom-vblank').val());
+                            vtotal          = vert_pixels + vblank;
+
+                            pclock          = htotal * vtotal * refresh_rate;
+                        }
+
+                        hfreq           = pclock / htotal;
+                        vfreq           = pclock / (vtotal * htotal);
+
+                        hperiod         = 1/hfreq;
+                        vperiod         = 1/vfreq;
+
+                        total_bw        = pclock * bpc * color_fmt_multiplier;
+                        active_bw       = vfreq * bpc * vactive * hactive * color_fmt_multiplier;
+
+                        dp_2_bw         =  20000000000*4/132*128;
+                        dp_hbr3_bw      =   8100000000*4/10*8;
+                        dp_hbr2_bw      =   5400000000*4/10*8;
+                        dp_hbr_bw       =   2700000000*4/10*8;
+                        dp_rbr_bw       =   1640000000*4/10*8;
+
+                        dvi_d_bw        =    165000000*24;
+                        dvi_dl_bw       =    330000000*24;
+
+                        hdmi_1_0_bw     =    165000000*24;
+                        hdmi_1_3_bw     =    340000000*24;
+                        hdmi_2_0_bw     =    600000000*24;
+                        hdmi_2_1_6g_bw  =   6000000000*4*16/18;
+                        hdmi_2_1_8g_bw  =   8000000000*4*16/18;
+                        hdmi_2_1_10g_bw =  10000000000*4*16/18;
+                        hdmi_2_1_12g_bw =  12000000000*4*16/18;
+
+                        ethernet_mtu1500 = 1500/1542;   // includes inter-packet gap
+
+                        rfc4175_overhead = 20 +         // IP header
+                                            8 +         // UDP header
+                                           12 +         // Minimal RTP header
+                                           13;          // RFC 4175 additional header
+
+                        rfc4175_eth100m_bw  = 100000000   * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500;
+                        rfc4175_eth1g_bw    = 1000000000  * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500;
+                        rfc4175_eth10g_bw   = 10000000000 * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500;
+
+                        dp_2_ok         = (total_bw < dp_2_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_hbr3_ok      = (total_bw < dp_hbr3_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_hbr2_ok      = (total_bw < dp_hbr2_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_hbr_ok       = (total_bw < dp_hbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_rbr_ok       = (total_bw < dp_rbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+
+                        dvi_d_ok        = bpc != 8 ?               "<font color=\"red\">8 bpc only</font>" :
+                                          (total_bw < dvi_d_bw)   ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dvi_dl_ok       = bpc != 8 ?               "<font color=\"red\">8 bpc only</font>" :
+                                          (total_bw < dvi_dl_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+
+                        hdmi_1_0_ok     = (total_bw < hdmi_1_0_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_1_3_ok     = (total_bw < hdmi_1_3_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_2_0_ok     = (total_bw < hdmi_2_0_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_2_1_6g_ok  = (total_bw < hdmi_2_1_6g_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_2_1_8g_ok  = (total_bw < hdmi_2_1_8g_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_2_1_10g_ok = (total_bw < hdmi_2_1_10g_bw)? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_2_1_12g_ok = (total_bw < hdmi_2_1_12g_bw)? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+
+                        rfc4175_eth100m_ok = (active_bw < rfc4175_eth100m_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        rfc4175_eth1g_ok   = (active_bw < rfc4175_eth1g_bw)   ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        rfc4175_eth10g_ok  = (active_bw < rfc4175_eth10g_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+
+                        dp_2_ok         = dp_2_ok    + " (" + Math.round(total_bw/dp_2_bw*100) + "%)"
+                        dp_hbr3_ok      = dp_hbr3_ok + " (" + Math.round(total_bw/dp_hbr3_bw*100) + "%)"
+                        dp_hbr2_ok      = dp_hbr2_ok + " (" + Math.round(total_bw/dp_hbr2_bw*100) + "%)"
+                        dp_hbr_ok       = dp_hbr_ok  + " (" + Math.round(total_bw/dp_hbr_bw*100) + "%)"
+                        dp_rbr_ok       = dp_rbr_ok  + " (" + Math.round(total_bw/dp_rbr_bw*100) + "%)"
+                        dvi_d_ok        = bpc == 8 ? dvi_d_ok   + " (" + Math.round(total_bw/dvi_d_bw*100) + "%)" : dvi_d_ok
+                        dvi_dl_ok       = bpc == 8 ? dvi_dl_ok  + " (" + Math.round(total_bw/dvi_dl_bw*100) + "%)" : dvi_dl_ok
+                        hdmi_1_0_ok     = hdmi_1_0_ok     + " (" + Math.round(total_bw/hdmi_1_0_bw*100) + "%)"
+                        hdmi_1_3_ok     = hdmi_1_3_ok     + " (" + Math.round(total_bw/hdmi_1_3_bw*100) + "%)"
+                        hdmi_2_0_ok     = hdmi_2_0_ok     + " (" + Math.round(total_bw/hdmi_2_0_bw*100) + "%)"
+                        hdmi_2_1_6g_ok  = hdmi_2_1_6g_ok  + " (" + Math.round(total_bw/hdmi_2_1_6g_bw*100) + "%)"
+                        hdmi_2_1_8g_ok  = hdmi_2_1_8g_ok  + " (" + Math.round(total_bw/hdmi_2_1_8g_bw*100) + "%)"
+                        hdmi_2_1_10g_ok = hdmi_2_1_10g_ok + " (" + Math.round(total_bw/hdmi_2_1_10g_bw*100) + "%)"
+                        hdmi_2_1_12g_ok = hdmi_2_1_12g_ok + " (" + Math.round(total_bw/hdmi_2_1_12g_bw*100) + "%)"
+
+                        rfc4175_eth100m_ok = rfc4175_eth100m_ok + " (" + Math.round(active_bw/rfc4175_eth100m_bw*100) + "%)"
+                        rfc4175_eth1g_ok   = rfc4175_eth1g_ok   + " (" + Math.round(active_bw/rfc4175_eth1g_bw*100) + "%)"
+                        rfc4175_eth10g_ok  = rfc4175_eth10g_ok   + " (" + Math.round(active_bw/rfc4175_eth10g_bw*100) + "%)"
+
+                        prefix = "#" + standard;
+                        $(prefix + "-aspect_ratio").text(ASPECT_RATIO);
+
+                        $(prefix + "-pclock").text(Math.round(pclock/1000)/1000);
+
+                        $(prefix + "-htotal").text(htotal);
+                        $(prefix + "-hpixels").text(hactive);
+                        $(prefix + "-hblank").text(hblank);
+                        $(prefix + "-hfront").text(H_FRONT_PORCH);
+                        $(prefix + "-hsync").text(H_SYNC);
+                        $(prefix + "-hback").text(H_BACK_PORCH);
+                        $(prefix + "-hfreq").text(Math.round(hfreq)/1000);
+                        $(prefix + "-hperiod").text(Math.round(hperiod*1000000000)/1000);
+
+                        $(prefix + "-vtotal").text(vtotal);
+                        $(prefix + "-vpixels").text(vactive);
+                        $(prefix + "-vblank").text(vblank);
+                        $(prefix + "-vfront").text(V_FRONT_PORCH);
+                        $(prefix + "-vsync").text(V_SYNC_RND);
+                        $(prefix + "-vback").text(V_BACK_PORCH);
+                        $(prefix + "-vfreq").text(Math.round(vfreq*1000)/1000);
+                        $(prefix + "-vperiod").text(Math.round(vperiod*1000000)/1000);
+
+                        $(prefix + "-total_bw").text(Math.round(total_bw/1000000));
+                        $(prefix + "-active_bw").text(Math.round(active_bw/1000000));
+
+                        $(prefix + "-dp_2").html(dp_2_ok);
+                        $(prefix + "-dp_hbr3").html(dp_hbr3_ok);
+                        $(prefix + "-dp_hbr2").html(dp_hbr2_ok);
+                        $(prefix + "-dp_hbr").html(dp_hbr_ok);
+                        $(prefix + "-dp_rbr").html(dp_rbr_ok);
+
+                        $(prefix + "-dvi_d").html(dvi_d_ok);
+                        $(prefix + "-dvi_dl").html(dvi_dl_ok);
+
+                        $(prefix + "-hdmi1_0").html(hdmi_1_0_ok);
+                        $(prefix + "-hdmi1_3").html(hdmi_1_3_ok);
+                        $(prefix + "-hdmi2_0").html(hdmi_2_0_ok);
+                        $(prefix + "-hdmi2_1_6g").html(hdmi_2_1_6g_ok);
+                        $(prefix + "-hdmi2_1_8g").html(hdmi_2_1_8g_ok);
+                        $(prefix + "-hdmi2_1_10g").html(hdmi_2_1_10g_ok);
+                        $(prefix + "-hdmi2_1_12g").html(hdmi_2_1_12g_ok);
+
+                        $(prefix + "-rfc4175_eth100m").html(rfc4175_eth100m_ok);
+                        $(prefix + "-rfc4175_eth1g").html(rfc4175_eth1g_ok);
+                        $(prefix + "-rfc4175_eth10g").html(rfc4175_eth10g_ok);
+                    });
+
+                    $("#max_rfc4175_eth100m").html("Max BW " + Math.round(rfc4175_eth100m_bw/1000000) + " Mbit/s");
+                    $("#max_rfc4175_eth1g").html("Max BW " + Math.round(rfc4175_eth1g_bw/1000000) + " Mbit/s");
+                    $("#max_rfc4175_eth10g").html("Max BW " + Math.round(rfc4175_eth10g_bw/1000000) + " Mbit/s");
+
+                }
+
+                function onload_init(){
+
+                    predefined_modes.forEach(function(mode, index){
+                        $('#predefined_mode').append($('<option>', {
+                            value: mode['name'],
+                            text:  mode['name']
+                            }));
+                    });
+
+                    update_status();
+                }
+
+                window.onload = onload_init();
+
+            </script>
+    </body>
+</html>
+
