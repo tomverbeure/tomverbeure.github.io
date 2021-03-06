@@ -191,8 +191,7 @@ E.g. when calculation RMS value from an FFT -> use energy correction.
     * Up to 24 bits
     * $12.2
 
-
-* [AD1895](https://www.analog.com/en/products/ad1895.html#product-overview)/[AD1896](https://www.analog.com/en/products/ad1896.html#product-overview)
+* [AD1895](https://www.analog.com/en/products/ad1895.html)/[AD1896](https://www.analog.com/en/products/ad1896.html)
 
     * THD+N: -122dB/-133dB resp.
     * Dynamic range: 142dB 
@@ -200,6 +199,10 @@ E.g. when calculation RMS value from an FFT -> use energy correction.
     * $10/$21
 
     The "ASRC Functional Overview - Theory of Operation" section of the datasheet is excellent.
+
+* [AD1890](https://www.analog.com/en/products/ad1890.html)
+
+    Obsolete product, but just like the AD1896, the datasheet is very educational.
 
 * [Cirrus Logic CS8421](https://www.cirrus.com/products/cs8421/)
 
@@ -243,6 +246,12 @@ Needs to be curated...
 * [IEEE Std 1241-2010 - IEEE Standard for Terminology and Test Methods for Analog-to-Digital Converters](http://class.ece.iastate.edu/djchen/ee509/2018/IEEE1241-2011.pdf)
 
     Has sections about FFT, windowing etc.
+
+* [The ups and downs of arbitrary sample rate conversion](http://www.simonebianchi.net/downloads/The_ups_and_downs_of_ASRC.pdf)
+
+* [Sample Rate Conversion in Digital Signal Processors](https://www2.spsc.tugraz.at/www-archive/downloads/1_SRC_Marian_Forster_1031275.pdf)
+
+    Bachelor's thesis that compares different SRC chips (e.g. AD1895)
 
 
 dsp.stackexchange.com
