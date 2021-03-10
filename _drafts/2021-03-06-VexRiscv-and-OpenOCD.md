@@ -177,7 +177,90 @@ Others are IMO more interesting:
 link to SpinalHDL's JTAG instructure.
 
 
+# An Overview of the GDB - OpenOCD - SOC - CPU Pipeline
 
+# Running Your First VexRiscv - GDB Session
+
+# Murax - An Included Hardware Example
+
+* [Murax.scala](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/demo/Murax.scala)
+
+[Murax Toplevel](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/demo/Murax.scala#L155-L171)
+
+```scala
+case class Murax(config : MuraxConfig) extends Component{
+  import config._
+
+  val io = new Bundle {
+    //Clocks / reset
+    val asyncReset = in Bool
+    val mainClk = in Bool
+
+    //Main components IO
+    val jtag = slave(Jtag())
+
+    //Peripherals IO
+    val gpioA = master(TriStateArray(gpioWidth bits))
+    val uart = master(Uart())
+
+    val xip = ifGen(genXip)(master(SpiXdrMaster(xipConfig.ctrl.spi)))
+  }
+```
+
+Check out the JTAG IO port.
+
+Further down:
+
+[JTAG IO pins are connected to the DebugPlugin](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/demo/Murax.scala#L251-L254):
+
+```scala
+  case plugin : DebugPlugin         => plugin.debugClockDomain{
+    resetCtrl.systemReset setWhen(RegNext(plugin.io.resetOut))
+    io.jtag <> plugin.io.bus.fromJtag()
+  }
+```
+
+The [`fromJtag`](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/plugin/DebugPlugin.scala#L125-L137)
+contains the following:
+
+```scala
+  def fromJtag(): Jtag ={
+    val jtagConfig = SystemDebuggerConfig(
+      memAddressWidth = 32,
+      memDataWidth    = 32,
+      remoteCmdWidth  = 1
+    )
+    val jtagBridge = new JtagBridge(jtagConfig)
+    val debugger = new SystemDebugger(jtagConfig)
+    debugger.io.remote <> jtagBridge.io.remote
+    debugger.io.mem <> this.from(jtagConfig)
+
+    jtagBridge.io.jtag
+  }
+```
+
+This code instantiates 2 blocks: a `JtagBridge` and a `SystemDebugger`.
+
+The [`JtagBridge`](https://github.com/SpinalHDL/SpinalHDL/blob/adf552d8f500e7419fff395b7049228e4bc5de26/lib/src/main/scala/spinal/lib/system/debugger/SystemDebugger.scala#L57-L84)
+interfaces the JTAG IO pins to a SpinalHDL-specific [`SystemDebuggerRemoteBus`](https://github.com/SpinalHDL/SpinalHDL/blob/adf552d8f500e7419fff395b7049228e4bc5de26/lib/src/main/scala/spinal/lib/system/debugger/SystemDebuggerBundles.scala#L12-L25).
+
+It instantiates a traditional [JTAG TAP](https://github.com/SpinalHDL/SpinalHDL/blob/adf552d8f500e7419fff395b7049228e4bc5de26/lib/src/main/scala/spinal/lib/system/debugger/SystemDebugger.scala#L79)
+and [adds 3 scan chain operations](https://github.com/SpinalHDL/SpinalHDL/blob/adf552d8f500e7419fff395b7049228e4bc5de26/lib/src/main/scala/spinal/lib/system/debugger/SystemDebugger.scala#L80-L82)
+ to it:
+* a 32-bit ID code
+* a write register to transmit serialized commands from that JTAG port to the CPU.
+* a read register to read back from the CPU to the JTAG port
+
+The [`SystemDebugger`](https://github.com/SpinalHDL/SpinalHDL/blob/adf552d8f500e7419fff395b7049228e4bc5de26/lib/src/main/scala/spinal/lib/system/debugger/SystemDebugger.scala#L145-L155)
+converts the `SystemDebuggerRemoteBus` (which still transmit commands one bit at a time) to a 
+[`SystemDebuggerBus`](https://github.com/SpinalHDL/SpinalHDL/blob/adf552d8f500e7419fff395b7049228e4bc5de26/lib/src/main/scala/spinal/lib/system/debugger/SystemDebuggerBundles.scala#L27-L42)
+by [converting the serialized command bus bits into a parallel one](https://github.com/SpinalHDL/SpinalHDL/blob/adf552d8f500e7419fff395b7049228e4bc5de26/lib/src/main/scala/spinal/lib/system/debugger/SystemDebugger.scala#L151).
+
+The `SystemDebuggerBus` can be connected straight to the debug bus of the Debug plugin.
+
+When everything is said and one, we have SOC design that contains our VexRiscv, a JTAG port, and all the glue logic to link that JTAG port to the debug port of the CPU.
+
+# Running firmware
 
 
 
@@ -185,6 +268,8 @@ link to SpinalHDL's JTAG instructure.
 # References
 
 * [The ARM7TDMI Debug Architecture - Application Note 28](https://developer.arm.com/documentation/dai0028/a/)
+* [SaxonSoc openocd settings](https://github.com/SpinalHDL/SaxonSoc/blob/dev-0.2/bsp/digilent/ArtyA7SmpLinux/openocd/usb_connect.cfg#L19)
 
 
+* [linker script tutorial](https://interrupt.memfault.com/blog/how-to-write-linker-scripts-for-firmware)
 
