@@ -178,13 +178,145 @@ link to SpinalHDL's JTAG instructure.
 
 
 
+# OpenOCD VexRiscv Specific Code
+
+**Low level CPU interactions**
+
+* [`vexriscv_memory_cmd`](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L1127-L1179)
+
+    Prepares a JTAG DR chain command to issue a SystemDebugger command.
+
+    This is the core command to create DebugBus transactions that's used by pretty much all other higher level
+    commands to make the VexRiscv do something in debug mode.
+
+* [`vexriscv_pushInstruction`, `vexriscv_setHardwareBreakpoint`, ...](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L1394-L1440)
+
+    Slightly higher level commands that interact with the debug bus registers of the VexRiscv.
+
+* [`vexriscv_write_regfile`](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L240-L256)
+
+    Set the value of a register of the CPU register file by executing a mix of `LUI`, `ADDI`, and `ORI` instructions.
+
+    The exact instruction(s) to execute depends on the value that needs to be written to the register file.
+
+* [`vexriscv_read_memory`](https://github.com/SpinalHDL/openocd_riscv/blob/riscv_spinal/src/target/vexriscv.c#L1234-L1269)
+
+    Reads an array of data from memory that's attached to the VexRiscv.
+
+    It does this by doing the following sequence:
+    
+    * [Load register `x1`](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L1245) 
+       with the memory address that must be read.
+    * [Execute a `LW`, `LHU`, `LBU` instruction](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L1250)
+       to load the requested data from memory.
+    * [Read back the data](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L1251).
+
+        We saw earlier that the debug plugin captures the data that is last written to a register file.
+
+* [`vexriscv_save_context'](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L687-L728)
+
+    When the Vexriscv has stopped running (e.g. because it encountered an `EBREAK` instruction or because the program counter
+    triggered an hardware breakpoint), when whoever uses OpenOCD (this can be you on the command line, or a program like GDB)
+    can interact with the CPU to extract data.
+
+    To make sure this happens cleanly without destroying the state of the CPU, OpenOCD will first save the CPU context so
+    that it can be restored later when the CPU should go back to executing.
+
+    One of the most important context to save are the registers in the register file.
+
+    On the VexRiscv, this is done by issuing an `ADDI x0, x?, 0` instruction for each register. This will
+    read the value from the register file, add 0, and store it back to register 0, which gets ignored.
+
+    However, the debug hardware always remembers the last value that was sent to the register file, and makes it
+    available for read-back over the debug bus.
+
+* 
+
+# Semihosting
+
+Since the beginning of time, ARM has supported semihosting, a feature that allows the DUT CPU (IOW, the ARM CPU) to issue commands to the host
+PC to which it is connected. In the words of the [ARM semihosting specification](https://static.docs.arm.com/100863/0200/semihosting.pdf): 
+
+> Semihosting is a mechanism that enables code running on an ARM target or emulator 
+> to communicate with and use the Input/Output facilities on a host computer. The host 
+> must be running the emulator, or a debugger that is attached to the ARM target.
+
+Semihosting is an extremely powerful feature, since it can give a tiny embedded CPU that doesn't have any
+generic IO capabilities to do things like accepting keystrokes, print out debug information to a debug
+console, or even read and write from and to a file on the host PC!
+
+*The performance of these semihosting commands is subject to the bandwidth of the communication interface
+by which the embedded CPU is connected to the host PC, so don't expect miracles here in the case of JTAG.*
+
+It's up to the external debugger (OpenOCD in our case) to intercept semihosting operation request from DUT CPU and perform
+the requested action.
+
+Here's a list of the actions that are defined in the specification, and in the 
+[OpenOCD source code](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/semihosting_common.h#L53-L76):
+
+```c
+	SEMIHOSTING_SYS_CLOSE = 0x02,
+	SEMIHOSTING_SYS_CLOCK = 0x10,
+	SEMIHOSTING_SYS_ELAPSED = 0x30,
+	SEMIHOSTING_SYS_ERRNO = 0x13,
+	SEMIHOSTING_SYS_EXIT = 0x18,
+	SEMIHOSTING_SYS_EXIT_EXTENDED = 0x20,
+	SEMIHOSTING_SYS_FLEN = 0x0C,
+	SEMIHOSTING_SYS_GET_CMDLINE = 0x15,
+	SEMIHOSTING_SYS_HEAPINFO = 0x16,
+	SEMIHOSTING_SYS_ISERROR = 0x08,
+	SEMIHOSTING_SYS_ISTTY = 0x09,
+	SEMIHOSTING_SYS_OPEN = 0x01,
+	SEMIHOSTING_SYS_READ = 0x06,
+	SEMIHOSTING_SYS_READC = 0x07,
+	SEMIHOSTING_SYS_REMOVE = 0x0E,
+	SEMIHOSTING_SYS_RENAME = 0x0F,
+	SEMIHOSTING_SYS_SEEK = 0x0A,
+	SEMIHOSTING_SYS_SYSTEM = 0x12,
+	SEMIHOSTING_SYS_TICKFREQ = 0x31,
+	SEMIHOSTING_SYS_TIME = 0x11,
+	SEMIHOSTING_SYS_TMPNAM = 0x0D,
+	SEMIHOSTING_SYS_WRITE = 0x05,
+	SEMIHOSTING_SYS_WRITEC = 0x03,
+	SEMIHOSTING_SYS_WRITE0 = 0x04,
+```
+
+The embedded CPU typically has a C library that translates these semihosting operations into functions such 
+as `printf`, `sys_close()` etc.
+
+While originally defined for ARM, there's little that prevents anyone to use it for their own CPU. OpenOCD
+has made it particularly easy by isolating generic semihosting handling code from ARM specific files.
+
+Yet going by the OpenOCD source, only the VexRiscv implemented support for semihosting.
 
 
+So how does semihosting work on the VexRiscv?
+
+OpenOCD will poll the CPU and check if the CPU is currently hatled at a program location the contains
+the [following instruction sequence](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L854-L859):
+
+```
+      slli    zero,zero,0x1f
+      ebreak
+      srai    zero,zero,0x7
+```
+
+*The first and third instructions are dummies (they use `zero` as the destination register), so they're
+not the kind of thing that will ever be generated by a compiler.*
+
+If the CPU was halted without seeing that sequence then there must have been another reason for the halt.
+E.g. the user might have set their own breakpoint.
+
+Otherwise, OpenOCD will fetch the semihosting parameters, and execute them on the host PC.
 
 
 # References
 
 * [The ARM7TDMI Debug Architecture - Application Note 28](https://developer.arm.com/documentation/dai0028/a/)
+* [ARM semihosting specification](https://static.docs.arm.com/100863/0200/semihosting.pdf)
+* [Introduction to ARM Semihosting](https://interrupt.memfault.com/blog/arm-semihosting)
+* [RISC-V: Creating a spec for semihosting](https://groups.google.com/a/groups.riscv.org/g/sw-dev/c/M7LDRtBtxrk)
+* [Github: enabled semihosting on vexriscv](https://github.com/SpinalHDL/openocd_riscv/pull/7)
 
 
 
