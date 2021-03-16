@@ -80,6 +80,12 @@ We can see the following components:
     GDB, translating this into VexRiscv specific JTAG transactions, and sending these
     transactions correctly to a specific JTAG dongle.
 
+    **The VexRiscv debug infrastructure is not compatible with the standard 
+    [RISC-V Debug Specification](https://riscv.org/technical/specifications/). 
+    You need [`openocd-riscv`](https://riscv.org/technical/specifications/), 
+    a custom version of OpenOCD with VexRiscv functionality that is not upstreamed to 
+    the official OpenOCD repo!**
+
 * GDB
 
     GDB is reponsible for loading code, managing breakpoints, starting and halting a CPU, 
@@ -88,7 +94,9 @@ We can see the following components:
     When used in a remote debug configuration, as is the case here, GDB doesn't need to
     the know the specifics of the CPU that's under debug. All it needs to know is the
     CPU family (how many CPU registers, function calling conventions, stack management,
-    etc.) The low level details are handled by OpenOCD.
+    etc.) The low level details are handled by OpenOCD. Because of this, you can use
+    a RISC-V GDB that is part of a standard RISC-V GCC toolchain. There is no need for
+    a VexRiscv-specific GDB version.
 
 * IDE
 
@@ -98,6 +106,16 @@ We can see the following components:
     itself.
 
     *The IDE is optional: you can just enter commands straight in the GDB command line.*
+
+
+There's a lot going on while debugging a program on an embedded CPU!
+
+Luckily, it's not necessary to understand all the details. Most of you are really only
+interested in using the system. So let's start with that: get a mimimal design with a
+CPU running on an FPGA, and try to a debug environment working.
+
+# A Minimal CPU System
+
 
 # The VexRiscv Debug Plugin
 
