@@ -403,4 +403,11 @@ Otherwise, OpenOCD will fetch the semihosting parameters, and execute them on th
 * [Github: enabled semihosting on vexriscv](https://github.com/SpinalHDL/openocd_riscv/pull/7)
 * [SaxonSoc openocd settings](https://github.com/SpinalHDL/SaxonSoc/blob/dev-0.2/bsp/digilent/ArtyA7SmpLinux/openocd/usb_connect.cfg#L19)
 * [linker script tutorial](https://interrupt.memfault.com/blog/how-to-write-linker-scripts-for-firmware)
+* [Semihosting implementation](https://gitlab.com/iccfpga-rv/iccfpga-eclipse/-/tree/master/xpacks/micro-os-plus-semihosting)
+    * on [GitHub](https://github.com/micro-os-plus/semihosting-xpack)
+    * [micro-OS Plus](http://micro-os-plus.github.io)
+* [VEXRISCV 32-bit MCU](https://thuchoang90.github.io/vexriscv.html)
+* [PQVexRiscv](https://github.com/mupq/pqriscv-vexriscv)
+* [Litex VexRiscv Configuration](https://github.com/litex-hub/pythondata-cpu-vexriscv/blob/master/pythondata_cpu_vexriscv/verilog/src/main/scala/vexriscv/GenCoreDefault.scala)
+
 
