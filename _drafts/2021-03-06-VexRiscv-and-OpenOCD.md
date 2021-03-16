@@ -26,6 +26,79 @@ discuss how to make it work in simulation, and how to use it on real hardware. I
 also discuss low level technical details that might not be important for most users, but that
 will provide insight in case you need to dig deeper.
 
+# Debug Flow Overview
+
+The figure below illustrates the different components of an end-to-end VexRiscv debug system.
+
+![Debug Flow - IDE to CPU Data Flow](/assets/vexriscv_ocd/vexriscv_ocd-ide_to_cpu_data_flow.svg)
+
+We can see the following components:
+
+* VexRiscv CPU
+
+    The CPU that is running the code that we need to debug.
+
+* VexRiscv Debug Plugin
+
+    DebugPlugin adds the necessary hardware to the VexRiscv CPU to halt and start the CPU, and
+    set hardware breakpoints.
+
+    The plugin also adds a new external SystemDebugBus to the CPU to control these debug operations.
+
+* SystemDebugger
+
+    This block is just a small layer that converts the relatively wide SystemDebugBus to a 
+    lightweight SystemDebugRemoteBus.
+
+* JtagBridge
+
+    The JTAG bridge takes in the standard 4 JTAG IO pins, adds a number of debug scan registers,
+    and the necessary logic talk to the SystemDebugRemoteBus.
+
+* USB to JTAG Dongle
+
+    The hardware that links the development PC to the hardware that's under debug.
+
+    There are no major requirements here: as long as the dongle is supported by OpenOCD,
+    you should be good.
+
+* OpenOCD
+
+    This is one of the most important piece of the whole debug flow.
+
+    OpenOCD has support for almost all common JTAG dongles, and provides a generic API
+    to control them.
+
+    The generic API is controlled by a VexRiscv specific so-called target driver. The
+    OpenOCD VexRiscv driver knows exactly which toggles need to be sent over JTAG to
+    transfer debug commands through the JtagBridge to the DebugPlug on the CPU.
+
+    At the top of the OpenOCD stack is a GDB server that supports the GDB remote target
+    debug protocol.
+
+    The overall operation of OpenOCD consists of receive high-level debug requests from
+    GDB, translating this into VexRiscv specific JTAG transactions, and sending these
+    transactions correctly to a specific JTAG dongle.
+
+* GDB
+
+    GDB is reponsible for loading code, managing breakpoints, starting and halting a CPU, 
+    stepping to the next assembler instructions or the next line of code etc.
+
+    When used in a remote debug configuration, as is the case here, GDB doesn't need to
+    the know the specifics of the CPU that's under debug. All it needs to know is the
+    CPU family (how many CPU registers, function calling conventions, stack management,
+    etc.) The low level details are handled by OpenOCD.
+
+* IDE
+
+    This can be an editor with built-in debug capabilties such as [Eclipse](https://www.eclipse.org/ide/) 
+    or [VSCode](https://code.visualstudio.com), it can be stand-alone debugger gui such as
+    [gdbgui](https://www.gdbgui.com), or it can be TUI, the GUI that's built into GDB
+    itself.
+
+    *The IDE is optional: you can just enter commands straight in the GDB command line.*
+
 # The VexRiscv Debug Plugin
 
 In a [previous blog post](rtl/2018/12/06/The-VexRiscV-CPU-A-New-Way-To-Design.html) about the 
