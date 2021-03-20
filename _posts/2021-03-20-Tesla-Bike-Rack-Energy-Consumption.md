@@ -11,7 +11,7 @@ categories:
 # Introduction
 
 I recently celebrated my 50th birthday. My old car was getting, well old, so decided that after a lifetime of 
-second hand cars, now was as a good time as any to get myself the most stereotypical of Silicon Valley toys: a Tesla.
+second hand cars, now was as a good time as any to get myself a Tesla, the most stereotypical of Silicon Valley toys.
 
 It's a long-range Model Y: rated at a maximum ~320mi per charge, it should be good enough for a one-way trip 
 to Tahoe, with plenty of cargo space for luggage and bike accessories.
