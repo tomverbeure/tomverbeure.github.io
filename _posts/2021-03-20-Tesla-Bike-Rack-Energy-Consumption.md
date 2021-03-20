@@ -78,11 +78,14 @@ limited Pixelmator skills to align and overlay the 2 graphs.
 
 The results speak for themselves:
 
-![Energy Consumption Graphs with and withou bikes](/assets/tesla/graph_overlay.png)
+![Energy Consumption Graphs with and withou bikes](/assets/tesla/graph_overlay.jpg)
 
 Despite all my efforts to make the test conditions as close as possible between the two drives, there
-was a short traffic slowdown on the second drive. Other than that, the form of the graphs are very similar,
-except for the offset between the 2. 
+was a short traffic slowdown on the second drive. There were also a bunch of cars in front of me
+at the return point, which somehow resulted in an additional spike.
+
+Other than that, the form of the graphs are very similar, except for the offset due to the additional
+wind resistance.
 
 The Tesla keeps track of the average consumption per mile over a whole trip:
 
