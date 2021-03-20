@@ -5,6 +5,8 @@ date:  2021-03-20 00:00:00 -1000
 categories:
 ---
 
+*TLDR: 17% increase in energy consumption for highway traffic.*
+
 * TOC
 {:toc}
 
