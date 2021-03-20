@@ -22,11 +22,11 @@ pre-installed, and I bought a Kuat Sherpa 2.0 bike rack.
 # The Kuat Sherpa 2.0 Hitch Rack
 
 At 35 pounds, the Sherpa is one of the lighter bike racks out there. Compared to most other bike racks,
-it looks very good.
+it looks very good too.
 
 ![No bikes on the bike rack](/assets/tesla/no_bikes_pictures.jpg)
 
-The rack is easy to operate, and can carry 2 bikes. On the negative side, it can't be extended to 3 or 4 bikes, 
+The rack is easy to operate, and can carry 2 bikes. On the negative side, it can't be extended to carry 3 or 4 bikes, 
 and the weight per bike is limited to 40 lbs only.
 
 My daily rider is a 27 lbs Santa Cruz Chameleon C with 29" wheels, and my backup bike is an old 34 lbs Santa 
@@ -44,7 +44,7 @@ it's all good.
 I wanted to get an idea about the energy consumption impact of having bikes mounted on the rack.  Since I rarely remove 
 the rack from my car, my baseline is having the rack mounted without bikes.
 
-On a sunny Saturday morning, I decided to 2 identical drives, one with and one without bikes, and compare
+On a sunny Saturday morning, I decided to do 2 identical drives, one with and one without bikes, and compare
 the results.
 
 ![Map with Test Route](/assets/tesla/test_route.png)
@@ -64,7 +64,7 @@ Here are the parameters:
 * AC and heating disabled
 * driving style set to standard, not chill.
 * outside conditions: 57F (14C), light wind
-* 2 drives were done back-to-back to ensure as similar conditions as possible
+* the 2 drives were done back-to-back to ensure as similar conditions as possible
 
 I wanted to avoid being stuck behind cars in front of me since that would lower wind resistance and make
 results less comparable between the 2 drives. By obeying the speed limit, I counted on other traffic
@@ -80,8 +80,8 @@ The results speak for themselves:
 
 ![Energy Consumption Graphs with and withou bikes](/assets/tesla/graph_overlay.png)
 
-Despite all my efforts to make the conditions as close as possible betweent the two drives, there
-was a short slowdown on the second drive. Other than that, the form of the graphs are very similar,
+Despite all my efforts to make the test conditions as close as possible between the two drives, there
+was a short traffic slowdown on the second drive. Other than that, the form of the graphs are very similar,
 except for the offset between the 2. 
 
 The Tesla keeps track of the average consumption per mile over a whole trip:
@@ -99,9 +99,9 @@ With bikes: 311 Wh/mi
 The Model Y Long-Range has a 75kWh battery, good for a range difference of 280 mi vs 241 mi
 in these test circumstances.
 
-In reality, the range will be quite a bit lower. For example, the weekend traffic to Tahoe has
-a lot of stop-and-go traffic, and speeds may be a little bit higher too. And there'll be
-road won't be nearly as flat on the way to the mountains!
+In reality, the range will be quite a bit lower in both cases. For example, there's a lot of stop-and-go 
+weekend traffic to Tahoe on Friday evenings, and when there isn't, speed may be a little bit higher too. 
+And on the way to the mountains, the road won't be nearly as flat either!
 
 The bikes weigh around 60 pounds combined. For a comparision that only tests the impact
 of using a bike rack, I'd have do a test run with the bike loaded into the trunk, but 
