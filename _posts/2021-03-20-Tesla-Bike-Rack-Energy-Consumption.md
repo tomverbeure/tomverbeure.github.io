@@ -10,8 +10,8 @@ categories:
 
 # Introduction
 
-I recently celebrated my 50th birthday. My old car was getting, well old, so decided that after a lifetime of 
-second hand cars, now was as a good time as any to get myself a Tesla, the most stereotypical of Silicon Valley toys.
+I recently celebrated my 50th birthday. My old car was getting, well old, so after a lifetime of second hand cars, 
+I decided that now was as a good time as any to get myself a Tesla, the most stereotypical of Silicon Valley toys.
 
 It's a long-range Model Y: rated at a maximum ~320mi per charge, it should be good enough for a one-way trip 
 to Tahoe, with plenty of cargo space for luggage and bike accessories.
@@ -31,12 +31,12 @@ and the weight per bike is limited to 40 lbs only.
 
 My daily rider is a 27 lbs Santa Cruz Chameleon C with 29" wheels, and my backup bike is an old 34 lbs Santa 
 Cruz Blur LT, so the 40 lbs limit is currently not an issue, but if I ever "upgrade" to an electric bike (old 
-age, you know), chances are that I'll probaby have to change the rack as well.
+age, you know), chances are that I'll have to change the rack as well.
 
 ![Two bikes on the bike rack](/assets/tesla/with_bike_picture.jpg)
 
 The Chameleon has a pretty long wheel base, and I was a bit concerned about it not quite fitting onto
-the rack. The real wheel goes a little bit past the length of the rack, but with the tie-down strap,
+the rack. The rear wheel goes a little bit past the length of the rack, but with the tie-down strap,
 it's all good.
 
 # Energy Consumption Test 
