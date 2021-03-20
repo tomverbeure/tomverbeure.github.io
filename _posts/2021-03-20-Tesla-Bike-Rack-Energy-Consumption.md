@@ -10,7 +10,7 @@ categories:
 
 # Introduction
 
-I recently celebrated my 50th birthday. My old car was getting, well old, so after a lifetime of second hand cars, 
+I recently celebrated my 50th birthday. My old car was getting, well, old, so after a lifetime of second hand cars, 
 I decided that now was as a good time as any to get myself a Tesla, the most stereotypical of Silicon Valley toys.
 
 It's a long-range Model Y: rated at a maximum ~320mi per charge, it should be good enough for a one-way trip 
