@@ -14,34 +14,40 @@ categories:
 The VexRiscv is fantastic soft core RISC-V CPU: small, configurable, yet with a very decent
 performance. It's perfect for FPGAs, and I use it in pretty much all my FPGA projects.
 
-It's one of the few open source CPUs for which there's extensive debugger support. There's
+It's also one of the few open source CPUs for which there's extensive debugger support. There's
 a customized version of OpenOCD which acts as the glue between GDB and the VexRiscv in your
 projects.
 
 While there's some documentation available, there isn't much, and it left me wanting to know
 more about it.
 
-In this blog post, I'll go through setting up a small VexRiscv design with debug support, and
-discuss how to make it work in simulation, and how to use it on real hardware. I will
-also discuss low level technical details that might not be important for most users, but that
-will provide insight in case you need to dig deeper.
+In this blog post, I'll set up a small VexRiscv design with debug support, I'll show how to make it 
+work on real hardware, and how to use *semi-hosting*, an interesting debug feature that has been 
+borrowed the ARM embedded CPU eco-system.
+
+I will also discuss some low level technical details that might not be important for most users, 
+but that will provide insight in case you need to dig deeper.
 
 # Debug Flow Overview
+
+When you've only ever have debugged code that runs on your native PC, or on an embedded system for
+which the a company-provided IDE hides all the details, understanding all the components of an
+embedded debug system can be a bit confusing.
 
 The figure below illustrates the different components of an end-to-end VexRiscv debug system.
 
 ![Debug Flow - IDE to CPU Data Flow](/assets/vexriscv_ocd/vexriscv_ocd-ide_to_cpu_data_flow.svg)
 
-We can see the following components:
+We can see the following components from bottom to up:
 
 * VexRiscv CPU
 
-    The CPU that is running the code that we need to debug.
+    The CPU that is running the code that we need to debug. 
 
 * VexRiscv Debug Plugin
 
-    DebugPlugin adds the necessary hardware to the VexRiscv CPU to halt and start the CPU, and
-    set hardware breakpoints.
+    DebugPlugin adds the necessary logic to the VexRiscv CPU to halt and start the CPU, to
+    set hardware breakpoints, and to insert random instructions into the CPU pipeline. 
 
     The plugin also adds a new external SystemDebugBus to the CPU to control these debug operations.
 
@@ -64,14 +70,14 @@ We can see the following components:
 
 * OpenOCD
 
-    This is one of the most important piece of the whole debug flow.
+    This is probably the most important piece of the whole debug flow. 
 
     OpenOCD has support for almost all common JTAG dongles, and provides a generic API
     to control them.
 
-    The generic API is controlled by a VexRiscv specific so-called target driver. The
-    OpenOCD VexRiscv driver knows exactly which toggles need to be sent over JTAG to
-    transfer debug commands through the JtagBridge to the DebugPlug on the CPU.
+    The generic API is controlled by a VexRiscv specific so-called *target* driver. The
+    OpenOCD VexRiscv driver knows exactly what needs to be be sent over JTAG to transfer debug 
+    commands through the JtagBridge to the debug logic of the CPU.
 
     At the top of the OpenOCD stack is a GDB server that supports the GDB remote target
     debug protocol.
@@ -115,6 +121,9 @@ interested in using the system. So let's start with that: get a mimimal design w
 CPU running on an FPGA, and try to a debug environment working.
 
 # A Minimal CPU System
+
+
+# Updating the program RAM contents
 
 
 # The VexRiscv Debug Plugin
