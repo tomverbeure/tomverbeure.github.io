@@ -59,7 +59,7 @@ The RISC-V 32-bit instruction set has 4 multiply instructions:
 
     This multiplies operands *rs1* and *rs2* and stores the lower 32 bits of the result in *rd*.
 
-    Note that there are no signed/unsigned variants: it doesn't matter whether rs1 and rs1 are signed or unsigned 
+    Note that there are no signed/unsigned variants: it doesn't matter whether rs1 and rs2 are signed or unsigned 
     because the result is the same.  You can quickly see this on a 2-bit x 2-bit example:
 
     ```

@@ -264,7 +264,7 @@ still a kick-ass power supply or multimeter today! And that's reflected in their
 
 If you want to control a GPIB-equiped device today, there are 
 [USB interface dongles](/2020/06/27/Tektronix-TDS420A-Remote-Control-over-GPIB.html#acquiring-a-usb-to-gpib-dongle) 
-such as the National Instruments GPIB-USB-HS or the Agilent 82375B. One eBay, they can be found for prices of $70
+such as the National Instruments GPIB-USB-HS or the Agilent 82357B. One eBay, they can be found for prices of $70
 and up.
 
 The official IEEE-488 specifications are only available behind a paywall. Getting your hands on it will
