@@ -162,11 +162,11 @@ All that's left now is replacing the old rotary knob. This was easier that I tho
 With a hot iron (I probably overdid it at 400C!) and some soldering wick, it took less than 10min
 to remove the solder of the 5 connection points. The old knob came off very cleanly.
 
-Adding the new one was obviously even easier.
-
 ![Soldering Joints](/assets/e3631a_repair/11_solder_joints.jpg)
 
-You'll just have to believe that this is a photo with the old encoder replace by the new one...
+Adding the new encoder was obviously even easier.
+
+You'll just have to believe that this is a photo with the old encoder replaced by the new one...
 
 ![Old and new rotary encoder](/assets/e3631a_repair/12_old_meet_new.jpg)
 
