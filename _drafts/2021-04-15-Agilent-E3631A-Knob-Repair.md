@@ -16,7 +16,7 @@ A few weeks ago, [somebody on Twitter](https://twitter.com/mightyohm/status/1373
 proudly posted a picture of his 'new' 
 [Agilent E3631A](https://www.keysight.com/us/en/product/E3631A/80w-triple-output-power-supply-6v-5a--25v-1a.html) 
 power supply. I had been looking on and off for a quality power supply for a while, but 
-never gotten around to investigating which one to buy. That tweet made me look a bit more, 
+never gotten around to investigating which one to buy. That tweet made me look a some more, 
 and the E3631A seemed to be an excellent choice, even if a bit overqualified for my needs:
 
 * 3 independent voltage rails: 0 to 6V (5A max), 0 to 25V (1A max), and 0 to -25V (1A max)
@@ -24,19 +24,19 @@ and the E3631A seemed to be an excellent choice, even if a bit overqualified for
 * GPIB and RS232 control
 * "small, compact size for bench use", according to the marketing department
 
-    Don't believe this: the thing is built like a tank and weighs the part. It
-    makes quite a bit of noise too!
+    Don't believe this: the thing is built like a tank and at 18lbs weighs the part. It
+    makes quite a bit of noise too.
 
 On eBay, the going rate for a working one is ~$430 + tax but I found one on offer
 on Craigslist for $300.
 
 ![Craigslist picture](/assets/e3631a_repair/craigslist.jpg)
 
-The seller only wanted to meet on the parking lot of a 7/11 in Milpitas with no way to check
+The seller only wanted to meet on the parking lot of a 7/11 in Milpitas, with no way to check
 the goods. He promised a 7-day return period but who knows how that will turn out in
 practice?
 
-Still, for the price I decided to go for it. If all goes well, this will be the last
+Still, for the price I decided to go for it. If all goes well, this might be the last
 bench power supply I'll buy.
 
 # Rotary Knob Problem
