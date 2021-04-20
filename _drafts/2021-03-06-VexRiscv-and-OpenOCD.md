@@ -30,11 +30,12 @@ but that will provide insight in case you need to dig deeper.
 
 # Debug Flow Overview
 
-When you've only ever have debugged code that runs on your native PC, or on an embedded system for
-which the a company-provided IDE hides all the details, understanding all the components of an
-embedded debug system can be a bit confusing.
+When you only ever have debugged code that runs on your native PC, or on an embedded system for
+which an IDE hides all the details, understanding all the components of an embedded debug system 
+can be a bit confusing.
 
-The figure below illustrates the different components of an end-to-end VexRiscv debug system.
+The figure below illustrates the different components of an end-to-end debug system. (While
+Vexriscv specific, the upper layer concepts apply to any embedded debug system.)
 
 ![Debug Flow - IDE to CPU Data Flow](/assets/vexriscv_ocd/vexriscv_ocd-ide_to_cpu_data_flow.svg)
 
@@ -47,7 +48,8 @@ We can see the following components from bottom to up:
 * VexRiscv Debug Plugin
 
     DebugPlugin adds the necessary logic to the VexRiscv CPU to halt and start the CPU, to
-    set hardware breakpoints, and to insert random instructions into the CPU pipeline. 
+    set hardware breakpoints (if there are any), and to insert random instructions into the CPU 
+    pipeline. 
 
     The plugin also adds a new external SystemDebugBus to the CPU to control these debug operations.
 
@@ -72,19 +74,19 @@ We can see the following components from bottom to up:
 
     This is probably the most important piece of the whole debug flow. 
 
-    OpenOCD has support for almost all common JTAG dongles, and provides a generic API
+    OpenOCD has support for almost all common JTAG dongles, and provides a generic JTAG API
     to control them.
 
-    The generic API is controlled by a VexRiscv specific so-called *target* driver. The
+    The generic JTAG API is controlled by a VexRiscv specific *target* driver. The
     OpenOCD VexRiscv driver knows exactly what needs to be be sent over JTAG to transfer debug 
     commands through the JtagBridge to the debug logic of the CPU.
 
     At the top of the OpenOCD stack is a GDB server that supports the GDB remote target
     debug protocol.
 
-    The overall operation of OpenOCD consists of receive high-level debug requests from
+    The overall operation of OpenOCD consists of receiving high-level debug requests from
     GDB, translating this into VexRiscv specific JTAG transactions, and sending these
-    transactions correctly to a specific JTAG dongle.
+    transactions to a specific JTAG dongle.
 
     **The VexRiscv debug infrastructure is not compatible with the standard 
     [RISC-V Debug Specification](https://riscv.org/technical/specifications/). 
@@ -98,9 +100,9 @@ We can see the following components from bottom to up:
     stepping to the next assembler instructions or the next line of code etc.
 
     When used in a remote debug configuration, as is the case here, GDB doesn't need to
-    the know the specifics of the CPU that's under debug. All it needs to know is the
+    the know the low level specifics of the CPU that's under debug. All it needs to know is the
     CPU family (how many CPU registers, function calling conventions, stack management,
-    etc.) The low level details are handled by OpenOCD. Because of this, you can use
+    etc.) The low level details are handled by OpenOCD instead. Because of this, you can use
     a RISC-V GDB that is part of a standard RISC-V GCC toolchain. There is no need for
     a VexRiscv-specific GDB version.
 
@@ -121,6 +123,102 @@ interested in using the system. So let's start with that: get a mimimal design w
 CPU running on an FPGA, and try to a debug environment working.
 
 # A Minimal CPU System
+
+To demonstrate how to use a VexRiscv with a debugger, I created a minimal design that
+consists of a VexRiscv (with debug plugin, of course), a bit of RAM for CPU instructions,
+and data, and some registers to control LEDs and read back the value of button.
+
+![Minimal CPU System Block Diagram](/assets/vexriscv_ocd/vexriscv_ocd-minimal_cpu_system.svg)
+
+**VexRiscv Verilog**
+
+I normally write all my hobby RTL code in SpinalHDL, but to make it easier for others
+to use this design as an example, I wrote the toplevel in pure Verilog, and had
+SpinalHDL create a stand-alone VexRiscvWithDebug.v Verilog file that contains the CPU
+and the JTAG debug logic. As long as you don't feel the need to make changes to the
+CPU configuration, there's need to get a SpinalHDL up and running.
+
+**VexRiscv configuration**
+
+The VexRiscv can be configured into a thousand different ways. The exact details
+of the configuration used can be found [here XXX](), but a short summary is:
+
+* 5-stage pipeline configuration for a good trade-off between clock speed and area
+* Debug features enabled (duh)
+* Compressed instructions support 
+
+    A trade-off between smaller instruction memory usage and increased core
+    logic area.
+
+* No HW multiplier/divide support
+
+    I don't want to waste FPGA DSPs on a multiplier. The VexRiscv has an option
+    for a serial multiplier.
+
+* 64-bit RISC-V cycle counter support
+
+    In most cases, I only use a timer for simply delays (e.g. "wait 100us"). A
+    CPU internal timer is sufficient for that.
+
+**Dual-ported CPU RAM**
+
+In many FPGAs, all block RAMs are true dual-ported, and there's no extra cost to use them.
+In this example design, I exploit this fact by using one port of the RAM for the CPU
+instruction bus, and the other port for the CPU data bus.  This makes the design
+even easier: there's no need for arbitration logic that selects between iBus or
+dBus requests, because they can happen in parallel.
+
+The RAM are 4 RAMs, one for each byte lane. This way, I don't rely on the synthesis tool
+having to infer byte-enable logic...
+
+**Peripheral registers**
+
+The peripheral section contains 1 control register to set the LED values, and 1 status
+register to read back the value of a button.
+
+There's also a status bit that indicates whether or not the CPU is running on real
+HW or in simulation. I use this bit for cases when I want the same SW image to behave
+slightly different between FPGA and testbench. In this case, I use to change
+the speed at which LEDs toggle. 
+
+**No interrupts or external timer**
+
+The CPU is generated with external and timer interrupt support enabled, but the inputs
+are strapped to 0 in this minimal example.
+
+# System Setup with a Generic JTAG Debug Interface
+
+In the most straigthforward setup, pins for the CPU debug JTAG interface are routed from
+the FPGA to general purpose IO pins, as shown in the diagram below:
+
+![System Setup with Generic JTAG](/assets/vexriscv_ocd/vexriscv_ocd-system_setup_generic.svg)
+
+The disadvantage of this configuration is that you end up with separate methods to load the bitstream
+into the FPGA and to debug the CPU. GPIO pins are often precious and it's painful to waste 4 of them
+just for debugging.
+
+But it has the benefit of being completely generic and universal: it will work on any FPGA board and 
+FPGA type.
+
+There is an alternative: almost all FPGAs these days (the Lattice ICE40 is a notable exception) have 
+a way for the core programmable logic to tie into the JTAG TAP that's already part of the FPGA. Intel
+has virtual JTAG, Xilinx has the BSCANE primitive cell, and Lattice ECP5 has the JTAGG primitive cell.
+
+![System Setup with Native JTAG Extension](/assets/vexriscv_ocd/vexriscv_ocd-system_setup_shared_tap.svg)
+
+VexRiscv version of OpenOCD and SpinalHDL have support for some of these options, but that's for
+future blog posts...
+
+# Simulating the Design
+
+
+
+# Building the design
+
+Building a bitstream is pretty easy:
+
+* 
+
 
 
 # Updating the program RAM contents
