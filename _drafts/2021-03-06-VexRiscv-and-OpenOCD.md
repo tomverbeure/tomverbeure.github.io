@@ -136,7 +136,7 @@ I normally write all my hobby RTL code in SpinalHDL, but to make it easier for o
 to use this design as an example, I wrote the toplevel in pure Verilog, and had
 SpinalHDL create a stand-alone VexRiscvWithDebug.v Verilog file that contains the CPU
 and the JTAG debug logic. As long as you don't feel the need to make changes to the
-CPU configuration, there's need to get a SpinalHDL up and running.
+CPU configuration, you don't have to install SpinalHDL or anything .
 
 **VexRiscv configuration**
 
@@ -144,7 +144,7 @@ The VexRiscv can be configured into a thousand different ways. The exact details
 of the configuration used can be found [here XXX](), but a short summary is:
 
 * 5-stage pipeline configuration for a good trade-off between clock speed and area
-* Debug features enabled (duh)
+* Debug feature enabled (duh)
 * Compressed instructions support 
 
     A trade-off between smaller instruction memory usage and increased core
@@ -155,10 +155,17 @@ of the configuration used can be found [here XXX](), but a short summary is:
     I don't want to waste FPGA DSPs on a multiplier. The VexRiscv has an option
     for a serial multiplier.
 
+* Lightweight one-bit-at-a-time shifter instead of a barrel shifter
+
 * 64-bit RISC-V cycle counter support
 
     In most cases, I only use a timer for simply delays (e.g. "wait 100us"). A
     CPU internal timer is sufficient for that.
+
+* trap on EBREAK enabled
+
+    This is not necessary for basic debug support, but it will be useful for semi-hosting
+    support. See later.
 
 **Dual-ported CPU RAM**
 
@@ -211,17 +218,167 @@ future blog posts...
 
 # Simulating the Design
 
+A testbench is always helpful to simulate before going to hardware. So for completeness, I've included one here as well.
+While not self-checking, it was useful in tracking down some issue with CPU trap handlers.
 
+In the `./tb` directory, just type `make`:
 
-# Building the design
+```sh
+iverilog -D SIMULATION=1 -o tb tb.v ../rtl/top.v ../spinal/ ../spinal/VexRiscvWithDebug.v
+./tb
+VCD info: dumpfile waves.vcd opened for output.
+               48250: led0 changed to 0
+               65250: led0 changed to 1
+               65250: led1 changed to 0
+               82150: led1 changed to 1
+               82150: led2 changed to 0
+```
 
-Building a bitstream is pretty easy:
+`make waves` will bring up the GTKWave waveform viewer and load the `waves.vcd` file that was created during
+the simulation.
 
-* 
+![GTKWave screenshot](/assets/vexriscv_ocd/gtkwave.png)
 
+In the testbench, I have the JTAG inputs signals strapped to a fixed value, so I'm not actually testing
+the debug functionality. But the goal of the test was primarily to check that my own code was fine, and,
+as you can see, the leds are indeed toggling in sequence.
 
+# Building the Design for FPGA
+
+For this project, I built an FPGA image for 4 different FPGA boards:
+
+* the very old, barebones, but still useful, EP2C5T144 board with an Intel Cyclone II EP2C5 FPGA
+* the official Intel Max 10 Development board with a large Max10 10M50 FPGA
+* the featureful Arrow DECA board, with the same Max10 10M50 FPGA
+* the Colorlight i5 with a Lattice ECP5-25 FPGA
+
+You can find the configuration files for each of these boards [here XXXX](XXXX).
+
+As I write this, the Arrow DECA board is priced at $37. An amazing deal, but probably an end-of-life
+fire sale. For hobby purposes, there's no difference between brand new or end-of-life: it's the features
+that counts!
+
+The example design has the following external IOs:
+
+* `clk`: an external clock input of preferably 50MHz. The design doesn't use any PLL to create a different clock.
+* `led0`, `led1`, `led2: the CPU will toggle these LEDs in sequence. 
+* `button`: when pressed, the LEDs toggling sequence doubles in speed
+* `jtag_tck`, `jtag_tms`, `jtag_tdi`, `jtag_tdo`: the generic JTAG interface
+
+For all 4 boards, the IOs have been assigned as needed. All that's left is to compile the design to 
+a bitstream, but I've also provided ready-made bitstreams.
+
+# Debug Logic Resource Cost
+
+Adding debug logic is not free, but the cost is very reasonable.
+
+On the Intel Max 10 FPGA, resource usage for the complete design with JTAG debug enabled is 1849 logic cells and 936 flip-flops.
+
+![Quartus Resource Usage with JTAG Enabled](/assets/vexriscv_ocd/resource_usage_with_jtag_enabled.png)
+
+When the JTAG IO input pins are strapped to constant value, and TDO is left dangling, Quartus does an excellent
+job at optimizing all debug logic out, and the resource usage drops to 1534 logic cells and 679 flip-flops.
+
+![Quartus Resource Usage with JTAG IO Strapped](/assets/vexriscv_ocd/resource_usage_with_jtag_strapped.png)
+
+In cause you were wondering: when using a Verilog file of a VexRiscv configuration that 
+doesn't have DebugPlugin included at all, the resource usage drops another 10 logic cells to 1524. 
+
+Quartus is pretty good to eliminating dead logic!
+
+![Quartus Resource Usage without Debug Logic Included](/assets/vexriscv_ocd/resource_usage_without_jtag_included.png)
+
+Conclusion: adding debug logic increase the resource usage by 20%. That seems high, but it's more a testament to
+how small the VexRiscv really is. And keep in mind that this is for a low performance VexRiscv configuration. If
+you were to enable the HW multiplier and divider, the barrel shifter
 
 # Updating the program RAM contents
+
+
+# Connecting to the JTAG TAP of the FPGA
+
+Before we can do SW debugging, we first need to be able to access the JTAG TAP from our PC.
+
+There are 3 things that need to be in place:
+
+1. an OpenOCD configuration file that loads the right JTAG dongle driver
+1. the JTAG pins of the dongle must be connected to the right FPGA pins
+1. the FPGA must have the bitstream loaded with the JTAG TAP logic
+
+I personally dread step number 1 the most: when everything has been set up correctly, you don't need to
+use `sudo` when running OpenOCD, and hopefully you find the right driver, but it's never a sure thing.
+
+Either way, I wrote a blog post in the past about 
+[loading a Xilinx Spartan 6 bitstream with OpenOCD ](2019/09/15/Loading-a-Spartan-6-bitstream-with-openocd.html)
+that explains the process.
+
+In my case, I'm using a Xilinx Digilent clone. The magic incantation was the following:
+
+```sh
+/opt/openocd-vex/bin/openocd \ 
+    -f /opt/openocd-vex/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg 
+    -c "adapter speed 1000; transport select jtag" 
+```
+
+```
+Open On-Chip Debugger 0.10.0+dev-01231-gf8c1c8ad-dirty (2021-03-07-17:49)
+Licensed under GNU GPL v2
+For bug reports, read
+	http://openocd.org/doc/doxygen/bugs.html
+jtag
+Info : Listening on port 6666 for tcl connections
+Info : Listening on port 4444 for telnet connections
+Info : clock speed 1000 kHz
+Warn : There are no enabled taps.  AUTO PROBING MIGHT NOT WORK!!
+Info : JTAG tap: auto0.tap tap/device found: 0x10001fff (mfg: 0x7ff (<invalid>), part: 0x0001, ver: 0x1)
+Warn : AUTO auto0.tap - use "jtag newtap auto0 tap -irlen 4 -expected-id 0x10001fff"
+Warn : gdb services need one or more targets defined
+```
+
+OpenOCD found a JTAG device with an IDCODE of 0x10001fff. I didn't specify any IDCODE so SpinalHDL chose that
+value for me.
+
+Let's now also load the VexRiscv-specific configuration file:
+
+```sh
+/opt/openocd-vex/bin/openocd \ 
+    -f /opt/openocd-vex/share/openocd/scripts/interface/ftdi/digilent_jtag_smt2.cfg 
+    -c "adapter speed 1000; transport select jtag" 
+    -f "vexriscv_init.cfg"
+```
+
+```
+Open On-Chip Debugger 0.10.0+dev-01231-gf8c1c8ad-dirty (2021-03-07-17:49)
+Licensed under GNU GPL v2
+For bug reports, read
+	http://openocd.org/doc/doxygen/bugs.html
+jtag
+Info : set servers polling period to 50ms
+Info : clock speed 1000 kHz
+Info : JTAG tap: fpga_spinal.bridge tap/device found: 0x10001fff (mfg: 0x7ff (<invalid>), part: 0x0001, ver: 0x1)
+Info : starting gdb server for fpga_spinal.cpu0 on 3333
+Info : Listening on port 3333 for gdb connections
+Halting processor
+requesting target halt and executing a soft reset
+Info : Listening on port 6666 for tcl connections
+Info : Listening on port 4444 for telnet connections
+```
+
+Success!
+
+Not only were we able to connect to the JTAG TAP, we were able to connect to the CPU and we were able to halt it.
+And, indeed, on your FPGA development board, you should have noticed that the LEDs are not blinking anymore.
+OpenOCD also opened a GDB server on port 3333. Soon, we'll be executing debug instructions to the CPU from
+GDB through this TCP/IP port to OpenOCD which will translate them instead JTAG commands.
+
+You can run the OpenOCD command above by running `make ocd` in the `./sw` directory.
+
+# The vexriscv_init.cfg file
+
+The `vexriscv_init.cfg` file in the `./sw` directory sets up parameters that are specific to the VexRiscv configuration 
+of our design.
+
+# Debugging the Software
 
 
 # The VexRiscv Debug Plugin
