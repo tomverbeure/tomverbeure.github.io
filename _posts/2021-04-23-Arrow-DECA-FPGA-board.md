@@ -5,6 +5,8 @@ date:  2021-04-23 00:00:00 -1000
 categories:
 ---
 
+*Executive Summary: it's the new default FPGA board for my hobby projects.*
+
 * TOC
 {:toc}
 
@@ -32,7 +34,7 @@ Electronics website still shows 1314 items in stock. That should be sufficient
 to satisfy a quite a bit of new FPGA hobby entrants and experts alike.
 
 While working a different work-in-progress blog post, I decided to give the DECA board
-a try.
+a try. Here are my impressions...
 
 # DECA Board Features 
 
@@ -43,8 +45,8 @@ The DECA board is small, but it's packed with features.
 
 ![DECA board back view](/assets/deca/deca_back_view.jpg)
 
-You should check out the user manual for the details, but here are some stand-out
-details:
+You should check out the [user manual](/assets/deca/deca_user_manual.pdf)
+for the details, but here are some stand-out items:
 
 * MAX10 10M50 FPGA
 
@@ -55,13 +57,13 @@ details:
     all your clocking needs.  And ~50K of logic elements should be enough for
     everyone!
 
-    The biggest drawback is the speed. The main focus of MAX10 product line are fast
+    The biggest drawback is the speed. The main focus of the MAX10 product line are fast
     bootup times (they're intended to be used as MAX-II CPLD replacements), and
     low power consumption, not peak clock speeds.
 
-    You can run a [VexRiscv](https://www.arrow.com/en/products/deca/arrow-development-tools) 
+    A Max10 FPGA can run a [VexRiscv](https://www.arrow.com/en/products/deca/arrow-development-tools) 
     soft core at ~100MHz, which is a far cry of the 240MHz that's reported for the already 
-    quite dated and not terribly fast Artix-7.
+    dated and not terribly fast Artix-7.
 
 * Built-in USB-Blaster II
 
@@ -69,16 +71,16 @@ details:
     faster bitstream downloads, and less awkward cabling on your crowded 
     workbench.
 
-* A set of periperals that's sufficient to create a small CPU
+* A set of periperals that's sufficient to create your own small computer
 
     * 512MB of DDR3 DRAM
-    * HDMI output: up to 1080p @60Hz with support for audio as well
+    * HDMI output: up to 1080p @60Hz with support for audio as well. (It even has HDCP.)
     * USB OTG port: while OTG never really took off, it allows you to use the USB
     port as a host or as a device.
     * 10/100 Ethernet
     * MicroSD flash card socket
-    * 64MB of QSPI flash, fully usable because the bitstream is stored on the FPGA instead
-    * Audio line in/line out with CODEC
+    * 64MB of QSPI flash, fully usable because the bitstream is stored on the FPGA itself.
+    * Audio line in/line out with 16-bit audio CODEC
 
     In combination with the 50K logic elements of the FPGA, these peripherals are
     more than sufficient to create a Linux-capable system with display, keyboard, 
@@ -89,7 +91,7 @@ details:
 * A large variety of additional peripherals
 
     * BeagleBone compatible I/O expansion connectors with digital GPIOs and analog inputs
-    * the usual suspects of LEDs, buttons, and switches
+    * the usual assortment of LEDs, buttons, and switches
     * humidity and temperature sensor, an accelerometer, capacitivy key sensor, 
       an additional temperature sensor (because two is better than one!)
     * analog inputs, including 2 with SMA connector and pre-amplifier
@@ -153,16 +155,16 @@ It's hard to find major flaws with this board, but here are a few minor ones:
 
     ![SystemBuilder GUI](/assets/deca/SystemBuilder.jpg)
 
-    The SystemBuilder is a GUIL to create new project configuration files. I personally don't need 
+    The SystemBuilder is a GUI to create new project configuration files. I personally don't need 
     it, but it can be a great help in getting some basics right.
 
 # The DECA Design Resources Archive
 
-The design resources archive is pretty great and comprehensive!
+The design resources archive is pretty great and comprehensive.
 
 It contains:
 
-* schematic
+* board schematic
 * user manual
 
     The user manual goes over all major features of the board, describes the
@@ -178,7 +180,7 @@ It contains:
     report files.
     
     The design files were compiled with Quartus 15. Quartus hasn't seen a lot of
-    changes since then, but there have been updated to the way libraries and handled,
+    changes since then, but there have been updates to the way libraries and handled,
     so if you have enough disk space, I'd just install that version for a smooth
     experience.
     
@@ -243,7 +245,8 @@ set_instance_assignment -name IO_STANDARD "1.2 V" -to led2
 ```
 
 The values above can be entered with the Pin Assignment window of Quartus GUI, or you can
-paste them in the `<project_name>.qsf` file.
+paste them in the `<project_name>.qsf` file. You can also find them 
+[in my demo design](https://github.com/tomverbeure/arrow_deca/blob/3ee8d971a6a8db2d6b45aa9c812d3659ac7e4c81/quartus/blink.qsf#L40-L54).
 
 **Device Configuration Options**
 
