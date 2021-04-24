@@ -80,7 +80,7 @@ for the details, but here are some stand-out items:
     * 10/100 Ethernet
     * MicroSD flash card socket
     * 64MB of QSPI flash, fully usable because the bitstream is stored on the FPGA itself.
-    * Audio line in/line out with 16-bit audio CODEC
+    * Audio line in/line out with 24-bit audio CODEC
 
     In combination with the 50K logic elements of the FPGA, these peripherals are
     more than sufficient to create a Linux-capable system with display, keyboard, 
