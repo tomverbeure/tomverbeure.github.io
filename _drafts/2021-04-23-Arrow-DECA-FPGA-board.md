@@ -135,7 +135,14 @@ It's hard to find major flaws with this board, but here are a few minor ones:
 * no PMOD connector support
 
     The BeagleBone compatible I/O connectors support 69 digial IOs and 7 analog inputs, but they
-    are not compatible with the very popular PMOD standard.
+    are not compatible with the very popular PMOD standard, like the 2 in the picture below:
+
+    ![PMOD connectors](/assets/deca/PMOD_connectors.jpg)
+
+    It's not difficult to rewire some pins to make a PMOD device work, but it won't be the
+    seamless plug-and-play of other FPGA boards.
+
+    *I'm thinking of making a small BeagleBone to PMOD adapter PCB.*
 
 * the dual-boot/dual-config BOOT_SEL switch is very fragile 
 
@@ -185,6 +192,8 @@ It contains:
 The DECA board itself is quite small. The box it came in was not. In addition to
 the board itself, it came with a 5V power brick (not needed when the board is connected to
 USB), a 110V power cable, 2 mini-USB cables, and an Ethernet cable.
+
+![Box Contents](/assets/deca/box_contents.jpg)
 
 # Compiling a First Design
 
@@ -253,6 +262,8 @@ set_global_assignment -name ENABLE_BOOT_SEL_PIN OFF
 ```
 
 After that, my design compiled, and it worked too.
+
+![Working Blinky](/assets/deca/blinky_works.jpg)
 
 The design can be found [here](https://github.com/tomverbeure/arrow_deca). 
 
