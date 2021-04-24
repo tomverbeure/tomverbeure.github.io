@@ -254,6 +254,10 @@ set_global_assignment -name ENABLE_BOOT_SEL_PIN OFF
 
 After that, my design compiled, and it worked too.
 
+The design can be found [here](https://github.com/tomverbeure/arrow_deca). 
+
+It is nothing more than an LED blinky, but that's always an important pipe cleaner for me.
+
 # Conclusion
 
 At $37, the Arrow DECA board is excellent for anyone who wants to play with FPGAs. It has
@@ -266,6 +270,7 @@ It's now my standard FPGA board for my hobby projects.
 # References
 
 * [Arrow DECA User Manual](/assets/deca/deca_user_manual.pdf)
-* [DECA Resources and CDROM](https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=&No=944&PartNo=4).
+* [DECA Resources and CDROM](https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=&No=944&PartNo=4)
+* [LED Blink Example Design](https://github.com/tomverbeure/arrow_deca) on GitHub
 
 
