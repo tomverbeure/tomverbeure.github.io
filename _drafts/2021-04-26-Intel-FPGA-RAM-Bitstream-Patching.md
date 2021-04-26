@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Updating RAM Initialization Contents of Intel FPGA Bitstreams
+title: A Hack to Update RAM Initialization Contents in Intel FPGA Bitstreams
 date:  2021-04-25 00:00:00 -1000
 categories:
 ---
@@ -10,42 +10,52 @@ categories:
 
 # Introduction
 
-The logic elements of FPGAs are configured with the desired values 
-through a bitstream: lookup tables get their content, switches on interconnect 
-networks create the desired routing topology, flip-flops are connected to the 
-right clock network, etc. 
+The logic elements of FPGAs are configured with a bitstream: lookup tables of logic elements 
+get the content that defines their behavior, switches on interconnect networks create the 
+desired routing topology, flip-flops are connected to the right clock network, etc. 
 
 Most FPGAs also allow block RAMs to be given a non-zero content during
 configuration.
 
 This is an essential feature when the FPGA has a soft-core CPU, because it's
-the easiest way to have boot core present after powering up. In my personal
-designs, I often use tiny CPUs to implement controllers for all kinds of 
-low speed protocols like I2C, SPI, Ethernet PHY MDIO etc. In those cases,
-all the firmware is pre-baked in block RAMs.
+the easiest way to have boot code present immediately after powering up. 
 
-Using tiny CPUs instead of hardware also allows very rapid iteration: if
+In my personal projects, I often use tiny CPUs to implement controllers for 
+all kinds of low speed protocols like I2C, SPI, Ethernet PHY MDIO etc. In those cases,
+all the firmware is pre-baked in block RAMs. I hardly ever use external flash to
+store firmware: the amount of C code that I usually need is just not 
+large enough.
+
+Using tiny CPUs instead of hardware also allows for rapid iteration: if
 you can avoid the process of synthesis and place-and-route, and replace
-it by compile firmware and update bitstream, you can save minutes for
-tiny design, or hours for large ones.
+it by compile-firmware and update-bitstream, you can save minutes in iteration time 
+for tiny designs, or hours for large ones.
 
-Which brings up to the question: how can you avoid that process?
+Which brings up to the question: 
+
+**How can you quickly update bitstreams with new RAM content without going through resynthesis and place-and-route?**
 
 In this blog post, I'll describe 2 techniques:
 
 * the official one, which requires hand-instantiation of an Intel
   FPGA RAM model and using a HEX or a MIF file. 
-* a hack that makes it possible to use standard inferred RAMs in Verilog
-  and initialize them with `$readmem(...)`. This also makes the RTL of
-  your design compatible across different FPGA families
+* a hack that allows using Verilog inferred RAMs in Verilog that are initialized
+  with `$readmem(...)`. 
+
+The first option uses an Intel `altsyncram` primitive and doesn't work with FPGAs of 
+vendors. The second option makes the RTL of your design compatible across different FPGA families.
+
+I also have an example where both techniques are implemented in a minimal but useful CPU system.
 
 # The Generic Way to Infer Initialized RAMs
 
-The standard, generic way to add RAM to your FPGA design is something like this:
+The generic way to add RAM to your FPGA design looks more or less like this:
 
 ```verilog
     localparam mem_size_bytes   = 2048;
-    localparam mem_addr_bits    = $clog2(mem_size_bytes);   // $clog2 requires Verilog-2005 or later...
+
+    // $clog2 requires Verilog-2005 or later...
+    localparam mem_addr_bits    = $clog2(mem_size_bytes);   
 
     reg [7:0] mem[0:mem_size_bytes-1];
 
@@ -65,7 +75,7 @@ The standard, generic way to add RAM to your FPGA design is something like this:
 
 Any competent FPGA synthesis tool will infer a 2KB block RAM from the code above.
 
-If you want the RAM to be initialized with content, you just add the lines below:
+If you want the RAM contents to be initialized after configuration, just add the lines below:
 
 ```verilog
     initial begin
@@ -73,33 +83,37 @@ If you want the RAM to be initialized with content, you just add the lines below
     end
 ```
 
-This method will work for simulation and, once again, most competent FPGA tool will
+This method works for simulation and, once again, most competent FPGA tools will
 synthesize a bitstream that initializes the block RAM with content after configuration.
+(ASIC people won't like it at all, though!)
 
 An important observation here is that during the whole process from RTL to bitstream, 
-the FPGA tool will process teh `$readmemh()` statement during RTL analysis and
-synthesis, which happens near the front of the whole process.
-
-As a result,a dumb implementation will require restarting the process at that point
+the FPGA tool will process the `$readmemh()` statement during RTL analysis and
+synthesis. These steps happen at the front of the whole bitstream creating process.
+As a result, a dumb implementation will require restarting the process at that point
 when you change the contents of `mem_init_file.hex`. At least, that's how it
-is for Quartus...
+is for Quartus... (The open source ICE40 and ECP5 synthesis and P&R tools don't fall
+in the dumb implementation category!)
 
 There must be a better way...
 
 # Manual Instantiation of Intel Block RAMs
 
+Instead leaving it up to the synthesis tool to infer RAMs out of generic behavioral Verilog, you
+can also explicitly instantiate RAM primitives in your code. This can be useful
+for a variety of reasons.
 
-I often want to exploit very specific features of a particular FPGA's block RAM.
+One reason is when you want to exploit very specific features of a particular FPGA's block RAM.
 
-A common cases is where I want to make sure that my block RAM has flip-flops both at the
+A common case is where I want to make sure that my block RAM has flip-flops both at the
 input of the RAM (address, write data, write enable) and at the output (read data.)
 
 This increases the read latency of the RAM from one to two cycles, but in many
-designs, that's not an issue, and it can result in significant clock speed improvements.
+designs that's not an issue, and it can result in significant clock speed improvements.
 
-For cases like this, FPGA RAM inference is often hit-and-miss: a good example
-is when you have a case where there's a pipeline stage on the output of the RAM, which is then 
+In the code below, there's a pipeline stage on the output of the RAM, which is then 
 used as an operand of a multiplier:
+
 
 ```verilog
     reg [7:0] mem[0:mem_size_bytes-1];
@@ -107,7 +121,7 @@ used as an operand of a multiplier:
     always @(posedge clk)
         if (mem_wr_p0) begin
             mem[mem_addr_p0] <= mem_wdata_p0;
-            mem_rdata_p1     <= mem_wdata_p1;       // Some Intel FPGA RAMs require this...
+            mem_rdata_p1     <= mem_wdata_p1;
         end
         else
             mem_rdata_p1     <= mem[mem_addr_p0];
@@ -120,13 +134,22 @@ used as an operand of a multiplier:
         result_p3       <= some_other_data_p2 * mem_rdata_p2;
 ```
 
-*(The _px suffix indicates the pipeline stage number.)*
+![Memory + Multiplier Conceptual Architecture](/assets/ram_fast_bitstream_update/fast_ram_update-ram_plus_mul_rtl.svg)
 
-The synthesis tool has 2 options here about which flip-flops to use for `mem_rd_data_p2`: it could
-use the output FFs of the RAM, or it could use the input FFs of the DSP block.
+For cases like this, FPGA RAM inference can be hit-and-miss, because the synthesis tool has 2 implementation options 
+for the `rd_data_p2` register.
 
-When I want fine control over which FF to use, I will instantiate the RAM by hand with an
-Intel RAM primitive cell.  Like this:
+It could use the output FFs of the RAM. Like this:
+
+![Memory + Multiplier: RAM with output register](/assets/ram_fast_bitstream_update/fast_ram_update-ram_plus_mul_gates1.svg)
+
+Or it could use the input FFs of the DSP block. Like this:
+
+![Memory + Multiplier: DSP with input register](/assets/ram_fast_bitstream_update/fast_ram_update-ram_plus_mul_gates2.svg)
+
+When I want fine control in situations like this, I instantiate the RAM by hand with an
+Intel RAM primitive cell. The earlier behavioral RTL code is converted to something that's partly
+structural:
 
 ```verilog
     // altsyncram is an Intel primitive for all synchronous RAMs.
@@ -153,14 +176,14 @@ Intel RAM primitive cell.  Like this:
 The marked line is key here: using "REGISTERED" enables the output FFs of the RAM and adds
 the additional pipeline stage.
 
-The code above can't be used with other FPGAs, and even simulating it is a hassle, because the 
-simulation model is encrypted and only works with some commercial Verilog simulation tools. Or
-you need to write your behavioral `altsyncrma` memory model.
+The new code can't be used with FPGAs of other vendors, and even simulating it is a hassle, because Intel 
+simulation models are usually encrypted and only work with commercial Verilog simulation tools like
+ModelSim or VCS.
 
-My workaround for that is to have an `\ifdef` that selects regular Verilog for simulation,
-and `altsyncram` for Synthesis.
+My workaround for that is to have an `ifdef` that selects behavioral Verilog for simulation,
+and `altsyncram` for synthesis.
 
-Anyway, the method above allows allows the following parameter:
+The `altsyncram` primitive also has the optional `init_file` parameter:
 
 ```verilog
     defparam 
@@ -173,63 +196,70 @@ Anyway, the method above allows allows the following parameter:
 ```
 
 MIF stands for "Memory Initialization File". It's an Intel proprietary text file format
-to, well, initialize memories.
+to, well, initialize memories. I use my own 
+[`create_mif.rb`](https://github.com/tomverbeure/fpga_quick_ram_update/tree/main/misc) script 
+to convert binary files into a MIF files.
 
-I use my own `create_mif.rb` tool to convert binary files into a MIF files.
-
-It's even possible to use Verilog inferred RAMs with MIF files:
+It's possible to use Verilog inferred RAMs with MIF files:
 
 ```verilog
     (* ram_init_file = "mem_init_file.mif" *) reg [7:0] mem[0:mem_size_bytes-1];
 ```
 
-The problem with that method is that simulation is now even more problematic: no
-simulator knows what to do with the `ram_init_file` attribute!
+But this construct makes simulation even more problematic: simulators 
+don't know what to do with the Intel-specific `ram_init_file` attribute, so they
+just ignore it!
 
 # Fast Bitstream Update after Changing a MIF File
 
 The beauty of using an `altsyncram` and a MIF file is that you can easily update
-bitstream after changing the MIF file **without starting out from scratch**.
+your bitstream after changing the MIF file **without starting out from scratch**.
 
 Just perform the following steps:
 
 * Change the MIF file with the new contents 
-* Quartus GUI: go to ... -> Update Memory Initialization file  (XXX)
 
-     This update the Quartus compiled design database with the new
-     memory contents.
+* Quartus GUI: Processing -> Update Memory Initialization file
 
-* Quartus Gui: ... -> Assemble (XXX)
+     This loads your updated MIF file into the Quartus internal design database.
 
-    Create a bitstream from the Quartus compiled design database
+    ![Quartus GUI - Update Memory Initialization File](/assets/ram_fast_bitstream_update/update_memory_initialization_file.png)
+
+* Quartus Gui: Processing -> Start -> Start Assembler 
+
+    This creates a bitstream from the Quartus internal design database.
+
+    ![Quartus GUI - Start Assembler](/assets/ram_fast_bitstream_update/start_assembler.png)
+
 
 Instead of using a GUI, I use a Makefile to do the 2 Quartus steps:
 
 ```makefile
 QUARTUS_DIR = /home/tom/altera/13.0sp1/quartus/bin/
+DESIGN_NAME = my_design
 
 update_ram: sw 
-	$(QUARTUS_DIR)/quartus_cdb <my_design> -c <my_design> --update_mif
-	$(QUARTUS_DIR)/quartus_asm --read_settings_files=on --write_settings_files=off <my_design> -c <my_design>
+	$(QUARTUS_DIR)/quartus_cdb $(MY_DESIGN) -c $(MY_DESIGN) --update_mif
+	$(QUARTUS_DIR)/quartus_asm --read_settings_files=on --write_settings_files=off $(MY_DESIGN) -c $(MY_DESIGN)
 
 sw:
 	cd ../sw && make
 ```
 
-The `sw` rule builds the latest firmware version and creates the new MIF files. `quartus_cdb` updates
+The `sw` rule builds the latest firmware version and creates the new MIF file. `quartus_cdb` updates
 the design database, and `quartus_asm` creates the new bitstream.
 
-# Faster Bistream Update Usign Generic Instantiation
+# Fast Bitstream Update for the Generic Verilog Case
 
-To update inferred RAMS that were initialized with `$readmemh()`, we need to hack
-the Quartus design database ourselves. This is easier that you think: it turns
-out that Quartus uses the MIF file format in that internal database!
+To update inferred RAMs that were initialized with `$readmemh()`, we need to hack
+the Quartus design database ourselves. This is easier that you'd think because Quartus uses the MIF file format 
+in that database!
 
 The steps to update your inferred RAMs are as follows:
 
 * find the MIF file in the database that's used for your RAM
 
-    I do this by simply listing all the MIF file
+    I do this by listing all the MIF files in the database:
 
     ```sh
     cd quartus/db
@@ -238,34 +268,70 @@ The steps to update your inferred RAMs are as follows:
 
 * create a MIF file for the inferred RAM
 
-    In my firmware build makefile, I always build HEX file (for use 
-    by `$readmemh` and MIF file.
+    In the makefile for my firmware, I always immediately build both a HEX file (for use 
+    by `$readmemh()`) and MIF file.
 
-* copy your create MIF file to the MIF files in the internal database
+* copy your MIF file over the MIF file in the internal database
+* do the earlier 2 Quartus steps 
 
-The last step is done by my Makefile:
+The Makefile looks like this:
 
 ```makefile
 QUARTUS_DIR = /home/tom/altera/13.0sp1/quartus/bin/
+DESIGN_NAME = my_design
 
-U_MEM       = $(wildcard ./db/*u_mem*.mif)
+DB_MEM_MIF  = $(wildcard ./db/*mem*.mif)
+SRC_MEM_MIF = ../sw/mem_init_file.mif
 
-update_ram: sw $(U_MEM)
-	$(QUARTUS_DIR)/quartus_cdb <my_design> -c <my_design> --update_mif
-	$(QUARTUS_DIR)/quartus_asm --read_settings_files=on --write_settings_files=off <my_design> -c <my_design>
+update_ram: sw $(DB_MEM_MIF)
+	$(QUARTUS_DIR)/quartus_cdb $(MY_DESIGN) -c $(MY_DESIGN) --update_mif
+	$(QUARTUS_DIR)/quartus_asm --read_settings_files=on --write_settings_files=off $(MY_DESIGN) -c $(MY_DESIGN)
 
-$(U_MEM): ../sw/mem_inif_file.mif
+$(DB_MEM_MIF): (SRC_MEM_MIF)
 	cp $< $@
 
 sw:
 	cd ../sw && make
 ```
 
-1. the `sw` rule still first builds the latest firmware version, and creates a `../sw/mem_init_file.mif`.
-1. the `U_MEM` variable contains the path the RAM MIF file in the design database.
-1. the `$(U_MEM)` rule copies my MIF file to the one in the database.
-1. the `update_ram` rule is the same as before: it creates the new bitstream.
+The key part here is selecting the correct MIF file in the database. The name of this file will match
+the hierarchy of where the memory lives in design, but there will also be some random hexadecimal
+suffix.
 
+When you have multiple RAMs that must be updated this way, you need to be a bit careful about making
+the wildcard right, but it's really not very difficult.
 
+# Mini CPU: A Concrete Design Example
+
+To illustrate the concepts that I've described here, I created a small but non-trivial example that contains
+a VexRiscv CPU, dual-ported RAM to store CPU instructions and data, and some peripheral registers to control
+LEDs and read an button. You can find its GitHub repo [here](https://github.com/tomverbeure/fpga_quick_ram_update).
+
+The example has been tested on my [Arrow DECA FPGA board](/2021/04/23/Arrow-DECA-FPGA-board.html), but it's 
+easy to port it on other Intel FPGA boards.
+
+There's a [\`define](https://github.com/tomverbeure/fpga_quick_ram_update/blob/179837c409beaad14c12c24f1323ec0cfa0468f5/rtl/top.v#L3)
+to select between [generic RAM inference](https://github.com/tomverbeure/fpga_quick_ram_update/blob/179837c409beaad14c12c24f1323ec0cfa0468f5/rtl/top.v#L102-L163) 
+and [`altsyncram` instantiation](https://github.com/tomverbeure/fpga_quick_ram_update/blob/179837c409beaad14c12c24f1323ec0cfa0468f5/rtl/top.v#L165-L273).
+
+The [Makefile](https://github.com/tomverbeure/fpga_quick_ram_update/blob/179837c409beaad14c12c24f1323ec0cfa0468f5/quartus_max10_deca/Makefile#L6-L35)
+in the `./quartus_max10_deca` directory shows how to update the 4 RAMs that contain the firmware.
+
+Give it a try when you have an DECA board:
+
+* compile the firmware in the `./sw` directory
+* create a bitstream
+* verify that the LEDs are rotating in one direction
+* [change a define in the firmware](https://github.com/tomverbeure/fpga_quick_ram_update/blob/179837c409beaad14c12c24f1323ec0cfa0468f5/sw/main.c#L9) 
+  to make the LEDs rotate in the opposite direction
+* Do `make update_ram` in the `./quartus_max10_deca` directory to update the bitstream without recompilation.
+
+If you have a different Intel based FPGA board, copy the `./quartus_max10_deca` directory, and make it work. I'm
+ready to accept pull requests.
+
+# Conclusion
+
+I've been using this technique for a couple of years now. The reduction in iteration time is significant and
+a big stimulus to move even more non-timing critical functionality from hardware to the CPU. 
 
 
