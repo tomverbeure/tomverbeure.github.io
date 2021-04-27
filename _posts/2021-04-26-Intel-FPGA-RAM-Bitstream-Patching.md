@@ -154,19 +154,20 @@ structural:
 ```verilog
     // altsyncram is an Intel primitive for all synchronous RAMs.
     // It has tons of tweaking options...
-    altsyncram u_mem(
+
+    altsyncram #(
+        .operation_mode    ("SINGLE_PORT"),
+        .width_a           (8),
+        .width_ad_a        (mem_addr_bits),
+        .outdata_reg_a     ("REGISTERED")           // <<<<<<<<<<
+    )
+    u_mem(
         .clock0   (clk),
         .address_a(mem_addr)
         .wren     (mem_wr),
         .data_a   (mem_wdata),
         .q_a      (mem_rdata_p2)
     );
-
-    defparam 
-        u_mem.operation_mode    = "SINGLE_PORT",
-        u_mem.width_a           = 8,
-        u_mem.width_ad_a        = mem_addr_bits,
-        u_mem.outdata_reg_a     = "REGISTERED";         // <<<<<<<<<<
 
     always @(posedge clk) begin
         result_p3 <= some_other_data_p2 * mem_rdata_p2;
@@ -186,13 +187,15 @@ and `altsyncram` for synthesis.
 The `altsyncram` primitive also has the optional `init_file` parameter:
 
 ```verilog
-    defparam 
-        u_mem.operation_mode    = "SINGLE_PORT",
-        u_mem.width_a           = 8,
-        u_mem.width_ad_a        = mem_addr_bits,
-        u_mem.outdata_reg_a     = "REGISTERED",
-        u_mem.init_file         = "mem_init_file.mif";  // <<<<<<<<<<
-
+    altsyncram #(
+        .operation_mode    ("SINGLE_PORT"),
+        .width_a           (8),
+        .width_ad_a        (mem_addr_bits),
+        .outdata_reg_a     ("REGISTERED"),
+        .init_file         ("mem_init_file.mif")    // <<<<<<<<<<
+    )
+    u_mem(
+        ...
 ```
 
 MIF stands for "Memory Initialization File". It's an Intel proprietary text file format
