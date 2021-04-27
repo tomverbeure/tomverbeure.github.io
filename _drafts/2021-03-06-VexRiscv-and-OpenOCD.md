@@ -34,8 +34,8 @@ When you only ever have debugged code that runs on your native PC, or on an embe
 which an IDE hides all the details, understanding all the components of an embedded debug system 
 can be a bit confusing.
 
-The figure below illustrates the different components of an end-to-end debug system. (While
-Vexriscv specific, the upper layer concepts apply to any embedded debug system.)
+The figure below illustrates the different components of an end-to-end debug system. While
+Vexriscv specific, the general concepts apply to any embedded debug system.
 
 ![Debug Flow - IDE to CPU Data Flow](/assets/vexriscv_ocd/vexriscv_ocd-ide_to_cpu_data_flow.svg)
 
@@ -46,6 +46,9 @@ We can see the following components from bottom to up:
     The CPU that is running the code that we need to debug. 
 
 * VexRiscv Debug Plugin
+
+    Hardware plugins are an interesting concept that's specific to the VexRiscv design philosophy. You
+    can read more about it in [this blog post](/rtl/2018/12/06/The-VexRiscV-CPU-A-New-Way-To-Design.html).
 
     DebugPlugin adds the necessary logic to the VexRiscv CPU to halt and start the CPU, to
     set hardware breakpoints (if there are any), and to insert random instructions into the CPU 
@@ -60,8 +63,8 @@ We can see the following components from bottom to up:
 
 * JtagBridge
 
-    The JTAG bridge takes in the standard 4 JTAG IO pins, adds a number of debug scan registers,
-    and the necessary logic talk to the SystemDebugRemoteBus.
+    The JTAG bridge takes in the standard 4 JTAG IO pins, contains a JTAG test access port (TAP), 
+    adds a number of debug scan registers, and has the logic talk to the SystemDebugRemoteBus.
 
 * USB to JTAG Dongle
 
@@ -124,8 +127,8 @@ CPU running on an FPGA, and try to a debug environment working.
 
 # A Minimal CPU System
 
-To demonstrate how to use a VexRiscv with a debugger, I created a minimal design that
-consists of a VexRiscv (with debug plugin, of course), a bit of RAM for CPU instructions,
+Let's demonstrate a VexRiscv with a debugger on a minimal design that
+consists of a VexRiscv CPU (with debug plugin, of course), a bit of RAM for CPU instructions,
 and data, and some registers to control LEDs and read back the value of button.
 
 ![Minimal CPU System Block Diagram](/assets/vexriscv_ocd/vexriscv_ocd-minimal_cpu_system.svg)
@@ -167,16 +170,17 @@ of the configuration used can be found [here XXX](), but a short summary is:
     This is not necessary for basic debug support, but it will be useful for semi-hosting
     support. See later.
 
-**Dual-ported CPU RAM**
+**Dual-ported CPU Memory**
 
 In many FPGAs, all block RAMs are true dual-ported, and there's no extra cost to use them.
-In this example design, I exploit this fact by using one port of the RAM for the CPU
-instruction bus, and the other port for the CPU data bus.  This makes the design
-even easier: there's no need for arbitration logic that selects between iBus or
-dBus requests, because they can happen in parallel.
+The VexRiscv has a traditional Harvard architecture with separate instruction and data bus.
 
-The RAM are 4 RAMs, one for each byte lane. This way, I don't rely on the synthesis tool
-having to infer byte-enable logic...
+In this design, I use one port of the RAM for the CPU instruction bus, and the other port 
+for the CPU data bus.  This removes the need for arbitration logic that selects between iBus or
+dBus requests to memory, because they can happen in parallel.
+
+The 32-bit memory is implemented with 4 8-bit wide RAMs, one for each byte lane. This way, 
+I don't rely on the synthesis tool having to infer byte-enable logic...
 
 **Peripheral registers**
 
@@ -200,21 +204,25 @@ the FPGA to general purpose IO pins, as shown in the diagram below:
 
 ![System Setup with Generic JTAG](/assets/vexriscv_ocd/vexriscv_ocd-system_setup_generic.svg)
 
-The disadvantage of this configuration is that you end up with separate methods to load the bitstream
-into the FPGA and to debug the CPU. GPIO pins are often precious and it's painful to waste 4 of them
-just for debugging.
+The disadvantage of this configuration is that you end up with two separate paths from your PC
+to the FPGA board: one to load the bitstream into the FPGA and one to debug the CPU. GPIO pins 
+are often precious and it's painful to waste 4 of them just for debugging.
+
+![DECA FPGA board with 2 cable](/assets/vexriscv_ocd/deca_board_with_2_cables.jpg)
 
 But it has the benefit of being completely generic and universal: it will work on any FPGA board and 
 FPGA type.
 
-There is an alternative: almost all FPGAs these days (the Lattice ICE40 is a notable exception) have 
-a way for the core programmable logic to tie into the JTAG TAP that's already part of the FPGA. Intel
-has virtual JTAG, Xilinx has the BSCANE primitive cell, and Lattice ECP5 has the JTAGG primitive cell.
+There is an alternative: almost all FPGAs, the Lattice ICE40 family is one notable exception, 
+have a way for the core programmable logic to tie into the JTAG TAP that's already part of the FPGA. Intel
+has virtual JTAG infrastructure, Xilinx has the BSCANE primitive cell, and Lattice ECP5 has the JTAGG 
+primitive cell. With a bit of additional logic and corresponding support in OpenOCD, it's possible to 
+create a system with just one cable.
 
 ![System Setup with Native JTAG Extension](/assets/vexriscv_ocd/vexriscv_ocd-system_setup_shared_tap.svg)
 
-VexRiscv version of OpenOCD and SpinalHDL have support for some of these options, but that's for
-future blog posts...
+The SpinalHDL and the VexRiscv version of OpenOCD have support for some of these options, but that's for
+future blog posts... The remainder of this article will deal with the generic option only.
 
 # Simulating the Design
 
