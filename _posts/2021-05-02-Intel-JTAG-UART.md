@@ -407,6 +407,8 @@ when it wants to write transmit a character.
 
 # Connecting to the JTAG UART with nios2-terminal
 
+![nios2-terminal](/assets/jtag_uart/nios2_terminal.png)
+
 After compiling the software and synthesizing the design to a bitstream, all that remains is loading the bitstream 
 into the FPGA, and connecting to the JTAG UART.
 
