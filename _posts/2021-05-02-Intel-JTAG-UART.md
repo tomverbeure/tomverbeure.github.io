@@ -1,7 +1,7 @@
 ---
 layout: post
-title: The Intel JTAG UART - Add a Console to Your Design without Adding IO Pins
-date:  2021-05-01 00:00:00 -1000
+title: The Intel JTAG UART - Add a Serial Console to Your Design without Extra IO Pins
+date:  2021-05-02 00:00:00 -1000
 categories:
 ---
 
@@ -482,11 +482,11 @@ The System Console uses TCL, the most wretched of all scripting languages ever i
 
     1. Create a list of bytes to send to that JTAG UART.
 
-        The first has the 'r' command to reverse the order of the LED toggling sequence. 114 is the ASCII code for 'r'.
+        114 is the ASCII code for 'r', the command to reverse the order of the LED toggling sequence in my design.
 
-    1. Send the bytes to the JTAG UART.
+    1. Send the list of bytes to the JTAG UART.
 
-        You'll see the LEDs sequence swap into the opposite direction.
+        You should see the LEDs sequence swap into the opposite direction.
 
 
 To make things reliable, you'll have to pull the JTAG UART reply, etc. And to be able to use a non-disgusting 
