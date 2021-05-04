@@ -15,7 +15,7 @@ initialization contents of Intel FPGAs, I mentioned how I include a small CPU in
 for things like low-speed interface control, register initialization, overall data flow management
 etc.
 
-Another essential item of my design toolbox is the JTAG UART.
+Another essential item in my design toolbox is the JTAG UART.
 
 Everybody is probably familiar with the regular UART, a serial interface that 
 [dates back to somewhere in the seventies](https://en.wikipedia.org/wiki/Universal_asynchronous_receiver-transmitter#History)
