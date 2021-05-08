@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Write Your Own C and Python Clients for the Intel JTAG UART
-date:  2021-05-08 00:00:00 -1000
+date:  2021-05-07 00:00:00 -1000
 categories:
 ---
 
@@ -11,8 +11,8 @@ categories:
 # Introduction
 
 In [my previous blog post](/2021/05/02/Intel-JTAG-UART.html), I wrote about Intel's JTAG UART, an important
-component of my set of debugging tools, and how to connect it to integrate it in your own Verilog code,
-outside of Intel's Platform Designer.
+component of my set of debugging tools, and how to integrate it in your own Verilog code, outside of Intel's 
+Platform Designer.
 
 I also [mentioned](/2021/05/02/Intel-JTAG-UART.html#communicating-to-the-jtag-uart-with-a-script) how it's 
 a pain to communicate with the JTAG UART with anything other than nios2-terminal.
@@ -39,7 +39,7 @@ code or include file at hand, you'll have to do some amount of reverse engineeri
 a huge headstart by just dumping the contents of all its publicly advertised symbols, functions and 
 variables.
 
-The `nm` command will do that for you:
+The `nm` command does that for you:
 
 ```sh
 nm libjtag_atlantic.so | c++filt
@@ -106,7 +106,7 @@ for C++ class methods.
 
 Let's not bother with the methods. Here are all the functions:
 
-```
+```sh
 nm libjtag_atlantic.so | c++filt | grep " T "
 ```
 
@@ -128,13 +128,14 @@ nm libjtag_atlantic.so | c++filt | grep " T "
 0000000000001c06 T jtagatlantic_bytes_available(JTAGATLANTIC*)
 ```
 
-It's not defined separately in the `nm` list, but `JTAGATLANTIC` is a pointer to a struct with all the necessary information.
+It's not defined separately in the `nm` list, but `JTAGATLANTIC*` is a pointer to a struct with internal
+information. You can treat it as a handle without the need to know anything more about it. 
 
 *On Windows, `dumpbin /exports jtag_atlantic.dll` will give you a similar result.*
 
-The only thing that's left to use the functions above your own code is to figure out the meaning of the
-function call parameters. It wouldn't be very hard to do, but it's even easier than that because others have already
-done it before me! Check out [`jtag_atlantic.h`](https://github.com/tomverbeure/alterajtaguart/blob/master/software/jtag_atlantic.h)
+To use the functions above your own code is, you must figure out the meaning of the function call 
+parameters. It wouldn't be very hard to do, but it's even easier when others have already
+done it before you! Check out [`jtag_atlantic.h`](https://github.com/tomverbeure/alterajtaguart/blob/master/software/jtag_atlantic.h)
 from the [`thotypous/alterajtaguart`](https://github.com/thotypous/alterajtaguart) project on GitHub:
 
 ```c
@@ -175,8 +176,8 @@ void jtagatlantic_get_info(JTAGATLANTIC *atlantic, char const **cable, int *devi
 
 With `jtag_atlantic.h` in place, creating a program to talk to my design example becomes easy. 
 
-This would be the minimum program to send an 'r' to my JTAG UART (to reverse the LED toggle direction)
-and then prints out all the replies:
+This is a minimum program to send an 'r' to my JTAG UART (to reverse the LED toggle direction)
+and print out all the replies:
 
 ```c
 void main(int argc, char **argv)
@@ -194,8 +195,8 @@ void main(int argc, char **argv)
 }
 ```
 
-I based my final code, [`jtag_uart_send_cmd.c`](https://github.com/tomverbeure/jtag_uart_example/blob/master/c_client/jtag_uart_send_cmd.cpp),
-on the [code in the `alterajtaguart` project](https://github.com/tomverbeure/alterajtaguart/tree/master/software),
+My final example, [`jtag_uart_send_cmd.c`](https://github.com/tomverbeure/jtag_uart_example/blob/master/c_client/jtag_uart_send_cmd.cpp),
+is based on the [code in the `alterajtaguart` project](https://github.com/tomverbeure/alterajtaguart/tree/master/software),
 but I added the ability to specify on the command line which USB cable, device, and instance number to use, and which string to
 send to the JTAG UART.
 
@@ -252,11 +253,11 @@ print("read: ", ju.read())
 # Final Words
 
 A few years ago, I had to extract a large amount of debug data out of an FPGA, but didn't have the tools
-to easily do this over JTAG UART. I ended up exfiltrating the data by bitbanging an SPI protocol on some 
+to do this over JTAG UART. I ended up exfiltrating the data by bitbanging an SPI protocol on some 
 GPIO pins, and recording the result with a Saleae logic analyzer.
 
-I could have saved myself a lot of time if Intel had provided an easy path to script things
-with a language other than TCL.
+I could have saved myself a lot of time if Intel had provided a convenient API to script things
+with a language other than TCL. This Python package fills that gap.
 
 What's frustrating is that the shared library technique described here isn't new: 
 [this discussion on the official Altera forum](https://community.intel.com/t5/Programmable-Devices/DE1-board-to-PC-communication/td-p/31708?profile.language=en)
