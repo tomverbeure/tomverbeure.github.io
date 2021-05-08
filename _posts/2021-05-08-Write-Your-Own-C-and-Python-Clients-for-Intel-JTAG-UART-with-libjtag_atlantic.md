@@ -283,9 +283,8 @@ With a little bit of luck, this blog post puts an end to that.
     of using jtag_atlantic.
 
 * [High Speed Image Download Demo](https://community.intel.com/t5/FPGA-Wiki/High-Speed-Image-Download-Demo/ta-p/735576)
-
-* [hOw to Create a Python Wrapper for C/C++ Shared Libraries](https://betterprogramming.pub/how-to-create-a-python-wrapper-for-c-c-shared-libraries-35ffefcfc10b)
-
-
-
+* [How to Create a Python Wrapper for C/C++ Shared Libraries](https://betterprogramming.pub/how-to-create-a-python-wrapper-for-c-c-shared-libraries-35ffefcfc10b)
+* [`intel-jtag-uart` package on PyPi](https://pypi.org/project/intel-jtag-uart/)
+* [`intel_jtag_uart` repo on GitHub](https://github.com/tomverbeure/intel_jtag_uart)
+* [`jtag_uart_example` repo on GitHub](https://github.com/tomverbeure/jtag_uart_example)
 
