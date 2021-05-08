@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Write Your Own C and Python Clients for the Intel JTAG UART
-date:  2021-05-07 00:00:00 -1000
+date:  2021-05-08 00:00:00 -1000
 categories:
 ---
 
