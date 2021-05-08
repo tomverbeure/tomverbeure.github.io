@@ -1,7 +1,7 @@
 ---
 layout: post
-title: Writing Your Own C and Python Clients for Intel's JTAG UART
-date:  2021-05-03 00:00:00 -1000
+title: Write Your Own C and Python Clients for the Intel JTAG UART
+date:  2021-05-08 00:00:00 -1000
 categories:
 ---
 
@@ -17,17 +17,17 @@ outside of Intel's Platform Designer.
 I also [mentioned](/2021/05/02/Intel-JTAG-UART.html#communicating-to-the-jtag-uart-with-a-script) how it's 
 a pain to communicate with the JTAG UART with anything other than nios2-terminal.
 
-After publishing that that blog post, somebody on Reddit offers some very interesting pointers to a
+After publishing that that blog post, somebody on Reddit offered some very interesting pointers to a
 solution: the Quartus tools are using shared libraries (there's 862 of them in the Quartus 20.1 installation!),
 and 2 of them are of particular interest: `libjtag_client.so` is a large library that's used for all
-interactions with the Quartus `jtagd` daemon, and `libjtag_atlantic.so` is much smaller. It's layered
+interactions with the Quartus `jtagd` daemon, and `libjtag_atlantic.so`, a much smaller library, is layered
 on top of `jtag_client` and handles all the JTAG UART specifics.
 
-You can find all these shared librares in the `$QUARTUS_ROOTDIR/linux64` directory:
+You can find these shared librares in the `$QUARTUS_ROOTDIR/linux64` directory:
 
 ![Quartus JTAG shared libraries](/assets/jtag_uart/jtag_shared_libraries.png)
 
-with a little bit of effort, you can use these libraries for yourself and let Intel's code do
+With a little bit of effort, you can use these libraries for yourself and let Intel's code do
 all the hard work.
 
 # How to Use an Unknown Shared Library
@@ -51,6 +51,7 @@ used as a C `#include` header.
 Here's a partial extract of the result:
 
 ```
+...
 000000000000259a T jtagatlantic_read(JTAGATLANTIC*, char*, unsigned int)
                  U aji_access_overlay(AJI_OPEN*, unsigned int, unsigned int*)
                  U aji_get_checkpoint(AJI_OPEN*, unsigned int*)
@@ -91,15 +92,15 @@ Here's a partial extract of the result:
 In front of the symbols, there's also the address (we don't care about that), and a symbol type.
 
 `t` and `T` are symbols that are located in the `.text` section of the library, and they are almost
-always functions. According to the `nm` manpage, a lowercase symbol signifies a local symbol, while
+always functions or class methods. According to the `nm` manpage, a lowercase symbol signifies a local symbol, while
 uppercase is global. 
 
 `U` symbols are undefined. The linker will need to resolve them by including other libraries. 
 In our case, that library will be `jtag_client`. A quick check shows that the `U` symbols in `jtag_client`
 are all functions of the C standard library, so, thankfully, the dependency list stops there.
 
-I don't the reason behind it, but by inspecting the different types, `T` seems to be used for 
-ordinary functions, while `t` is used for C++ class methods. 
+I don't know the reason behind it, but `T` seems to be used for ordinary functions, while `t` is used 
+for C++ class methods. 
 
 *The functions are still using C++-style name mangling though, so you need to call them as C++ functions!*
 
@@ -129,12 +130,12 @@ nm libjtag_atlantic.so | c++filt | grep " T "
 
 It's not defined separately in the `nm` list, but `JTAGATLANTIC` is a pointer to a struct with all the necessary information.
 
-*On Windows, you'd do `dumpbin /exports jtag_atlantic.dll`.*
+*On Windows, `dumpbin /exports jtag_atlantic.dll` will give you a similar result.*
 
 The only thing that's left to use the functions above your own code is to figure out the meaning of the
-function call parameters. It wouldn't be very hard to do, but it's even easy because others have already
-done that befor me! Check out [`jtag_atlantic.h`](https://github.com/tomverbeure/alterajtaguart/blob/master/software/jtag_atlantic.h)
-from the [`thotypous/alterajtaguart`](https://github.com/thotypous/alterajtaguart) project on GitHub.
+function call parameters. It wouldn't be very hard to do, but it's even easier than that because others have already
+done it before me! Check out [`jtag_atlantic.h`](https://github.com/tomverbeure/alterajtaguart/blob/master/software/jtag_atlantic.h)
+from the [`thotypous/alterajtaguart`](https://github.com/thotypous/alterajtaguart) project on GitHub:
 
 ```c
 #ifndef _JTAGATLANTIC_H
@@ -217,6 +218,52 @@ Reversing LED sequence...
 make: *** [run] Interrupt
 ```
 
+# A JTAG UART Python Package
+
+It's a waste of time to write low performance tooling like this in C, so I created 
+the [`intel_jtag_uart` Python module](https://github.com/tomverbeure/intel_jtag_uart)
+and went the extra mile to package it as [my first project on PyPi](https://pypi.org/project/intel-jtag-uart/).
+
+Installing the package is as easy as:
+
+```sh
+pip3 install intel-jtag-uart
+```
+
+Communicating with the JTAG UART goes as follows:
+
+```python
+#! /usr/bin/env python3
+import time
+import intel_jtag_uart
+
+try:
+    ju = intel_jtag_uart.intel_jtag_uart()
+
+except Exception as e:
+    print(e)
+    sys.exit(0)
+
+ju.write(b'r')
+time.sleep(1)
+print("read: ", ju.read())
+```
+
+# Final Words
+
+A few years ago, I had to extract a large amount of debug data out of an FPGA, but didn't have the tools
+to easily do this over JTAG UART. I ended up exfiltrating the data by bitbanging an SPI protocol on some 
+GPIO pins, and recording the result with a Saleae logic analyzer.
+
+I could have saved myself a lot of time if Intel had provided an easy path to script things
+with a language other than TCL.
+
+What's frustrating is that the shared library technique described here isn't new: 
+[this discussion on the official Altera forum](https://community.intel.com/t5/Programmable-Devices/DE1-board-to-PC-communication/td-p/31708?profile.language=en)
+dates from 2009! But one way or the other, I was never able to Google myself towards the
+right solution.
+
+With a little bit of luck, this blog post puts an end to that.
 
 # References
 
