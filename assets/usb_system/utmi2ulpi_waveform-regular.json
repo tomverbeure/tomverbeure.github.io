@@ -1,0 +1,19 @@
+{signal: [
+  {name: 'clk',            wave: 'p........'},
+ 
+  {name: 'tx_valid',       wave: '01....0..'},
+  {name: 'tx_ready',       wave: '0.1.01.0.'},
+  {name: 'tx_data',        wave: 'x7.89.x..', data: ['A', 'B', 'C', '0xFF', 'E', 'F', 'G', 'H', 'I']},
+  {name: 'op_mode',        wave: '2........', data: ['2\'b00', '2\'b10', '2\'b00']},
+  {},
+  {name: 'state',          wave: '2.22...2.', data: ['Idle', 'TxStart', 'TxData', 'Idle', 'TxStart', 'TxData', 'Idle', 'TxStart', 'TxData', 'TxIdle']},
+  {},
+  {name: 'ulpi_dir',       wave: '0........'},
+  {name: 'ulpi_data',      wave: '0.7.8.90.', data: ['A', 'B', 'C', '0xFF', 'E', 'F', 'G', 'H', 'I']},
+  {name: 'ulpi_nxt',       wave: '0..101.0.'},
+  {name: 'ulpi_stp',       wave: '0......10'},
+  {},
+
+],
+  config:{ hscale: 2}
+} 
