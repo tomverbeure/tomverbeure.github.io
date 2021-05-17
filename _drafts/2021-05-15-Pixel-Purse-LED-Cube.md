@@ -1,12 +1,13 @@
 ---
 layout: post
-title: Pixel Purse LED Cube Controlled by Cisco 3G Modem
-date:  2021-05-15 00:00:00 -1000
+title: A Pixel Purse LED Cube Controlled by a Cisco 3G Modem
+date:  2021-05-16 00:00:00 -1000
 categories:
 ---
 
-*I presented this project at BangBangCon West 2020, but never got around to writing
-down the details...*
+*I [presented this project](https://www.youtube.com/watch?v=0tBU5-lJYmU) at BangBangCon West 2020, 
+but never got around to publish a blog post about it. A 10 minute talk is not enough to cover some technical aspects, 
+and since I'm starting to forget them, it's about time to write things down.*
 
 * TOC
 {:toc}
@@ -552,10 +553,16 @@ done, and this one has largely run its course.
 
 # Looking Back...
 
-The whole project was a success. From start to finish, it took me about a month to 
-complete: everything was complete by the end of January. While I had another month to 
-make improvements, February was also the start of a major house remodel, which made us 
-camp out in the garage that's also my home lab. 
+The whole project was a success. My second major hobby project after my
+[Racing the Beam Ray Tracer](/rtl/2018/11/26/Racing-the-Beam-Ray-Tracer.html) (which 
+[I presented at !!Con West 2019](https://www.youtube.com/watch?v=gWjCJI_u8SU).)
+I look back at it fondly!
+
+From start to finish, it took me about a month: the last code change 
+["Mario"](https://github.com/tomverbeure/cube/commit/f5f02c57080859b3c1679be57a828b84a7ae9c9a) 
+was committed to GitHub on January 26st. While that gave me plenty of time to make improvements, 
+that day was also the start of a major house remodel that made us camp out in the 
+garage that's also my home electronics lab. 
 
 Looking back, there were a lot of things that could have gone bad:
 
