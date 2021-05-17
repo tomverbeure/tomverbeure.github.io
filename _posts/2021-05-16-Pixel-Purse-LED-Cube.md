@@ -224,7 +224,7 @@ and an ATtiny to manage downloading a bitstream from the SDcard into the FPGA.
 Unfortunately, minutes after receiving the boards on New Year's Eve, I found out
 that I had swapped around the 2.54mm row and the 1.27mm rows!
 
-I was able salvage the board by soldering the pins on the other side. This gave me
+I was able to salvage the board by soldering the pins on the other side. This gave me
 enough GPIO pins to drive a full HUB75 interface.
 
 ![HWIC Interface Board Soldered](/assets/led_cube/hwic_interface_board_soldered.jpg)
@@ -302,7 +302,7 @@ hardware, and doing so frees up a lot of cycles on the 50MHz CPU.
 # Correcting for Panel Orientation and Location in the HUB75 Streamer
 
 The LED panels were assembled in such a way that the internal cabling was as 
-straightforward as possible. You can see a bit of that in the Death Start
+straightforward as possible. You can see a bit of that in the Death Star
 picture earlier, but that doesn't show interconnecting different sides
 of the cube. There's a rats nest of cables in the end!
 
@@ -428,7 +428,7 @@ And Mario running around aimlessly with nothing else to do:
 
 ![Mario](/assets/led_cube/mario.jpg)
 
-The bitmaps use either 2 or 4 colors and defined as 
+The bitmaps use either 2 or 4 colors and are defined as 
 [binary structs](https://github.com/tomverbeure/cube/blob/70fef2f4ca1a75b4572f08cdb1270337a5284cef/sw/main.c#L39-L301) 
 in the main C code:
 
@@ -452,11 +452,12 @@ uint32_t ghost_left_0[14] = {
 ```
 
 If you didn't know that [GCC supports binary constants](https://gcc.gnu.org/onlinedocs/gcc/Binary-constants.html), 
-now you do!
+you do now!
 
 This is the final result: 
 
-https://www.amazon.com/Valefod-Efficiency-Voltage-Regulator-Converter/dp/B076H3XHXP
+<iframe src="https://player.vimeo.com/video/551242661" width="640" height="360" frameborder="0" allow="autoplay; fullscreen" allowfullscreen></iframe>
+
 
 # Unexpected Short Circuits Solved with UV Hardened Glue
 
