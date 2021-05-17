@@ -534,6 +534,10 @@ went without a hitch during the presentation.
 
 # Presenting at !!Con West
 
+It's crazy to think how COVID naive we still were on that March 1st, 2020: while we 
+were advised to not shake hands ("practise vigorous hand waving instead"), there wasn't 
+a mask to be seen. A week later the whole country would shut down.
+
 The presentation went very well! I'm not a confident public speaker, but
 having a welcoming audience makes all the difference.
 
@@ -542,14 +546,6 @@ advantage when making mechanical designs, since that's probably not well known
 with a computer science oriented audience.
 
 <iframe width="560" height="315" src="https://www.youtube.com/embed/0tBU5-lJYmU" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
-There's some desire to clean up the loose ends at some point: the HWIC interface
-board would be better with a PMOD interface, I want the bitstream loader to work,
-and a particle simlation guided by an accelerometer isn't very original, but it looks
-so incredibly cool.
-
-But I doubt that these will ever happen. There are so many interesting project to be
-done, and this one has largely run its course.
 
 # Looking Back...
 
@@ -582,6 +578,14 @@ Looking back, there were a lot of things that could have gone bad:
 
 In the end, none of that happened. But the overall lesson is clear: Don't commit to a
 conference talk with an unrealised idea!
+
+There's some desire to clean up the loose ends at some point: the HWIC interface
+board would be better with a PMOD interface, I want the bitstream loader to work,
+and a particle simlation guided by an accelerometer isn't very original, but it looks
+so incredibly cool.
+
+But I doubt that these will ever happen. There are so many interesting project to be
+done, and this one has largely run its course.
 
 # References
 
