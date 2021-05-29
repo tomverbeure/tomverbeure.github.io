@@ -1,0 +1,48 @@
+{signal: [
+  [ 'Phy',
+   {name: 'clk_core',       wave: 'P...',                  },                // Clock inside the PHY
+   {name: 'clk_io',         wave: 'P....', phase:14,        node:'.g...'},    // Clock at the pins of the Phy. Reference.
+  ],
+   
+  {},
+  [ 'Link',
+   {name: 'clk_core',       wave: 'P....', phase:8,    node:'.h...'},         // 1ns IO to PLL input delay
+ 
+   {name: 'data2phy',       wave: '0330.', phase:6, node:'.a..', data:['RegAddr', 'RegAddr']}, 
+  ],
+  {},
+  [ 'Phy',
+ 
+   {name: 'data2phy',       wave: '0330', phase:2, node:'.b..', data:['RegAddr', 'RegAddr']}, 
+   {name: 'clk_core',       wave: 'P....',                  },                  // Clock inside the PHY
+
+   {name: 'nxt',            wave: '0.10.', phase:14,    node:'..c..'},     // nxt is driven by the phy. Clock to output delay is max 9ns.
+  ],
+  {},
+  [ 'Link',
+   {name: 'clk_core',       wave: 'P....', phase:8, node:'..f'},    // 1ns IO to PLL input delay
+ 
+   {name: 'data2phy',       wave: '0330.', phase:6, data:['RegAddr', 'RegAddr']}, 
+   {name: 'nxt',            wave: '0.10.', phase:10, node:'..d.'},     // nxt is driven by the phy. Clock to output delay is max 9ns.
+  ],
+  {},
+  [ 'SignalTap',
+   {name: 'clk_core',       wave: 'P....', phase:8,},    // 1ns IO to PLL input delay
+ 
+   {name: 'data2phy',       wave: '0.330', phase:8, data:['RegAddr', 'RegAddr']}, 
+   {name: 'nxt',            wave: '0.10.', phase:8, node:'..e.'},     // nxt is driven by the phy. Clock to output delay is max 9ns.
+  ],
+  
+
+  ],
+  edge: [ 'a->b Link core to PHY core delay', 
+          'b->c data2phy captured, nxt asserted', 
+          'c->d PHY core to Link core delay', 
+          'd->e Signaltap uses Link core clock',
+          'f|->d HOLD TIME VIOLATION!', 
+          'g|->h Large clock delay between Phy and Link',
+
+  ],
+  config: {skin: 'narrow', hscale: 16}   
+}
+
