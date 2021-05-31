@@ -306,3 +306,22 @@ total 760
 
     Best to have a single, large RAM for that.
 
+# USB test suite
+
+* [Antmicro USB Test Suite](https://github.com/antmicro/usb-test-suite-build)
+
+# Cocotb
+
+* Python version must be compiled with --enabled-shared because it needs libpython...so
+* Compilation option:
+
+   ```
+./configure --enable-shared \
+            --prefix=/opt/python-3.9.5 \
+            LDFLAGS="-Wl,--rpath=/opt/python-3.9.5/lib"
+   ```
+
+* `pip3 install cocotb`
+* `pip3 install pytest`
+
+* [fomu cocotb](https://github.com/im-tomu/valentyusb/blob/master/sim/test-eptri.py)
