@@ -315,11 +315,11 @@ total 760
 * Python version must be compiled with --enabled-shared because it needs libpython...so
 * Compilation option:
 
-   ```
+```
 ./configure --enable-shared \
             --prefix=/opt/python-3.9.5 \
             LDFLAGS="-Wl,--rpath=/opt/python-3.9.5/lib"
-   ```
+```
 
 * `pip3 install cocotb`
 * `pip3 install pytest`
