@@ -86,13 +86,13 @@ for the details, but here are some stand-out items:
     more than sufficient to create a Linux-capable system with display, keyboard, 
     network support, and a flash storage drive.
 
-    Or you could use to port a retro gaming emulator.
+    Or you could port a retro gaming emulator to it.
 
 * A large variety of additional peripherals
 
     * BeagleBone compatible I/O expansion connectors with digital GPIOs and analog inputs
     * the usual assortment of LEDs, buttons, and switches
-    * humidity and temperature sensor, an accelerometer, capacitivy key sensor, 
+    * humidity and temperature sensor, an accelerometer, capacitive key sensor, 
       an additional temperature sensor (because two is better than one!)
     * analog inputs, including 2 with SMA connector and pre-amplifier
     * MIPI connector for camera sensors
