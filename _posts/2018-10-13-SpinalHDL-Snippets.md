@@ -172,3 +172,71 @@ SpinalHDL is itself a multi-module project. So you need to do:
 cd projects/SpinalHDL
 sbt "lib/runMain  spinal.lib.com.i2c.Apb3I2cCtrl"
 ```
+
+# Verilog/VHDL Generation Options
+
+Code generation options are specified through the [`SpinalConfig`](https://github.com/SpinalHDL/SpinalHDL/blob/0918c536b08f5a0584498c3a667dd20a606ed4ba/core/src/main/scala/spinal/core/Spinal.scala#L123).
+
+Some useful options:
+
+* `netlistFilename`
+
+    Specify the name of the generated Verilog or VHDL file. 
+
+    Super useful, because my simulation and synthesis files are often different. (E.g. I use a PLL
+    in the synthesis file but not in the simulation file.)
+
+* `anonymSignalUniqueness`
+
+    When true, intermediate signals are unique across the all modules.
+
+    For example. instead of creating a signals `_zz_10` in different modules,
+    it will create `_zz_MyModule1_10` and `_zz_MyModule2_10`. This makes it much easier
+    to find all instances in a file where a particular signals is used.
+
+    Default is false, but I set it to true for all my designs.
+
+* `anonymSignalPrefix`
+
+    By default, intermediate generated signals start with `_zz`. 
+
+    With this configuration option, you can change it to something else.
+
+* `globalPrefix`
+
+    Add a prefix to all module names.
+
+    For example, setting it to `gp_` will create a module with `gp_MyModule11`
+    instead of `MyModule1.
+
+    This is useful if, for example, you want to include the Verilog of 2 separate 
+    SpinalHDL designs into an overall Verilog toplevel and avoid naming
+    collisions.
+
+* `targetDirectory`
+
+    By default, all generated files (Verilog, VDHL, ROM binary files) are created 
+    in the `./spinal` directory.
+
+    You can change that directory with this option.
+
+* `oneFilePerComponent`
+
+   When true, writes out only the Verilog or VHDL for the toplevel component,
+   not the instances below it.
+
+* `inlineRom`
+
+    When true, initialize memories in the design with an `initial` statement that
+    assigns a value to each location of the array instead of loading the contents from
+    a separate file with `$readmemb`.
+
+* `mergeAsyncProcess`
+
+    When false (the default), there's a separate `always @(*)` block for each combinatorial
+    signal assigment. When true, multiple signals can assigned in the same `always @(*)`
+    block. This can be easier to match the generated Verilog with the original SpinalHDL 
+    code.
+
+
+
