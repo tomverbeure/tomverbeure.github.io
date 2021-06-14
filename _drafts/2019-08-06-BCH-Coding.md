@@ -83,4 +83,4 @@ The key understanding of an LFSR:
 * [](https://www.embeddedrelated.com/showarticle/1070.php)
 * [](https://www.embeddedrelated.com/showarticle/1086.php)
 
-
+* [Practical Reed-Solomon for Programmers](https://berthub.eu/articles/posts/reed-solomon-for-programmers/)
