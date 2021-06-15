@@ -83,4 +83,23 @@ The key understanding of an LFSR:
 * [](https://www.embeddedrelated.com/showarticle/1070.php)
 * [](https://www.embeddedrelated.com/showarticle/1086.php)
 
+# Reed-Solomon
+
 * [Practical Reed-Solomon for Programmers](https://berthub.eu/articles/posts/reed-solomon-for-programmers/)
+* [Introduction to Reed-Solomon](https://innovation.vivint.com/introduction-to-reed-solomon-bc264d0794f8)
+
+    Good explanation, very light on math.
+
+* [BBC R&D White Paper: Reed-Solomon error correction](https://downloads.bbc.co.uk/rd/pubs/whp/whp-pdf-files/WHP031.pdf)
+
+    Describes mathematics and algorithms for coding and encoding, and how to implement it with logic
+    circuits.
+
+* [Reed-Solomon error-correcting code decoder](https://www.nayuki.io/page/reed-solomon-error-correcting-code-decoder)
+
+    Mathematics explained in function of implementing it in code (Java, Python)
+
+* [The mathematics of RAID-d6](https://mirrors.edge.kernel.org/pub/linux/kernel/people/hpa/raid6.pdf)
+* [The RAID-6 Liberation Codes](https://www.usenix.org/legacy/event/fast08/tech/full_papers/plank/plank_html/index.html) 
+
+
