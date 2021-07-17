@@ -104,6 +104,217 @@ match the ones of the Zynq ZU5EV.
 | DSP slices             |      1248     |
 | Video Codec            |       1       |
 
+# General MPSoC Boot Procedure
+
+Getting an MPSoC up and running is no laughing matter. Yes, just like regular FPGAs, there's QSPI flash on the module
+to configure the system, but this flash is used to bring up the SOC. It's then up to the software of the SOC to load
+the bitstream in the PL. *Unlike regular FPGAs, there is no automatic way in which the PL becomes master of the
+QSPI and sucks in the bitstream.*
+
+Booting the MPSoC is a complex, multi-stage process that starts with a fixed boot ROM inside the chip itself.
+
+# K26/KV260 MPSoC Boot Procedure
+
+For the K26 or KV260 products, Xilinx decided to lock things down a bit to prevent customers
+from shooting themselves in the foot. That's not a bad thing: 
+
+Reading the QSPI information:
+
+* Boot without SDcard inserted.
+* Check that QSPI reading is fine
+
+    ```
+sf probe
+SF: Detected n25q512a with page size 256 Bytes, erase size 64 KiB, total 64 MiB
+    ```
+
+* Read data from QSPI address 0x2240000 and copy it to address 0x08000000 in RAM
+
+    ```
+sf read 0x08000000 0x2240000 32
+SF: 50 bytes @ 0x2240000 Read: OK
+    ```
+
+* Dump the data that was copied to address 0x08000000
+
+    ```
+md 0x08000000
+08000000: 696c6958 6f53786e 73515f6d 6d496970    XilinxSom_QspiIm
+08000010: 5f656761 312e3176 3230325f 32343031    age_v1.1_2021042
+08000020: 00000a32 00000000 00000000 00000000    2...............
+08000030: f3930000 fffab9b6 ef1fcefe da3fffee    ..............?.
+    ```
+
+    According to the [Xilinx KV260 Wiki](https://xilinx-wiki.atlassian.net/wiki/spaces/A/pages/1641152513/Kria+K26+SOM#Boot-FW-HW-Details), 
+    address 0x2240000 contains QSPI Image Information. It's a read-only QSPI sector, so there's
+    nothing here for us to change.
+
+
+# Boot Image Recovery
+
+* [Board Reset, Firmware Update, and Recovery](https://www.xilinx.com/support/documentation/user_guides/som/1_0/ug1089-kv260-starter-kit.pdf#_OPENTOPIC_TOC_PROCESSING_d114e2663)
+
+   Update BOOT.BIN either from Linux (when the QSPI BOOT.BIN allows it) or with the Ethernet Recovery Tool.
+
+
+* On Ubuntu 20.4: Works with Chrome only! Firefix gives the following error:
+   
+   ```
+Making the boot img A non-bootable
+Initiating img A upload
+Size of Image to be downloaded = 1409400
+Erasing img
+Erasing complete
+Starting image update
+Validating CRC
+ERROR: Crc mismatch
+Flash Img CRC = 00000000, Sender Crc = B14C3A9B
+    ```
+
+* Restoring "KV260 2020.2.2 Boot FW Update - Early Launch":
+
+    ```
+Making the boot img A non-bootable
+Initiating img A upload
+Erasing img
+Erasing complete
+Size of Image to be downloaded = 1409400
+Validating CRC
+CRC matches
+Flash Img CRC = B14C3A9B, Sender Crc = B14C3A9B
+Making the boot image A requested image
+    ```
+
+* Restoring "KV260 2020.2.2 Boot FW Update - 2020.2.2":
+
+    ```
+Making the boot img A non-bootable
+Initiating img A upload
+Erasing img
+Erasing complete
+Size of Image to be downloaded = 1409400
+Validating CRC
+CRC matches
+Flash Img CRC = A7CED268, Sender Crc = A7CED268
+Making the boot image A requested image
+Download Complete....
+    ```
+
+* Recovery mode UART log: 
+
+   ```
+Release 2020.2   Apr 22 2021  -  17:48:34
+MultiBootOffset: 0x3C0
+Reset Mode      :       System Reset
+Platform: Silicon (4.0), Running on A53-0 (64-bit) Processor, Device Name: XCZUUNKNEG
+QSPI 32 bit Boot Mode
+FlashID=0x20 0xBB 0x20
+PMU-FW is not running, certain applications may not be supported.
+Protection configuration applied
+Exit from FSBL
+[Flash Image Info]
+         Flash size : 64MB
+        Sector size : 64KB
+        PageSize in bytes: 0x00000100
+
+[Boot Image Info]
+                         Ver: 1
+                      Length: 4
+                    Checksum: 0xAEB2BDB9
+        Persistent State Reg: 0x01000000
+                Img A Offset: 0x00200000
+                Img B Offset: 0x00F80000
+         Recovery Img Offset: 01E00000
+
+Start PHY autonegotiation
+Waiting for PHY to complete autonegotiation.
+autonegotiation complete
+link speed for phy address 1: 1000
+Configuring default IP 192.168.0.111
+
+-[Network Interface]------------------------
+        Board IP: 192.168.0.111
+        Netmask : 255.255.255.0
+        Gateway : 192.168.0.1
+
+Xilinx boot image recovery tool web server is running on port 80
+Please point your web browser to http://192.168.0.111
+    ```
+
+* Erase Boot A:
+
+    ```
+ZynqMP> sf erase 0x200000 0x10000
+SF: 65536 bytes @ 0x200000 Erased: OK
+    ```
+
+
+# Flashing QSPI from Vitis
+
+```
+
+program_flash -f \
+/home/tom/projects/kv260_sw_test/vitis_workspace/hello_world_system/Debug/sd_card/BOOT.BIN \
+-offset 0 -flash_type qspi-x4-single -fsbl \
+/home/tom/projects/kv260_sw_test/vitis_workspace/kv260_sw_platform/export/kv260_sw_platform/sw/kv260_sw_platform/boot/fsbl.elf \
+-cable type xilinx_tcf url TCP:127.0.0.1:3121 
+
+****** Xilinx Program Flash
+****** Program Flash v2021.1 (64-bit)
+  **** SW Build 3246112 on 2021-06-09-14:19:56
+    ** Copyright 1986-2020 Xilinx, Inc. All Rights Reserved.
+
+
+Connected to hw_server @ TCP:127.0.0.1:3121
+
+Retrieving Flash info...
+
+Initialization done
+Using default mini u-boot image file - /home/tom/tools/Xilinx/Vitis/2021.1/data/xicom/cfgmem/uboot/zynqmp_qspi_x4_single.bin
+===== mrd->addr=0xFF5E0204, data=0x00000222 =====
+BOOT_MODE REG = 0x0222
+WARNING: [Xicom 50-100] The current boot mode is QSPI32.
+Flash programming is not supported with the selected boot mode.If flash programming fails, configure device for JTAG boot mode and try again.
+Downloading FSBL...
+Running FSBL...
+Finished running FSBL.
+Xilinx Zynq MP First Stage Boot Loader 
+
+Release 2021.1   Jul 14 2021  -  03:36:32
+PMU-FW is not running, certain applications may not be supported.
+
+
+
+U-Boot 2021.01-08077-gfb43236 (May 17 2021 - 10:24:23 -0600)
+
+Model: ZynqMP MINI QSPI SINGLE
+Board: Xilinx ZynqMP
+DRAM:  WARNING: Initializing TCM overwrites TCM content
+256 KiB
+EL Level:	EL3
+Multiboot:	64
+In:    dcc
+Out:   dcc
+Err:   dcc
+ZynqMP> sf probe 0 0 0
+
+SF: Detected n25q512a with page size 256 Bytes, erase size 64 KiB, total 64 MiB
+ZynqMP> Sector size = 65536.
+f probe 0 0 0
+
+Performing Erase Operation...
+sf erase 0 30000
+
+jedec_spi_nor flash@0: Erase operation failed.
+jedec_spi_nor flash@0: Attempted to modify a protected sector.
+SF: 196608 bytes @ 0x0 Erased: ERROR
+ZynqMP> f erase 0 30000
+
+Erase Operation failed.
+INFO: [Xicom 50-44] Elapsed time = 0 sec.
+
+ERROR: Flash Operation Failed
+```
 
 # Vivado Installation
 
