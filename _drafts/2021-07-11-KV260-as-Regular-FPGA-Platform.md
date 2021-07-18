@@ -316,6 +316,30 @@ INFO: [Xicom 50-44] Elapsed time = 0 sec.
 ERROR: Flash Operation Failed
 ```
 
+# The Zynq FPGA Mental Model 
+
+All FPGAs of the Zynq product line have 2 major functional blocks: 
+the processing system (PS) and the programmable logic (PL). The PS contains the SOC part:
+fixed logic such as CPUs, caches, GPU, major IO blocks etc. The PL contains what
+you'd find in a traditional FPGA.
+
+While there are interfaces, AXI buses primarily, that form a bridge the PS and the PL domain, 
+it is extremely important keep in mind that the PS and the PL part are in essence 2 completely
+different systems. You could design the bitstream of the PL without major knowledge of the PS,
+and vice versa. 
+
+A bitstream can be loaded into the PL by some kind of software running on the PS, or you
+do so through the JTAG port just like you'd do with a regular FPGA. The software on the PS could 
+be a relatively simple baremetal piece of code, or a full featured Linux-based operation system 
+complete with GUI and all. 
+
+While the PL can be informed about some aspects in which the PS has been configured, such 
+which clocks have been configured or which interfaces are active, the PS is master of its
+own domain and software on the PS can reprogram these aspects at will.
+
+# IOs 
+
+
 # Vivado Installation
 
 * Download installer: `Xilinx_Unified_2021.1_0610_2318_Lin64.bin`
