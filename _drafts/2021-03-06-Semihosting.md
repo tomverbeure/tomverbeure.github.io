@@ -1,7 +1,7 @@
 ---
 layout: post
-title: VexRiscv and OpenOCD
-date:  2021-03-06 00:00:00 -1000
+title: Semihosting
+date:  2021-07-18 00:00:00 -1000
 categories:
 ---
 
