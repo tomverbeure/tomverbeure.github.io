@@ -831,3 +831,36 @@ a significantly higher price.
 * [Colorlight i5 Tips GitHub Repo](https://github.com/kazkojima/colorlight-i5-tips)
 * [Colorlight i5 Extension Board Pin Mapping](https://tomverbeure.github.io/2021/01/30/Colorlight-i5-Extension-Board-Pin-Mapping.html)
 
+**Similar FPGA boards**
+
+*(Thanks [pauluzs](https://github.com/tomverbeure/tomverbeure.github.io/issues/10)!)*
+
+* [ICESugar-pro](https://github.com/wuxx/icesugar-pro)
+
+    Another board by Muse Lab that uses the same expansion board, and also ECP5-LFE5U025F FPGA, though with 
+    a different package. Features are similar, though there are no Ethernet PHYs
+
+* [Colorlight i6])https://www.colorlightinside.com/Products/i%20Receiving-series/34_8.html)
+
+    Uses a Lattice ECP3-LFE3-35EA-6FN484C, and not supported by any open source tools. I'm not aware of a
+    reverse engineering effort.
+
+* [Colorlight i9](https://www.colorlightinside.com/Products/i%20Receiving-series/34_101.html)
+
+    Uses a Lattice ECP5-LFE5U-45F-6BG381C. 
+
+* [Colorlight i9+](https://www.colorlightinside.com/Products/i%20Receiving-series/34_141.html)
+
+    Uses a Xilinx XC7AA50T-FGG484ABX1909.
+
+* [Linsn mini901 ](https://www.linsnled.com/linsn-mini901-led-receiver.html)
+
+    Uses a Xilinx XC6SLX16-CSG324DIV1645.
+    
+**Extension Boards**
+
+* [Colorlight Dual Ethernet Board](https://www.aliexpress.com/item/1005002080383026.html)
+
+    Sold second hand by Muse Lab, this adds the IOs for 2 Ethernet ports as well as connectors
+    to drive LED matrices. The IOs are all buffered and thus output only!
+    
