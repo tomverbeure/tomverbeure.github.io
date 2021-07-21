@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Semihosting
+title: Semihosting - Use a PC as Terminal and File Server for Your Embedded CPU
 date:  2021-07-18 00:00:00 -1000
 categories:
 ---
@@ -8,374 +8,191 @@ categories:
 * TOC
 {:toc}
 
+# Introduction
 
+Regular readers of my blog posts should know by now that I'm a bug fan of adding a small
+embedded CPU in my FPGA projects for overall management, 
+[bit-banging](https://en.wikipedia.org/wiki/Bit_banging) slow protocols
+such as [I2C](https://en.wikipedia.org/wiki/I²C), and some real-time operations with not too
+stringent timing requirements. They'll also know that the 
+[VexRiscv](https://github.com/SpinalHDL/VexRiscv) is the standard soft-core CPU in my
+toolbox.
 
-# The VexRiscv Debug Plugin
+When running code on an embedded CPU, it's very often helpful to have an interface to a
+PC to run some kind of console for control, debugging, and logging. A UART is obviously
+very popular for this, but I often also use a [JTAG UART](2021/05/02/Intel-JTAG-UART.html), 
+which can be easier to integrate if you already have a JTAG connection to for FPGA for 
+other reasons.
 
-In a [previous blog post](rtl/2018/12/06/The-VexRiscV-CPU-A-New-Way-To-Design.html) about the 
-VexRiscv, I wrote about how the unique plug-in based architecture that is used to construct
-a VexRiscv CPU configuration.
+But there's another option that many probably have never heard about. Instead of using
+a dedicated HW block, it leverages the existing debug infrastructure of the CPU by adding a
+peculiar software layer to the low level debug driver on top of it. 
 
-True to its overall design philosophy, adding debugger support to a VexRiscv is also a matter
-of adding a `DebugPlugin` to the CPU configuration structure. Let's have a quick look at some
-of the core elements of 
-[its source code](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/plugin/DebugPlugin.scala).
+It's called semihosting, and it allows the embedded CPU use the host PC as a server
+for a variety of functions: STDIO read and write, access to the PC file system, time 
+server etc.
 
-The plugin adds a 
-[`DebugExtensionBus`](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/plugin/DebugPlugin.scala#L36-L38) 
-to parallel interface to the CPU, which consists of a 
-[DebugExtensionCmdBus and DebugExtensionRspBus](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/plugin/DebugPlugin.scala#L18-L25).
+Semihosting is definitely a bit of a hack, but it's a clever one, and I think there's 
+something magical about a slow embedded CPU with 4KB of RAM commandeering a mighty
+PC into reading and writing files on its file system.
 
-```scala
-case class DebugExtensionCmd() extends Bundle{
-  val wr = Bool
-  val address = UInt(8 bit)
-  val data = Bits(32 bit)
-}
-case class DebugExtensionRsp() extends Bundle{
-  val data = Bits(32 bit)
-}
-```
+# Semihosting and RISC-V
 
-As you can see, the bus is a pretty generic 32-bit data bus with address, read and write data.
+Semihosting is nothing new: I first used semihosting in 1995 on a prehistoric ARM7TDMI CPU
+that was embedded in the 
+[Alcatel MTC-20276](http://static6.arrow.com/aropdfconversion/467166f711419cfece3c159c1fd6c2fc98bf586c/mtc-20276.pdf), 
+an [ISDN](https://en.wikipedia.org/wiki/Integrated_Services_Digital_Network) ASIC that was 
+going to take over the world... 
 
-Scroll a bit down you can find 
-[the code](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/plugin/DebugPlugin.scala#L225-L263) 
-that implements an address decoder and the registers that can be accessed by the debug bus.
+![ISDN chip with ARM7TDMI](/assets/semihosting/isdn_chip.png)
 
-Ignoring the lower 2 bits of the address bit, we get the following major addresses:
+It did not take over the world at all, but it was great for our potential customers because
+it gave them leverage over their existing ISDN chip supplier to lower their prices.
 
-* a write to [address 0x0](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/plugin/DebugPlugin.scala#L240-L247)
-    is used to set a number of debug control bits:
+I remember semihosting to be very useful to observe various line state changes or to figure 
+out when and why some echo cancellation filter was going off the rails.
 
-    ```scala
-  is(0x0) {
-    when(io.bus.cmd.wr) {
-      stepIt := io.bus.cmd.data(4)
-      resetIt setWhen (io.bus.cmd.data(16)) clearWhen (io.bus.cmd.data(24))
-      haltIt setWhen (io.bus.cmd.data(17)) clearWhen (io.bus.cmd.data(25))
-      haltedByBreak clearWhen (io.bus.cmd.data(25))
-      godmode clearWhen(io.bus.cmd.data(25))
-    }
-  }
-    ```
-* a write to [address 0x01](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/plugin/DebugPlugin.scala#L249-L254)
-    kicks off an event on the `injectionPort`.
+*You're absolutely right to question the relevance of a 1995 ISDN chip in a 2021
+blog post about semihosting, but it's just a wave of nostaligia crashing over me, and
+it's not as if you can do anything about it.*
 
-    ```scala
-  injectionPort.payload := io.bus.cmd.data
-  ...
-  is(0x1) {
-    when(io.bus.cmd.wr) {
-      injectionPort.valid := True
-      io.bus.cmd.ready := injectionPort.ready
-    }
-  }
-    ```
+But the point is: ARM invented semihosting at least 26 years ago.
 
-    The injection port is in interface into the 
-    [`Fetcher`](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/plugin/Fetcher.scala) 
-    unit, a plugin that is responsible for instruction fetching, interface with branch predictors etc.
-
-    Check out 
-    [the code](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/plugin/Fetcher.scala#L346-L401) 
-    for all the details, but a debug bus write to address 0x01 seems to force the written debug write
-    data as an insruction into the CPU pipeline.
-
-* a write to [addresses of 0x10 and higher](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/plugin/DebugPlugin.scala#L255-L261)
-    sets up a configurable number of hardware breakpoints.
-
-    ```scala
-  for(i <- 0 until hardwareBreakpointCount){
-    is(0x10 + i){
-      when(io.bus.cmd.wr){
-        hardwareBreakpoints(i).assignFromBits(io.bus.cmd.data)
-      }
-    }
-  }
-    ```
-
-The read data bus returns the following:
-
-* when [bit 2 of the address is asserted](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/plugin/DebugPlugin.scala#L227-L233): 
-  value of the debug control bits.
-
-    ```scala
-  when(!RegNext(io.bus.cmd.address(2))){
-    io.bus.rsp.data(0) := resetIt
-    io.bus.rsp.data(1) := haltIt
-    io.bus.rsp.data(2) := isPipBusy
-    io.bus.rsp.data(3) := haltedByBreak
-    io.bus.rsp.data(4) := stepIt
-  }
-    ```
-
-    This returns the value of the bits that were written by writing to address 0x00.
-    Some of these can be modified by other transactions that just writing to address 0x00.
-
-* [all other addresses](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/plugin/DebugPlugin.scala#L221-L226): 
-  the value of last data that was written into the CPU register file.
-
-    ```scala
-  val busReadDataReg = Reg(Bits(32 bit))
-  when(stages.last.arbitration.isValid) {
-    busReadDataReg := stages.last.output(REGFILE_WRITE_DATA)
-  }
-  ...
-  io.bus.rsp.data := busReadDataReg
-    ```
-
-It will lead to far to go into the functional details of all these bits (though names like `haltIt`, `resetIt` etc. should
-give you a hint), what's important is this:
-
-* we have an external debug control interface 
-* we can read and write debug control bits
-* there are a bunch of hardware breakpoints
-* we can insert any instruction into the CPU pipeline
-* we can grab the execution result of the instruction that was was inserted into the CPU pipeline
-
-This gives us a nice summary of the capabilities of the Debug plugin and how higher level software will
-interact with it to give us traditional debug functionality:
-
-**The debugger will insert instructions into the CPU pipeline to write to memory, read from memory,
-perform jumps etc.**
-
-This should be familiar to very old people, like me, who ever had the pleasure of working at the lowest level 
-with the ARM7TDMI (in 1995!): it has an serial (JTAG connected) interface that could override the bus of the CPU.
-When the debugger wanted to read data from memory, you'd apply a load instruction, have the CPU
-execute it, and capture the result just the same.
-
-![ARM7TDMI debug scan chains](/assets/vexriscv_ocd/arm7tdmi_debug_scan_chains.png)
-*(Credit: [The ARM7TDMI Debug Architecture - Application Note 28](https://developer.arm.com/documentation/dai0028/a/))*
-
-In addition to defining the generic 32-bit parallel debug bus, the Debug plugin also provides a number of
-adapters to link to different bus protocols. Some are very thin wrappers to other parallel busses, such as 
-ARM's [APB3](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/plugin/DebugPlugin.scala#L45-L61), 
-Intel's [Avalon](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/plugin/DebugPlugin.scala#L63-L75),
-SpinalHDL's [PipelineMemoryBus](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/plugin/DebugPlugin.scala#L77-L89),
-[Bmb](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/plugin/DebugPlugin.scala#L91-L111), or
-[SystemDebuggerMemBus](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/plugin/DebugPlugin.scala#L113-L123).
-Others are IMO more interesting:
-[Jtag](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/plugin/DebugPlugin.scala#L125-L137) and
-[JtagInstructionCtrl](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/plugin/DebugPlugin.scala#L139-L152)
-link to SpinalHDL's JTAG instructure.
-
-
-# An Overview of the GDB - OpenOCD - SOC - CPU Pipeline
-
-# Running Your First VexRiscv - GDB Session
-
-# Murax - An Included Hardware Example
-
-* [Murax.scala](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/demo/Murax.scala)
-
-[Murax Toplevel](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/demo/Murax.scala#L155-L171)
-
-```scala
-case class Murax(config : MuraxConfig) extends Component{
-  import config._
-
-  val io = new Bundle {
-    //Clocks / reset
-    val asyncReset = in Bool
-    val mainClk = in Bool
-
-    //Main components IO
-    val jtag = slave(Jtag())
-
-    //Peripherals IO
-    val gpioA = master(TriStateArray(gpioWidth bits))
-    val uart = master(Uart())
-
-    val xip = ifGen(genXip)(master(SpiXdrMaster(xipConfig.ctrl.spi)))
-  }
-```
-
-Check out the JTAG IO port.
-
-Further down:
-
-[JTAG IO pins are connected to the DebugPlugin](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/demo/Murax.scala#L251-L254):
-
-```scala
-  case plugin : DebugPlugin         => plugin.debugClockDomain{
-    resetCtrl.systemReset setWhen(RegNext(plugin.io.resetOut))
-    io.jtag <> plugin.io.bus.fromJtag()
-  }
-```
-
-The [`fromJtag`](https://github.com/SpinalHDL/VexRiscv/blob/75bbb28ef62636dd0d4d3741c6e559a911fc85af/src/main/scala/vexriscv/plugin/DebugPlugin.scala#L125-L137)
-contains the following:
-
-```scala
-  def fromJtag(): Jtag ={
-    val jtagConfig = SystemDebuggerConfig(
-      memAddressWidth = 32,
-      memDataWidth    = 32,
-      remoteCmdWidth  = 1
-    )
-    val jtagBridge = new JtagBridge(jtagConfig)
-    val debugger = new SystemDebugger(jtagConfig)
-    debugger.io.remote <> jtagBridge.io.remote
-    debugger.io.mem <> this.from(jtagConfig)
-
-    jtagBridge.io.jtag
-  }
-```
-
-This code instantiates 2 blocks: a `JtagBridge` and a `SystemDebugger`.
-
-The [`JtagBridge`](https://github.com/SpinalHDL/SpinalHDL/blob/adf552d8f500e7419fff395b7049228e4bc5de26/lib/src/main/scala/spinal/lib/system/debugger/SystemDebugger.scala#L57-L84)
-interfaces the JTAG IO pins to a SpinalHDL-specific [`SystemDebuggerRemoteBus`](https://github.com/SpinalHDL/SpinalHDL/blob/adf552d8f500e7419fff395b7049228e4bc5de26/lib/src/main/scala/spinal/lib/system/debugger/SystemDebuggerBundles.scala#L12-L25).
-
-It instantiates a traditional [JTAG TAP](https://github.com/SpinalHDL/SpinalHDL/blob/adf552d8f500e7419fff395b7049228e4bc5de26/lib/src/main/scala/spinal/lib/system/debugger/SystemDebugger.scala#L79)
-and [adds 3 scan chain operations](https://github.com/SpinalHDL/SpinalHDL/blob/adf552d8f500e7419fff395b7049228e4bc5de26/lib/src/main/scala/spinal/lib/system/debugger/SystemDebugger.scala#L80-L82)
- to it:
-* a 32-bit ID code
-* a write register to transmit serialized commands from that JTAG port to the CPU.
-* a read register to read back from the CPU to the JTAG port
-
-The [`SystemDebugger`](https://github.com/SpinalHDL/SpinalHDL/blob/adf552d8f500e7419fff395b7049228e4bc5de26/lib/src/main/scala/spinal/lib/system/debugger/SystemDebugger.scala#L145-L155)
-converts the `SystemDebuggerRemoteBus` (which still transmit commands one bit at a time) to a 
-[`SystemDebuggerBus`](https://github.com/SpinalHDL/SpinalHDL/blob/adf552d8f500e7419fff395b7049228e4bc5de26/lib/src/main/scala/spinal/lib/system/debugger/SystemDebuggerBundles.scala#L27-L42)
-by [converting the serialized command bus bits into a parallel one](https://github.com/SpinalHDL/SpinalHDL/blob/adf552d8f500e7419fff395b7049228e4bc5de26/lib/src/main/scala/spinal/lib/system/debugger/SystemDebugger.scala#L151).
-
-The `SystemDebuggerBus` can be connected straight to the debug bus of the Debug plugin.
-
-When everything is said and one, we have SOC design that contains our VexRiscv, a JTAG port, and all the glue logic to link that JTAG port to the debug port of the CPU.
-
-# Running firmware
-
-# OpenOCD VexRiscv Specific Code
-
-**Low level CPU interactions**
-
-* [`vexriscv_memory_cmd`](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L1127-L1179)
-
-    Prepares a JTAG DR chain command to issue a SystemDebugger command.
-
-    This is the core command to create DebugBus transactions that's used by pretty much all other higher level
-    commands to make the VexRiscv do something in debug mode.
-
-* [`vexriscv_pushInstruction`, `vexriscv_setHardwareBreakpoint`, ...](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L1394-L1440)
-
-    Slightly higher level commands that interact with the debug bus registers of the VexRiscv.
-
-* [`vexriscv_write_regfile`](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L240-L256)
-
-    Set the value of a register of the CPU register file by executing a mix of `LUI`, `ADDI`, and `ORI` instructions.
-
-    The exact instruction(s) to execute depends on the value that needs to be written to the register file.
-
-* [`vexriscv_read_memory`](https://github.com/SpinalHDL/openocd_riscv/blob/riscv_spinal/src/target/vexriscv.c#L1234-L1269)
-
-    Reads an array of data from memory that's attached to the VexRiscv.
-
-    It does this by doing the following sequence:
-    
-    * [Load register `x1`](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L1245) 
-       with the memory address that must be read.
-    * [Execute a `LW`, `LHU`, `LBU` instruction](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L1250)
-       to load the requested data from memory.
-    * [Read back the data](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L1251).
-
-        We saw earlier that the debug plugin captures the data that is last written to a register file.
-
-* [`vexriscv_save_context'](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L687-L728)
-
-    When the Vexriscv has stopped running (e.g. because it encountered an `EBREAK` instruction or because the program counter
-    triggered an hardware breakpoint), when whoever uses OpenOCD (this can be you on the command line, or a program like GDB)
-    can interact with the CPU to extract data.
-
-    To make sure this happens cleanly without destroying the state of the CPU, OpenOCD will first save the CPU context so
-    that it can be restored later when the CPU should go back to executing.
-
-    One of the most important context to save are the registers in the register file.
-
-    On the VexRiscv, this is done by issuing an `ADDI x0, x?, 0` instruction for each register. This will
-    read the value from the register file, add 0, and store it back to register 0, which gets ignored.
-
-    However, the debug hardware always remembers the last value that was sent to the register file, and makes it
-    available for read-back over the debug bus.
-
-* 
-
-# Semihosting
-
-Since the beginning of time, ARM has supported semihosting, a feature that allows the DUT CPU (IOW, the ARM CPU) to issue commands to the host
-PC to which it is connected. In the words of the [ARM semihosting specification](https://static.docs.arm.com/100863/0200/semihosting.pdf): 
+Let's have a look to the [ARM semihosting specification](https://developer.arm.com/documentation/100863/latest)
+to see what it's really all about:
 
 > Semihosting is a mechanism that enables code running on an ARM target or emulator 
 > to communicate with and use the Input/Output facilities on a host computer. The host 
 > must be running the emulator, or a debugger that is attached to the ARM target.
 
-Semihosting is an extremely powerful feature, since it can give a tiny embedded CPU that doesn't have any
+Semihosting is a powerful feature, because it can give a tiny embedded CPU that doesn't have any
 generic IO capabilities to do things like accepting keystrokes, print out debug information to a debug
-console, or even read and write from and to a file on the host PC!
+console, or even read and write from and to a file on the host PC.  It's up to the external debugger 
+(OpenOCD in our case) to intercept semihosting operation request from embedded CPU and perform the requested action.
 
-*The performance of these semihosting commands is subject to the bandwidth of the communication interface
-by which the embedded CPU is connected to the host PC, so don't expect miracles here in the case of JTAG.*
+The performance of semihosting commands is subject to the bandwidth of the communication interface
+by which the embedded CPU is connected to the host PC, so don't expect miracles here in the case of JTAG.
 
-It's up to the external debugger (OpenOCD in our case) to intercept semihosting operation request from DUT CPU and perform
-the requested action.
+Despite having existed for so long, I'm not aware of any other CPU family that has support for 
+semihosting (I definitely can't find anything in the OpenOCD source code), except for RISC-V. In their
+discussion of the EBREAK instruction (section 2.8 of the RISC-V Instruction Set Manual), semihosting
+is only mentioned as a large-ish footnote, but that's sufficient because other than defining the 
+RISC-V specific semihosting function call semantics, RISC-V simply adopted the ARM semihosting specification.
+Smart!
 
-Here's a list of the actions that are defined in the specification, and in the 
-[OpenOCD source code](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/semihosting_common.h#L53-L76):
+OpenOCD refactored the ARM semihosting support code into 
+[`semihosting_common`](https://github.com/ntfreak/openocd/blob/master/src/target/semihosting_common.h) which
+is CPU family agnostic, making it easy to add semihosting support to RISC-V targets. Both the
+[official OpenOCD repo](https://github.com/ntfreak/openocd/blob/master/src/target/riscv/riscv_semihosting.c) and
+the [custom OpenOCD version for the VexRiscv CPU](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L143-L150)
+support semihosting.
 
-```c
-	SEMIHOSTING_SYS_CLOSE = 0x02,
-	SEMIHOSTING_SYS_CLOCK = 0x10,
-	SEMIHOSTING_SYS_ELAPSED = 0x30,
-	SEMIHOSTING_SYS_ERRNO = 0x13,
-	SEMIHOSTING_SYS_EXIT = 0x18,
-	SEMIHOSTING_SYS_EXIT_EXTENDED = 0x20,
-	SEMIHOSTING_SYS_FLEN = 0x0C,
-	SEMIHOSTING_SYS_GET_CMDLINE = 0x15,
-	SEMIHOSTING_SYS_HEAPINFO = 0x16,
-	SEMIHOSTING_SYS_ISERROR = 0x08,
-	SEMIHOSTING_SYS_ISTTY = 0x09,
-	SEMIHOSTING_SYS_OPEN = 0x01,
-	SEMIHOSTING_SYS_READ = 0x06,
-	SEMIHOSTING_SYS_READC = 0x07,
-	SEMIHOSTING_SYS_REMOVE = 0x0E,
-	SEMIHOSTING_SYS_RENAME = 0x0F,
-	SEMIHOSTING_SYS_SEEK = 0x0A,
-	SEMIHOSTING_SYS_SYSTEM = 0x12,
-	SEMIHOSTING_SYS_TICKFREQ = 0x31,
-	SEMIHOSTING_SYS_TIME = 0x11,
-	SEMIHOSTING_SYS_TMPNAM = 0x0D,
-	SEMIHOSTING_SYS_WRITE = 0x05,
-	SEMIHOSTING_SYS_WRITEC = 0x03,
-	SEMIHOSTING_SYS_WRITE0 = 0x04,
-```
+# Semihosting Functionality
 
-The embedded CPU typically has a C library that translates these semihosting operations into functions such 
-as `printf`, `sys_close()` etc.
+What exactly features does semihosting offer?
 
-While originally defined for ARM, there's little that prevents anyone to use it for their own CPU. OpenOCD
-has made it particularly easy by isolating generic semihosting handling code from ARM specific files.
+The spec defines 24 function calls that can be put in the following categories:
 
-Yet going by the OpenOCD source, only the VexRiscv implemented support for semihosting.
+* Time keeping
+
+    The embedded CPU can ask the host for a time reference in case it doesn't have one.
+    Since communication usually happens over JTAG, the time accuracy won't be very high!
+
+    `SYS_CLOCK`, `SYS_ELAPSED`, `SYS_TICKFREQ`, `SYS_TIME`
+
+* File IO
+
+    All kinds of transactions on files that live on the host PC file system.
+
+    `SYS_OPEN`, `SYS_READ`, `SYS_CLOSE`, `SYS_FLEN`, `SYS_SEEK`, `SYS_WRITE`,
+    `SYS_ISTTY`, `SYS_REMOVE`, `SYS_RENAME`, `SYS_TMPNAM`
+
+* Console IO
+
+    The console IO (also called the debug channel) is the equivalent of a UART or JTAG
+    UART
+
+    `SYS_READC`, `SYS_WRITEC`, `SYS_WRITE0`
+
+* System commands
+
+    Allow the embedded CPU to execute operating system commands on the host PC. Things like
+    `pwd` or `mkdir`. Or even `/bin/rm -fr /`, because why not?
+
+    `SYS_SYSTEM`
+
+* Program control
+
+    Some functions to pass command line parameters to the embedded firmware, or to feed back
+    end of execution status and error conditions.
+
+    `SYS_EXIT`, `SYS_EXIT_EXTENDED`, `SYS_GET_CMDLINE`
+
+* Status
+
+    Some functions to report back memory status of the embedded CPU or the status
+    of earlier semihosting function calls.
+
+    `SYS_HEAPINFO`, `SYS_ISERROR`, `SYS_ERRNO`
+
+Each semihosting function call has a number that is defined in the specification. You can also 
+look it up in the [OpenOCD source code](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/semihosting_common.h#L53-L76):
+
+In case it wasn't obvious: when enabled, semihosting offers the embedded CPU
+an almost unlimited supply of opportunities to kill the host PC. The only things that prevents
+an embedded CPU from deleting all files on a file system are carefull permission management
+of the debug server, so you may think twice about doing `sudo openocd` when you're having issues
+the permissions of some JTAG device driver. (Guilty as charged!)
+
+# Semihosting Under the Hood
+
+So how does semihosting really work?
+
+It's built on top of software breakpoints that are normally used to halt a CPU debugging:
+
+* The semihosting call that runs on the embedded CPU has an EBREAK instruction
+  that halts the CPU when a debugger is connected.
+* The host PC polls the embedded CPU to check if the embedded CPU is halted.
+* When a halt is detected, the host PC checks if the EBREAK is part of the following
+  instruction sequence:
+
+  ```
+SLLI    x0, x0, 0x1f
+EBREAK
+SRAI    x0, x0, 0x07
+  ```
+
+  *The first and third instructions are dummies that don't do anything, because they use x0 as the 
+  destination register, so this code sequence is not something would ever be  generated by a compiler.*
+
+  Here's the 
+  [instruction sequence detection code](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L853-L870)
+  on the VexRiscv version of OpenOCD.
+
+* If the sequence is detected, the debugger treats the EBREAK as a semihosting call. 
+
+  The value of register *a0* contains semihosting sytem call (one of the SYS_* above), and register
+  *a1* contains the system call parameter. 
+
+  Semihosting calls can only pass 1 parameter through 
+  a regiser. However, if multiple values need to be passed to the debugging host, the *a1*
+  register will contain a pointer to data in the embedded CPU memory that contains these
+  values. The debugging host can simply gets these values by issuing memory read commands
+  through a normal memory access debug mechanism.
+
+* The debugging host executes the required operation. 
+* Upon completion, the debugging host stores the return value in register *a0*, unhalts the
+  embedded CPU.
 
 
-So how does semihosting work on the VexRiscv?
+If the CPU was halted without seeing that semihosting instruction sequence then there must have been 
+another reason for the halt. E.g. it might be caused by a regular software breakpoint, or
+the firmware ran into some error condition and issued the EBREAK.
 
-OpenOCD will poll the CPU and check if the CPU is currently hatled at a program location the contains
-the [following instruction sequence](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L854-L859):
+# Semihosting Library
 
-```
-      slli    zero,zero,0x1f
-      ebreak
-      srai    zero,zero,0x7
-```
-
-*The first and third instructions are dummies (they use `zero` as the destination register), so they're
-not the kind of thing that will ever be generated by a compiler.*
-
-If the CPU was halted without seeing that sequence then there must have been another reason for the halt.
-E.g. the user might have set their own breakpoint.
-
-Otherwise, OpenOCD will fetch the semihosting parameters, and execute them on the host PC.
+The embedded CPU typically has a C library that wraps the semihosting calls into familiar C functions such 
+as `printf`, `fclose()`, `putchar()` etc.
 
 
 # References
@@ -393,5 +210,12 @@ Otherwise, OpenOCD will fetch the semihosting parameters, and execute them on th
 * [VEXRISCV 32-bit MCU](https://thuchoang90.github.io/vexriscv.html)
 * [PQVexRiscv](https://github.com/mupq/pqriscv-vexriscv)
 * [Litex VexRiscv Configuration](https://github.com/litex-hub/pythondata-cpu-vexriscv/blob/master/pythondata_cpu_vexriscv/verilog/src/main/scala/vexriscv/GenCoreDefault.scala)
+
+* [Semihosting causes crash when not running in the debugger...](https://www.openstm32.org/forumthread2323)
+* [bpkt ARM instruction freezes my embedded application](https://stackoverflow.com/questions/16396067/bpkt-arm-instruction-freezes-my-embedded-application)
+* [What is Semihosting?](https://community.nxp.com/t5/LPCXpresso-IDE-FAQs/What-is-Semihosting/m-p/475390)
+ 
+* [Official RISC-V OpenOCD semihosting code](https://github.com/riscv/riscv-openocd/blob/riscv/src/target/riscv/riscv_semihosting.c)
+* [Embedded printf](https://github.com/mpaland/printf)
 
 
