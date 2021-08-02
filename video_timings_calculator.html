@@ -11,6 +11,8 @@
                     { name: "8K / 144"              , horiz_pixels : 7680, vert_pixels : 4320, refresh_rate: 144 },
                     { name: "8K / 120"              , horiz_pixels : 7680, vert_pixels : 4320, refresh_rate: 120 },
                     { name: "8K / 60"               , horiz_pixels : 7680, vert_pixels : 4320, refresh_rate:  60 },
+                    { name: "6K / 60"               , horiz_pixels : 6016, vert_pixels : 3384, refresh_rate:  60 },
+                    { name: "6K / 48"               , horiz_pixels : 6016, vert_pixels : 3384, refresh_rate:  48 },
                     { name: "5K / 144"              , horiz_pixels : 5120, vert_pixels : 2880, refresh_rate: 144 },
                     { name: "5K / 120"              , horiz_pixels : 5120, vert_pixels : 2880, refresh_rate: 120 },
                     { name: "5K / 60"               , horiz_pixels : 5120, vert_pixels : 2880, refresh_rate:  60 },
@@ -33,6 +35,7 @@
                     { name: "1080p / 120"           , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate: 120 },
                     { name: "1080p / 60"            , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate:  60 },
                     { name: "720p / 60"             , horiz_pixels : 1280, vert_pixels :  720, refresh_rate:  60 },
+                    { name: "1024x768 / 60"         , horiz_pixels : 1024, vert_pixels :  768, refresh_rate:  60 },
                     { name: "640x480 / 60"          , horiz_pixels :  640, vert_pixels :  480, refresh_rate:  60 },
                     { name: "640x480 / 50"          , horiz_pixels :  640, vert_pixels :  480, refresh_rate:  50 },
                     { name: "320x200 / 60"          , horiz_pixels :  320, vert_pixels :  200, refresh_rate:  60 },
@@ -494,6 +497,7 @@
                     <td><label id="custom-active_bw"></label></td>
                     <td><label>Mbit/s</label></td>
                 </tr>
+		<tr><td span=6></td></tr>
                 <tr>
                     <td><label>DisplayPort 2.0 (20 GHz)</label></td>
                     <td><label id="cvt-dp_2"></label></td>
@@ -533,6 +537,46 @@
                     <td><label id="cvt_rb2-dp_rbr"></label></td>
                     <td><label id="custom-dp_rbr"></label></td>
                     <td><label>Max BW 5,240 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>DP 2.0 Type-C Alt Mode (20 GHz)</label></td>
+                    <td><label id="cvt-dpam_2"></label></td>
+                    <td><label id="cvt_rb-dpam_2"></label></td>
+                    <td><label id="cvt_rb2-dpam_2"></label></td>
+                    <td><label id="custom-dpam_2"></label></td>
+                    <td><label>Max BW 38,787 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>DP HBR3 Type-C Alt Mode (8.1 GHz)</label></td>
+                    <td><label id="cvt-dpam_hbr3"></label></td>
+                    <td><label id="cvt_rb-dpam_hbr3"></label></td>
+                    <td><label id="cvt_rb2-dpam_hbr3"></label></td>
+                    <td><label id="custom-dpam_hbr3"></label></td>
+                    <td><label>Max BW 12,960 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>DP HBR2 Type-C Alt Mode (5.4 GHz)</label></td>
+                    <td><label id="cvt-dpam_hbr2"></label></td>
+                    <td><label id="cvt_rb-dpam_hbr2"></label></td>
+                    <td><label id="cvt_rb2-dpam_hbr2"></label></td>
+                    <td><label id="custom-dpam_hbr2"></label></td>
+                    <td><label>Max BW 8,640 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>DP HBR Type-C Alt Mode (2.7 GHz)</label></td>
+                    <td><label id="cvt-dpam_hbr"></label></td>
+                    <td><label id="cvt_rb-dpam_hbr"></label></td>
+                    <td><label id="cvt_rb2-dpam_hbr"></label></td>
+                    <td><label id="custom-dpam_hbr"></label></td>
+                    <td><label>Max BW 4,320 Mbit/s</label></td>
+                </tr>
+                <tr>
+                    <td><label>DP RBR Type-C Alt Mode (1.64 GHz)</label></td>
+                    <td><label id="cvt-dpam_rbr"></label></td>
+                    <td><label id="cvt_rb-dpam_rbr"></label></td>
+                    <td><label id="cvt_rb2-dpam_rbr"></label></td>
+                    <td><label id="custom-dpam_rbr"></label></td>
+                    <td><label>Max BW 2,620 Mbit/s</label></td>
                 </tr>
                 <tr>
                     <td><label>HDMI 2.1 FRL (12 GHz)</label></td>
@@ -633,6 +677,10 @@
             </table>
             </form>
 
+            <p>DP Type-C Alt Mode is for USB Type-C connections using VESA DisplayPort Alternative Mode which provide two DisplayPort lanes (pin assignments B, D, and F).  For connections providing four DisplayPort lanes (pin assignments A, C, and E) use the primary DisplayPort rows in the table.</p>
+
+            <p>Thunderbolt 3 has Max BW of 40,000 Mbit/s and Thunderbolt 2 has Max BW of 20,000 MBit/s, however a single display cannot exceed the bandwidth listed above for DisplayPort. Known implementations support either one or two DisplayPort displays. Intel Thunderbolt 2 controllers (code name "Falcon Ridge") and the first Intel Thunderbolt 3 controller (code name "Alpine Ridge") only support DisplayPort HBR2, while newer Intel controllers support DisplayPort HBR3.</p>
+
             <script type="text/javascript">
 
                 $('#custom-hblank').change( function(){  update_status(); });
@@ -705,6 +753,12 @@
                         dp_hbr_bw       =   2700000000*4/10*8;
                         dp_rbr_bw       =   1640000000*4/10*8;
 
+                        dpam_2_bw       =  20000000000*2/132*128;
+                        dpam_hbr3_bw    =   8100000000*2/10*8;
+                        dpam_hbr2_bw    =   5400000000*2/10*8;
+                        dpam_hbr_bw     =   2700000000*2/10*8;
+                        dpam_rbr_bw     =   1640000000*2/10*8;
+
                         dvi_d_bw        =    165000000*24;
                         dvi_dl_bw       =    330000000*24;
 
@@ -733,6 +787,12 @@
                         dp_hbr_ok       = (total_bw < dp_hbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                         dp_rbr_ok       = (total_bw < dp_rbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
 
+                        dpam_2_ok         = (total_bw < dpam_2_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dpam_hbr3_ok      = (total_bw < dpam_hbr3_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dpam_hbr2_ok      = (total_bw < dpam_hbr2_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dpam_hbr_ok       = (total_bw < dpam_hbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dpam_rbr_ok       = (total_bw < dpam_rbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+
                         dvi_d_ok        = bpc != 8 ?               "<font color=\"red\">8 bpc only</font>" :
                                           (total_bw < dvi_d_bw)   ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                         dvi_dl_ok       = bpc != 8 ?               "<font color=\"red\">8 bpc only</font>" :
@@ -755,6 +815,11 @@
                         dp_hbr2_ok      = dp_hbr2_ok + " (" + Math.round(total_bw/dp_hbr2_bw*100) + "%)"
                         dp_hbr_ok       = dp_hbr_ok  + " (" + Math.round(total_bw/dp_hbr_bw*100) + "%)"
                         dp_rbr_ok       = dp_rbr_ok  + " (" + Math.round(total_bw/dp_rbr_bw*100) + "%)"
+                        dpam_2_ok       = dpam_2_ok    + " (" + Math.round(total_bw/dpam_2_bw*100) + "%)"
+                        dpam_hbr3_ok    = dpam_hbr3_ok + " (" + Math.round(total_bw/dpam_hbr3_bw*100) + "%)"
+                        dpam_hbr2_ok    = dpam_hbr2_ok + " (" + Math.round(total_bw/dpam_hbr2_bw*100) + "%)"
+                        dpam_hbr_ok     = dpam_hbr_ok  + " (" + Math.round(total_bw/dpam_hbr_bw*100) + "%)"
+                        dpam_rbr_ok     = dpam_rbr_ok  + " (" + Math.round(total_bw/dpam_rbr_bw*100) + "%)"
                         dvi_d_ok        = bpc == 8 ? dvi_d_ok   + " (" + Math.round(total_bw/dvi_d_bw*100) + "%)" : dvi_d_ok
                         dvi_dl_ok       = bpc == 8 ? dvi_dl_ok  + " (" + Math.round(total_bw/dvi_dl_bw*100) + "%)" : dvi_dl_ok
                         hdmi_1_0_ok     = hdmi_1_0_ok     + " (" + Math.round(total_bw/hdmi_1_0_bw*100) + "%)"
@@ -800,6 +865,12 @@
                         $(prefix + "-dp_hbr2").html(dp_hbr2_ok);
                         $(prefix + "-dp_hbr").html(dp_hbr_ok);
                         $(prefix + "-dp_rbr").html(dp_rbr_ok);
+
+                        $(prefix + "-dpam_2").html(dpam_2_ok);
+                        $(prefix + "-dpam_hbr3").html(dpam_hbr3_ok);
+                        $(prefix + "-dpam_hbr2").html(dpam_hbr2_ok);
+                        $(prefix + "-dpam_hbr").html(dpam_hbr_ok);
+                        $(prefix + "-dpam_rbr").html(dpam_rbr_ok);
 
                         $(prefix + "-dvi_d").html(dvi_d_ok);
                         $(prefix + "-dvi_dl").html(dvi_dl_ok);
