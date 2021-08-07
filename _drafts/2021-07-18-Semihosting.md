@@ -1,4 +1,4 @@
----
+o--
 layout: post
 title: Semihosting - Use a PC as Terminal and File Server for Your Embedded CPU
 date:  2021-07-18 00:00:00 -1000
@@ -135,14 +135,14 @@ The spec defines 24 function calls that can be put in the following categories:
 
     `SYS_HEAPINFO`, `SYS_ISERROR`, `SYS_ERRNO`
 
-Each semihosting function call has a number that is defined in the specification. You can also 
-look it up in the [OpenOCD source code](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/semihosting_common.h#L53-L76):
+The specification defines a unique number to each semihosting function call. You can also
+look that number up in the 
+[OpenOCD source code](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/semihosting_common.h#L53-L76).
 
 In case it wasn't obvious: when enabled, semihosting offers the embedded CPU
-an almost unlimited supply of opportunities to kill the host PC. The only things that prevents
+an almost unlimited supply of opportunities to kill the host PC. The only things that prevent
 an embedded CPU from deleting all files on a file system are carefull permission management
-of the debug server, so you may think twice about doing `sudo openocd` when you're having issues
-the permissions of some JTAG device driver. (Guilty as charged!)
+of the debug server and the `arm semihosting enable` command in OpenOCD.
 
 # Semihosting Under the Hood
 
@@ -150,11 +150,11 @@ So how does semihosting really work?
 
 It's built on top of software breakpoints that are normally used to halt a CPU debugging:
 
-* The semihosting call that runs on the embedded CPU has an EBREAK instruction
+* The semihosting call that runs on the embedded CPU has a RISC-V EBREAK instruction
   that halts the CPU when a debugger is connected.
-* The host PC polls the embedded CPU to check if the embedded CPU is halted.
-* When a halt is detected, the host PC checks if the EBREAK is part of the following
-  instruction sequence:
+* The host PC continuously polls the embedded CPU to check if it is halted.
+* When a halt is detected, the host PC checks if the EBREAK instruction is part of the following
+  magic instruction sequence:
 
   ```
 SLLI    x0, x0, 0x1f
@@ -171,28 +171,30 @@ SRAI    x0, x0, 0x07
 
 * If the sequence is detected, the debugger treats the EBREAK as a semihosting call. 
 
-  The value of register *a0* contains semihosting sytem call (one of the SYS_* above), and register
+  The value of register *a0* contains semihosting system call number (one of the SYS_* above), and register
   *a1* contains the system call parameter. 
 
-  Semihosting calls can only pass 1 parameter through 
-  a regiser. However, if multiple values need to be passed to the debugging host, the *a1*
-  register will contain a pointer to data in the embedded CPU memory that contains these
-  values. The debugging host can simply gets these values by issuing memory read commands
-  through a normal memory access debug mechanism.
+  Semihosting calls can only pass 1 parameter through a register. However, if multiple values 
+  need to be passed to the debugging host, the *a1* register will contain a pointer to data 
+  in the embedded CPU memory that contains these values. The debugging host gets
+  these values by issuing memory read commands through the same mechanism that's normally used
+  to access memory during debugging. 
 
-* The debugging host executes the required operation. 
-* Upon completion, the debugging host stores the return value in register *a0*, unhalts the
-  embedded CPU.
+* The debugging host, OpenOCD, executes the requested operation.
+* Upon completion, the debugging host stores the return value in register *a0*, and unhalts the
+  embedded CPU. 
 
 
-If the CPU was halted without seeing that semihosting instruction sequence then there must have been 
-another reason for the halt. E.g. it might be caused by a regular software breakpoint, or
+If the embedded CPU was halted without seeing that semihosting instruction sequence then there 
+must have been another reason for the halt. E.g. it might be caused by a regular software breakpoint, or
 the firmware ran into some error condition and issued the EBREAK.
 
 # Semihosting Library
 
 The embedded CPU typically has a C library that wraps the semihosting calls into familiar C functions such 
 as `printf`, `fclose()`, `putchar()` etc.
+
+It's entirely up to the 
 
 
 # References
