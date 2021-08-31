@@ -290,4 +290,158 @@ Thoughts:
     * ask test takers to identify different types of antennas (Yagi, Halo etc.), with the option to 
 
 
+# Study rules
+
+* When there's one nonsense option, this rules out that "all of these choices are correct"
+* The FCC regulations are the law of the land for all things radio that happen in the US, or on
+  a vessel that's registered in the US. But it doesn't rule local eletrical code wrt grounding etc.
+* The 3 amateur licenses is only different in the kind of frequency bands you're allowed to 
+  transmit in, and in the kind of exams that you're allowed to administer. There is no difference
+  in terms of vanity call signs, restrictions in communicating with space ships (as long as you
+  are using allowed frequency bands) etc.
+* The FCC off-loads a lot of stuff to local volunteers: band plan, repeater channels, etc. There are
+   no questions where you initiate contact with the FCC. (But the FCC could ask you to provide info etc.)
+* FCC database is the source of truth wrt technician permissions.
+* Grounding is important, and connecting the ground of different pieces of equipment is also important.
+  Whenever one of the potential answer is "grounds are connected together", that's at least one of the
+  correct answers.
+* Fuses interrupt power for safety (fire etc). 
+* Low voltage (<12V) can't shock, but high currents can burn
+* RF works through electro-magnetic fields that is non-ionizing. Strong
+  fields only result in RF burn/heating. It can't change generics.
+* The power that matters for safety and limits is the power at the antenna.
+* RF exposure is depending not only on power, but also location wrt antenna, radiation pattern.
+* 50W is a key number of RF power exposure.
+* Never interfere with others.
+* Amateurs are always second class to others, except in emergencies. In those cases, licensed amateurs rule
+  the airwaves.
+* Frequency (in MHz) * wavelength (in m) = 300
+* Voice: SSB is used for long distance, and limited bandwidth voice communications. Upper side band is used for
+  everything except some HF bands.
+* Old school fast scan TV (NTSC): 6MHz bandwidth, voice: ~2.4kHz bandwidth, morse: 150Hz BW. Based on that,
+  you can derive the answer to a lot of questions related to bandwidthm, repeater offsets and filtering.
+* Only talk about personal stuff, especially when transmitting with out-of-country people.
+* Other countries can impose that you don't to interact with its subjects.
+* Only plain, unencoded or unencrypted communication, except for space stations or radio controlled crafts.
+* English is the answer, no other languages. Or morse code (CW). No dirty words ever.
+* Music is only ever allowed when transmitting it to astronauts.
+* You always have to identify yourself, every 10min and at the end of a transmission, except when talking to 
+  a space station or radio controlled craft.
+* A control operator is the one who handles the station (transceiver). Their license is what matter, not the one
+  who owns the station. 
+* Automatic control is when the transceiver automatically transmits, but even then, there needs to be a
+  control operator overseeing the operation.
+* When there's conflict, try to resolve it amicably. Running the FCC or some other body is never the right
+  answer.
+* When you're asked to diagnose an issue, very often (but not always!) the expected answer is "all of
+  these choises are correct." 
+
+| Name               |             HF             | VHF                       | UHF                       |
+|--------------------|:--------------------------:|---------------------------|---------------------------|
+| Frequency          |        3MHz - 30MHz        | >30MHz-300MHz             | >300MHz-3000MHz           |
+| Wavelength         | 100m - 10m                 | <10m - 1m                 | <1m - 10cm                |
+| Max Transmit Power |            200W            | 1500W                     |                           |
+| Distance           | Long Distance (Ionosphere) | Line of sight, reflection | Line of sight, reflection |
+| Licensing          | General, except for 10m    | Technician                | Technician                |
+|                    |                            |                           |                           |
+|                    |                            |                           |                           |
+|                    |                            |                           |                           |
+|                    |                            |                           |                           |
+
+
+
+T0A:  Power circuits and hazards: hazardous voltages; fuses and circuit breakers; grounding; lightning protection; battery safety; electrical code compliance
+
+T0A01: 12V is low, so 'shock' can't be the right option. Choose the safety related option.
+T0A02: General knowledge
+T0A03: Green wire -> ground
+T0A04: fuse -> interrupt power for safety
+T0A05: fuse -> interrupt power for safety
+T0A06: General knowledge
+T0A07: When grounding, all ground connections must be connected together
+T0A08: fuse -> interrupt power for safety
+T0A09: When grounding, all ground connections must be connected together
+T0A10: voltage can't be reversed. Choose the safety related option.
+T0A11: Choose the safety related option.
+
+T0B01: Choose the most safe option.
+T0B02: Remove grounding connections is stupid. Choose the safest option.
+T0B03: Choose the most safe option.
+T0B04: Choose the most safe option.
+T0B05: gin pole is used to lift stuff
+T0B06: Choose the most safe option.
+T0B07: Choose the most safe option.
+T0B08: When grounding, all ground connections must be connected together
+T0B09: Monthly fee stuff is stupid. Choose the most safe option.
+T0B10: Sharp bends increase the chance of arcing.
+T0B11: Local rules trump general rules.
+T0B12: A and B are nonsense. C is only option.
+T0B13: choose the safest option.
+
+T0C01: Learn: RF is non-ionizing, no genetic damage.
+T0C02: Learn: Frequency with lowest MPE is 50MHz.
+T0C03: Learn: Max power level before RF exposure evaluation is 50W PEP at antenna.
+T0C04: Intuition.
+T0C05: Learn: different RF frequencies, different human body absorption
+T0C06: Learn: different ways to determine RF exposure compliance
+T0C07: Learn: RF is non-ionizing, no genetic damage -> painful RF burn is only reasonable option.
+T0C08: Antenna is what determines RF radition power at alocation, not transmitter.
+T0C09: Never contact the FCC -> B is only reasonable option.
+T0C10: Learn: What is duty cycle? -> Duty cycle lowers averages.
+T0C11: Learn: What is duty cycle? -> Duty cycle specifies the ON time.
+T0C12: Learn: RF is non-ionizing, no genetic damage 
+T0C13: Learn: What is duty cycle? -> Duty cycle lowers averages.
+
+T1A01: Learn: advancing skills in the technical and communication phases of the radio art.
+T1A02: Learn: it's always the FCC.
+T1A03: Learn: FCC -> English
+T1A04: Learn: One license grant only
+T1A05: Learn: it's always the license databases
+T1A06: Learn: a beacon is used to observe propagation or related experimental activities
+T1A07: Learn: space station -> 50km above the surface
+T1A08: Learn: local channel and other parameters -> volunteer coordinators/amateur operators
+T1A09: Learn: local channel and other parameters -> volunteer coordinators/amateur operators
+T1A10: Learn: RACES -> all kinds of emergency stuff
+T1A11: Learn: interference is always bad.
+
+T1B01: Learn: ITU -> United Nations
+T1B02: Learn: space stations have very low requirements to interact with.
+T1B03: Learn: wavelength to freq rule: 300/6m -> 50
+T1B04: Learn: wavelength to freq rule: 300/146.52 -> 2
+T1B05: Learn: 219-220MHz: fixed digital message forwarding systems only
+T1B06: Learn: Technician and HF always restricted to 10m.
+T1B07: Learn: 50MHz and 144MHz -> CW only
+T1B08: Learn: amateurs are less important than non-amateurs
+T1B09: Learn: no equipment is perfect
+T1B10: Learn: Technician and HF always restricted to 10m.
+T1B11: Learn: HF -> max 200W
+T1B12: Learn: VHF -> max 1500W
+
+T1C01: Learn: technician, general, amateur extra
+T1C02: Learn: a license is usually enough
+T1C03: 
+T1C04: 
+T1C05: 
+T1C06: 
+T1C07: 
+T1C08: 
+T1C09: 
+T1C10: 
+T1C11: 
+T1C12: 
+T1C13: 
+
+T1C01: 
+T1C02: 
+T1C03: 
+T1C04: 
+T1C05: 
+T1C06: 
+T1C07: 
+T1C08: 
+T1C09: 
+T1C10: 
+T1C11: 
+T1C12: 
+T1C13: 
 
