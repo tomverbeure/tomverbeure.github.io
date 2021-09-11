@@ -1,7 +1,7 @@
 ---
 layout: post
-title: Why You Should Use a PLL When Dealing with External IOs
-date:  2021-05-23 00:00:00 -1000
+title: Correct Timing on a ULPI Interface - Timing Constraints Crash Course
+date:  2021-09-11 00:00:00 -1000
 categories:
 ---
 
@@ -10,161 +10,7 @@ categories:
 
 # Introduction
 
-I've been working on getting my own SpinalHDL USB core up and running on an 
-[Arrow DECA](/2021/04/23/Arrow-DECA-FPGA-board.html) FPGA board. It's one of 
-those half-complete project that might not ever be finished, so this blog post isn't 
-specifically about that. However, I ran into an issue that forced me to learn
-some of the finer details of specifying IO timing constraints that I want record for
-posterity.
 
-Initially, this was supposed to be just one blog post, but the scope of the whole thing kept on growning, 
-so to keep things manageable, I've split it up into multiple parts.
-
-In this first part, I'll introduce the thing that started it all: the ULPI interface.
-
-# What is a ULPI Interface?
-
-Like many other more advanced FPGA boards, the DECA doesn't have a generic USB
-host or device controller[^1], and the MAX10 FPGA itself doesn't have the
-IOs to support high-speed 480Mbps USB either:
-USB 2.0 requires some specialized digital and analog cells to recover clocks, to support the
-signalling levels that are radically different between full speed and high speed, to support battery 
-charging, or to support USB On-The-Go.
-
-[^1]: If you ignore the separate USB device controller that implements a USB Blaster-II.
-
-Just like Ethernet defines a [MAC](https://en.wikipedia.org/wiki/Medium_access_control), 
-a [PHY](https://en.wikipedia.org/wiki/PHY), 
-and a [media-independent Interface (MII)](https://en.wikipedia.org/wiki/Media-independent_interface) 
-between them, the USB consortium created a well-defined cut between a PHY that takes care of the low 
-level protocol concerns, and the higher level functionality of device and host controllers. The lower level 
-PHY is called the USB 2.0 Transceiver Macrocell (UTM), and the interface between a controller and a UTM is
-defined by the [UTMI specification][UTMI-specification].
-
-A UTM PHY can be located on the same die as a controller (chances are *very* high that your cell phone
-has one or more UTM cells on its main SOC), but there are also separate chips that just contain a UTM. 
-However, instead of using the ~35 IO pins that are required by the UTMI specification, they use the
-[UTMI+ Low Pin Interface (ULPI)][ULPI-specification] which requires only 12 IO pins.
-
-The overall system block diagram of such a configuration, which matches the one of the Arrow DECA
-board, looks like this:
-
-![System Diagram of USB with UTM interface](/assets/io_timings/io_timings-usb_system_with_ulpi.svg)
-
-The FPGA core logic contains a host or device controller that talks to the external UTM PHY over
-standard digital IOs.
-
-A UTM PHY contains a bunch of digital logic that converts between a generic parallel data stream 
-and the serialized USB traffic, as well as PLLs, analog transceivers, voltage regulators, as shown 
-in the block diagram of the [TUSB1210 UTM PHY][TUSB1210-product-page] that is used on the Arrow DECA:
-
-![TUSB1210 Block Diagram](/assets/io_timings/tusb1210_block_diagram.png)
-
-The 12 pins of the ULPI interface are at the bottom left of this diagram.
-
-In this blog post, I won't talk about the high level functionality of USB controllers or PHYs, but about how
-to ensure reliable communication over the digital ULPI interface.
-
-# A Typical ULPI Transaction
-
-*I'll be using a register read as an example, but everything discussed here applies to all ULPI transactions.*
-
-The following figure from the specification illustrates a ULPI register read transaction:
-
-![ULPI Register Read Specification](/assets/io_timings/ulpi_register_read_specification.png)
-
-There are 5 steps:
-
-1. The link (the USB host or device controller) issues a RegRead command on the data bus. It does this by setting
-   bits [7:6] of the data bus to 2'b11, and assigning the address to bits [5:0].
-1. The PHY sees the RegRead command, and asserts `nxt` to inform the link.
-1. The PHY asserts `dir` to turn around the direction of the data bus and take control of it. However,
-   it doesn't drive the data bus yet. This is called a *bus turn around* cycle.
-1. The PHY drives the value of the requested register on the bus.
-1. The PHY deasserts `dir` return control of the data bus to the link, and stops driving
-   the data bus. Another bus turn around cycle.
-
-The specification is not explicit about whether or not the PHY can immediately assert `nxt` during step 1.
-All it says, in section 3.8.3.1, is the following:
-
-> For a register read, as shown in Figure 22, the Link sends a register read command and waits
-> for **nxt** to assert.
-
-However, one could reasonable expect a PHY to assert `nxt` *at the earliest* during the second cycle. If not, 
-you'd end up with pretty impressive critical path: 
-
-databus output FF of the link -> databus output IO path of the FPGA -> data bus input IO path of the PHY 
--> a combinatorial path inside the PHY -> `nxt` output IO path of PHY -> `nxt` input IO path of the link
--> FF inside the link.
- 
-That's just not going to happen at 60 MHz, especially not for an interface that was released 17 years
-ago.
-
-Here's a conceptual diagram that shows how the IO signals between the Link and PHY are almost
-certainly wired up:
-
-![Overall Setup Without Added Delays](/assets/io_timings/io_timings-overall_setup_no_delays.svg)
-
-Things of note:
-
-* The PHY creates the clock and sends it to the link. This is called ULPI *Output Clock* mode.
-  Most PHYs also support the optional *Input Clock* mode, where the link sends a clock to the PHY, 
-  but the Arrow DECA board is configured in output clock mode.
-* Output signals of a chip, whether it's the link or the PHY, are driven by a flip-flop
-  right before going to the IO pin.
-* Input signals, on the other hand, typically need to go through some combinatorial cloud
-  of logic before they hit a register.
-* The `ulpi_dir` signal coming from the PHY directly controls the output enable of the 
-  `ulpi_data` IO pins: when `ulpi_dir` is high, the link stops driving `ulpi_data` through
-  a combinatorial path.
-
-Most USB controllers have a UTMI interface, so you need a UTMI to ULPI protocol conversion
-block that sits between the controller and the IO pins. 
-That's my [Utmi2Ulpi](https://github.com/tomverbeure/usb_system/blob/main/spinal/src/main/scala/usb/Utmi2Ulpi.scala)
-block.
-
-To test it, I wrote a testbench that implements a behavioral model of a ULPI PHY with the diagram 
-above in mind, and ran a simulation. The signal behavior matches the one of the ULPI specification:
-
-![ULPI Register Read Simulation](/assets/io_timings/ulpi_register_read_simulation_correct.png)
-
-So far so good!
-
-# ULPI Reads Failing in the Real World
-
-Once I had a working simulation, I tried ULPI register reads on the actual hardware. That's
-where things went off the rails: the expected values were either plain wrong, or the the interface
-was hanging.
-
-I used SignalTap to observe what was going on inside the FPGA:
-
-![ULPI Register Read SignalTap Wrong](/assets/io_timings/ulpi_register_read_signaltap_wrong.png)
-
-In the transaction above, you see value 0xC1 being driven onto `ulpi_data`. Remember: the
-upper 2 bits of 0xC1, 2'b11, indicate a register read, and the lower 6 bits, 0x01, indicate the address. 
-According to the ULPI specification, register 0x01 contains the MSB of the vendor ID of the PHY. 
-The TUSB1210 PHY has a vendor ID of 0x0451. The PHY should return 0x04, but it's returning 0x51!
-
-You can also see how `ulpi_nxt` gets asserted during the first cycle during which 0xC1 is being  
-driven by the link.
-
-What is going on here?
-
-The *obvious* first reaction is it that there's a problem with the chip. Everything is simulating fine,
-how could I possibly be the problem! I was 
-[not the only one with this reaction](https://community.intel.com/t5/Intel-Quartus-Prime-Software/Strange-code-behavior-once-it-works-once-not/m-p/253916/highlight/true?profile.language=ja):
-
-> Maybe I have a clue - I could not communicate with tusb1210 as it is written in ULPI standard. To write to tusb1210 register, 
-> I had to make some hacks (i.e. register usb_stupid_test in `top/ULPI.v`), what is ridiculous, but after this hack it finally 
-> started to work (for few days...).
-
-But this is a chip that has been in production for years, and there are only 
-[2 minor erratas](https://www.ti.com/lit/er/sllz066/sllz066.pdf?ts=1630776676403). 
-When with misbehaving C code, assuming a bug in the compiler should be your very last option.  The same is through 
-for issues like this.
-
-**When the real world doesn't match your simulation, chances are high that there's a signal integrity or
-a timing issue.**
 
 # A Crash Course in Setup and Hold Timing Constraints
 
@@ -694,6 +540,42 @@ of 85 C and a slow process, the hold time positive slack is 1.4ns.
 So there is no obvious timing violation, and yet the thing doesn't work. 
 
 What can we do next?
+
+# ULPI Reads Failing in the Real World
+
+Once I had a working simulation, I tried ULPI register reads on the actual hardware. That's
+where things went off the rails: the expected values were either plain wrong, or the the interface
+was hanging.
+
+I used SignalTap to observe what was going on inside the FPGA:
+
+![ULPI Register Read SignalTap Wrong](/assets/io_timings/ulpi_register_read_signaltap_wrong.png)
+
+In the transaction above, you see value 0xC1 being driven onto `ulpi_data`. Remember: the
+upper 2 bits of 0xC1, 2'b11, indicate a register read, and the lower 6 bits, 0x01, indicate the address. 
+According to the ULPI specification, register 0x01 contains the MSB of the vendor ID of the PHY. 
+The TUSB1210 PHY has a vendor ID of 0x0451. The PHY should return 0x04, but it's returning 0x51!
+
+You can also see how `ulpi_nxt` gets asserted during the first cycle during which 0xC1 is being  
+driven by the link.
+
+What is going on here?
+
+The *obvious* first reaction is it that there's a problem with the chip. Everything is simulating fine,
+how could I possibly be the problem! I was 
+[not the only one with this reaction](https://community.intel.com/t5/Intel-Quartus-Prime-Software/Strange-code-behavior-once-it-works-once-not/m-p/253916/highlight/true?profile.language=ja):
+
+> Maybe I have a clue - I could not communicate with tusb1210 as it is written in ULPI standard. To write to tusb1210 register, 
+> I had to make some hacks (i.e. register usb_stupid_test in `top/ULPI.v`), what is ridiculous, but after this hack it finally 
+> started to work (for few days...).
+
+But this is a chip that has been in production for years, and there are only 
+[2 minor erratas](https://www.ti.com/lit/er/sllz066/sllz066.pdf?ts=1630776676403). 
+When with misbehaving C code, assuming a bug in the compiler should be your very last option.  The same is through 
+for issues like this.
+
+**When the real world doesn't match your simulation, chances are high that there's a signal integrity or
+a timing issue.**
 
 # First Principle Analysis of the Failing Waveform
 
