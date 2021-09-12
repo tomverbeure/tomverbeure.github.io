@@ -14,7 +14,10 @@ categories:
 
 # A Crash Course in Setup and Hold Timing Constraints
 
-Timing constraints are used to specify and check 2 key timing aspects of a design:
+Timing constrains are used to specify timing relationships between different elements of a design,
+which are then used during synthesis, placement, static timing analysis.
+
+They are used to check the following aspects of a design:
 
 * setup time
 
@@ -26,7 +29,34 @@ Timing constraints are used to specify and check 2 key timing aspects of a desig
     The hold time is the minium time during which a signal must be stable
     **after** the active edge of a clock to reliably capture a signal.
 
+* a delay specification
+
+    In some cases, a minimum or maximal delay is required that's unrelated to a setup or
+    hold requirement.
+
+
 ![setup and hold time diagram](/assets/io_timings/io_timings-setup_hold.svg)
+
+For all timing checks, there'll be a launching edge and a latching edge, there'll be
+a timing requirement between those 2 that must be met, and there'll be one or more
+path of design elements from a start point to an end point through which this 
+timing requirement is calculated.
+
+*Note: while there's always a launching and a latching edge, that doesn't necessarily
+mean that there are clocks involved! Usually there are, but there are cases where
+these edges are defined without the presence of clocks.*
+
+When checking setup times, a static timing analysis tool will look for the longest path between a
+given start and an end point. But when testing hold times, it will look for the shortest path for the
+same 2 points.
+
+![different longest vs shortest path between the same 2 launch and latch FFs](/assets/io_timings/io_timings-longest_vs_shortest_path.svg)
+
+![setup timing waveform diagram](/assets/io_timings/io_timings-setup_launch_to_latch.svg)
+
+![hold timing waveform diagram](/assets/io_timings/io_timings-hold_launch_to_latch.svg)
+
+
 
 In the diagram above, the rising edge of the clock is the active edge, but a falling
 edge is possible too.
