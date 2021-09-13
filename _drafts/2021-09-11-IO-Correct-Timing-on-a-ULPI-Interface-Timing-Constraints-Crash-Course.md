@@ -12,7 +12,7 @@ categories:
 
 
 
-# A Crash Course in Setup and Hold Timing Constraints
+# A Crash Course in Timing Constraints
 
 Timing constrains are used to specify timing relationships between different elements of a design,
 which are then used during synthesis, placement, static timing analysis.
