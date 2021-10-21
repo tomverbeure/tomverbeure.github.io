@@ -31,7 +31,7 @@ SODIMM connector and can be used any way you want: input or output, LVCMOS or LV
 that's supported by the FPGA.
 
 The Colorlight i5 uses a Lattice ECP5U-25, an FPGA that's supported by the Yosys/NextPNR open source
-tool flow, an extra bonus.
+tool flow, an extra bonus. The board is also supported by recent versions of [Icestudio](https://icestudio.io/#).
 
 That said, there's still a hurdle to using this board as development platform: you need a way to power it,
 there are no easy usable GPIO connectors (such as PMOD connectors), and while are easily accessible
@@ -830,6 +830,8 @@ a significantly higher price.
 * [Official Development Board GitHub Repo](https://github.com/wuxx/Colorlight-FPGA-Projects)
 * [Colorlight i5 Tips GitHub Repo](https://github.com/kazkojima/colorlight-i5-tips)
 * [Colorlight i5 Extension Board Pin Mapping](https://tomverbeure.github.io/2021/01/30/Colorlight-i5-Extension-Board-Pin-Mapping.html)
+
+* [Using ColorLight FPGA board with cheap JTAG programmers](https://github.com/benitoss/ColorLight_FPGA_boards)
 
 **Similar FPGA boards**
 
