@@ -1,6 +1,6 @@
-o--
+---
 layout: post
-title: Semihosting - Use a PC as Terminal and File Server for Your Embedded CPU
+title: Semihosting, a PC as Terminal and File Server for Your Embedded CPU
 date:  2021-07-18 00:00:00 -1000
 categories:
 ---
@@ -10,7 +10,7 @@ categories:
 
 # Introduction
 
-Regular readers of my blog posts should know by now that I'm a bug fan of adding a small
+Regular readers of my blog posts should know by now that I'm a big fan of adding a small
 embedded CPU in my FPGA projects for overall management, 
 [bit-banging](https://en.wikipedia.org/wiki/Bit_banging) slow protocols
 such as [I2C](https://en.wikipedia.org/wiki/I²C), and some real-time operations with not too
@@ -19,14 +19,14 @@ stringent timing requirements. They'll also know that the
 toolbox.
 
 When running code on an embedded CPU, it's very often helpful to have an interface to a
-PC to run some kind of console for control, debugging, and logging. A UART is obviously
+PC to run some kind of console or terminal for control, debugging, and logging. A UART is obviously
 very popular for this, but I often also use a [JTAG UART](2021/05/02/Intel-JTAG-UART.html), 
 which can be easier to integrate if you already have a JTAG connection to for FPGA for 
 other reasons.
 
 But there's another option that many probably have never heard about. Instead of using
 a dedicated HW block, it leverages the existing debug infrastructure of the CPU by adding a
-peculiar software layer to the low level debug driver on top of it. 
+peculiar software layer on top of the low level debug driver. 
 
 It's called semihosting, and it allows the embedded CPU use the host PC as a server
 for a variety of functions: STDIO read and write, access to the PC file system, time 
@@ -38,7 +38,7 @@ PC into reading and writing files on its file system.
 
 # Semihosting and RISC-V
 
-Semihosting is nothing new: I first used semihosting in 1995 on a prehistoric ARM7TDMI CPU
+Semihosting is nothing new: I first used it in 1995 on a prehistoric ARM7TDMI CPU
 that was embedded in the 
 [Alcatel MTC-20276](http://static6.arrow.com/aropdfconversion/467166f711419cfece3c159c1fd6c2fc98bf586c/mtc-20276.pdf), 
 an [ISDN](https://en.wikipedia.org/wiki/Integrated_Services_Digital_Network) ASIC that was 
@@ -56,7 +56,7 @@ out when and why some echo cancellation filter was going off the rails.
 blog post about semihosting, but it's just a wave of nostaligia crashing over me, and
 it's not as if you can do anything about it.*
 
-But the point is: ARM invented semihosting at least 26 years ago.
+The point is: ARM invented semihosting at least 26 years ago.
 
 Let's have a look to the [ARM semihosting specification](https://developer.arm.com/documentation/100863/latest)
 to see what it's really all about:
@@ -68,10 +68,11 @@ to see what it's really all about:
 Semihosting is a powerful feature, because it can give a tiny embedded CPU that doesn't have any
 generic IO capabilities to do things like accepting keystrokes, print out debug information to a debug
 console, or even read and write from and to a file on the host PC.  It's up to the external debugger 
-(OpenOCD in our case) to intercept semihosting operation request from embedded CPU and perform the requested action.
+(OpenOCD in our case) to intercept a semihosting operation request from embedded CPU and perform the requested action.
 
 The performance of semihosting commands is subject to the bandwidth of the communication interface
-by which the embedded CPU is connected to the host PC, so don't expect miracles here in the case of JTAG.
+by which the embedded CPU is connected to the host PC. Most of the time, this will be JTAG,
+so don't expect miracles!
 
 Despite having existed for so long, I'm not aware of any other CPU family that has support for 
 semihosting (I definitely can't find anything in the OpenOCD source code), except for RISC-V. In their
@@ -89,14 +90,26 @@ support semihosting.
 
 # Semihosting Functionality
 
-What exactly features does semihosting offer?
+Exactly what kind of features does semihosting offer?
 
 The spec defines 24 function calls that can be put in the following categories:
+
+| Category | Calls | Description |
+|----------|-------|------------|
+| Time keeping | `SYS_CLOCK`  `SYS_ELAPSED`  `SYS_TICKFREQ`  `SYS_TIME` | The embedded CPU can ask the host for a time reference in case it doesn't have one.  Since communication usually happens over JTAG, the time accuracy won't be very high. |
+|File IO | `SYS_OPEN`, `SYS_READ`, `SYS_CLOSE`, `SYS_FLEN`, `SYS_SEEK`, `SYS_WRITE`, `SYS_ISTTY`, `SYS_REMOVE`, `SYS_RENAME`, `SYS_TMPNAM` | All kinds of transactions on files that live on the host PC file system. | 
+| Console IO | `SYS_READC`, `SYS_WRITEC`, `SYS_WRITE0` | The console IO (also called the debug channel) is the equivalent of a UART or JTAG. |
+| System commands | `SYS_SYSTEM` | Allow the embedded CPU to execute operating system commands on the host PC. Things like `pwd` or `mkdir`. Or even `/bin/rm -fr /`, because why not? | 
+
+    UART
+
+
+ 
 
 * Time keeping
 
     The embedded CPU can ask the host for a time reference in case it doesn't have one.
-    Since communication usually happens over JTAG, the time accuracy won't be very high!
+    Since communication usually happens over JTAG, the time accuracy won't be very high.
 
     `SYS_CLOCK`, `SYS_ELAPSED`, `SYS_TICKFREQ`, `SYS_TIME`
 
