@@ -76,23 +76,23 @@ so don't expect miracles!
 
 Despite having existed for so long, I'm not aware of any other CPU family that has support for 
 semihosting (I definitely can't find anything in the OpenOCD source code), except for RISC-V. In their
-discussion of the EBREAK instruction (section 2.8 of the RISC-V Instruction Set Manual), semihosting
+discussion of the `EBREAK` instruction (section 2.8 of the RISC-V Instruction Set Manual), semihosting
 is only mentioned as a large-ish footnote, but that's sufficient because other than defining the 
 RISC-V specific semihosting function call semantics, RISC-V simply adopted the ARM semihosting specification.
 Smart!
 
-OpenOCD refactored the ARM semihosting support code into 
-[`semihosting_common`](https://github.com/ntfreak/openocd/blob/master/src/target/semihosting_common.h) which
-is CPU family agnostic, making it easy to add semihosting support to RISC-V targets. Both the
+OpenOCD refactored the CPU agnostic part of the ARM semihosting support code into 
+[`semihosting_common`](https://github.com/ntfreak/openocd/blob/master/src/target/semihosting_common.h),
+making it easy to add semihosting support to RISC-V targets. Both the
 [official OpenOCD repo](https://github.com/ntfreak/openocd/blob/master/src/target/riscv/riscv_semihosting.c) and
 the [custom OpenOCD version for the VexRiscv CPU](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L143-L150)
-support semihosting.
+support semihosting on RISC-V CPUs.
 
-# Semihosting Functionality
+# System Call Overview
 
 Exactly what kind of features does semihosting offer?
 
-The spec defines 24 function calls that can be put in the following categories:
+The spec defines 24 function calls that can be grouped in the following categories:
 
 | Category | Calls | Description |
 |----------|-------|------------|
@@ -100,7 +100,7 @@ The spec defines 24 function calls that can be put in the following categories:
 |File IO | `SYS_OPEN`, `SYS_READ`, `SYS_CLOSE`, `SYS_FLEN`, `SYS_SEEK`, `SYS_WRITE`, `SYS_ISTTY`, `SYS_REMOVE`, `SYS_RENAME`, `SYS_TMPNAM` | All kinds of transactions on files that live on the host PC file system. | 
 | Console IO | `SYS_READC`, `SYS_WRITEC`, `SYS_WRITE0` | The console IO (also called the debug channel) is the equivalent of a UART or JTAG UART. |
 | System commands | `SYS_SYSTEM` | Allow the embedded CPU to execute operating system commands on the host PC. Things like `pwd` or `mkdir`. Or even `/bin/rm -fr /`, because why not? | 
-| Program control | `SYS_EXIT`, `SYS_EXIT_EXTENDED`, `SYS_GET_CMDLINE` | Some functions to pass command line parameters to the embedded firmware, or to feed back-end with execution status and error conditions. |
+| Program control and status | `SYS_EXIT`, `SYS_EXIT_EXTENDED`, `SYS_GET_CMDLINE` | Some functions to pass command line parameters to the embedded firmware, or to feed back-end with execution status and error conditions. |
 | Status | `SYS_HEAPINFO`, `SYS_ISERROR`, `SYS_ERRNO` | Some functions to report back memory status of the embedded CPU or the status of earlier semihosting function calls. |
 
 
@@ -113,7 +113,7 @@ an almost unlimited supply of opportunities to kill the host PC. The only things
 an embedded CPU from deleting all files on a file system are carefull permission management
 of the debug server and the `arm semihosting enable` command in OpenOCD.
 
-# Semihosting Under the Hood
+# Under the Hood
 
 So how does semihosting work?
 
@@ -166,8 +166,50 @@ There is no need to implement all semihosting function calls in that embedded CP
 print related functions will be sufficient to output debug messages. Add a variant of `getchar()` and 
 there's enough for a simple embedded terminal.
 
-#
+# Avoiding Hangs when a Debugger is not Connected
 
+We've seen that a semihosting system call gets issued by executing an `EBREAK` instruction,
+followed by the debugger detecting a magic instruction sequence, performing the requested
+action, and then letting the CPU continuing.
+
+That's great, but what if we're running code with semihosting calls enabled when a debugger
+is not connected to the embedded system? In that case, the `EBREAK` will result in a trap of 
+embedded CPU, if there's nothing else to take of the situation, the CPU will hang forever.
+
+The general advise in ARM literature is that semihosting calls should only be included for specific
+debug builds, and removed for everything else. But is that really necessary?
+
+The answer is no: the RISC-V debug specification allows 2 different behaviors when an `EBREAK`
+instruction is encountered:
+
+1. jump to a trap handler and let the CPU deal with the `EBREAK` instruction.
+1. halt the CPU so that a connected debugger can inspect the state of the CPU an take appropriate
+  action.
+
+A RISC-V CPU will default to the first option, but once a debugger (like OpenOCD) is connected, that
+debugger toggle a configuration bit and enable the second behavior.
+
+*The VexRiscv CPU doesn't implement the RISC-V debug specification, but it's behavior is similar:
+as soon as debug related operations by the  VexRiscv-specific version of OpenOCD are detected,
+the second behavior will be enabled just the same.*
+
+Semihosting-related hangs can now be avoided by implementing a trap handler that detects the 
+presence of the magic semihosting instruction sequence. When present, it will deal with the
+system call itself, typically by making the system call into a no-op.
+
+For example, in the case of a print system call such as `SYS_WRITE0`, it could just ignore the 
+call and move on. Similarly, the `SYS_READC` call that's used to read a character from host
+PC keyboard, could always return -1: no character was detected.
+
+Things may be harder for more complex system calls, what exactly should a `SYS_TICKFREQ` return
+when there's no time reference, but, in practice, these kind of semihosting calls are
+rarely used.
+
+An example implementation looks like this:
+
+```c
+
+```
 
 
 # References
