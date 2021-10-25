@@ -618,7 +618,7 @@ it's really as easy as installing a few pieces of software, and having the right
 On a VexRiscv, the hardware cost is low too. 
 
 With a little bit of extra infrastructure and some additional trap handling code, I can now 
-debug some issue much quicker than I used to.
+debug some issues much quicker than before. Give it a try!
 
 
 # References
