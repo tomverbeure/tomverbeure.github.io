@@ -179,7 +179,7 @@ Code generation options are specified through the [`SpinalConfig`](https://githu
 
 Some useful options:
 
-* `netlistFilename`
+* `netlistFileName`
 
     Specify the name of the generated Verilog or VHDL file. 
 
