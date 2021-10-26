@@ -117,6 +117,8 @@ of the debug server and the `arm semihosting enable` command in OpenOCD.
 
 So how does semihosting work?
 
+![Basic semihosting flow](/assets/semihosting/Semihosting-basic_semihosting_flow.svg)
+
 It's built on top of software breakpoints that are traditionally used to halt a CPU while debugging:
 
 1. The semihosting call that runs on the embedded CPU has a RISC-V `EBREAK` instruction
@@ -171,6 +173,11 @@ there's enough for a simple embedded terminal.
 We've seen that a semihosting system call gets issued by executing an `EBREAK` instruction,
 followed by the debugger detecting a magic instruction sequence, performing the requested
 action, and then letting the CPU continuing.
+
+![EBREAK handling flow diagram](/assets/semihosting/Semihosting-EBREAK_handling_flow.svg)
+
+
+![DCSR.EBREAKx fields](/assets/semihosting/dcsr_ebreak.png)
 
 That's great, but what if we're running code with semihosting calls enabled when a debugger
 is not connected to the embedded system? In that case, the `EBREAK` will result in a trap of 
