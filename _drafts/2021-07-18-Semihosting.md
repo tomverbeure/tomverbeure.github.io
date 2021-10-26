@@ -205,7 +205,8 @@ Things may be harder for more complex system calls, what exactly should a `SYS_T
 when there's no time reference, but, in practice, these kind of semihosting calls are
 rarely used.
 
-An example implementation looks like this:
+An example implementation looks like this 
+[`trap()` function](https://github.com/tomverbeure/vexriscv_ocd_blog/blob/ee36fe568bbfa443ca972c147662b8fd7a84d7e9/sw_semihosting/trap.c#L15)
 
 ```c
 
@@ -234,5 +235,7 @@ An example implementation looks like this:
  
 * [Official RISC-V OpenOCD semihosting code](https://github.com/riscv/riscv-openocd/blob/riscv/src/target/riscv/riscv_semihosting.c)
 * [Embedded printf](https://github.com/mpaland/printf)
+
+* [EBREAKM option](https://twitter.com/wren6991/status/1417042819877941251?s=20)
 
 
