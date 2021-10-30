@@ -284,6 +284,9 @@ It's now my standard FPGA board for my hobby projects.
 # References
 
 * [Arrow DECA User Manual](/assets/deca/deca_user_manual.pdf)
+* [Arrow DECA Schematic](/assets/deca/decaschematic.pdf)
+* [Arrow DECA BOM](/assets/deca/decabom.xls)
+* [Arrow DECA Product Brief](/assets/deca/arrowelectronicsdecadatasheetfinalpdf.pdf)
 * [DECA Resources and CDROM](https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&CategoryNo=&No=944&PartNo=4)
 * [LED Blink Example Design](https://github.com/tomverbeure/arrow_deca) on GitHub
 
