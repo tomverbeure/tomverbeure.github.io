@@ -33,6 +33,8 @@ writing this, 3 months after the initial excitement of the new price, the Arrow
 Electronics website still shows 1314 items in stock. That should be sufficient 
 to satisfy a quite a bit of new FPGA hobby entrants and experts alike.
 
+**Edit: as of [September 16, 2021](https://twitter.com/SeguraEng/status/1438416846194098180), the stock is gone.**
+
 While working a different work-in-progress blog post, I decided to give the DECA board
 a try. Here are my impressions...
 
