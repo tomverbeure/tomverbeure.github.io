@@ -344,7 +344,7 @@ we want.
 | `runidleuser` | output | High when IR is set to USER0 or USER1 and the TAP state is Run-Test/Idle. |
 | `tdouser` | input | Routed to TDO when IR is set to USER0 or USER1. |
 
-The signals above are sufficient to implement user scan chain. 
+The signals above are sufficient to implement basic user scan chain functionality. 
 
 # Adding USER0 and USER1 Scan Chains
 
@@ -380,11 +380,12 @@ into user0 and user1 register:
     end
 ```
 
-The code is trivial, but there's one problem: in addition to shifting in new values, and
-copying the value of the shift register into the value register, there is no way to 
-capture an internal value into the shift register right?!
+The code is trivial, but there's one problem: while we can shift in new values, and
+copy the value of the shift register into the value register, there is no way to 
+capture an internal value into the shift register.
 
-For some inexplicable reason, Intel supplies a `shiftuser` and an `updateuser` signal, but no `captureuser` signal?!
+For some inexplicable reason, Intel supplies a `shiftuser` and an `updateuser` signal, 
+but no `captureuser` signal?!
 
 # A Tracking JTAG TAP FSM to Create a Capture-DR Signal
 
@@ -444,7 +445,7 @@ I didn't add one myself:
     assign capture_dr    = (jtag_fsm_state == jtag_capture_dr);
 ```
 
-`capture_dr` will trigger whenever the FSM passes throught the Capture-DR state. In combination with the
+`capture_dr` will go high whenever the FSM passes throught the Capture-DR state. In combination with the
 `usr1user` signal, we can use this to capture a new value into the USER1 shift register, but we can't do
 that for USER0 because there's no separate `usr0user` signal. If we want that, we need to track the contents
 of the IR register too:
