@@ -11,17 +11,17 @@ categories:
 # Introduction
 
 In [my blog post about the Intel JTAG UART](/2021/05/02/Intel-JTAG-UART.html),
-I wrote about Intel's [Virtual JTAG](/2021/05/02/Intel-JTAG-UART.html#the-intels-virtual-jtag-system) system:
+I mentioned Intel's [Virtual JTAG](/2021/05/02/Intel-JTAG-UART.html#the-intels-virtual-jtag-system) system:
 an ingenious way to connect up to 254 clients to a central JTAG hub, with client discovery features and other good stuff.
 
 ![Intel Virtual JTAG diagram](/assets/jtag_uart/intel_virtual_jtag.png)
 
-Intel uses it for its own JTAG debug units, JTAG UART, SignalTap, Nios2 debugger, but it also supports adding
+Intel uses it for its own JTAG debug units, JTAG UART, SignalTap, Nios2 debugger, but you can also add
 [your own units](https://github.com/binary-logic/vj-uart).
 
 All of that is is great, but there's one problem: if you don't want to use the Quartus SystemConsole (and the pleasure of using $#!#$ 
 Tcl to control it), then you need a bit of a software layer to do JTAG client discovery, select the right JTAG client, and the custom
-ways to send instructions and data to the client TAP.
+ways to send instructions and data to the client unit.
 
 OpenOCD has [this software layer](https://github.com/openocd-org/openocd/blob/master/src/target/openrisc/or1k_tap_vjtag.c), 
 but it's only supported for OpenRisc CPUs and its JTAG UART. In an ideal world, OpenOCD should expand that support for many more CPUs and 
@@ -41,7 +41,7 @@ somebody mentioned the existence of such a thing
 The example given is written in Migen, which is amazing if you can stand the syntax (I can't, unfortunately, and for hobby stuff, I don't want
 to use things that I don't like), but it doesn't really explain what's going on.
 
-In this blog post, I'll explain what the primitive does, and create my own example.
+In this blog post, I'll explain what the primitive does, and create my own example in Verilog.
 
 # Intel's JTAG Controller Primitive
 
@@ -79,12 +79,12 @@ component fiftyfivenm_jtag
 
 Other FPGA vendors have different primitives as well, Lattice, for example, has [`JTAGA` to `JTAGG`](https://github.com/tomverbeure/ecp5_jtag/blob/main/README.md).
 
-I'm using an [Arrow DECA](/2021/04/23/Arrow-DECA-FPGA-board.html) 
-board with a MAX10 FPGA. There's no `max10_jtag` primitive in the list above, but fear not, it uses the
+My FPGA board of choice is [Arrow DECA](/2021/04/23/Arrow-DECA-FPGA-board.html) 
+with a MAX10 FPGA. There's no `max10_jtag` primitive in the list above, but fear not, it uses the
 `fiftyfivenm_jtag` block... because MAX10 uses a 55nm silicon process.
 
 The ports of the `fiftyfivenm_jtag` primitive can be found in a the `fiftyfivenm_atoms.v` simulation
-library of my Quartus installation, in my `./intelFPGA_lite/20.1/quartus/eda/sim_lib/`
+library of your Quartus installation in the `./intelFPGA_lite/20.1/quartus/eda/sim_lib/`
 directory.
 
 ```verilog
@@ -140,10 +140,10 @@ module    fiftyfivenm_jtag    (
 ...
 ```
 
-There's almost no official documentation of the JTAG primitives, and whatever exists is in the context
+There's almost no official documentation of the JTAG primitives, and what does exist is in the context
 of FPGA design security features. 
-If found Intel application note [AN 556: Using the Design Security Features in Intel FPGAs](https://www.intel.com/content/dam/www/programmable/us/en/pdfs/literature/an/an556.pdf)
-the most useful. Only a small part of the app note involves the JTAG primitive, but page 32 has the following
+I found Intel application note [AN 556: Using the Design Security Features in Intel FPGAs](https://www.intel.com/content/dam/www/programmable/us/en/pdfs/literature/an/an556.pdf)
+the most useful. Only a small part of the app note talks the JTAG primitive, but page 32 has the following
 diagram:
 
 ![Intel JTAG primitive diagram](/assets/intel_jtag_primitive/intel_jtag_primitive.png)
@@ -152,7 +152,7 @@ We can see 3 functional regions:
 
 * The section is blue is the primitive itself. It contains a standard JTAG test access port (TAP) controller
 and some multiplexers. This section is a fixed part of the FPGA, not something that lives in the programmable
-core region. After all, you need this to load a new bitstream in an empty FPGA.
+core region. That makes sense: you need this to load a new bitstream in an empty FPGA.
 * The bottom right are the FPGA IO pins that are reserved for JTAG operation. These
 are the pins to which you connect your USB Blaster if your FPGA board doesn't have a USB Blaster integrated
 on the PCB (as is the case for my Arrow DECA board.)
@@ -179,56 +179,66 @@ JTAG primitive a hard sell. Still, there are some cases where it might be useful
   compatible. 
 * The already mentioned software layer that's needed to operate virtual JTAG might stand in the way. A
   good example is my favorite little CPU, the VexRiscv. Its JTAG debug unit along with its custom
-  version of OpenOCD (see [my earlier blog post](/2021/07/18/VexRiscv-OpenOCD-and-Traps.html) can be made 
+  version of OpenOCD (see [my earlier blog post](/2021/07/18/VexRiscv-OpenOCD-and-Traps.html)) can be made 
   to work with pretty much any JTAG chain, but virtual JTAG is not supported.
-* the JTAG primitive makes it possible to open up certain design security features that were locked
+* The JTAG primitive makes it possible to open up certain design security features that were locked
   down with a fuse. This is not important for hobby designs, but there are production situations where
   this can be important.
 
 # The JTAG Controller Primitive to Bypass Design Security Features
 
-Official documentation fo the JTAG primitive is very hard to find, and whatever exists is
-in the context of FPGA design security features. Most hobbyists will not use that, but it's still
-interesting in its own right, so let's talk about that first and turn to Intel application
-note 
-[AN 556: Using the Design Security Features in Intel FPGAs](https://www.intel.com/content/dam/www/programmable/us/en/pdfs/literature/an/an556.pdf).
+The official documentation talks about the JTAG primitive in the context of FPGA design security
+features. Most hobbyists will not use that, but it's still interesting in its own right, so let's look at this first.
 
-The most important usage of an FPGA JTAG port is to load new bitstream into the FPGA or to program a new
-bitstream into a connected flash PROM. Modern FPGAs have all kinds of additional features, such as 
-programming a non-volatile bitstream decryption key (one time only!), loading a volatile bitstream
-decryption key, setting a tamper protection fuse, JTAG access lock and so forth. These features are commonly 
-used in a board production environment, and JTAG is the perfect port to control that.
+The most important usage of an FPGA JTAG port is to load a bitstream into the FPGA or to program a
+bitstream into a connected flash PROM. But modern FPGAs have all kinds of additional production and
+deployment related features that are controlled by JTAG: 
+
+* programming a non-volatile bitstream decryption key (one time only!)
+* loading a volatile bitstream decryption key
+* programming a tamper protection fuse
+* checking the tamper protection status
+* JTAG access lock
+* ...
+
+For each of these features, there's a corresponding JTAG instruction.
 
 On Intel FPGAs, the JTAG access lock feature is particularly interesting: it disables all non-standard JTAG instructions.
-Only vanilla instructions such as `BYPASS`, `IDCODE, `EXTEST` etc (see table 17 of the AN 556 application
-note) remain after a bitstream has been loaded.
+Only IEEE specification mandatory JTAG instructions such as `BYPASS`, `IDCODE`, `EXTEST` are enabled in the JTAG TAP controller.
+All others, both non-mandatory IEEE instruction as well as Intel custom instructions, are disabled.
+(See table 17 of the AN 556 application note.)
 
-It is possible to disable the JTAG access lock by shifting in the UNLOCK instruction into the JTAG controller.
-Which is funny, because all non-standard instructions where disabled?! 
+JTAG access lock is automatically enabled for FPGAs that have the tamper protection fuse enabled.
 
-Intel has the perfect solution for that: it's JTAG primitive has the option to drive the FPGA TAP with
-internal signals instead of the external IOs. If you want to disable access lock, your own design needs
+However, there may be cases where you want to reenable the advanced JTAG features. For example to enable a debug
+feature on a working product after entering some secret unlock procedure.
+
+It is possible to disable the JTAG access lock by shifting in the UNLOCK instruction into the JTAG controller...
+but how can you do that when all non-standard instructions where disabled?! 
+
+Intel has the perfect solution for that: the JTAG primitive has the `corectl` pin, an option to drive the FPGA TAP controller 
+with internal signals instead of the external JTAG IOs. So if you want to disable access lock, your own design needs
 to create a JTAG-compatible trace.
 
-The application note describes how to use the JTAG primitive in that kind of situation, but nothing else.
+The application note describes how to use the JTAG primitive in that kind of situation. It even provide a design example.
 
-# The JTAG Controller Primitive to Attach Your Own Custom User Scan Chain
+# Using the JTAG Controller Primitive to Attach Your Own Custom User Scan Chain
 
-With the access security part behind us, let's look at the interesting, undocumented, part: attaching
+With the access security part behind us, let's look at the more interesting, undocumented, part: attaching
 you own custom scan chain to the JTAG TAP.
 
-Let's go over the different pins of the Intel JTAG primitive.
+The Intel JTAG primitive pins can be divided a different categories:
 
 **Standard JTAG TAP Control Pins**
 
-The first 4 pins are the standard JTAG pins and must be connected directly to the FPGA JTAG IO pins.
+The first 4 pins are the standard JTAG pins. They  must be connected directly to the FPGA JTAG IO pins.
 
 | Signal Name | Direction | Description | 
 |-------------|-----------|-------------|
-| tck | input | FPGA TCK IO pin | 
-| tms | input | FPGA TMS IO pin | 
-| tdi | input | FPGA TDI IO pin | 
-| tdo | output | FPGA TDO IO pin | 
+| `tck` | input | FPGA TCK IO pin | 
+| `tms` | input | FPGA TMS IO pin | 
+| `tdi` | input | FPGA TDI IO pin | 
+| `tdo` | output | FPGA TDO IO pin | 
 
 In Quartus, the JTAG IO pins have the `altera_reserved_` prefix. All you need to
 do is wire them up like this:
@@ -258,99 +268,133 @@ module top(
 ...
 ```
 
+When the JTAG primitive is present in a design, Quartus will automatically assign the `altera_reserved_` JTAG pins
+to the right IO pads.
+
 **Alternate Core JTAG TAP Control Signals**
 
-The next 4 signals are the alternate JTAG signals that are used to control the JTAG TAP
+The next signals are the alternate JTAG signals that are used to control the JTAG TAP
 from the FPGA core logic. These are the pins that are used in the earlier described
-situation when you want the core logic to send JTAG commands to the TAP.
+access unlock situation when you want the core logic to send JTAG commands to the TAP.
 
 | Signal Name | Direction | Description | 
 |-------------|-----------|-------------|
-| corectl | input | Switch JTAG TAP pins to alternate control pins. |
-| tckcore | input | Alternate TCK pin that comes from the core logic| 
-| tmscore | input | Alternate TMS pin that comes from the core logic| 
-| tdicore | input | Alternate TDI pin that comes from the core logic| 
-| tdocore | output | Alternate TDI pin that comes to the core logic| 
+| `corectl` | input | Switch JTAG TAP pins to alternate control pins. <br/>0: TAP is controlled by external IO pins. <br/>1: TAP is controlled by FPGA core logic. |
+| `tckcore` | input | Alternate TCK pin that comes from the core logic| 
+| `tmscore` | input | Same as TCK but for TMS| 
+| `tdicore` | input | Same as TCK but for TDI| 
+| `tdocore` | output | Alternate TDI pin that comes to the core logic| 
 
-`corectl` must be set to 1 switch from external IOs to core signals.
-
-For our use case, we can simply strap this signal to 0, and always control the
+For our use case, we can simply strap this `corectl` to 0 to always control the
 JTAG TAP with external IOs.
 
-*Some Intel FPGAs, such as the Cyclone 10 LP family, don't support `tckcore, 
-`tmscore`, `tdicore` and the `corectl` pins. You could just not wire them up
+*Some Intel FPGAs, such as the Cyclone 10 LP family, don't support `tckcore`, 
+`tmscore`, `tdicore` and `corectl` pins. You could just not wire them up
 and count on Quartus strapping them to 0 by default...*
+
+**IMPORTANT: Don't assign a value of 1 to `corectl` and then flash such a design into your FPGA unless you REALLY
+know what you're doing. Doing so disconnects the FPGA TAP controller from the JTAG IO pins and makes it
+impossible to reflash the FPGA!!!**
 
 **User JTAG Signals**
 
 | Signal Name | Direction | Description | 
 |-------------|-----------|-------------|
-| tckutap | output | Core version of external JTAG TCK IO pin |
-| tmsutap | output | Core version of external JTAG TMS IO pin |
-| tdiutap | output | Core version of external JTAG TDI IO pin |
+| `tckutap` | output | TCK signals that currently being used by the FPGA TAP controller. |
+| `tmsutap` | output | Same as TCK but for TMS. |
+| `tdiutap` | output | Same as TCK but for TDI. |
+| `tdoutap` | input | Exists on some, but not all, Intel FPGA primitives. Don't connect. |
 
-The earlier mentioned `tck`, `tms`, `tdi` pins can only be connected to the
-external IO pins. They are not available for use by the FPGA core logic.
-However, they are fed through to these 3 signals, which are available to 
-the FPGA core logic.
+The 3 output signals are intended to be used by the FPGA core logic if it needs the signals
+that are being used by the TAP controller.
 
-You can use them to connect them to your own JTAG TAP (to track the 
-states of the FPGA JTAG TAP), to shift data into your own shift register etc.
+When `corectl` is set to 0, these 3 signals will carry the same value as the
+external FPGA IO pins `tck`, `tms`, `tdi` pins. You could just use the IO pins
+version, but it's cleaner to use the `...utap` variants.
 
-FIXME: | tdoutap | input | Core version of external JTAG TCK IO pin |
+You can use these signals if you want to create your own JTAG TAP FSM that tracks
+the internal state of the FPGA JTAG controller, or to shift data in one of your own USER
+shift registers. See below.
+
 
 **User Scan Chain Control Signals**
 
-The next signals are some of the most useful if you want to quickly connect your own
-scan chain to the FPGA TAP. I could not find any official documentation for any
-of these signals, but it was easy to figure out after bringing them out to some
-FPGA GPIOs and recording transactions with a Saleae Logic Pro 16 logic analyzer.
+The next signals are some of the most useful ones if you want to quickly connect your own
+scan chain to the FPGA TAP controller. 
+
+I could not find any official documentation for any of these signals, but it was easy to figure 
+out after bringing them out to some FPGA GPIOs and recording transactions with a Saleae Logic Pro 16 
+logic analyzer.
+
+![Logic analyzer screenshot](/assets/intel_jtag_primitive/saleae_capture.png)
+
+The Intel JTAG TAP controller supports tons of proprietary instructions, usually not documented, that are used
+for all kinds of production and releated features. But it also has the `USER0` and `USER1` instructions (with
+IR codes 0x00c and 0x00e resp.) that exist to create 2 user defined scan chains in the FPGA core logic.
+
+The virtual JTAG infrastructure normally makes heavy use of these, but when not using that, we can use them as 
+we want.
 
 | Signal Name | Direction | Description | 
 |-------------|-----------|-------------|
-| usr1user | output | High when the IR register is set to USER1 (0x00e). |
-| clkdruser | output | TCK clock when when IR is USER0 or USER1 and the TAP states are Capture-DR or Shift-DR.   |
-| shiftuser | output | High when IR is USER0 or USER1 and the TAP state is Shift-DR.  |
-| updateuser | output | High when IR is USER0 or USER1 and the TAP state is Update-DR. |
-| runidleuser | output | High when IR is USER0 or USER1 and the TAP state is Run-Test/Idle. |
-| tdouser | input | Routed to TDO when IR is USER0 or USER1. |
+| `usr1user` | output | High when the IR register is set to USER1. |
+| `clkdruser` | output | TCK clock when when IR is USER0 or USER1 and the TAP states are Capture-DR or Shift-DR.   |
+| `shiftuser` | output | High when IR is set to USER0 or USER1 and the TAP state is Shift-DR.  |
+| `updateuser` | output | High when IR is set to USER0 or USER1 and the TAP state is Update-DR. |
+| `runidleuser` | output | High when IR is set to USER0 or USER1 and the TAP state is Run-Test/Idle. |
+| `tdouser` | input | Routed to TDO when IR is set to USER0 or USER1. |
 
-The Intel JTAG TAP has built-in support for 2 core provided scan chains, USER0 and USER1, that
-can be selected with IR values of 0x00c and 0x00d resp. They are normally used to make all
-virtual JTAG magic happen, but without that, we can now use them as we want.
+The signals above are sufficient to implement user scan chain. 
 
-This example attaches a scan chain to USER0:
+# Adding USER0 and USER1 Scan Chains
+
+We now have enough signals to shift new values in user0 and user1 scan chains, and copy them over
+into user0 and user1 register:
 
 ```verilog
     reg [7:0] user0_shiftreg = 0;
     reg [7:0] user0_reg      = 0;
 
+    reg [7:0] user1_shiftreg = 0;
+    reg [7:0] user1_reg      = 0;
+
     always @(posedge tckutap) begin
         if (!usr1user) begin
-            if (shiftuser) begin
+            if (shiftuser) 
                 user0_shiftreg  <= { tdiutap, user0_shiftreg[7:1] };
-            end
     
-            if (updateuser) begin
+            if (updateuser) 
                 user0_reg       <= user0_shiftreg;
-            end
+        end
+        else begin
+            if (shiftuser) 
+                user1_shiftreg  <= { tdiutap, user1_shiftreg[7:1] };
+    
+            if (updateuser) 
+                user1_reg       <= user1_shiftreg;
         end
     end
 
     always @(negedge tckutap) begin
-        tdouser  <= !usr1user ? user0_shiftreg[0] : 1'b0;
+        tdouser  <= !usr1user ? user0_shiftreg[0] : user1_shiftreg[0];
     end
 ```
 
-# A Tracking JTAG TAP FSM
+The code is trivial, but there's one problem: in addition to shifting in new values, and
+copying the value of the shift register into the value register, there is no way to 
+capture an internal value into the shift register right?!
 
-The `user` signals are sufficient load a shift register with a new value
-and update the final register, but, inexplicably, there's no
-`captureuser` equivalent to load the shift register with a value
-right before scanning out.
+For some inexplicable reason, Intel supplies a `shiftuser` and an `updateuser` signal, but no `captureuser` signal?!
 
-This can be remedied by adding an FSM in the core logic that tracks the states of the 
-FPGA TAP by using the `tckutap` and `tmsutap` signals.
+# A Tracking JTAG TAP FSM to Create a Capture-DR Signal
+
+Capturing a value right before a shift operation is a very common way to extract data out of a chip
+through JTAG. 
+
+The lack of a `captureuser` signal can be remedied by adding an FSM in the core logic that tracks the states of the 
+FPGA TAP. We can do this by using the `tckutap` and `tmsutap` signals.
+
+![JTAG FSM](/assets/intel_jtag_primitive/direct_jtag-jtag_fsm.svg)
 
 There are million open source JTAG TAP FSM implementations out there. I'd be remiss if 
 I didn't add one myself:
@@ -402,10 +446,11 @@ I didn't add one myself:
 
 `capture_dr` will trigger whenever the FSM passes throught the Capture-DR state. In combination with the
 `usr1user` signal, we can use this to capture a new value into the USER1 shift register, but we can't do
-that for USER0 since there's no separate `usr0user` signal. So if we want that, we need to track the contents
+that for USER0 because there's no separate `usr0user` signal. If we want that, we need to track the contents
 of the IR register too:
 
 ```verilog
+    // The Intel IR register is 10-bits
     reg [9:0] ir_shiftreg = 0;
     reg [9:0] ir_reg = 0;
 
@@ -425,7 +470,6 @@ shifting out. In the example below, we're capturing the number of times the USER
 event:
 
 ```verilog
-    // 0x00C: USER0, 0x00E: USER1
     wire captureuser;
     assign captureuser = capture_dr && (ir_reg == 10'h00c || ir_reg == 10'h00e);
 
@@ -436,24 +480,147 @@ event:
 
     always @(posedge tckutap) begin
         if (!usr1user) begin
-            if (captureuser) begin                      // <----------------
+            if (captureuser) begin
                 user0_shiftreg  <= user0_counter;
                 user0_counter   <= user0_counter + 1;
             end
 
-            if (shiftuser) begin
+            if (shiftuser)
                 user0_shiftreg  <= { tdiutap, user0_shiftreg[7:1] };
-            end
     
-            if (updateuser) begin
+            if (updateuser)
                 user0_reg       <= user0_shiftreg;
-            end
+        end
+        else begin
+            if (shiftuser)
+                user1_shiftreg  <= { tdiutap, user1_shiftreg[7:1] };
+    
+            if (updateuser)
+                user1_reg       <= user1_shiftreg;
         end
     end
 
     always @(negedge tckutap) begin
-        tdouser  <= !usr1user ? user0_shiftreg[0] : 1'b0;
+        tdouser  <= !usr1user ? user0_shiftreg[0] : user1_shiftreg[0];
     end
 ```
 
+# An Example Design Tested with OpenOCD
+
+You can find a working example in my [intel_jtag_primitive_blog](https://github.com/tomverbeure/intel_jtag_primitive_blog) repo
+on GitHub. 
+
+It's the pieces of code above merged together and with a few more lines to:
+
+* capture the value of a button in bit 0 of the USER1 register
+* drive 3 LEDs with the value of bits [2:0] of the USER1 register
+
+USER0 is only used to count the number of times that it has been acccessed (as shown in the code above.)
+
+The code has been tested on my Arrow DECA board, but it should be trivial to adapt it
+to any board with an Intel FPGA.
+
+You can test it as follows:
+
+* Compile the code with Quartus
+* Load the bitstream into the FPGA
+* In one terminal window, start OpenOCD:
+
+    ```sh
+/opt/openocd/bin/openocd \ 
+    -f interface/altera-usb-blaster2.cfg  \
+    -c "jtag newtap max10 fpga_tap -expected-id 0x031050dd -irlen 10"
+    ```
+
+    This command first connects to a USB-Blaster2, which is the kind of USB Blaster that's on the DECA board.
+
+    It then declares that this board is expected to have a JTAG TAP controller with a 10-bit instruction register,
+    all Intel FPGAs have that, and an IDCODE of 0x031050dd, a 10M50 MAX10 FPGA.
+
+    After running the command above, you should see something like this:
+
+    ```
+Open On-Chip Debugger 0.10.0+dev-01236-gc974c1b7-dirty (2021-07-17-21:18)
+Licensed under GNU GPL v2
+For bug reports, read
+	http://openocd.org/doc/doxygen/bugs.html
+Info : only one transport option; autoselect 'jtag'
+Info : Listening on port 6666 for tcl connections
+Info : Listening on port 4444 for telnet connections
+Info : Altera USB-Blaster II found (Firm. rev. = 1.39)
+Info : This adapter doesn't support configurable speed
+Info : JTAG tap: max10.fpga_tap tap/device found: 0x031050dd (mfg: 0x06e (Altera), part: 0x3105, ver: 0x0)
+Warn : gdb services need one or more targets defined
+
+    ```
+* In a different terminal window, you can now telnet into the OpenOCD session:
+
+    ```sh
+    telnet localhost 4444
+    ```
+    ```
+Trying 127.0.0.1...
+Connected to localhost.
+Escape character is '^]'.
+Open On-Chip Debugger
+> 
+    ```
+
+    You can select the USER0 scan chain like this:
+
+    ```
+irscan max10.fpga_tap 8 0x00c
+    ```
+
+    Do a bunch of scan operation on the USER0 chain:
+
+    ```
+> drscan max10.fpga_tap 8 0xff
+00
+> drscan max10.fpga_tap 8 0xff
+01
+> drscan max10.fpga_tap 8 0xff
+02
+> drscan max10.fpga_tap 8 0xff
+03
+> drscan max10.fpga_tap 8 0xff
+04
+    ```
+
+    The value of 0xff that gets shifted into the USER0 chain gets ignored, but you can see
+    an incrementing value that shift out, as expected.
+
+    Similarly, you can select the USER1 scan chain like this:
+
+    ```
+irscan max10.fpga_tap 8 0x00e
+    ```
+
+    In the example above, scanning values of 0x01, 0x02, and 0x00 will result in different
+    LEDs being switched on and off. 
+    The output values of 0x01 and 0x00 depend on whether or not you press one of the buttons.
+
+    ```
+> irscan max10.fpga_tap 0x00e  
+> drscan max10.fpga_tap 8 0x01
+01
+> drscan max10.fpga_tap 8 0x02 
+01
+> drscan max10.fpga_tap 8 0x00
+00
+> drscan max10.fpga_tap 8 0x00
+00
+    ```
+
+# Conclusion
+
+JTAG is a bit of an obscure topic, and even more so for hobby electronics. But there are cases where it can be useful: 
+attaching a debugger to an embedded CPU is the most common one. The Intel virtual JTAG system is a little bit heavy, but
+the only one that's well documented. 
+
+In this blog post, I tried to document a way to use that native JTAG port while bypassing the virtual JTAG system,
+and provide a working example design.
+
+There are quite a bit of negatives in using this technique, but maybe, one day, you'll have a need for it. When that
+day comes, I hope that the information provided here will be helpful.
 
