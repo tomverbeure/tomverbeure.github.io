@@ -65,40 +65,53 @@ The 12 pins of the ULPI interface are at the bottom left of this diagram.
 In this series, I won't talk about the high level functionality of USB controllers or the internal logic of
 the PHY chip, but about how to ensure reliable communication over the digital ULPI interface.
 
-# ULPI Commands
+# ULPI Signals
 
 It's not strictly needed to understand how ULPI communication works, but here's a very short overview
 of the different kind of transactions that exist in ULPI land.
 
-The interface has 12 signals:
+The interface has 12 signals that run between the link (the USB controller) and the PHY:
 
-* `ulpi_data[7:0]`: a bidirectional parallel bus to packet data, status information, and register address and
-   data.
+* `ulpi_data[7:0]`: a bidirectional parallel bus to exchange packet data, status information, and 
+   register address and data.
 * `ulpi_dir`: driven by the PHY, this signal determines who drives the `ulpi_data` bus.
 * `ulpi_stp`: driven by the link, this signal signals the end of a transaction by the link.
 * `ulpi_nxt`: driven by the PHY, this signals is used to pace data on `ulpi_data` in both directions.
 
-ULPI is a bidirectional interface on which both the link (the USB controller) or the PHY can initiate
+ULPI is a bidirectional interface on which both the link or the PHY can initiate
 a transaction. When the interface is idle, the link owns the bus, and always actively drives the 
 bidirectional `ulpi_data` bus.
+
+# ULPI TX Commands 
 
 The link has for 4 types of transactions, call "TX Commands". Commands are indicated by the value
 of bits `[7:6]` of `ulpi_data`:
 
+* No-op
+* Packet transmit
+* Register write
+* Register read 
+
 **NOOP**
 
-No operation. The link is idle.
+No operation. The link is idle. 
 
-**Transmit**
+Bits [7:6] of `ulpi_data` are equal to 2'b00.
 
-The link transmits data bytes to the PHY.
+**Transmit Packet**
+
+The link transmits data bytes to the PHY. 
+
+A transmit is started when bits [7:6] of `ulpi_data` are equal to 2'b01.
 
 ![ULPI TXCMD Transmit Waveform](/assets/io_timings/ulpi_txcmd_transmit.png)
 
 
 **RegWrite**
 
-The link write an 8-bit value to a register inside the PHY.
+The link writes an 8-bit value to a register inside the PHY.
+
+A RegWrite is started when bits [7:6] of `ulpi_data` are equal to 2'b10.
 
 ![ULPI TXCMD RegWrite Waveform](/assets/io_timings/ulpi_txcmd_regwrite.png)
 
@@ -106,11 +119,14 @@ The link write an 8-bit value to a register inside the PHY.
 
 The link reads an 8-bit value from a register inside the PHY.
 
+A RegRead is started when bits [7:6] of `ulpi_data` are equal to 2'b11.
+
 ![ULPI TXCMD RegRead Waveform](/assets/io_timings/ulpi_txcmd_regread.png)
 
+# ULPI RX Commands and Received Data Bytes
 
 When the PHY wants to send changes in line status information or data bytes from
-received packets, it asks for a change in bus direction (by asserting `ulpi_dir`) and
+received packets, it asks for a change in bus direction by asserting `ulpi_dir` and
 then sends back mix of status bytes ("RXCMD") or data bytes:
 
 ![ULPI RXCMD Data Receive Waveform](/assets/io_timings/ulpi_rxcmd_receive.png)
