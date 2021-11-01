@@ -212,6 +212,8 @@ Altogether, this is non-trivial example that will offer plenty of opportunities 
 * [USB 2.0 Transceiver Macrocell Interface (UTMI) Specification 1.05][UTMI-specification]
 * [UTMI+ Specification Revision 1.0](https://www.nxp.com/docs/en/brochure/UTMI-PLUS-SPECIFICATION.pdf)
 * [ULPI Specification][ULPI-specification]
+* [Texas Instruments TUSB1210 Product Page][TUSB1210-product-page]
 
 [UTMI-specification]: https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/usb2-transceiver-macrocell-interface-specification.pdf
 [ULPI-Specification]: https://www.sparkfun.com/datasheets/Components/SMD/ULPI_v1_1.pdf
+[TUSB1210-product-page]: https://www.ti.com/product/TUSB1210
