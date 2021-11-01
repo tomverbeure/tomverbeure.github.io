@@ -17,7 +17,7 @@ specifically about that. However, I ran into an issue that forced me to learn
 some of the finer details of specifying IO timing constraints that I want record for
 posterity.
 
-Initially, this was supposed to be just one blog post, but the scope of the whole thing kept on growning.
+Initially, this was supposed to be just one blog post, but the scope of the whole thing kept on growing.
 To keep things manageable, I've split it up into multiple parts.
 
 In this first part, I'll introduce the thing that started it all: the ULPI interface.
@@ -207,4 +207,11 @@ has all the necessary components to reach the desired complexity:
 
 Altogether, this is non-trivial example that will offer plenty of opportunities to learn!
 
+# References
 
+* [USB 2.0 Transceiver Macrocell Interface (UTMI) Specification 1.05][UTMI-specification]
+* [UTMI+ Specification Revision 1.0](https://www.nxp.com/docs/en/brochure/UTMI-PLUS-SPECIFICATION.pdf)
+* [ULPI Specification][ULPI-specification]
+
+[UTMI-specification]: https://www.intel.com/content/dam/www/public/us/en/documents/technical-specifications/usb2-transceiver-macrocell-interface-specification.pdf
+[ULPI-Specification]: https://www.sparkfun.com/datasheets/Components/SMD/ULPI_v1_1.pdf
