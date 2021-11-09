@@ -1,27 +1,21 @@
 ---
 layout: post
 title:  The VexRiscV CPU - A New Way to Design
-date:   2018-12-05 17:00:00 -0700
+date:   2018-12-06 00:00:00 -1000
 categories: RTL
 ---
 
 # Table of Contents
 
-* [Introduction](#introduction)
-* [Designing a CPU the Traditional Way](#designing-a-cpu-the-traditional-way)
-* [A Quick Rehash of SpinalHDL](#a-quick-rehash-of-spinalhdl)
-* [The VexRiscV Pipeline Plugin Architecture](#the-vexriscv-pipeline-plugin-architecture)
-* [The Barrel Shifter and Multiplier Plugins](#barrel-shifter-and-multiplier-plugins)
-* [Additional Goodies](#additional-goodies)
-* [Disadvantages](#disadvantages)
-* [Conclusion](#conclusion)
-
+* TOC
+{:toc}
 
 # Introduction
 
 In an earlier [blog post](/rtl/2018/08/11/SpinalHDL.html), I made a few references
 to the [VexRiscV](https://github.com/SpinalHDL/VexRiscv), a RISC-V CPU that has been
-implemented completely in SpinalHDL.
+implemented completely in SpinalHDL by Charles Papon (who's also the creator of
+SpinalHDL.)
 
 At some point, I created the [rv32soc](https://github.com/tomverbeure/rv32soc) project,
 where I wanted to compare different RISC-V CPUs against eachother. I also used the
@@ -162,7 +156,7 @@ needed in some configurations, but not in others.
 Verilog doesn't provide any core language features to have optional ports: there is no `if generate`
 equivalent to do that. So either you ignore the JTAG ports on the configuration that doesn't need them.
 Or you use ugliness like this to exclude those ports:
-```
+```verilog
 module cpu(
     ...
 `ifdef JTAG
@@ -186,7 +180,7 @@ that creates those IO ports.
 This is [nicely illustrated](https://github.com/tomverbeure/mr1/blob/352927f0dc217bf421cbe4fddf9956afd9277ad6/src/main/scala/mr1/Decode.scala#L18)
 in my MR1 RISC-V core:
 
-```
+```scala
     val rvfi = if (config.hasFormal) RVFI(config) else null
 ```
 
@@ -209,7 +203,7 @@ added at will by means of plugins.
 You start with a [generic Pipeline](https://github.com/SpinalHDL/VexRiscv/blob/6334f430fe1bed302733c6ea6c44f8b514f3e2c6/src/main/scala/vexriscv/Pipeline.scala#L12-L15)
 object that has `stages` and `plugins`.
 
-```
+```scala
 trait Pipeline {
   type T <: Pipeline
   val plugins = ArrayBuffer[Plugin[T]]()
@@ -235,7 +229,7 @@ intermediate stages there are between EXECUTE and WRITEBACK.
 
 In the case of the VexRiscV, the pipeline stages are defined [here](https://github.com/SpinalHDL/VexRiscv/blob/6334f430fe1bed302733c6ea6c44f8b514f3e2c6/src/main/scala/vexriscv/VexRiscv.scala#L86-L90):
 
-```
+```scala
 class VexRiscv(val config : VexRiscvConfig) extends Component with Pipeline{
   type  T = VexRiscv
   import config._
@@ -281,7 +275,7 @@ implements a traditional barrel shifter, split up into 3 operations:
 * it performs a right shift with variable number of steps
 * in case of a left shift operation, it reverses the output again.
 
-```
+```scala
 class FullBarrelShifterPlugin(earlyInjection : Boolean = false) extends Plugin[VexRiscv]{
 ...
 ```
@@ -295,7 +289,7 @@ map very well to FPGA LUTs, that might very well reduce a critical timing path.
 
 Let's see how this is implemented. Let's start with the
 [initial reverse and shift](https://github.com/SpinalHDL/VexRiscv/blob/6334f430fe1bed302733c6ea6c44f8b514f3e2c6/src/main/scala/vexriscv/plugin/ShiftPlugins.scala#L62-L67):
-```
+```scala
     execute plug new Area{
       import execute._
       val amplitude  = input(SRC2)(4 downto 0).asUInt
@@ -310,7 +304,7 @@ Meanwhile, the result is inserted in the pipeline with `insert(SHIFT_RIGHT)`.
 
 The [second part](https://github.com/SpinalHDL/VexRiscv/blob/6334f430fe1bed302733c6ea6c44f8b514f3e2c6/src/main/scala/vexriscv/plugin/ShiftPlugins.scala#L69-L79), the
 reversing back of the `SHIFT_RIGHT` result looks like this:
-```
+```scala
     val injectionStage = if(earlyInjection) execute else memory
     injectionStage plug new Area{
       import injectionStage._

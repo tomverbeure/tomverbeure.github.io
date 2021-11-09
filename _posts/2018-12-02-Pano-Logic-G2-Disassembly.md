@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  Pano Logic G2 Disassembly
-date:   2018-12-02 16:00:00 -0700
+date:   2018-12-02 00:00:00 -1000
 categories: Pano Logic
 ---
 

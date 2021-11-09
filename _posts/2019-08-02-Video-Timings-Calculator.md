@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Video Timings Calculator
-date:   2019-08-03 10:00:00 -0700
+date:   2019-08-03 00:00:00 -1000
 categories:
 ---
 
