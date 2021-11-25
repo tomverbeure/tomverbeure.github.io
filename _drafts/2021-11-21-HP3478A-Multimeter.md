@@ -52,8 +52,8 @@ There's also plenty of material of Youtube: teardowns, how to replace the calibr
 calibration data (very important!), how to download and restore calibration data over GPIB, how to clean the 
 display, and so forth.
 
-There's even a [MAME 3478A emulator](https://github.com/mamedev/mame/blob/master/src/mame/drivers/hp3478a.cpp), 
-which is a great resource for 
+There's even a work-in-progress [MAME 3478A emulator](https://github.com/mamedev/mame/blob/master/src/mame/drivers/hp3478a.cpp), 
+which is a great resource to understand some of the internals of the device.
 
 This quote from discussion thread on the EEVblog forum is a bit ominous: 
 
@@ -64,21 +64,49 @@ so many something similar is possible on a 3478A?
 
 Checkout the bottom of this blog post for a list.
 
-# The 3478A Architecture
+# 3478A Features
 
 ![HP Catalog - DVMs](/assets/hp3478a/hp_catalog_dmvs.png)
+
+# The 3478A Architecture
 
 ![Block Diagram](/assets/hp3478a/block_diagram.png)
 
 
 The 3478A first came to market in 1981. But despite being 40 years old, it has not one but 2 microcontrollers.
-That's because it's split into 2 electrically isolated sections: the "chassis common" (which the ground connected
-to the chassis) section takes care of the display, the buttons, the GPIB interface, and configuration management 
-while the "floating common" section handles measurement of voltage, current, and resistance. 
+That's because it's split into 2 electrically isolated sections: the "chassis common" section has the ground
+connected to the chassis and takes care of the display, the buttons, the GPIB interface, and configuration management.
+The "floating common" section handles measurements of voltage, current, and resistance. 
 
-Both sides have a 8049 microcontroller with a whopping 256 bytes of on-chip RAM.
-The firmware is stored on external EPROMs, the old style types that must be erased by shining a bright UV light
-on a glasses windows.
+The chassis common section has an Intel 8039 microcontroller without internal ROM. The ADC controller is an Intel 8049
+with internal ROM.  Both microcontroller with a whopping 256 bytes of on-chip RAM. The firmware of the 8039 is
+stored on an 8KB 2764 EPROM, one of those old style types that must be erased by shining a bright UV light
+on a glass window. A 256 x 4bit static RAM is used to store calibration data. A 3V lithium battery powers the SRAM
+when main power is switched off.
+
+The AD converter of the 3478A doesn't use some fancy high precision integrated circuit, but it's built from
+discrete components and uses an integrator, a voltage reference and a comparator, under control of the 8049
+microcontroller.
+
+XXX Figure 3-F-10 from the Service manual.
+
+The ADC is based on a dual-slope conversion:
+
+* During the runup phase, the signal that must be measured is applied to the input of the integrator for a 
+  fixed amount of time. 
+* This charges a capacitor with a charge that's proportional to the voltage of the signal.
+* during the following rundown phase, the integrator is discharged by applying a constant, known voltage reference to the input.
+* the time needed to discharge the capacitor is proportional to the voltage of the input signal.
+
+In other words, the AD convertor transforms a voltage to time, which is much easier to measure.
+
+The real implementation is a bit more complex and uses the so-called Multi-Slope II method, which uses
+the runup phase to determine the most significant digits and the rundown phase for the least significant
+digits.
+
+The detailed explanation is well beyond the scope of this blog post, but section 7-F-31 of the service manual
+describes the process very well.
+
 
 The measurement method is unusual in that it uses a time-based analog to digital conversion process: 
 
