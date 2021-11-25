@@ -13,19 +13,20 @@ categories:
 I'm slowly building a small stable of equipment for my home lab. I'd be lying if I said
 that it's out of hard necessity: almost all my projects are FPGA based and digital in
 nature. You don't *need* a [nice high precision power supply](/2021/04/15/Agilent-E3631A-Knob-Repair.html)
-to power a generic FPGA development board, but when there's one for offered on Craigslist, it's
-so hard to resist. One day that that GPIB control interface might come in real handy after all!
+to power a generic FPGA development board, but when there's one for offered on Craigslist for
+a good price, it's hard to resist. One day that that GPIB control interface might come in real handy 
+after all!
 
 And that's how, a few months ago, this HP 3478A benchtop multimeter appeared at my front door: 
 
 ![HP 3478A](/assets/hp3478a/hp3478a.jpg)
 
 On eBay, these 5 1/2 digits meters go for around $140 when listed as Pre-Owned, while Parts Only listings
-for around $70. In both cases, shipping costs is usually around $25. My unit was advertised as
+go for around $70. In both cases, shipping cost is usually around $25. My unit was advertised as
 Pre-Owned with a "Passes Self-Test" description for a low low price of only $100, so I decided
 to take a chance on it.
 
-Well, a passing self-test is what advertised, and a passing self-test is what I got!
+Well, a passing self-test was what advertised, and a passing self-test is what I got!
 
 ![Self Test OK](/assets/hp3478a/self_test_ok.jpg)
 
@@ -37,6 +38,22 @@ The multimeter went onto an empty shelve, waiting for its time in the spotlight.
 
 After playing with JTAG and other debugging techniques for a bit too long, Thanksgiving week was the 
 perfect time to give the 3478A some tender loving care.
+
+# 3478A Features
+
+Check out [the datasheet](/assets/hp3478a/agilent_hp_3478a_datasheet.pdf) for the details, but
+here's a quick summary of some of the 3478A features:
+
+* 5 measurement types: AC and DC voltage, AC and DC current, resistance
+* 3.5, 4.5 and 5.5 digit resolution
+* 71 measurements per second when using 3.5 digit resolution
+* GPIB interface
+* 2-wire and 4-wire resistance measurement
+* AC voltage and current measurements are true RMS
+
+![HP Catalog - DVMs](/assets/hp3478a/hp_catalog_dmvs.png)
+
+Let there be no doubt: a working 3478A far exceeds my measurement needs.
 
 # Documentation
 
@@ -64,10 +81,6 @@ so many something similar is possible on a 3478A?
 
 Checkout the bottom of this blog post for a list.
 
-# 3478A Features
-
-![HP Catalog - DVMs](/assets/hp3478a/hp_catalog_dmvs.png)
-
 # The 3478A Architecture
 
 ![Block Diagram](/assets/hp3478a/block_diagram.png)
@@ -79,18 +92,20 @@ connected to the chassis and takes care of the display, the buttons, the GPIB in
 The "floating common" section handles measurements of voltage, current, and resistance. 
 
 The chassis common section has an Intel 8039 microcontroller without internal ROM. The ADC controller is an Intel 8049
-with internal ROM.  Both microcontroller with a whopping 256 bytes of on-chip RAM. The firmware of the 8039 is
-stored on an 8KB 2764 EPROM, one of those old style types that must be erased by shining a bright UV light
-on a glass window. A 256 x 4bit static RAM is used to store calibration data. A 3V lithium battery powers the SRAM
-when main power is switched off.
+with internal ROM.  Both are microcontrollers of the [Intel MCS-48 family](https://en.wikipedia.org/wiki/Intel_MCS-48) 
+with a whopping 128 bytes of on-chip RAM. The firmware of the 8039 is stored on an 8KB 2764 EPROM, one of those old 
+style types that must be erased by shining a bright UV light on a glass window. A 256 x 4bit static RAM is used to store 
+calibration data. A 3V lithium battery powers the SRAM when main power is switched off.
 
-The AD converter of the 3478A doesn't use some fancy high precision integrated circuit, but it's built from
+The AD converter of the 3478A doesn't use a high precision integrated circuit, but it's built from
 discrete components and uses an integrator, a voltage reference and a comparator, under control of the 8049
 microcontroller.
 
-XXX Figure 3-F-10 from the Service manual.
+![AD Converter Diagram](/assets/hp3478a/ad_converter_diagram.png)
 
 The ADC is based on a dual-slope conversion:
+
+![Dual slope conversion](/assets/hp3478a/dual_slope_conversion.png)
 
 * During the runup phase, the signal that must be measured is applied to the input of the integrator for a 
   fixed amount of time. 
@@ -107,20 +122,17 @@ digits.
 The detailed explanation is well beyond the scope of this blog post, but section 7-F-31 of the service manual
 describes the process very well.
 
-
-The measurement method is unusual in that it uses a time-based analog to digital conversion process: 
-
-XXXX
-
-
-The measurement section has a floating ground, which makes it possible to connect the ground of the multimeter
-to any random reference point of your device under test. However, the ground of the digital part is connected
-to the chassis and the ground wire of the power plug. Since the digital and the measurement section are electrically
+The [floating ground](https://en.wikipedia.org/wiki/Floating_ground)
+of the measurement section makes it possible to connect the ground of the multimeter
+to any random reference point of your device under test and measure other voltage compared to that reference
+point. However, since the digital control section and the measurement section are electrically
 isolated, communication between the section can't be done with a simple wire.
 
 In most such configurations, an optocoupler is used. And later versions of the 3478A, such as the one featured in the 
-EEVblog teardown video, use exactly that. But older ones like mine have use magnetic couplers. There's one for each 
+EEVblog teardown video, use exactly that. But older ones like mine have magnetic couplers. There's one for each 
 direction, from the digital part to the measurement part, and back.
+
+![Magnetic coupling schematic](/assets/hp3478a/magnetic_coupling.png)
 
 # Various
 
@@ -146,3 +158,4 @@ direction, from the digital part to the measurement part, and back.
 * [KO4BB Manuals & EPROM dump](http://www.ko4bb.com/getsimple/index.php?id=manuals&dir=HP_Agilent/HP_3478A_Multimeter)
 * [Boat Anchor Manual Archive](https://bama.edebris.com)
 * [HP Catalog 1983](http://hparchive.com/Catalogs/HP-Catalog-1983.pdf)
+* [MCS-48 Datasheet](/assets/hp3478a/mcs48_datasheet.pdf)
