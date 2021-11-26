@@ -78,7 +78,7 @@ is a bit ominous:
 
 >  3478 are not bad but they are virtually unrepairable if they break. Especially the display is unobtainium...
 
-But somebody [managed to replace the LCD on a 3457A with an LED display](https://www.eevblog.com/forum/projects/led-display-for-hp-3457a-multimeter-i-did-it-),
+But somebody [managed to replace the LCD on a 3457A with an LED display](https://hackaday.com/2017/11/15/leds-give-hp-3457a-ddms-lcd-display-the-boot/)
 so maybe something similar is possible on a 3478A?
 
 Checkout the bottom of this blog post for a list.
@@ -372,6 +372,7 @@ more convenient. But if, one day, I'll need an automated measurement setup, it w
     Technical description of the closely related 3468A multimeter.
 
 * [HP Catalog 1983](http://hparchive.com/Catalogs/HP-Catalog-1983.pdf)
+* [Keysight 3478A](https://www.keysight.com/us/en/product/3478A/55-digit-dmm-with-hpib-interface.html)
 
 **Youtube Videos**
 
@@ -379,10 +380,14 @@ more convenient. But if, one day, I'll need an automated measurement setup, it w
 * [NFM - HP 3478A Multimeter Repair and Test](https://www.youtube.com/watch?v=e-itiJSftzs)
 * [Tony Albus - HP 3478A Multimeter Teardown](https://www.youtube.com/watch?v=q6JhWIUwEt4)
 
-**Various Discussions and Article**
+**Various Discussions and Articles**
 
 * [Discussion on EEVblog](https://www.eevblog.com/forum/beginners/is-190$-a-bargain-for-a-hp-2378a-bench-multimeter/)
 * [3468A Battery replacement](http://mrmodemhead.com/blog/hp-3468a-battery-replacement/)
 * [KO4BB Manuals & EPROM dump](http://www.ko4bb.com/getsimple/index.php?id=manuals&dir=HP_Agilent/HP_3478A_Multimeter)
 * [MCS-48 Datasheet](/assets/hp3478a/mcs48_datasheet.pdf)
+* [MAME 3478A emulator](https://github.com/mamedev/mame/blob/master/src/mame/drivers/hp3478a.cpp) 
+* [LED replacement for 3457A](https://hackaday.com/2017/11/15/leds-give-hp-3457a-ddms-lcd-display-the-boot/)
+* [Save and Restore HP 3478A Calibration Data with Matlab](http://k6jca.blogspot.com/2017/12/save-and-restore-hp-3478a-calibration.html)
+* [HP 3478A Calibration Utility](https://github.com/steve1515/hp3478a-calibration)
 
