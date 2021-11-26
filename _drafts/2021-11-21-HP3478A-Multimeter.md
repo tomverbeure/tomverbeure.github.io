@@ -134,9 +134,226 @@ direction, from the digital part to the measurement part, and back.
 
 ![Magnetic coupling schematic](/assets/hp3478a/magnetic_coupling.png)
 
-# Various
+# A First Look inside the Box
 
-* Works by charging a capacitor and measuring time (according to EEVblog video)
+To get a first inside look, all you need to do 2 remove 2 screws on the back, and in the back
+at the bottom. The metal encloser will slide right off, and you get to see this:
+
+![Inside Overview](/assets/hp3478a/inside_overview.jpg)
+
+The layout is really straigthforward. You can clearly see the separation between the control
+and power sections at the top and the floating measurment section at the bottom. And right
+below the main power transformer on the right, there's the 2 smaller transformers that form
+the magnetic couplers.
+
+# Tracking Down Failing Buttons
+
+Time to starting looking at the issue at hand: failing buttons. Not one, not a few, but all of them.
+That can be a good thing, because it suggest that's there's a single, catastrophic, issue. Chances are that
+fixing this one thing will make all buttons work again.
+
+The schematic couldn't be easier:
+
+![Buttons schematic](/assets/hp3478a/buttons_schematic.png)
+
+The expected 14 buttons are wired up in a 4 by 4 matrix configuration that is controlled
+by 8 GPIO pins of digital control microcontroller U501.
+
+With a circuit this simple, there's only a few possible ways things could fail:
+
+* the switches of the buttons are broken. 
+    
+    But what are the chances that all buttons are broken at the same time?
+
+* the ports P10-P17 of the microcontroller are broken.
+
+    In other words, the microcontroller is toast. That'd be a worst case situation.
+
+* a connection issue between the microcontroller and the buttons.
+
+Since the device is still printing out "Self Test OK" and showing a DC voltages, the microcontroller
+is at least partially working, so the last option is the most likely.
+
+I first put a continuity tester on the ~A button, pressed it and had a beep. (Good!) Then 
+I put the probes on pins 28 and 31 (ports P11 and P14) of the microcontroller, pressed the
+button again, and... got nothing.
+
+![AC current button test points](/assets/hp3478a/ac_current_button_testing.jpg)
+
+Conclusion: it's almost certainly a connection issue between button board PCB and the main PCB!
+
+Let's have a closer look at this connector!
+
+# Taking Everything Apart
+
+It's easier said than done: the connector is on the bottom side of the PCB and impossible to reach
+because there's a fat bezel around it. We'll have to take take the thing apart. Or at least partially:
+the main PCB, and the front assembly with the buttons and the LCD needs to slide out enough so to
+get access to the button PCB and the connector that links it to the main PCB.
+
+The disassembly isn't very complicated, but make track of how cables were connected so that you
+can later reconnect them correctly.
+
+Here's a short list of what I needed to do:
+
+* Unplug the GPIB cable. This took quite a bit of effort, and was probably the scariest part.
+
+    ![Remove GPIB cable](/assets/hp3478a/remove_gpib_cable.jpg)
+
+* Loosen the main power switch assembly by removing its 2 screws.
+
+    ![Power switch assembly screws](/assets/hp3478a/power_switch_assembly_screws.jpg)
+
+* Dismount the power regulator that's screwed to the chassis right next to the power switch.
+
+    ![Power regulator screw](/assets/hp3478a/power_regulator_screw.jpg)
+
+* Remove the 2 screws that tie the main transformer to the chassis
+
+    ![Transformer screws](/assets/hp3478a/transformer_screws.jpg)
+
+* Remove the ground chassis screw in the back
+
+    ![Ground chassis screw back](/assets/hp3478a/ground_chassis_screw_back.jpg)
+
+* Remove the ground chassis screw in the front
+
+    ![Ground chassis screw front](/assets/hp3478a/ground_chassis_screw_front.jpg)
+
+* Unplug the yellow and pink wires next to the GPIB plug
+
+    ![Yellow and pink wires](/assets/hp3478a/yellow_and_pink_wire.jpg)
+
+* Unplug the orange, brown, read, black and blue wires in the back
+
+    ![5 wires](/assets/hp3478a/5_wires.jpg)
+
+
+* Rotate the device 90 degrees so that it rests on a narrow side, with the front
+  facing to you.  You'll see 4 notches that keep the PCBs locked into place.
+
+    ![Front bezel notches](/assets/hp3478a/front_bezel_latches.jpg)
+
+* Force the plastic enclosure open to unlock the front panel, and apply some pressure on the 
+  power connector in the back. When all 4 notches are unlock, the front panel and main PCB
+  will slide forward.
+
+    ![PCBs unlocked](/assets/hp3478a/pcbs_unlocked.jpg)
+
+    Don't slide out everything out completely: the 5 wires that you unplugged earlier are connected
+    to the chassis through some ties. It's sufficient to slide everything forward by a little
+    bit over an inch.
+
+* Unplug 4 wires between the front panel and the main board: orange, gray, red, black
+
+    ![4 wires](/assets/hp3478a/4_wires.jpg)
+
+* Finally, unplug the yellow wire, also between the front panel and the main board, but this time, the
+  fixed pin is located on the main board, and a bit recessed below the plastic enclosure.
+
+    ![Front yellow wire](/assets/hp3478a/front_yellow_wire.jpg)
+
+* Turn the device upside down. You can see the connector between the button PCB and the main board:
+
+    ![Connector between button PCB and the main board](/assets/hp3478a/button_panel_to_main_board_connector.jpg)
+
+* Remove those 2 screws! The front panel will now be loose, except for the flat-cable that goes
+  between the main board and the LCD.
+
+    ![Button connector disconnected](/assets/hp3478a/button_connector_disconnected.jpg)
+
+* If it's possible to unplge the cable between LCD and main board, it' definitely very hard to do so. 
+  Much easier to keep it connected and unscrew the LCD from the front panel.
+
+    ![LCD screws](/assets/hp3478a/lcd_screws.jpg)
+
+* The front panel is now completely disconnected! Let's remove those last 2 screws to
+  remove the connector from the front panel.
+
+    ![Front panel disconnected](/assets/hp3478a/front_panel_disconnected.jpg)
+
+* With the connector removed, we are at the end of this journey!
+
+    ![Button connector removed from front panel](/assets/hp3478a/button_connector_removed.jpg)
+
+# The Button Board to Main Board Connector
+
+The electrical connection between the 2 button board and the main board is unusual: instead
+of a cable, there is a element with a 90 degree angle that consists of tiny individual metal
+strips. Connector presses this element against the copper pads on both PCBs and creates
+an electric connection between them.
+
+![Conductive element inside connector](/assets/hp3478a/connector_conductor.jpg)
+
+Or at least, that's what it's supposed to do.
+
+One way or the other, all 8 connections on my device stopped working. I assume it had to do
+with oxidation on the contacts?
+
+Either way: this method of linking 2 board flimsy to me, and prone to fail over time. On the
+other hand, Google didn't find anything related to buttons failing on 3478A multimeters, so maybe
+mine is really an exception?
+
+# Fix 1: Works, then Fails after 5 minutes
+
+Everything looked very clean to me, no visible oxidation to be seen, but I used isopropyl alcohol 
+to clean the contacts. I assembled the connector back onto the LCD and the main board PCB and 
+checked with a continuity tester to see if there was an electrical connection now between all contacts.
+
+There was!
+
+I then put the whole multimeter back together (retrace all the steps I documented earlier), powered
+it on and... SUCCESS!
+
+All buttons were now working perfectly... for 5 minutes.
+
+After that, 4 out of the 14 buttons became unresponsive again.
+
+# Fix 2: Bring Out the Hacksaw!
+
+If that unusual connector mechanism doesn't work, why not switch to the more traditional way
+of doing things, with wires? That's exactly what I did.
+
+The connector is still useful to mechanically align the 2 PCBs, so I simply sawed away the center
+part of the connector, retained the 2 ends with the screw holes, and ended up with this:
+
+![Connector center removed](/assets/hp3478a/connector_center_removed.jpg)
+
+The rest is obvious: I soldered a tiny wire between each of the connection pads.
+
+Instead of using a tiny wire, I could have created a solder bridge between the opposing
+connection pads of the 2 PCBs, but that would probably have been brittle to survive long
+term use. The wire will allow some flex when enthousiastically pressing on a button.
+
+![Wire between connection pads](/assets/hp3478a/wire_between_connection_pads.jpg)
+
+After soldering all connections, it looked like this:
+
+![All connections soldered](/assets/hp3478a/all_connections_soldered.jpg)
+
+I went through the whole reassembly procedure once more, and, again... SUCCESS! But
+this time, it kept working after 5 minutes.
+
+Here's the multimeter measuring a *zero* Ohm connection with some very cheap crocodile
+clips.
+
+![Ohm measurement](/assets/hp3478a/ohm_measurement.jpg)
+
+# Conclusion
+
+This was a fun evening project, and I've learned a bunch about the internal of multimeters too.
+There's a lot of information out there. I've listed some of it in the references
+below.
+
+
+I've compared a number of measurements between my handheld multimeter and this one, and the
+results are pretty much the same. That said, I have no clue how long it has been since
+the meter was last calibrated, and I don't have any calibrated voltage sources or reference 
+resistors so who knows how accurate my measurements really are? Since calibration
+can easily cost $100 or more, I have no plans to do so until I really need 5 digit accuracy.
+
+For now, the multimeter will take its place back on the shelve. A handheld multimeter is
+more convenient. But if, one day, I'll need an automated measurement setup, it will be ready to go.
 
 # References
 
@@ -159,3 +376,5 @@ direction, from the digital part to the measurement part, and back.
 * [Boat Anchor Manual Archive](https://bama.edebris.com)
 * [HP Catalog 1983](http://hparchive.com/Catalogs/HP-Catalog-1983.pdf)
 * [MCS-48 Datasheet](/assets/hp3478a/mcs48_datasheet.pdf)
+
+https://youtu.be/q6JhWIUwEt4?t=687
