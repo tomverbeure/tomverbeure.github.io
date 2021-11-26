@@ -10,18 +10,19 @@ categories:
 
 # Introduction
 
-I'm slowly building a small stable of equipment for my home lab. I'd be lying if I said
-that it's out of hard necessity: almost all my projects are FPGA based and digital in
-nature. You don't *need* a [nice high precision power supply](/2021/04/15/Agilent-E3631A-Knob-Repair.html)
+I'm slowly building a small stable of test and measurement equipment for my home lab. 
+I'd be lying if I said that it's out of hard necessity: almost all my projects are FPGA 
+based and digital in nature. You don't *need* a 
+[nice high precision power supply](/2021/04/15/Agilent-E3631A-Knob-Repair.html)
 to power a generic FPGA development board, but when there's one for offered on Craigslist for
 a good price, it's hard to resist. One day that that GPIB control interface might come in real handy 
-after all!
+after all.
 
 And that's how, a few months ago, this HP 3478A benchtop multimeter appeared at my front door: 
 
 ![HP 3478A](/assets/hp3478a/hp3478a.jpg)
 
-On eBay, these 5 1/2 digits meters go for around $140 when listed as Pre-Owned, while Parts Only listings
+On eBay, these 5 1/2 digit meters go for around $140 when listed as Pre-Owned, while Parts Only devices
 go for around $70. In both cases, shipping cost is usually around $25. My unit was advertised as
 Pre-Owned with a "Passes Self-Test" description for a low low price of only $100, so I decided
 to take a chance on it.
@@ -72,12 +73,13 @@ display, and so forth.
 There's even a work-in-progress [MAME 3478A emulator](https://github.com/mamedev/mame/blob/master/src/mame/drivers/hp3478a.cpp), 
 which is a great resource to understand some of the internals of the device.
 
-This quote from discussion thread on the EEVblog forum is a bit ominous: 
+This quote from [discussion thread on the EEVblog forum](https://www.eevblog.com/forum/beginners/is-190$-a-bargain-for-a-hp-2378a-bench-multimeter/)
+is a bit ominous: 
 
 >  3478 are not bad but they are virtually unrepairable if they break. Especially the display is unobtainium...
 
-But somebody [managed to replace the LCD on a 3457A with an LED display](https://www.eevblog.com/forum/projects/led-display-for-hp-3457a-multimeter-i-did-it-)/),
-so many something similar is possible on a 3478A?
+But somebody [managed to replace the LCD on a 3457A with an LED display](https://www.eevblog.com/forum/projects/led-display-for-hp-3457a-multimeter-i-did-it-),
+so maybe something similar is possible on a 3478A?
 
 Checkout the bottom of this blog post for a list.
 
@@ -113,7 +115,7 @@ The ADC is based on a dual-slope conversion:
 * during the following rundown phase, the integrator is discharged by applying a constant, known voltage reference to the input.
 * the time needed to discharge the capacitor is proportional to the voltage of the input signal.
 
-In other words, the AD convertor transforms a voltage to time, which is much easier to measure.
+In other words, the AD convertor transforms a voltage to time, which is much easier to measure with high precision.
 
 The real implementation is a bit more complex and uses the so-called Multi-Slope II method, which uses
 the runup phase to determine the most significant digits and the rundown phase for the least significant
@@ -124,27 +126,30 @@ describes the process very well.
 
 The [floating ground](https://en.wikipedia.org/wiki/Floating_ground)
 of the measurement section makes it possible to connect the ground of the multimeter
-to any random reference point of your device under test and measure other voltage compared to that reference
-point. However, since the digital control section and the measurement section are electrically
+to any random reference point of the device under test and measure other voltage compared to that reference
+point. However, since the digital control section and the measurement section must remain electrically
 isolated, communication between the section can't be done with a simple wire.
 
-In most such configurations, an optocoupler is used. And later versions of the 3478A, such as the one featured in the 
-EEVblog teardown video, use exactly that. But older ones like mine have magnetic couplers. There's one for each 
-direction, from the digital part to the measurement part, and back.
+In most such configurations, an optocoupler is used. Later versions of the 3478A, such as 
+[the one featured in the EEVblog teardown video](https://youtu.be/9v6OksEFqpA?t=211), 
+use exactly that. But older ones like mine have magnetic couplers. There's one for each direction, from 
+the digital part to the measurement part, and back.
 
 ![Magnetic coupling schematic](/assets/hp3478a/magnetic_coupling.png)
 
 # A First Look inside the Box
 
-To get a first inside look, all you need to do 2 remove 2 screws on the back, and in the back
-at the bottom. The metal encloser will slide right off, and you get to see this:
+To get a first inside look, you need to remove 2 screws on the back, and one in the back
+at the bottom. The metal enclosure will slide right off, and you get to see this:
 
 ![Inside Overview](/assets/hp3478a/inside_overview.jpg)
 
 The layout is really straigthforward. You can clearly see the separation between the control
-and power sections at the top and the floating measurment section at the bottom. And right
+and power sections at the top and the floating measurement section at the bottom. And just
 below the main power transformer on the right, there's the 2 smaller transformers that form
 the magnetic couplers.
+
+![Magnetic Couplers](/assets/hp3478a/magnetic_coupler_transformers.jpg)
 
 # Tracking Down Failing Buttons
 
@@ -182,23 +187,26 @@ button again, and... got nothing.
 
 Conclusion: it's almost certainly a connection issue between button board PCB and the main PCB!
 
-Let's have a closer look at this connector!
+Let's have a closer look at this connector.
 
 # Taking Everything Apart
 
 It's easier said than done: the connector is on the bottom side of the PCB and impossible to reach
-because there's a fat bezel around it. We'll have to take take the thing apart. Or at least partially:
-the main PCB, and the front assembly with the buttons and the LCD needs to slide out enough so to
+because there's a fat bezel around it. We'll have to take the thing apart. Or at least partially:
+the main PCB, and the front assembly with the buttons and the LCD needs to slide out enough to
 get access to the button PCB and the connector that links it to the main PCB.
 
-The disassembly isn't very complicated, but make track of how cables were connected so that you
-can later reconnect them correctly.
+The disassembly isn't very complicated, but make sure to keep track of how cables were connected so that you
+can later reconnect them correctly. (Or just use the pictures below!)
 
 Here's a short list of what I needed to do:
 
 * Unplug the GPIB cable. This took quite a bit of effort, and was probably the scariest part.
 
     ![Remove GPIB cable](/assets/hp3478a/remove_gpib_cable.jpg)
+
+    One pin of the connector was bent. I'm almost certain that it was already bent before I removed 
+    it.
 
 * Loosen the main power switch assembly by removing its 2 screws.
 
@@ -208,23 +216,23 @@ Here's a short list of what I needed to do:
 
     ![Power regulator screw](/assets/hp3478a/power_regulator_screw.jpg)
 
-* Remove the 2 screws that tie the main transformer to the chassis
+* Remove the 2 screws that tie the main transformer to the chassis.
 
     ![Transformer screws](/assets/hp3478a/transformer_screws.jpg)
 
-* Remove the ground chassis screw in the back
+* Remove the ground chassis screw in the back.
 
     ![Ground chassis screw back](/assets/hp3478a/ground_chassis_screw_back.jpg)
 
-* Remove the ground chassis screw in the front
+* Remove the ground chassis screw in the front.
 
     ![Ground chassis screw front](/assets/hp3478a/ground_chassis_screw_front.jpg)
 
-* Unplug the yellow and pink wires next to the GPIB plug
+* Unplug the yellow and pink wires next to the GPIB plug.
 
     ![Yellow and pink wires](/assets/hp3478a/yellow_and_pink_wire.jpg)
 
-* Unplug the orange, brown, read, black and blue wires in the back
+* Unplug the orange, brown, read, black and blue wires in the back.
 
     ![5 wires](/assets/hp3478a/5_wires.jpg)
 
@@ -242,9 +250,9 @@ Here's a short list of what I needed to do:
 
     Don't slide out everything out completely: the 5 wires that you unplugged earlier are connected
     to the chassis through some ties. It's sufficient to slide everything forward by a little
-    bit over an inch.
+    bit over an inch or 2.
 
-* Unplug 4 wires between the front panel and the main board: orange, gray, red, black
+* Unplug 4 wires between the front panel and the main board: orange, gray, red, black.
 
     ![4 wires](/assets/hp3478a/4_wires.jpg)
 
@@ -257,17 +265,17 @@ Here's a short list of what I needed to do:
 
     ![Connector between button PCB and the main board](/assets/hp3478a/button_panel_to_main_board_connector.jpg)
 
-* Remove those 2 screws! The front panel will now be loose, except for the flat-cable that goes
+* Remove those 2 screws. The front panel will now be loose, except for the flat-cable that goes
   between the main board and the LCD.
 
     ![Button connector disconnected](/assets/hp3478a/button_connector_disconnected.jpg)
 
-* If it's possible to unplge the cable between LCD and main board, it' definitely very hard to do so. 
-  Much easier to keep it connected and unscrew the LCD from the front panel.
+* If it's possible to unplug the cable between LCD and main board, it's definitely hard to do so. 
+  Much easier to keep it connected and unscrew the LCD from the front panel instead.
 
     ![LCD screws](/assets/hp3478a/lcd_screws.jpg)
 
-* The front panel is now completely disconnected! Let's remove those last 2 screws to
+* The front panel is now completely disconnected. Let's remove those last 2 screws to
   remove the connector from the front panel.
 
     ![Front panel disconnected](/assets/hp3478a/front_panel_disconnected.jpg)
@@ -280,7 +288,7 @@ Here's a short list of what I needed to do:
 
 The electrical connection between the 2 button board and the main board is unusual: instead
 of a cable, there is a element with a 90 degree angle that consists of tiny individual metal
-strips. Connector presses this element against the copper pads on both PCBs and creates
+wires. The connector presses this element against the copper pads on both PCBs and creates
 an electric connection between them.
 
 ![Conductive element inside connector](/assets/hp3478a/connector_conductor.jpg)
@@ -290,17 +298,15 @@ Or at least, that's what it's supposed to do.
 One way or the other, all 8 connections on my device stopped working. I assume it had to do
 with oxidation on the contacts?
 
-Either way: this method of linking 2 board flimsy to me, and prone to fail over time. On the
+This method of linking 2 board seems flimsy to me, and prone to fail over time. On the
 other hand, Google didn't find anything related to buttons failing on 3478A multimeters, so maybe
 mine is really an exception?
 
 # Fix 1: Works, then Fails after 5 minutes
 
-Everything looked very clean to me, no visible oxidation to be seen, but I used isopropyl alcohol 
-to clean the contacts. I assembled the connector back onto the LCD and the main board PCB and 
-checked with a continuity tester to see if there was an electrical connection now between all contacts.
-
-There was!
+Everything looked very clean, no visible oxidation to be seen, but I used isopropyl alcohol 
+to clean the contacts and connection strip. I assembled the connector back onto the LCD and the main board PCB and 
+verified with a continuity tester that there was an electrical connection now between all contacts.
 
 I then put the whole multimeter back together (retrace all the steps I documented earlier), powered
 it on and... SUCCESS!
@@ -322,8 +328,8 @@ part of the connector, retained the 2 ends with the screw holes, and ended up wi
 The rest is obvious: I soldered a tiny wire between each of the connection pads.
 
 Instead of using a tiny wire, I could have created a solder bridge between the opposing
-connection pads of the 2 PCBs, but that would probably have been brittle to survive long
-term use. The wire will allow some flex when enthousiastically pressing on a button.
+connection pads of the 2 PCBs, but that would probably have been too brittle to survive long
+term use. A wire will allow some flex when enthousiastically pressing on a button.
 
 ![Wire between connection pads](/assets/hp3478a/wire_between_connection_pads.jpg)
 
@@ -357,24 +363,26 @@ more convenient. But if, one day, I'll need an automated measurement setup, it w
 
 # References
 
-* [EEVblog teardown](https://www.youtube.com/watch?v=9v6OksEFqpA) 
-* [HP 3478A Multimeter Repair and Test](https://www.youtube.com/watch?v=e-itiJSftzs)
-* [Tony Albus HP 3478A Multimeter Teardown](https://www.youtube.com/watch?v=q6JhWIUwEt4)
-* [Datasheet](https://accusrc.com/uploads/datasheets/agilent_hp_3478a.pdf)
-* [HP Journal](https://www.hpl.hp.com/hpjournal/pdfs/IssuePDFs/1983-02.pdf)
+**Official Documentation**
 
-    Contains technical description.
+* [3478A Datasheet](https://accusrc.com/uploads/datasheets/agilent_hp_3478a.pdf)
+* [3478A Service Manual](http://www.arimi.it/wp-content/Strumenti/HP/Multimetri/hp-3478a-Service.pdf)
+* [HP Journal - February 1983](https://www.hpl.hp.com/hpjournal/pdfs/IssuePDFs/1983-02.pdf)
+
+    Technical description of the closely related 3468A multimeter.
+
+* [HP Catalog 1983](http://hparchive.com/Catalogs/HP-Catalog-1983.pdf)
+
+**Youtube Videos**
+
+* [EEVblog #427 - HP 3478A Multimeter Teardown](https://www.youtube.com/watch?v=9v6OksEFqpA) 
+* [NFM - HP 3478A Multimeter Repair and Test](https://www.youtube.com/watch?v=e-itiJSftzs)
+* [Tony Albus - HP 3478A Multimeter Teardown](https://www.youtube.com/watch?v=q6JhWIUwEt4)
+
+**Various Discussions and Article**
 
 * [Discussion on EEVblog](https://www.eevblog.com/forum/beginners/is-190$-a-bargain-for-a-hp-2378a-bench-multimeter/)
-
-    "3478 are not bad but they are virtually unrepairable if they break. Especially the display is unobtainium..."
-
-* [Service Manual](http://www.arimi.it/wp-content/Strumenti/HP/Multimetri/hp-3478a-Service.pdf)
-* [Battery replacement article](http://mrmodemhead.com/blog/hp-3468a-battery-replacement/)
-
+* [3468A Battery replacement](http://mrmodemhead.com/blog/hp-3468a-battery-replacement/)
 * [KO4BB Manuals & EPROM dump](http://www.ko4bb.com/getsimple/index.php?id=manuals&dir=HP_Agilent/HP_3478A_Multimeter)
-* [Boat Anchor Manual Archive](https://bama.edebris.com)
-* [HP Catalog 1983](http://hparchive.com/Catalogs/HP-Catalog-1983.pdf)
 * [MCS-48 Datasheet](/assets/hp3478a/mcs48_datasheet.pdf)
 
-https://youtu.be/q6JhWIUwEt4?t=687
