@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Repairing an HP 3478A Multimeter with a Hacksaw
-date:  2021-11-21 00:00:00 -1000
+date:  2021-11-26 00:00:00 -1000
 categories:
 ---
 
