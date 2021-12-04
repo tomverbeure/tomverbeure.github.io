@@ -35,7 +35,10 @@ but most use 1-bit pulse density modulation, leaving it up to the host chip to d
 
 On Digikey, the cheapest PDM microphones go for around $1 a piece. Or you can buy [a breakout board on Adafruit](https://www.adafruit.com/product/3492) 
 for $5. It has an [ST MP34DT01-M](https://cdn-learn.adafruit.com/assets/assets/000/049/977/original/MP34DT01-M.pdf) microphone
-with a 61dB [signal to noise ratio](https://en.wikipedia.org/wiki/Signal-to-noise_ratio) (SNR).
+with a 61dB [signal to noise ratio](https://en.wikipedia.org/wiki/Signal-to-noise_ratio) (SNR). 
+
+*Check out [my later blog post on PDM microphone specifications](/2020/10/17/From-Microphone-Datasheet-to-Design-Specification.html)
+to better understand what this 61dB really means.*
 
 ![Adafruit PDM MEMS Microphone](/assets/pdm/sigma_delta/adafruit-pdm-mems-microphone.jpg)
 
