@@ -130,7 +130,7 @@ listed in floating point format:
 ![pyFDA coefficients](/assets/pdm/halfband/halfband-pyFDA_coefficients_numbers.png)
 
 The coefficients are very close to but not quite 0. You can easily fix that by just clamping
-these coefficients to 0, but that does feel right, does it? For high order half-band filters 
+these coefficients to 0, but that doesn't feel right, does it? For high order half-band filters 
 with a high attenuation, this will almost certainly change the performance characteristics in
 some subtle way.
 
