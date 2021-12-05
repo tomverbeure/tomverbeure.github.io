@@ -460,7 +460,7 @@
                 $('#predefined_mode').change( function(){ fill_predefined_parameters($('#predefined_mode').val());   update_status(); })
                 $('#horiz_pixels').change( function(){ check_integer($('#horiz_pixels').val(), '#horiz_valid');   update_status(); })
                 $('#vert_pixels') .change( function(){ check_integer($('#vert_pixels') .val(), '#vert_valid');    update_status(); })
-                $('#refresh_rate').change( function(){ check_integer($('#refresh_rate').val(), '#refresh_valid'); update_status(); })
+                $('#refresh_rate').change( function(){ update_status(); })
                 $('#margins')     .change( function(){ update_status(); })
                 $('#interlaced')  .change( function(){ update_status(); })
                 $('#bpc')         .change( function(){ update_status(); })
