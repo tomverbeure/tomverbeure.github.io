@@ -115,6 +115,9 @@
 
             function calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, reduced_blanking, video_optimized){
 
+                H_POL   = "?";
+                V_POL   = "?";
+
                 if (reduced_blanking == "cvt"){
                     CLOCK_STEP          = 0.25;
                     MIN_V_BPORCH        = 6;
@@ -123,6 +126,8 @@
                     RB_MIN_V_BLANK      = 460;
                     RB_V_FPORCH         = 3;
                     REFRESH_MULTIPLIER  = 1;
+                    H_POL               = "-";
+                    V_POL               = "+";
                 }
                 else if (reduced_blanking == "cvt_rb"){
                     CLOCK_STEP          = 0.25;
@@ -132,6 +137,8 @@
                     RB_MIN_V_BLANK      = 460;
                     RB_V_FPORCH         = 3;
                     REFRESH_MULTIPLIER  = 1;
+                    H_POL               = "+";
+                    V_POL               = "-";
                 }
                 else if (reduced_blanking == "cvt_rb2"){
                     CLOCK_STEP          = 0.001;
@@ -141,6 +148,8 @@
                     RB_MIN_V_BLANK      = 460;
                     RB_V_FPORCH         = 1;
                     REFRESH_MULTIPLIER  = video_optimized ? 1000/1001 : 1;
+                    H_POL               = "+";
+                    V_POL               = "-";
                 }
 
                 // Input parameters
@@ -275,6 +284,9 @@
             {
                 var found = false;
 
+                H_POL   = "?";
+                V_POL   = "?";
+
                 dmt_timings.forEach(function(dmt_timing, index){
                     if (   dmt_timing['h_active'] == horiz_pixels 
                         && dmt_timing['v_active'] == vert_pixels 
@@ -294,10 +306,12 @@
                         H_FRONT_PORCH           = dmt_timing['h_front'];
                         H_SYNC                  = dmt_timing['h_sync'];
                         H_BACK_PORCH            = dmt_timing['h_back'];
+                        H_POL                   = dmt_timing['hsync_pol'] == 'Neg' ? "-" : "+";
 
                         V_FRONT_PORCH           = dmt_timing['v_front'];
                         V_SYNC_RND              = dmt_timing['v_sync'];
                         V_BACK_PORCH            = dmt_timing['v_back'];
+                        V_POL                   = dmt_timing['vsync_pol'] == 'Neg' ? "-" : "+";
 
                         DMT_ID                  = dmt_timing['dmt_id'];
                         DMT_TYPE                = dmt_timing['type'];
@@ -336,10 +350,12 @@
                         H_FRONT_PORCH           = vic_timing['h_front'];
                         H_SYNC                  = vic_timing['h_sync'];
                         H_BACK_PORCH            = vic_timing['h_back'];
+                        H_POL                   = vic_timing['h_pol'] == 'n' ? "-" : "+";
 
                         V_FRONT_PORCH           = vic_timing['v_front'];
                         V_SYNC_RND              = vic_timing['v_sync'];
                         V_BACK_PORCH            = vic_timing['v_back'];
+                        V_POL                   = vic_timing['v_pol'] == 'n' ? "-" : "+";
 
                         VIC                     = vic_timing['vic'];
 
@@ -509,6 +525,16 @@
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr bgcolor=#ffffff>
+                    <td><label>H Sync Polarity</label></td>
+                    <td><label id="cvt-hpol"></label></td>
+                    <td><label id="cvt_rb-hpol"></label></td>
+                    <td><label id="cvt_rb2-hpol"></label></td>
+                    <td><label id="cea-hpol"></label></td>
+                    <td><label id="dmt-hpol"></label></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr bgcolor=#ffffff>
                     <td><label>H Freq</label></td>
                     <td><label id="cvt-hfreq"></label></td>
                     <td><label id="cvt_rb-hfreq"></label></td>
@@ -588,6 +614,16 @@
                     <td><label id="dmt-vback"></label></td>
                     <td></td>
                     <td><label>Pixels</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>V Sync Polarity</label></td>
+                    <td><label id="cvt-vpol"></label></td>
+                    <td><label id="cvt_rb-vpol"></label></td>
+                    <td><label id="cvt_rb2-vpol"></label></td>
+                    <td><label id="cea-vpol"></label></td>
+                    <td><label id="dmt-vpol"></label></td>
+                    <td></td>
+                    <td></td>
                 </tr>
                 <tr bgcolor=#ffffff>
                     <td><label>V Freq</label></td>
@@ -1137,6 +1173,7 @@
                             $(prefix + "-hfront").text(H_FRONT_PORCH);
                             $(prefix + "-hsync").text(H_SYNC);
                             $(prefix + "-hback").text(H_BACK_PORCH);
+                            $(prefix + "-hpol").text(H_POL);
                             $(prefix + "-hfreq").text(Math.round(hfreq)/1000);
                             $(prefix + "-hperiod").text(Math.round(hperiod*1000000000)/1000);
     
@@ -1146,6 +1183,7 @@
                             $(prefix + "-vfront").text(V_FRONT_PORCH);
                             $(prefix + "-vsync").text(V_SYNC_RND);
                             $(prefix + "-vback").text(V_BACK_PORCH);
+                            $(prefix + "-vpol").text(V_POL);
                             $(prefix + "-vfreq").text(Math.round(vfreq*1000)/1000);
                             $(prefix + "-vperiod").text(Math.round(vperiod*1000000)/1000);
     
@@ -1197,6 +1235,7 @@
                             $(prefix + "-hfront").text("");
                             $(prefix + "-hsync").text("");
                             $(prefix + "-hback").text("");
+                            $(prefix + "-hpol").text("");
                             $(prefix + "-hfreq").text("");
                             $(prefix + "-hperiod").text("");
     
@@ -1206,6 +1245,7 @@
                             $(prefix + "-vfront").text("");
                             $(prefix + "-vsync").text("");
                             $(prefix + "-vback").text("");
+                            $(prefix + "-vpol").text("");
                             $(prefix + "-vfreq").text("");
                             $(prefix + "-vperiod").text("");
     
