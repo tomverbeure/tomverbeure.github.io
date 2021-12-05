@@ -115,8 +115,9 @@
 
             function calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, reduced_blanking, video_optimized){
 
-                H_POL   = "?";
-                V_POL   = "?";
+                H_POL       = "?";
+                V_POL       = "?";
+                INTERLACED  = interlaced;
 
                 if (reduced_blanking == "cvt"){
                     CLOCK_STEP          = 0.25;
@@ -284,8 +285,9 @@
             {
                 var found = false;
 
-                H_POL   = "?";
-                V_POL   = "?";
+                H_POL       = "?";
+                V_POL       = "?";
+                INTERLACED  = interlaced;
 
                 dmt_timings.forEach(function(dmt_timing, index){
                     if (   dmt_timing['h_active'] == horiz_pixels 
@@ -331,6 +333,8 @@
             {
                 var found = false;
 
+                INTERLACED  = interlaced;
+
                 vic_timings.forEach(function(vic_timing, index){
                     if (   vic_timing['h_active'] == horiz_pixels 
                         && vic_timing['v_active'] == vert_pixels 
@@ -365,6 +369,38 @@
 
                 return found;
             }
+
+            function modeline()
+            {
+                str = 'Modeline \"' 
+                            + TOTAL_ACTIVE_PIXELS + 'x'
+                            + V_LINES_RND + '_'
+                            + vfreq_round100;
+                if (INTERLACED)
+                    str += "i";
+                str += '\"';
+
+                str += " " + Math.round(pclock/1000)/1000;
+
+                str += " " + TOTAL_ACTIVE_PIXELS;
+                str += " " + (TOTAL_ACTIVE_PIXELS + H_FRONT_PORCH);
+                str += " " + (TOTAL_ACTIVE_PIXELS + H_FRONT_PORCH + H_SYNC);
+                str += " " + TOTAL_PIXELS;
+
+                str += " " + V_LINES_RND;
+                str += " " + (V_LINES_RND + V_FRONT_PORCH);
+                str += " " + (V_LINES_RND + V_FRONT_PORCH + V_SYNC_RND);
+                str += " " + TOTAL_V_LINES;
+
+                str += H_POL == "+" ? " +HSync" : " -HSync";
+                str += V_POL == "+" ? " +VSync" : " -VSync";
+
+                if (INTERLACED)
+                    str += " Interlace";
+
+                return str;
+            }
+
 
         </script>
         <h1>Video Timings Calculator</h1>
@@ -714,6 +750,27 @@
                     <td/>
                     <td></td>
                     <td></td>
+                </tr>
+		<tr bgcolor=#ffffff><td colspan=8><b>Modelines</b></td></tr>
+		<tr bgcolor=#ffffff>
+                    <td>CVT Modeline</td>
+                    <td colspan=7><code><label id="cvt-modeline"></label></code></td>
+                </tr>
+		<tr bgcolor=#ffffff>
+                    <td>CVT-RB Modeline</td>
+                    <td colspan=7><code><label id="cvt_rb-modeline"></label></code></td>
+                </tr>
+		<tr bgcolor=#ffffff>
+                    <td>CVT-RBv2 Modeline</td>
+                    <td colspan=7><code><label id="cvt_rb2-modeline"></label></code></td>
+                </tr>
+		<tr bgcolor=#ffffff>
+                    <td>CEA-861 Modeline</td>
+                    <td colspan=7><code><label id="cea-modeline"></label></code></td>
+                </tr>
+		<tr bgcolor=#ffffff>
+                    <td>DMT Modeline</td>
+                    <td colspan=7><code><label id="dmt-modeline"></label></code></td>
                 </tr>
 		<tr bgcolor=#ffffff><td colspan=8><b>DisplayPort</b></td></tr>
                 <tr bgcolor=#ffffff>
@@ -1066,6 +1123,7 @@
 
                         hfreq           = pclock / htotal;
                         vfreq           = pclock / (vtotal * htotal);
+                        vfreq_round100  = Math.round(vfreq*100)/100;
 
                         hperiod         = 1/hfreq;
                         vperiod         = 1/vfreq;
@@ -1223,6 +1281,8 @@
                             $(prefix + "-rfc4175_eth100m").html(rfc4175_eth100m_ok);
                             $(prefix + "-rfc4175_eth1g").html(rfc4175_eth1g_ok);
                             $(prefix + "-rfc4175_eth10g").html(rfc4175_eth10g_ok);
+
+                            $(prefix + "-modeline").html(modeline());
                         }
                         else{
                             $(prefix + "-aspect_ratio").text("");
@@ -1285,6 +1345,8 @@
                             $(prefix + "-rfc4175_eth100m").html("");
                             $(prefix + "-rfc4175_eth1g").html("");
                             $(prefix + "-rfc4175_eth10g").html("");
+
+                            $(prefix + "-modeline").html("");
                         }
 
                     });
