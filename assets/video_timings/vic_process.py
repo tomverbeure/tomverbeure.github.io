@@ -128,5 +128,5 @@ process_vic_sync_info(vic_table)
 pp.pprint(vic_table[54])
 
 with open("vic_timings.json", "w") as vic_timings_json:
-    json.dump(vic_table, vic_timings_json, indent=2)
+    json.dump(list(vic_table.values()), vic_timings_json, indent=2)
     

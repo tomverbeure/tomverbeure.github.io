@@ -1,4 +1,4 @@
-[
+var vic_timings = [
   {
     "vic": 1,
     "resolution_descr": "640x480p",
