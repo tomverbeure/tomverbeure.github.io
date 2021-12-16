@@ -622,6 +622,16 @@
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr bgcolor=#ffffff>
+                    <td><label>V Blank Duration</label></td>
+                    <td><label id="cvt-vblank_duration"></label></td>
+                    <td><label id="cvt_rb-vblank_duration"></label></td>
+                    <td><label id="cvt_rb2-vblank_duration"></label></td>
+                    <td><label id="cea-vblank_duration"></label></td>
+                    <td><label id="dmt-vblank_duration"></label></td>
+                    <td><input id="custom-vblank_duration" type="text" value="6" /></td>
+                    <td><label>us</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
                     <td><label>V Front Porch</label></td>
                     <td><label id="cvt-vfront"></label></td>
                     <td><label id="cvt_rb-vfront"></label></td>
@@ -1141,6 +1151,7 @@
                         peak_bw         = pclock * bpc * color_fmt_multiplier;
                         line_bw         = peak_bw * hactive / htotal;
                         active_bw       = vfreq * bpc * vactive * hactive * color_fmt_multiplier;
+                        vblank_duration = vblank * hperiod;
 
                         dp_2_bw         =  20000000000*4/132*128;
                         dp_hbr3_bw      =   8100000000*4/10*8;
@@ -1249,6 +1260,7 @@
                             $(prefix + "-vtotal").text(vtotal);
                             $(prefix + "-vpixels").text(vactive);
                             $(prefix + "-vblank").text(vblank);
+                            $(prefix + "-vblank_duration").text(Math.round(vblank_duration*10000000000)/1000);
                             $(prefix + "-vfront").text(V_FRONT_PORCH);
                             $(prefix + "-vsync").text(V_SYNC_RND);
                             $(prefix + "-vback").text(V_BACK_PORCH);
@@ -1314,6 +1326,7 @@
                             $(prefix + "-vtotal").text("");
                             $(prefix + "-vpixels").text("");
                             $(prefix + "-vblank").text("");
+                            $(prefix + "-vblank_duration").text("");
                             $(prefix + "-vfront").text("");
                             $(prefix + "-vsync").text("");
                             $(prefix + "-vback").text("");
