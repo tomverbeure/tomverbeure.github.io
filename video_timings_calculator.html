@@ -682,13 +682,23 @@
                     <td><label>ms</label></td>
                 </tr>
                 <tr bgcolor=#ffffff>
-                    <td><label>Total BW</label></td>
-                    <td><label id="cvt-total_bw"></label></td>
-                    <td><label id="cvt_rb-total_bw"></label></td>
-                    <td><label id="cvt_rb2-total_bw"></label></td>
-                    <td><label id="cea-total_bw"></label></td>
-                    <td><label id="dmt-total_bw"></label></td>
-                    <td><label id="custom-total_bw"></label></td>
+                    <td><label>Peak BW</label></td>
+                    <td><label id="cvt-peak_bw"></label></td>
+                    <td><label id="cvt_rb-peak_bw"></label></td>
+                    <td><label id="cvt_rb2-peak_bw"></label></td>
+                    <td><label id="cea-peak_bw"></label></td>
+                    <td><label id="dmt-peak_bw"></label></td>
+                    <td><label id="custom-peak_bw"></label></td>
+                    <td><label>Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>Line BW</label></td>
+                    <td><label id="cvt-line_bw"></label></td>
+                    <td><label id="cvt_rb-line_bw"></label></td>
+                    <td><label id="cvt_rb2-line_bw"></label></td>
+                    <td><label id="cea-line_bw"></label></td>
+                    <td><label id="dmt-line_bw"></label></td>
+                    <td><label id="custom-line_bw"></label></td>
                     <td><label>Mbit/s</label></td>
                 </tr>
                 <tr bgcolor=#ffffff>
@@ -1128,7 +1138,8 @@
                         hperiod         = 1/hfreq;
                         vperiod         = 1/vfreq;
 
-                        total_bw        = pclock * bpc * color_fmt_multiplier;
+                        peak_bw         = pclock * bpc * color_fmt_multiplier;
+                        line_bw         = peak_bw * hactive / htotal;
                         active_bw       = vfreq * bpc * vactive * hactive * color_fmt_multiplier;
 
                         dp_2_bw         =  20000000000*4/132*128;
@@ -1165,54 +1176,54 @@
                         rfc4175_eth1g_bw    = 1000000000  * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500;
                         rfc4175_eth10g_bw   = 10000000000 * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500;
 
-                        dp_2_ok         = (total_bw < dp_2_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        dp_hbr3_ok      = (total_bw < dp_hbr3_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        dp_hbr2_ok      = (total_bw < dp_hbr2_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        dp_hbr_ok       = (total_bw < dp_hbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        dp_rbr_ok       = (total_bw < dp_rbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_2_ok         = (peak_bw < dp_2_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_hbr3_ok      = (peak_bw < dp_hbr3_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_hbr2_ok      = (peak_bw < dp_hbr2_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_hbr_ok       = (peak_bw < dp_hbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_rbr_ok       = (peak_bw < dp_rbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
 
-                        dpam_2_ok         = (total_bw < dpam_2_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        dpam_hbr3_ok      = (total_bw < dpam_hbr3_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        dpam_hbr2_ok      = (total_bw < dpam_hbr2_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        dpam_hbr_ok       = (total_bw < dpam_hbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        dpam_rbr_ok       = (total_bw < dpam_rbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dpam_2_ok         = (peak_bw < dpam_2_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dpam_hbr3_ok      = (peak_bw < dpam_hbr3_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dpam_hbr2_ok      = (peak_bw < dpam_hbr2_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dpam_hbr_ok       = (peak_bw < dpam_hbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dpam_rbr_ok       = (peak_bw < dpam_rbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
 
                         dvi_d_ok        = bpc != 8 ?               "<font color=\"red\">8 bpc only</font>" :
-                                          (total_bw < dvi_d_bw)   ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                                          (peak_bw < dvi_d_bw)   ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                         dvi_dl_ok       = bpc != 8 ?               "<font color=\"red\">8 bpc only</font>" :
-                                          (total_bw < dvi_dl_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                                          (peak_bw < dvi_dl_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
 
-                        hdmi_1_0_ok     = (total_bw < hdmi_1_0_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        hdmi_1_3_ok     = (total_bw < hdmi_1_3_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        hdmi_2_0_ok     = (total_bw < hdmi_2_0_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        hdmi_2_1_6g_ok  = (total_bw < hdmi_2_1_6g_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        hdmi_2_1_8g_ok  = (total_bw < hdmi_2_1_8g_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        hdmi_2_1_10g_ok = (total_bw < hdmi_2_1_10g_bw)? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        hdmi_2_1_12g_ok = (total_bw < hdmi_2_1_12g_bw)? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_1_0_ok     = (peak_bw < hdmi_1_0_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_1_3_ok     = (peak_bw < hdmi_1_3_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_2_0_ok     = (peak_bw < hdmi_2_0_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_2_1_6g_ok  = (peak_bw < hdmi_2_1_6g_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_2_1_8g_ok  = (peak_bw < hdmi_2_1_8g_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_2_1_10g_ok = (peak_bw < hdmi_2_1_10g_bw)? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_2_1_12g_ok = (peak_bw < hdmi_2_1_12g_bw)? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
 
                         rfc4175_eth100m_ok = (active_bw < rfc4175_eth100m_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                         rfc4175_eth1g_ok   = (active_bw < rfc4175_eth1g_bw)   ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                         rfc4175_eth10g_ok  = (active_bw < rfc4175_eth10g_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
 
-                        dp_2_ok         = dp_2_ok    + " (" + Math.round(total_bw/dp_2_bw*100) + "%)"
-                        dp_hbr3_ok      = dp_hbr3_ok + " (" + Math.round(total_bw/dp_hbr3_bw*100) + "%)"
-                        dp_hbr2_ok      = dp_hbr2_ok + " (" + Math.round(total_bw/dp_hbr2_bw*100) + "%)"
-                        dp_hbr_ok       = dp_hbr_ok  + " (" + Math.round(total_bw/dp_hbr_bw*100) + "%)"
-                        dp_rbr_ok       = dp_rbr_ok  + " (" + Math.round(total_bw/dp_rbr_bw*100) + "%)"
-                        dpam_2_ok       = dpam_2_ok    + " (" + Math.round(total_bw/dpam_2_bw*100) + "%)"
-                        dpam_hbr3_ok    = dpam_hbr3_ok + " (" + Math.round(total_bw/dpam_hbr3_bw*100) + "%)"
-                        dpam_hbr2_ok    = dpam_hbr2_ok + " (" + Math.round(total_bw/dpam_hbr2_bw*100) + "%)"
-                        dpam_hbr_ok     = dpam_hbr_ok  + " (" + Math.round(total_bw/dpam_hbr_bw*100) + "%)"
-                        dpam_rbr_ok     = dpam_rbr_ok  + " (" + Math.round(total_bw/dpam_rbr_bw*100) + "%)"
-                        dvi_d_ok        = bpc == 8 ? dvi_d_ok   + " (" + Math.round(total_bw/dvi_d_bw*100) + "%)" : dvi_d_ok
-                        dvi_dl_ok       = bpc == 8 ? dvi_dl_ok  + " (" + Math.round(total_bw/dvi_dl_bw*100) + "%)" : dvi_dl_ok
-                        hdmi_1_0_ok     = hdmi_1_0_ok     + " (" + Math.round(total_bw/hdmi_1_0_bw*100) + "%)"
-                        hdmi_1_3_ok     = hdmi_1_3_ok     + " (" + Math.round(total_bw/hdmi_1_3_bw*100) + "%)"
-                        hdmi_2_0_ok     = hdmi_2_0_ok     + " (" + Math.round(total_bw/hdmi_2_0_bw*100) + "%)"
-                        hdmi_2_1_6g_ok  = hdmi_2_1_6g_ok  + " (" + Math.round(total_bw/hdmi_2_1_6g_bw*100) + "%)"
-                        hdmi_2_1_8g_ok  = hdmi_2_1_8g_ok  + " (" + Math.round(total_bw/hdmi_2_1_8g_bw*100) + "%)"
-                        hdmi_2_1_10g_ok = hdmi_2_1_10g_ok + " (" + Math.round(total_bw/hdmi_2_1_10g_bw*100) + "%)"
-                        hdmi_2_1_12g_ok = hdmi_2_1_12g_ok + " (" + Math.round(total_bw/hdmi_2_1_12g_bw*100) + "%)"
+                        dp_2_ok         = dp_2_ok    + " (" + Math.round(peak_bw/dp_2_bw*100) + "%)"
+                        dp_hbr3_ok      = dp_hbr3_ok + " (" + Math.round(peak_bw/dp_hbr3_bw*100) + "%)"
+                        dp_hbr2_ok      = dp_hbr2_ok + " (" + Math.round(peak_bw/dp_hbr2_bw*100) + "%)"
+                        dp_hbr_ok       = dp_hbr_ok  + " (" + Math.round(peak_bw/dp_hbr_bw*100) + "%)"
+                        dp_rbr_ok       = dp_rbr_ok  + " (" + Math.round(peak_bw/dp_rbr_bw*100) + "%)"
+                        dpam_2_ok       = dpam_2_ok    + " (" + Math.round(peak_bw/dpam_2_bw*100) + "%)"
+                        dpam_hbr3_ok    = dpam_hbr3_ok + " (" + Math.round(peak_bw/dpam_hbr3_bw*100) + "%)"
+                        dpam_hbr2_ok    = dpam_hbr2_ok + " (" + Math.round(peak_bw/dpam_hbr2_bw*100) + "%)"
+                        dpam_hbr_ok     = dpam_hbr_ok  + " (" + Math.round(peak_bw/dpam_hbr_bw*100) + "%)"
+                        dpam_rbr_ok     = dpam_rbr_ok  + " (" + Math.round(peak_bw/dpam_rbr_bw*100) + "%)"
+                        dvi_d_ok        = bpc == 8 ? dvi_d_ok   + " (" + Math.round(peak_bw/dvi_d_bw*100) + "%)" : dvi_d_ok
+                        dvi_dl_ok       = bpc == 8 ? dvi_dl_ok  + " (" + Math.round(peak_bw/dvi_dl_bw*100) + "%)" : dvi_dl_ok
+                        hdmi_1_0_ok     = hdmi_1_0_ok     + " (" + Math.round(peak_bw/hdmi_1_0_bw*100) + "%)"
+                        hdmi_1_3_ok     = hdmi_1_3_ok     + " (" + Math.round(peak_bw/hdmi_1_3_bw*100) + "%)"
+                        hdmi_2_0_ok     = hdmi_2_0_ok     + " (" + Math.round(peak_bw/hdmi_2_0_bw*100) + "%)"
+                        hdmi_2_1_6g_ok  = hdmi_2_1_6g_ok  + " (" + Math.round(peak_bw/hdmi_2_1_6g_bw*100) + "%)"
+                        hdmi_2_1_8g_ok  = hdmi_2_1_8g_ok  + " (" + Math.round(peak_bw/hdmi_2_1_8g_bw*100) + "%)"
+                        hdmi_2_1_10g_ok = hdmi_2_1_10g_ok + " (" + Math.round(peak_bw/hdmi_2_1_10g_bw*100) + "%)"
+                        hdmi_2_1_12g_ok = hdmi_2_1_12g_ok + " (" + Math.round(peak_bw/hdmi_2_1_12g_bw*100) + "%)"
 
                         rfc4175_eth100m_ok = rfc4175_eth100m_ok + " (" + Math.round(active_bw/rfc4175_eth100m_bw*100) + "%)"
                         rfc4175_eth1g_ok   = rfc4175_eth1g_ok   + " (" + Math.round(active_bw/rfc4175_eth1g_bw*100) + "%)"
@@ -1245,7 +1256,8 @@
                             $(prefix + "-vfreq").text(Math.round(vfreq*1000)/1000);
                             $(prefix + "-vperiod").text(Math.round(vperiod*1000000)/1000);
     
-                            $(prefix + "-total_bw").text(Math.round(total_bw/1000000));
+                            $(prefix + "-peak_bw").text(Math.round(peak_bw/1000000));
+                            $(prefix + "-line_bw").text(Math.round(line_bw/1000000));
                             $(prefix + "-active_bw").text(Math.round(active_bw/1000000));
 
                             if (DMT_ID) $(prefix + "-dmt_id").text("0x" + DMT_ID.toString(16) );
@@ -1309,7 +1321,8 @@
                             $(prefix + "-vfreq").text("");
                             $(prefix + "-vperiod").text("");
     
-                            $(prefix + "-total_bw").text("");
+                            $(prefix + "-peak_bw").text("");
+                            $(prefix + "-line_bw").text("");
                             $(prefix + "-active_bw").text("");
 
                             $(prefix + "-dmt_id").text("");
