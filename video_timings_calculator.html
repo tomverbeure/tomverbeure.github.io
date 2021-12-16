@@ -628,7 +628,7 @@
                     <td><label id="cvt_rb2-vblank_duration"></label></td>
                     <td><label id="cea-vblank_duration"></label></td>
                     <td><label id="dmt-vblank_duration"></label></td>
-                    <td><input id="custom-vblank_duration" type="text" value="6" /></td>
+		    <td><label id="custom-vblank_duration"></label></td>
                     <td><label>us</label></td>
                 </tr>
                 <tr bgcolor=#ffffff>
@@ -1260,7 +1260,7 @@
                             $(prefix + "-vtotal").text(vtotal);
                             $(prefix + "-vpixels").text(vactive);
                             $(prefix + "-vblank").text(vblank);
-                            $(prefix + "-vblank_duration").text(Math.round(vblank_duration*10000000000)/1000);
+                            $(prefix + "-vblank_duration").text(Math.round(vblank_duration*1000000));
                             $(prefix + "-vfront").text(V_FRONT_PORCH);
                             $(prefix + "-vsync").text(V_SYNC_RND);
                             $(prefix + "-vback").text(V_BACK_PORCH);
