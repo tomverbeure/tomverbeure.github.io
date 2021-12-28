@@ -24,10 +24,9 @@ Instead, I want to talk about simulating an RTL design that contains of soft CPU
 **debugging the firmware that runs on that soft CPU after the simulation has completed.**
 
 I usually don't have a JTAG interface in my design: I'm often just too lazy to wire up a USB JTAG dongle 
-to the FPGA board. And doing that work just for simulation is a bit of waste too. But what I need
-all the time is to look at simulation waveforms and then try to figure out what the CPU is doing at a particular
-point in the simulation. Or, vice versa, try to figure out what the hardware is doing when the CPU is executing
-a particular line of code.
+to the FPGA board. But what I do all the time is to look at simulation waveforms and try to figure out what the 
+CPU was doing at a particular point in the simulation. Or, the other way around, try to figure out what the hardware 
+was doing when the CPU was executing a particular line of code.
 
 My traditional workflow was a follows: 
 
@@ -36,31 +35,31 @@ My traditional workflow was a follows:
 * check out the program counter (PC) of the VexRiscv CPU
 * look up that program counter in a disassembled version of my C code
 
-It's a pretty tedious process and it's near impossible to get a bigger view of what's going on in the CPU: no
-way to dump the contents of the call stack, variables, registers etc.
+It's a tedious process and it's near impossible to get a bigger view of what's going on in the CPU: no
+easy way to dump the contents of the program call stack, variables, registers etc.
 
-I was wondering how others handled this kind of debugging flow and fired off 
+I was wondering how others handled this kind of debugging and fired off 
 [the following Tweet](https://twitter.com/tom_verbeure/status/1455905689365217286):
 
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Question: you are simulating a RISC-V CPU that is running a C program. You are recording a VCD (or FST) trace. How do you correlate between the instruction address in the waveform and the line of C code?</p>&mdash; Tom Verbeure (@tom_verbeure) <a href="https://twitter.com/tom_verbeure/status/1455905689365217286?ref_src=twsrc%5Etfw">November 3, 2021</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script> 
 
 There were a number useful suggestions:
 
-* Use the `addr2line` (part of the GCC toolchain) or `llvm-symbolizer` tools to translate the PC value straight 
+* Use the `addr2line`, part of the GCC toolchain, or `llvm-symbolizer` tools to translate the PC value straight 
   to the C source code file and line number.
-* Expand the previous method by creating a GTKWave translate filter so that the file and line number
-  are shown as such in the waveform viewer itself.
+* Expand the previous method by creating a GTKWave translate filter so that the file and line numbers
+  are shown as a ASCII-encoded waveform in the waveform viewer itself.
 * [Matthew Balance](https://twitter.com/bitsbytesgates) suggested a brilliant way to 
   [view the call stack in the waveform viewer](https://bitsbytesgates.blogspot.com/2021/01/soc-integration-testing-higher-level.html):
 ![Call stack in waveform viewer](/assets/gdbwave/call_stack.png)
 * Tangentially related, somebody pointed out that the Quartus SignalTap has the option show the active
   assembler instruction of a Nios II soft CPU in the waveform. There was a time when I used Nios II CPUs
-  a lot. This would definitely been useful.
+  a lot. This would definitely have been useful.
 * [@whitequark](https://twitter.com/whitequark/status/1455918588502724613?s=20) suggested adding a GDB server
   to a CXXRTL simulation environment, which is a similar but more direct way of connecting GDB to a 
   live simulation through a simulated JTAG interface.
 
-That last suggestion gave me the idea to feed the waveform trace into a GDB server:
+That last suggestion gave me the idea to **feed the waveform trace into a GDB server**:
 
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Yes. But the end result of that is the same as using OpenOCD and jtag_vpi, right? How about a GDB server that reads in a VCD file?</p>&mdash; Tom Verbeure (@tom_verbeure) <a href="https://twitter.com/tom_verbeure/status/1455919532506173442?ref_src=twsrc%5Etfw">November 3, 2021</a></blockquote> <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script> 
 
@@ -76,55 +75,51 @@ The overall flow in which you use GDBWave is pretty straightforward:
 
 1. Simulate a design that contains an embedded soft core RISC-V CPU such as the VexRiscv.
 1. During the simulation, dump the signals of the design to a waveform file.
-1. Tell GDBWave which signals in the design can be used to extract the CPU program counter, the contents 
-  of the CPU register file, and the transactions to memory.
+1. Tell GDBWave which signals in the design can be used to extract a processor trace: the CPU program counter, 
+   and, optionally, the contents of the CPU register file, and the transactions to memory.
 1. Launch GDBWave as a GDB server that pretends to be a real running CPU system with debug capabilities.
 1. Launch the standard RISC-V GDB debugger and connect to the GDBWave debug target
-1. Issue GDB commands as if it were dealing with a real CPU: breakpoints, watchpoints, stepping through the
-   code line by line, inspecting variables, you name it. You can even go back if time if you'd like.
+1. Issue GDB commands as if it were dealing with a real CPU: breakpoints, watchpoints, line stepping through the
+   code, inspecting variables, you name it. You can even go back if time if you'd like.
 1. Future bonus feature: link GDBWave to your GTKWave waveform viewer. When your GDBWave CPU hits a breakpoint, 
   automatically jump to that point in time in the waveform viewer!
 
-Note that all of this is possible with the need of any hardware debugging features: you could do this on
+Note that all of this is possible without the need of any hardware debugging features in the CPU: you can do this on
 a [picorv32](https://github.com/YosysHQ/picorv32) or the [award winning bit-serial SERV](https://github.com/olofk/serv)
 RISC-V CPUs and it will still work. The only minimum requirement is that you can find the right signals
-in the RTL (and thus the dumped waveform file) to extract the program counter of instructions that have
-been executed to completion and retired.
+in the RTL, and thus the dumped waveform file, to extract the program counter value of instructions that have
+been successfully executed and retired.
 
 There are some things that GDBWave won’t allow you to do:
 
 * You can’t change the flow of the program that’s under debug. This is an obvious first principles consequence 
   of running a debugger on prerecorded data.
-* GDBWave currently only works with CPU with an single instruction, in-order pipeline. It’s not impossible to 
-  adjust the design to make it support that, but that’s outside the scope of a Christmas holiday project.
+* GDBWave currently only works with CPU that has a single instruction, in-order pipeline. It’s not impossible to 
+  extend support for more complex CPUs, but that’s outside the scope of this Christmas holiday project.
 
-That’s right: if you record the right amount of data during a simulation run, you can set breakpoints, 
-watchpoints, steps through the design line by line, and inspect the value of variables just as if you’ve 
-connected GDB to a real running CPU. You can even go back in time if you’d like! You don’t even need a JTAG 
-interface or debug logic in the CPU: with little or no modifications, GDBWave should work with almost any RISC-V CPU.
-
-There’s even the option of using GDBWave after the fact with data gathered from real hardware, if you design had 
-instruction tracing capabilities, but that’s not really the focus of this blog post.
+*This blog post talks about processor traces that are extracted from simulation waveforms, but you can also 
+gather this data from real hardware, if the CPU system in your design has instruction tracing capabilities such as 
+those described in the [RISC-V Processor Trace specification](https://riscv.org/technical/specifications/).*
 
 # The FST Waveform Format
 
-In the hobby world, almost everybody dumps simulation waveforms to VCD files. It’s a Verilog standard format 
-that is supported by nearly all simulation and digital design debugging tools in existence.
-
-GDBWave does not support VCD directly. 
+In the hobby world, almost everybody dumps simulation waveforms as VCD files, a format standardized in the
+Verilog specification that is supported by nearly all simulation and digital design debugging tools in existence.
+Except GDBWave, which doesn't support VCD directly.
 
 There’s a good reason for that: being universally supported is about the only good characteristic of what is 
 otherwise a terrible waveform format.
 
 * VCD is disk space hog with little or no compression. 
 * It requires you to read in the full file even if you want to extract the values of a signal out of thousands 
-or more signals.  * You also can’t extract values for a give time range without first processing the values of 
+or more signals.
+* You also can’t extract values for a give time range without first processing the values of 
 all time steps before that. 
 
-In the professional world, Synopsys Verdi is used for debugging digital designs (if your company can pay for it) 
-and with it comes the FSDB waveform format that has none of the VCD disadvantages. Unfortunately, that format is 
+In the professional world, Synopsys Verdi is used for debugging digital designs... if your company can pay for it. 
+Verdi comes with the FSDB waveform format which has none of the VCD disadvantages. Unfortunately, that format is 
 proprietary and, to my knowledge, hasn’t been reverse engineered. If you want to write tools that extract data 
-from FSDB files, you need to link the precompiled binary library that comes as part of the Verdi installation.
+from FSDB files, you need to link a precompiled binary library that comes with the Verdi installation.
 
 Luckily, there’s an open source alternative: the FST format was developed by Tony Bybell, the author of GTKWave. 
 It fixes all the flaws of the VCD format. 
