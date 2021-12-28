@@ -217,12 +217,86 @@ compared to using VCD!**
 
 # How GDBWave Works
 
-At the very minimum, GDBWave needs to know which instructions have been successfully executed and completed 
-(“retired”) by the CPU, by tracking the program counter.
+Internally GDBWave is pretty straightforward. This is the simplified flow chart:
+
+![GDBWave program flow](/assets/gdbwave/gdbwave-gdbwave_program_flow.svg)
+
+**Reading the FST waveform**
+
+As mentioned earlier, I created a thin C++ wrapper around the native GTKWave `fstapi.h` library.
+
+**Program Counter Extraction**
+
+At the very minimum, GDBWave needs to know which instructions have been successfully executed by the CPU.
+It does so by tracking the program counter.
 
 In the easiest case, you can get this data from an instruction trace port: some CPUs have a trace port 
 which allows on-chip hardware to capture instruction traces, compress it, and either store it somewhere 
 (e.g. an on-chip trace buffer, or external DRAM) or transfer it off the chip through JTAG or some other protocol.
+
+The picorv32, for example, has a [trace port](https://github.com/YosysHQ/picorv32/blob/1d9f5b7678c008fd4ab71d9c742a70ff2365f186/picorv32.v#L1512-L1519)
+that can be enabled with an `ENABLE_TRACE` `\`define`\:
+
+```verilog
+    if (ENABLE_TRACE && latched_trace) begin
+        latched_trace <= 0;
+        trace_valid <= 1;
+        if (latched_branch)
+            trace_data <= (irq_active ? TRACE_IRQ : 0) | TRACE_BRANCH | (current_pc & 32'hfffffffe);
+        else
+            trace_data <= (irq_active ? TRACE_IRQ : 0) | (latched_stalu ? alu_out_q : reg_out);
+    end
+```
+
+With a little bit of decoding, you can extract the program counter from there. Another picorv32 alternative is
+its [RISCV_FORMAL testing port](https://github.com/YosysHQ/picorv32/blob/1d9f5b7678c008fd4ab71d9c742a70ff2365f186/picorv32.v#L123-L155). 
+
+The VexRiscv also has an RVFI_FORMAL port, but one problem with these testing interfaces is that you don't 
+usually enable these ports in hardware.
+
+For my example, I use 2 signals that are present in all VexRiscv configurations:
+`lastStagePc` and `lastStageIsValid`. When `lastStageIsValid` is asserted, `lastStagePc` contains the
+program counter value of an instruction that has completed execution. It's exactly what I want!
+
+The code to extract the program counter is very simple.
+
+First, I [save the most up-to-date value of these 2 signals](https://github.com/tomverbeure/gdbwave/blob/d53d7891e7739787f902ce98090246613762ccb4/src/CpuTrace.cc#L25-L33) 
+as I march through the waveform database:
+
+```verilog
+    if (signal->handle == cpuTrace->pcValid.handle){
+        cpuTrace->curPcValidVal   = valueInt;
+        return;
+    }
+
+    if (signal->handle == cpuTrace->pc.handle){
+        cpuTrace->curPcVal    = valueInt;
+        return;
+    }
+```
+
+Second, when I see a falling edge of the clock, 
+[I record the program counter if the `valid` signal is asserted](https://github.com/tomverbeure/gdbwave/blob/d53d7891e7739787f902ce98090246613762ccb4/src/CpuTrace.cc#L35-L43)
+All program counter values are stored in a vector, along with the time stamp at which they changed.
+
+```verilog
+    if (signal->handle == cpuTrace->clk.handle && valueInt == 0){
+        if (cpuTrace->curPcValidVal){
+            PcValue     pc = { time, cpuTrace->curPcVal };
+            cpuTrace->pcTrace.push_back(pc);
+        }
+    }
+```
+
+Why the falling edge of the clock? Because in a clean design, all regular signals change at the rising edge 
+of the clock, so you can be certain that all signal are stationary at the falling edge, and you don't have to
+worry about whether or not the clock was rising before or after the function signals changed. It just
+makes things less error prone.
+
+**Extracting Register File Writes**
+
+
+
 
 In my VexRiscv, OpenOCD, and Traps blog post, I showed all the steps between a debugger IDE and an actual 
 CPU. For GDBWave, the relevant step in that chain of interaction modules is the one where GDB talks to 
@@ -262,11 +336,13 @@ CPU architecture. It’s so minimal that it doesn’t even support breakpoints, 
 
 # References
 
-**Waveforms**
+**Waveform Formats**
 
 * [GTKWave User's Guide - Appendix F: Implementation of an Efficient Method for Digital Waveform Compression][1]
 
 * [A novel approach for digital waveform compression](https://www.researchgate.net/publication/234793005_A_novel_approach_for_digital_waveform_compression/link/5462239b0cf2cb7e9da643c0/download)
+
+
 
 **GDB stubs**
 
