@@ -235,7 +235,7 @@ which allows on-chip hardware to capture instruction traces, compress it, and ei
 (e.g. an on-chip trace buffer, or external DRAM) or transfer it off the chip through JTAG or some other protocol.
 
 The picorv32, for example, has a [trace port](https://github.com/YosysHQ/picorv32/blob/1d9f5b7678c008fd4ab71d9c742a70ff2365f186/picorv32.v#L1512-L1519)
-that can be enabled with an `ENABLE_TRACE` `\`define`\:
+that can be enabled with an `ENABLE_TRACE` define:
 
 ```verilog
     if (ENABLE_TRACE && latched_trace) begin
@@ -295,7 +295,73 @@ makes things less error prone.
 
 **Extracting Register File Writes**
 
+Knowledge of CPU register file contents is essential if you want to track the value of local variables
+are never stored to memory. For example, chances are very high the that counter variable of tight `for` 
+loop only ever lives in a CPU register.
 
+To know the state of the register file, it's sufficient to record only the writes to it, as long as
+you know the initial state of the full register file at the start of the simulation. But even
+not knowing the initial state is usually not a big deal, because most CPU boot code will initialize,
+and thus write to, its registers with the appropriate value.
+
+For a VexRiscv CPU, the relevant signals to observe are: 
+
+* `lastStageRegFileWrite_valid`
+* `lastStageRegFileWrite_payload_address`
+* `lastStageRegFileWrite_payload_data`
+
+The [code](https://github.com/tomverbeure/gdbwave/blob/d53d7891e7739787f902ce98090246613762ccb4/src/RegFileTrace.cc#L21-L52) to
+extract register file writes from the FST waveform is as straightforward as the one to extract
+program counter changes.
+
+**Extracting CPU Memory Writes**
+
+Finally, there's the knowledge of the RAM contents on which the CPU operates. One again, that knowledge
+can be derived from all the write to memory, but, contrary to the register file, it's really important
+to know the initial state of the RAM as well. That's because, on an FPGA design, the RAM that's used to
+store the CPU instructions is usually preloaded at the start and never written. When GDB wants to 
+disassemble the code that it's debugging, it will issues memory reads to fetch the program instructions.
+
+For the VexRiscv, write operations is done with the following signals:
+
+* `dBus_cmd_valid`
+* `dBus_cmd_ready`
+* `dBus_cmd_payload_address`
+* `dBus_cmd_payload_size`
+* `dBus_cmd_payload_wr`
+* `dBus_cmd_payload_data`
+
+And the code to extract the write operations can be found 
+[here](https://github.com/tomverbeure/gdbwave/blob/d53d7891e7739787f902ce98090246613762ccb4/src/MemTrace.cc#L40-L108).
+
+To get the initial state of the RAM, my firmware `Makefile` 
+[creates a binary file](https://github.com/tomverbeure/gdbwave/blob/d53d7891e7739787f902ce98090246613762ccb4/test_data/sw_semihosting/Makefile#L56-L57)
+with the contents of the RAM:
+
+```makefile
+progmem.bin: progmem.elf
+	$(OBJCOPY) -O binary $< $@
+``` 
+
+This file is 
+[read directly by the `MemTrace` object](https://github.com/tomverbeure/gdbwave/blob/d53d7891e7739787f902ce98090246613762ccb4/src/MemTrace.cc#L113-L117):
+
+```c++
+    if (!memInitFilename.empty()){
+        printf("Loading mem init file: %s\n", memInitFilename.c_str());
+        ifstream initFile(memInitFilename, ios::in | ios::binary);
+        memInitContents = vector<char>((std::istreambuf_iterator<char>(initFile)), std::istreambuf_iterator<char>());
+    }
+```
+
+In the future, I might extend GDBWave to read ELF files directly, but the current method works fine too.
+
+Note that it's also possible to figure out the contents of the program RAM iteratively, by observing
+read transactions on the CPU instruction fetch bus. The only problem is that you can't disassemble sections
+that have never been executed by the CPU. In practice, I don't think this would be a major issue:
+looking at the low level assembly code in GDB isn't something I do very often, especially for code that never 
+gets executed. Still, most of the time you'll have access to a program binary file, so I didn't go through the 
+trouble, yet, to look at the instruction read transactions...
 
 
 In my VexRiscv, OpenOCD, and Traps blog post, I showed all the steps between a debugger IDE and an actual 
