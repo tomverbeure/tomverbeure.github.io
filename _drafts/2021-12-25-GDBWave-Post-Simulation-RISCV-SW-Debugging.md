@@ -122,9 +122,15 @@ proprietary and, to my knowledge, hasn’t been reverse engineered. If you want 
 from FSDB files, you need to link a precompiled binary library that comes with the Verdi installation.
 
 Luckily, there’s an open source alternative: the FST format was developed by Tony Bybell, the author of GTKWave. 
-It fixes all the flaws of the VCD format. 
+It fixes all the flaws of the VCD format. There is no formal specification of the FST file format, but 
+["Implementation of an Efficient Method for Digital Waveform Compression"][1], a paper that is included
+in the GTKWave manual, goes a long way to describe the design goals and how they were achieved.
 
-* In my example designs, FST files are roughly 50x smaller than equivalent VCD files. 
+Here are some of those features:
+
+* Small file size
+
+    In my example designs, FST files are roughly 50x smaller than equivalent VCD files. 
 
     This is because it uses a two-stage compression scheme: in the first stage, it encodes signal value changes 
     as delta values. I didn’t try to figure out the exact details from the source code (which has the same peculiar 
@@ -133,24 +139,81 @@ It fixes all the flaws of the VCD format.
     During the second stage, the output of the first stage is compressed by the standard LZ4 or GZIP method (or 
     it is bypassed.)
 
-* FST files are saved in multiple chunks. If you need to access data somewhere in the middle of a large simulation, 
-  it will only read in the chunks that contain the desired data, and skip whatever came before. 
-* Compression speed is very fast and slows down the simulation by a small amount compared to dumping a VCD file. 
-  The FST library comes even with multi threading support, for very large designs that dump a lot of data, so that 
-  multiple chunks can compressed in parallel. (Note that this is a bit slower on smaller cases. It’s only helpful 
-  when you’re dumping hundreds of thousand of signals and more.)
+* Fast compression and decompression speed 
 
-The FST format isn’t perfect. There is no official specification, and other documentation only exists in the form 
-of comments by the author on GitHub issues. The library to read and write FST files, with undocumented but relatively 
-straightforward API,  must be manually extracted from GTKWave source tree as well. 
-Inexplicably, FST doesn’t support vector signals that don’t start with bit 0: a vector that is defined as 
-MySignal[31:2] gets saved as MySignal[29:0], which annoys me way more that it should.
+    Compression speed is very fast and slows down the simulation by a small amount compared to dumping a VCD file. 
+    The FST library comes even with multi threading support, for very large designs that dump a lot of data, so that 
+    multiple chunks can compressed in parallel. (Note that this is a bit slower on smaller cases. It’s only helpful 
+    when you’re dumping hundreds of thousand of signals and more.)
 
-Still, the benefits far outweigh the disadvantages, and adding FST support to GDBWave was easy.
+* Fast opening of FST files
+
+    You don't need to process the whole file before you can extract data from it.
+
+* FST files are saved in multiple chunks 
+
+    If you need to access data somewhere in the middle of a large simulation, it will only read in the chunks that 
+    contain the desired data, and skip whatever came before. 
+
+* FST files can be read while the database is still being written
+
+    This is really useful if you are running a very long running simulation and you want to quickly
+    check if everything is still behaving as planned. 
+
+    This feature is direct consequence of data being written out in separate chunks.
+
+
+The FST format isn’t perfect: 
+
+* No Formal Format Specification
+
+    There is no formal format specification, and, based on [a discussion on the GTKWave GitHub
+    project](https://github.com/gtkwave/gtkwave/issues/70#issuecomment-907984622), one shouldn't expect there to
+    ever be one.  Other documentation only exists in the form of comments in the source code, or comments by the author 
+    on other GitHub issues. 
+
+* No FST library API documentation
+
+    There is a library to read and write FST files, but there's no documentation on how to use it.
+    You're expected to figure out how things work 
+    [by checking out existing utilities](https://github.com/gtkwave/gtkwave/issues/70#issuecomment-902463200) that
+    read and write FST files.
+
+    In practice, I didn't find using it too hard, and I created 
+    [`FstProcess`](https://github.com/tomverbeure/gdbwave/blob/main/src/FstProcess.cc), 
+    a C++ class that has the limited functionality that I needed to extract data from an FST file.
+
+* No stand-alone FST library 
+
+    There's no stand-alone FST library with individual version tracking etc. You're supposed to
+    [extract the code from the GTKWave source tree](https://github.com/gtkwave/gtkwave/tree/master/gtkwave3-gtk3/src/helpers/fst).
+
+    Since the relevant code already lives in its own directory, extracting the code is not hard at all. But the lack of 
+    versions makes it impossible to keep track of which 
+    [bug fixes](https://github.com/gtkwave/gtkwave/commit/ee52b426351cb2a58af16b11bf401519ccba3ead#diff-5ceb02db973e525ddd64b68b28dcb4132a12d79ce7a4d083d756143f482a2109)
+    been applied.
+
+* No support for vectors with an LSB that is different than 0
+
+    Inexplicably, FST doesn’t support vector signals that don’t start with bit 0: a vector that is defined as 
+    `MySignal[31:2]` gets saved as `MySignal[29:0]`. This is not an issue for the vast majority of design, 
+    but considering that it would take just 1 additional parameter in the signal declaration, this things
+    annoys me way more that it should.
+
+Still, the benefits far outweigh the disadvantages, especially if you're dealing with huge waveform
+databases.
 
 Verilator and Icarus Verilog support FST out of the box. GTKWave does too, of course.
 
-If you want to use GDBWave on a VCD trace, you can use the vcd2fst conversion utility that comes standard with GTKWave.
+If your simulation tool can't generate FST files, you can always use conversion utilities such as
+`vcd2fst` that come standard with GTKWave.
+
+**If you're using the FST format as part of a Verilator testbench, make sure to NOT call the
+`flush()` method on the `VerilatedFstC` trace object after each simulation cycle. I did this in one of
+my testbenches and 
+[my simulation speed dropped by a factor of 20](https://github.com/verilator/verilator/issues/3168#issuecomment-951476317)
+compared to using VCD!**
+
 
 # How GDBWave Works
 
@@ -201,7 +264,7 @@ CPU architecture. It’s so minimal that it doesn’t even support breakpoints, 
 
 **Waveforms**
 
-* [GTKWave User's Guide - Appendix F: Implementation of an Efficient Method for Digital Waveform Compression](http://gtkwave.sourceforge.net/gtkwave.pdf)
+* [GTKWave User's Guide - Appendix F: Implementation of an Efficient Method for Digital Waveform Compression][1]
 
 * [A novel approach for digital waveform compression](https://www.researchgate.net/publication/234793005_A_novel_approach_for_digital_waveform_compression/link/5462239b0cf2cb7e9da643c0/download)
 
@@ -234,5 +297,6 @@ Blah Blah[^1]
 [^1]: This is a footnote...
 
 
+[1]: /assets/gdbwave/gtkwave_manual.pdf#page=137
 
 
