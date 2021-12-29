@@ -67,9 +67,69 @@ This was considered a cursed idea, a high mark of approval indeed!
 
 Two months later, the result is GDBWave: a post-simulation waveform-based RISC-V GDB debugging server.
 
+# What is a GDB Server, and how to create one?
+
+In my [VexRiscv, OpenOCD, and Traps](/2021/07/18/VexRiscv-OpenOCD-and-Traps.html) blog post, I showed 
+all the steps between a debugger IDE and an actual CPU. Let's just say that for GDBWave the picture
+is a little less complicated:
+
+![Debug Flow - IDE to CPU Data Flow vs GDBWave Data Flow](/assets/gdbwave/gdbwave-ide_to_cpu_data_flow.svg)
+
+In a remote debug environment, GDB uses the GDB Remote Serial Protocol (RSP) to talk to an external
+entity that is linked to the device under test. This external entity can come in two forms: 
+
+* a GDB remote stub
+
+    A GDB remote stub (or GDB stub) is a piece of debug code that is linked to the program that you want to 
+    debug. The stub is typically set up to be called when there's some kind of debug exception or trap, at 
+    which point it takes over to start communication with the GDB.
+
+    This is a common way to debug embedded systems that don't have an operating system and that don't have
+    the ability to use hardware debugging features of the CPU. (E.g. because the JTAG port of the CPU isn't
+    available on the PCB.)
+
+    See the [GDB Remote Stub](https://sourceware.org/gdb/onlinedocs/gdb/Remote-Stub.html) section in the 
+    GDB manual.
+
+* a GDB server
+
+    A GDB server is a separate program that is not linked to be part of the program that must be debugged.
+    It can be an intermediate program like OpenOCD that converts RSP commands to JTAG commands, or it could
+    be a separate prcoess that uses operating system features on the target machine to debug another program.
+
+    On Unix systems, the system native GDB often comes standard with a `gdbserver`, which allows you debug
+    your Unix program remotely.
+
+    [Using the `gdbserver` Program](https://sourceware.org/gdb/onlinedocs/gdb/Server.html) has more about it.
+
+From the point of view of the GDB client, both a GDB stub and a GDB server behave identical: their task is to 
+receive high-level RSP requests such as "step", "continue", "read CPU registers", "write to memory", or 
+"set breakpoint", adapt these request to the environment in which the CPU is operating, and return requested 
+data (if any.) 
+
+If you want to make GDB believe that your recorded CPU simulation waveform is an actually running CPU under 
+debug, you need write your own GDB server:
+
+* Create a socket and accept incoming connections.[^1]
+* Parse the RSP protocol compliant requests from the client
+* Fetch the requested data from the recorded trace
+* Transform the data into an RSP conforming reply packet
+* Send the reply back over the socket
+
+There is quite a generic boilerplate in there, and there are tons of open source GDB stubs that you can 
+modify to your taste.[^2]
+
+I wanted to write GDBWave in C++ for a couple of reasons: the FST library, written in C, doesn’t have any 
+bindings to popular scripting languages, but I also just wanted to get a taste of some of the new C++ features 
+that have been added to language since I last used it, more than 15 years ago...
+
+I settled on [mborgerson/gdbstub](https://github.com/mborgerson/gdbstub), a lightweight implementation that’s 
+designed to make it easy to support your own CPU architecture. It’s so minimal that it doesn’t even support 
+breakpoints, but those were very easy to add. 
+
 # GDBWave in a Nutshell
 
-The overall flow in which you use GDBWave is pretty straightforward:
+The overall flow to use GDBWave is pretty straightforward:
 
 ![GDBWave overall flow](/assets/gdbwave/gdbwave-overall_flow.svg)
 
@@ -84,21 +144,22 @@ The overall flow in which you use GDBWave is pretty straightforward:
 1. Future bonus feature: link GDBWave to your GTKWave waveform viewer. When your GDBWave CPU hits a breakpoint, 
   automatically jump to that point in time in the waveform viewer!
 
-Note that all of this is possible without the need of any hardware debugging features in the CPU: you can do this on
-a [picorv32](https://github.com/YosysHQ/picorv32) or the [award winning bit-serial SERV](https://github.com/olofk/serv)
+Note that all of this is possible without the need of any hardware debugging features enabled in the simulated CPU: 
+you can do this on a [picorv32](https://github.com/YosysHQ/picorv32) or the 
+[award winning bit-serial SERV](https://github.com/olofk/serv)
 RISC-V CPUs and it will still work. The only minimum requirement is that you can find the right signals
-in the RTL, and thus the dumped waveform file, to extract the program counter value of instructions that have
+in the RTL and the waveform file to extract the program counter value of instructions that have
 been successfully executed and retired.
 
 There are some things that GDBWave won’t allow you to do:
 
 * You can’t change the flow of the program that’s under debug. This is an obvious first principles consequence 
   of running a debugger on prerecorded data.
-* GDBWave currently only works with CPU that has a single instruction, in-order pipeline. It’s not impossible to 
-  extend support for more complex CPUs, but that’s outside the scope of this Christmas holiday project.
+* GDBWave currently only works with CPUs that have a single instruction, in-order pipeline. It’s not difficult to 
+  extend support for more complex CPU architectures, but that’s outside the scope of this Christmas holiday project.
 
 *This blog post talks about processor traces that are extracted from simulation waveforms, but you can also 
-gather this data from real hardware, if the CPU system in your design has instruction tracing capabilities such as 
+gather this data from real hardware if the CPU system in your design has instruction tracing capabilities such as 
 those described in the [RISC-V Processor Trace specification](https://riscv.org/technical/specifications/).*
 
 # The FST Waveform Format
@@ -116,7 +177,7 @@ or more signals.
 * You also can’t extract values for a give time range without first processing the values of 
 all time steps before that. 
 
-In the professional world, Synopsys Verdi is used for debugging digital designs... if your company can pay for it. 
+When you work for a company that can afford it, you're probably using Synopsys Verdi to debug digital designs.
 Verdi comes with the FSDB waveform format which has none of the VCD disadvantages. Unfortunately, that format is 
 proprietary and, to my knowledge, hasn’t been reverse engineered. If you want to write tools that extract data 
 from FSDB files, you need to link a precompiled binary library that comes with the Verdi installation.
@@ -165,7 +226,7 @@ Here are some of those features:
 
 The FST format isn’t perfect: 
 
-* No Formal Format Specification
+* No formal format specification
 
     There is no formal format specification, and, based on [a discussion on the GTKWave GitHub
     project](https://github.com/gtkwave/gtkwave/issues/70#issuecomment-907984622), one shouldn't expect there to
@@ -205,8 +266,8 @@ databases.
 
 Verilator and Icarus Verilog support FST out of the box. GTKWave does too, of course.
 
-If your simulation tool can't generate FST files, you can always use conversion utilities such as
-`vcd2fst` that come standard with GTKWave.
+If your simulation tool can't generate FST files, you can always use the `vcd2fst` conversion utility
+that comes standard with GTKWave.
 
 **If you're using the FST format as part of a Verilator testbench, make sure to NOT call the
 `flush()` method on the `VerilatedFstC` trace object after each simulation cycle. I did this in one of
@@ -215,7 +276,7 @@ my testbenches and
 compared to using VCD!**
 
 
-# How GDBWave Works
+# GDBWave Internals
 
 Internally GDBWave is pretty straightforward. This is the simplified flow chart:
 
@@ -223,40 +284,21 @@ Internally GDBWave is pretty straightforward. This is the simplified flow chart:
 
 **Reading the FST waveform**
 
-As mentioned earlier, I created a thin C++ wrapper around the native GTKWave `fstapi.h` library.
+As mentioned earlier, I created [`FstProcess`](https://github.com/tomverbeure/gdbwave/blob/main/src/FstProcess.cc), 
+a thin C++ wrapper around the native GTKWave `fstapi.h` library.
 
 **Program Counter Extraction**
 
 At the very minimum, GDBWave needs to know which instructions have been successfully executed by the CPU.
 It does so by tracking the program counter.
 
-In the easiest case, you can get this data from an instruction trace port: some CPUs have a trace port 
-which allows on-chip hardware to capture instruction traces, compress it, and either store it somewhere 
-(e.g. an on-chip trace buffer, or external DRAM) or transfer it off the chip through JTAG or some other protocol.
+In the case of the VexRiscv, I use 2 signals that are present in all VexRiscv configurations:
 
-The picorv32, for example, has a [trace port](https://github.com/YosysHQ/picorv32/blob/1d9f5b7678c008fd4ab71d9c742a70ff2365f186/picorv32.v#L1512-L1519)
-that can be enabled with an `ENABLE_TRACE` define:
+* `lastStagePc[31:0]` 
+* `lastStageIsValid` 
 
-```verilog
-    if (ENABLE_TRACE && latched_trace) begin
-        latched_trace <= 0;
-        trace_valid <= 1;
-        if (latched_branch)
-            trace_data <= (irq_active ? TRACE_IRQ : 0) | TRACE_BRANCH | (current_pc & 32'hfffffffe);
-        else
-            trace_data <= (irq_active ? TRACE_IRQ : 0) | (latched_stalu ? alu_out_q : reg_out);
-    end
-```
-
-With a little bit of decoding, you can extract the program counter from there. Another picorv32 alternative is
-its [RISCV_FORMAL testing port](https://github.com/YosysHQ/picorv32/blob/1d9f5b7678c008fd4ab71d9c742a70ff2365f186/picorv32.v#L123-L155). 
-
-The VexRiscv also has an RVFI_FORMAL port, but one problem with these testing interfaces is that you don't 
-usually enable these ports in hardware.
-
-For my example, I use 2 signals that are present in all VexRiscv configurations:
-`lastStagePc` and `lastStageIsValid`. When `lastStageIsValid` is asserted, `lastStagePc` contains the
-program counter value of an instruction that has completed execution. It's exactly what I want!
+When `lastStageIsValid` is asserted, `lastStagePc` contains the program counter value of an instruction that has 
+completed execution. Perfect!
 
 The code to extract the program counter is very simple.
 
@@ -276,8 +318,8 @@ as I march through the waveform database:
 ```
 
 Second, when I see a falling edge of the clock, 
-[I record the program counter if the `valid` signal is asserted](https://github.com/tomverbeure/gdbwave/blob/d53d7891e7739787f902ce98090246613762ccb4/src/CpuTrace.cc#L35-L43)
-All program counter values are stored in a vector, along with the time stamp at which they changed.
+[I record the program counter if the `valid` signal is asserted](https://github.com/tomverbeure/gdbwave/blob/d53d7891e7739787f902ce98090246613762ccb4/src/CpuTrace.cc#L35-L43).
+All program counter values are stored in a vector array, along with the time stamp at which they changed.
 
 ```verilog
     if (signal->handle == cpuTrace->clk.handle && valueInt == 0){
@@ -288,20 +330,20 @@ All program counter values are stored in a vector, along with the time stamp at 
     }
 ```
 
-Why the falling edge of the clock? Because in a clean design, all regular signals change at the rising edge 
-of the clock, so you can be certain that all signal are stationary at the falling edge, and you don't have to
-worry about whether or not the clock was rising before or after the function signals changed. It just
+Why the falling edge of the clock? Because in a clean, synchronous design, all regular signals change at the rising edge 
+of the clock. You can be certain that all signals will be stationary at the falling edge, and you don't have to
+worry about whether or not the clock was rising immediately before or after a functional signal changed. It just
 makes things less error prone.
 
 **Extracting Register File Writes**
 
 Knowledge of CPU register file contents is essential if you want to track the value of local variables
-are never stored to memory. For example, chances are very high the that counter variable of tight `for` 
+that are never stored to memory. For example, chances are very high the that counter variable of tight `for` 
 loop only ever lives in a CPU register.
 
 To know the state of the register file, it's sufficient to record only the writes to it, as long as
 you know the initial state of the full register file at the start of the simulation. But even
-not knowing the initial state is usually not a big deal, because most CPU boot code will initialize,
+not knowing the initial state is usually not a big deal, because most CPU startup code will initialize,
 and thus write to, its registers with the appropriate value.
 
 For a VexRiscv CPU, the relevant signals to observe are: 
@@ -316,13 +358,15 @@ program counter changes.
 
 **Extracting CPU Memory Writes**
 
-Finally, there's the knowledge of the RAM contents on which the CPU operates. One again, that knowledge
-can be derived from all the write to memory, but, contrary to the register file, it's really important
-to know the initial state of the RAM as well. That's because, on an FPGA design, the RAM that's used to
-store the CPU instructions is usually preloaded at the start and never written. When GDB wants to 
-disassemble the code that it's debugging, it will issues memory reads to fetch the program instructions.
+Finally, there's the knowledge of the RAM contents on which the CPU operates. GDB issues memory reads for 
+a couple of reasons: to know the value of variables that are stored in RAM, to inspect the call stack of a
+running program, and to disassemble the code that it is debugging.
 
-For the VexRiscv, write operations is done with the following signals:
+Memory contents can also be derived from the writes to memory, but, contrary to the register file, it's 
+really important to know the initial state of the RAM as well. That's because the FPGA RAM that's used to
+store the CPU instructions is usually preloaded after powering up and never written. 
+
+For the VexRiscv, write operations can be extracted by observing the following signals:
 
 * `dBus_cmd_valid`
 * `dBus_cmd_ready`
@@ -331,7 +375,7 @@ For the VexRiscv, write operations is done with the following signals:
 * `dBus_cmd_payload_wr`
 * `dBus_cmd_payload_data`
 
-And the code to extract the write operations can be found 
+The code to extract the write operations can be found 
 [here](https://github.com/tomverbeure/gdbwave/blob/d53d7891e7739787f902ce98090246613762ccb4/src/MemTrace.cc#L40-L108).
 
 To get the initial state of the RAM, my firmware `Makefile` 
@@ -363,36 +407,10 @@ looking at the low level assembly code in GDB isn't something I do very often, e
 gets executed. Still, most of the time you'll have access to a program binary file, so I didn't go through the 
 trouble, yet, to look at the instruction read transactions...
 
+**Processing generic GDB RSP requests**
 
-In my VexRiscv, OpenOCD, and Traps blog post, I showed all the steps between a debugger IDE and an actual 
-CPU. For GDBWave, the relevant step in that chain of interaction modules is the one where GDB talks to 
-OpenOCD through the GDB Remote Serial Protocol (RSP). In the GDB development documentation, OpenOCD is 
-just another so called GDB stub: a piece of software that receives relatively high level CPU related 
-requests from GDB and returns the desired data. A GDB stub is often called a GDB server, because that’s 
-exactly what it is: GDB is the client that connects to the stub via a TCP/IP socket, and the stub serves
-data that is requested by the client.
 
-If you want to make GDB believe that your recorded CPU simulation waveform or trace is an actually running 
-CPU under debug, you need write your own GDB stub:
 
-* Create a socket and accept incoming connections
-* Parse the RSP protocol compliant requests from the client
-* Fetch the requested data from the recorded trace
-* Transform the data into an RSP confirming reply
-* Send the reply back over the socket
-
-There is quite a generic boilerplate in there, and there are tons of open source GDB stubs that you can 
-modify to your taste.
-
-I wanted to write GDBWave in C++ because the FST library, written in C, doesn’t have any bindings to 
-popular scripting languages, and because, after not having written C++ for almost 15 years, I simply 
-wanted to get a taste of all the new C++ features that have been added to language. 
-*(Hint: it’s almost an entirely new language…)*
-
-I settled on gdbstub, a lightweight implementation that’s designed to make it easy to support your own 
-CPU architecture. It’s so minimal that it doesn’t even support breakpoints, but those are very easy to add.
-
-# Things a GDB stub is supposed to do
 
 
 # GDBWave and the picorv32
@@ -410,7 +428,7 @@ CPU architecture. It’s so minimal that it doesn’t even support breakpoints, 
 
 
 
-**GDB stubs**
+**Open source GDB stubs**
 
 * [mborgerson/gdbstub - A simple, dependency-free GDB stub that can be easily dropped in to your project](https://github.com/mborgerson/gdbstub)
 
@@ -431,12 +449,45 @@ CPU architecture. It’s so minimal that it doesn’t even support breakpoints, 
 
     > GDB stub that allows debugging of embedded devices.
 
+**Open source GDB servers**
 
-# Footnote
+* [UoS-EEC/gdb-server](https://github.com/UoS-EEC/gdb-server)
 
-Blah Blah[^1]
+    > GDB server implemented as a library in C++. To be hooked up to simulation/emulation targets.
 
-[^1]: This is a footnote...
+* [bet4it/gdbserver](https://github.com/bet4it/gdbserver)
+
+    > A tiny debugger implement the GDB Remote Serial Protocol. Can work on i386, x86_64, ARM and PowerPC.
+
+* [embecosm/riscv-gdbserver](https://github.com/embecosm/riscv-gdbserver)
+
+    > GDB Server for interacting with RISC-V models, boards and FPGAs
+
+    Way too elaborate for what I needed.
+
+
+**Various**
+
+* [Debug memory errors with Valgrind and GDB](https://developers.redhat.com/articles/2021/11/01/debug-memory-errors-valgrind-and-gdb#using_valgrind_and_gdb_together)
+
+    Not directly related to GDBWave, but it showed me how GDB can link to a remote target list this:
+    `target remote | /usr/local/lib/valgrind/../../bin/vgdb`, which removes the requirement to first
+    start GDBWave as a separate program.
+
+
+# Footnotes
+
+[^1]: A GDB stub doesn't have to communicate with GDB over a TCP/IP socket. A good counter example is the GDB
+      version that you use to debug programs that run natively on your PC. But GDB also natively supports
+      serial ports to communicate with a GDB stub. Check out the 
+      [Connecting to a Remote Target](https://sourceware.org/gdb/onlinedocs/gdb/Connecting.html)
+      section of the GDB manual for more.
+
+[^2]: If you're wondering why I used a GDB stub instead of a GDB server as basis for GDBWave, it's because
+      I only figured out the difference between a stub and a server well after I started writing this blog post, when
+      almost all coding on GDBWave was complete. If I could redo everything from scratch, I'd probably use 
+      [UoS-EEC/gdb-server](https://github.com/UoS-EEC/gdb-server).
+
 
 
 [1]: /assets/gdbwave/gtkwave_manual.pdf#page=137
