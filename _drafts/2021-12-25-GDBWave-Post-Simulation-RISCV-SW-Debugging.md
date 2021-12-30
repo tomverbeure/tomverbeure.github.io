@@ -407,7 +407,13 @@ looking at the low level assembly code in GDB isn't something I do very often, e
 gets executed. Still, most of the time you'll have access to a program binary file, so I didn't go through the 
 trouble, yet, to look at the instruction read transactions...
 
-**Processing generic GDB RSP requests**
+**Being a GDB server**
+
+Once all the necessary data has been extacted, GDBWave can act like GDB server.
+
+As soon as a connection with the GDB client is established, the server sends a signal packet to inform
+the client about the current execution state of the CPU. After that, it gets into a loop 
+
 
 
 
