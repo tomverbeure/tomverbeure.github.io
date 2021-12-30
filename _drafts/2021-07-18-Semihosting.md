@@ -119,9 +119,7 @@ of the debug server and the `arm semihosting enable` command in OpenOCD.
 
 So how does semihosting work?
 
-![Basic semihosting flow](/assets/semihosting/Semihosting-basic_semihosting_flow.svg)
-
-It's built on top of software breakpoints that are traditionally used to halt a CPU while debugging:
+It's built on top of the software breakpoint mechanism that is traditionally used to halt a CPU while debugging:
 
 1. The semihosting call that runs on the embedded CPU has a RISC-V EBREAK instruction
   that halts the CPU when a debugger is connected.
@@ -161,13 +159,78 @@ If the embedded CPU was halted without seeing the magic semihosting instruction 
 must have been another reason for the halt: it might be caused by a regular software breakpoint, or
 the firmware ran into some error condition and issued the EBREAK.
 
-# Semihosting library
+# Adding basic semihosting support to your program
+
+Let's look at the practical aspects of adding semihosting to your program.
+
+You need the magic sequence to trigger a semihosting call on in the debugger:
+
+```c
+static inline int __attribute__ ((always_inline)) call_host(int reason, void* arg) {
+    register int value asm ("a0") = reason;
+    register void* ptr asm ("a1") = arg;
+    asm volatile (
+        " .option push \n"
+        // Force non-compressed RISC-V instructions
+        " .option norvc \n"
+        // Force 16-byte alignment to make sure that the 3 instructions fall
+        // within the same virtual page. 
+        // Note: align 4 means, align by 2 to the power of 4!
+        " .align 4 \n"
+        " slli x0, x0, 0x1f \n"
+        " ebreak \n"
+        " srai x0, x0, %[swi] \n"
+        " .option pop \n"
+
+        : "=r" (value) /* Outputs */
+        : "0" (value), "r" (ptr), [swi] "i" (RISCV_SEMIHOSTING_CALL_NUMBER) /* Inputs */
+        : "memory" /* Clobbers */
+    );
+    return value;
+}
+```
+
+The code looks a bit gnarly, but it's really not too bad:
+
+* The `reason` and `arg` parameters are forced into registers `a0` and `a1`.
+* RISC-V compressed instructions are disabled to make sure that nobody converts the magic sequences
+  into something different.
+* The magic sequence is forced to reside inside a single page to prevent a page fault in the middle of
+  the semihosting magic sequence.
+* The magic sequence itself.
+* The return value is forced inside a register.
+
+There is some weird monkey business with the `swi` variable set to 7 that I don't quite understand, but
+the end result of it is that the `srai x0, x0, 7` instruction gets generated and in the end that all
+that matters.
+
+With that in place, issuing specific semihosting calls is trivial:
+
+```c
+void sh_write0(const char* buf)
+{
+    // Print zero-terminated string
+    call_host(SEMIHOSTING_SYS_WRITE0, (void*) buf);
+}
+
+void sh_writec(char c)
+{
+    // Print single character
+    call_host(SEMIHOSTING_SYS_WRITEC, (void*)&c);
+}
+
+char sh_readc(void)
+{
+    // Read character from keyboard. (Blocking operation!)
+    return call_host(SEMIHOSTING_SYS_READC, (void*)NULL);
+}
+```
 
 The embedded CPU typically has a C library that wraps the semihosting calls into familiar C functions such 
 as `printf()`, `fclose()`, `putchar()` etc.,
 
-There is no need to implement all semihosting function calls in that embedded CPU library: in many cases, 
-print related functions will be sufficient to output debug messages. Add a variant of `getchar()` and 
+There is usually no need to implement all semihosting function calls in that embedded CPU library: in many cases, 
+print related functions are be sufficient to output debug messages. Add a variant of `getchar()` and 
 there's enough for a simple embedded terminal.
 
 # Avoiding hangs when a debugger is not connected
@@ -220,7 +283,8 @@ debugger to deal with it.
 # When does a CPU hang and when does it trap when seeing an EBREAK?
 
 While working on this blog post, I wondered about the mechanism that determines whether the CPU traps
-or halts upon seeing the EBREAK.
+or halts upon seeing the EBREAK. Luke Wren 
+[pointed me in the right direction](https://twitter.com/wren6991/status/1417042819877941251?s=20).
 
 In the case of a RISC-V CPU that follows the official RISC-V Debug specification, the Debug Module (DM)
 has a Debug Control and Status (dcsr) register with `ebreakm`, `ebreaks`, and `ebreaku` 
