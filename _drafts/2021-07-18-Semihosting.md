@@ -76,10 +76,12 @@ so don't expect miracles!
 
 Despite having existed for so long, I'm not aware of any other CPU family that has support for 
 semihosting (I definitely can't find anything in the OpenOCD source code), except for RISC-V. In their
-discussion of the `EBREAK` instruction (section 2.8 of the RISC-V Instruction Set Manual), semihosting
+discussion of the EBREAK instruction (section 2.8 of the RISC-V Instruction Set Manual), semihosting
 is only mentioned as a large-ish footnote, but that's sufficient because other than defining the 
 RISC-V specific semihosting function call semantics, RISC-V simply adopted the ARM semihosting specification.
 Smart!
+
+![RISC-V specification section about semihosting](/assets/semihosting/riscv_specification_semihosting.png)
 
 OpenOCD refactored the CPU agnostic part of the ARM semihosting support code into 
 [`semihosting_common`](https://github.com/ntfreak/openocd/blob/master/src/target/semihosting_common.h),
@@ -88,7 +90,7 @@ making it easy to add semihosting support to RISC-V targets. Both the
 the [custom OpenOCD version for the VexRiscv CPU](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L143-L150)
 support semihosting on RISC-V CPUs.
 
-# System Call Overview
+# System call overview
 
 Exactly what kind of features does semihosting offer?
 
@@ -113,7 +115,7 @@ an almost unlimited supply of opportunities to kill the host PC. The only things
 an embedded CPU from deleting all files on a file system are carefull permission management
 of the debug server and the `arm semihosting enable` command in OpenOCD.
 
-# Under the Hood
+# Under the hood
 
 So how does semihosting work?
 
@@ -121,10 +123,10 @@ So how does semihosting work?
 
 It's built on top of software breakpoints that are traditionally used to halt a CPU while debugging:
 
-1. The semihosting call that runs on the embedded CPU has a RISC-V `EBREAK` instruction
+1. The semihosting call that runs on the embedded CPU has a RISC-V EBREAK instruction
   that halts the CPU when a debugger is connected.
 1. The host PC continuously polls the embedded CPU to check if it is halted.
-1. When a halt is detected, the host PC checks if the `EBREAK` instruction is part of the following
+1. When a halt is detected, the host PC checks if the EBREAK instruction is part of the following
   magic instruction sequence:
 
     ```
@@ -140,13 +142,13 @@ SRAI    x0, x0, 0x07
     [instruction sequence detection code](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L853-L870)
     on the VexRiscv version of OpenOCD.
 
-1. If the sequence is detected, the debugger treats the `EBREAK` as a semihosting call. 
+1. If the sequence is detected, the debugger treats the EBREAK as a semihosting call. 
 
-    The value of register `a0` contains the semihosting system call number (one of the SYS_* above), and register
+    The value of register `a0` contains the semihosting system call number (one of the `SYS_` functions above), and register
     `a1` contains the system call parameter. 
 
-    Semihosting calls can only pass 1 parameter through a register. However, for system calls that need to pass
-    multiple pieces of data to the debugging host, the `a1` register will be a pointer to a struct, located
+    Semihosting calls can only pass 1 parameter through a register. For system calls that need to pass
+    multiple pieces of data to the debugging host, the `a1` register is a pointer to a struct, located
     in the embedded CPU data memory, with further information.
     The debugging host gets the contents of the struct by issuing memory read commands with the same mechanism 
     that's normally used to access memory during regular debugging operations.
@@ -155,11 +157,11 @@ SRAI    x0, x0, 0x07
 1. Upon completion, the debugging host stores the return value in register *a0*. 
 1. The debugging host unhalts the embedded CPU. 
 
-If the embedded CPU was halted without seeing that magic semihosting instruction sequence, then there 
-must have been another reason for the halt. E.g. it might be caused by a regular software breakpoint, or
-the firmware ran into some error condition and issued the `EBREAK`.
+If the embedded CPU was halted without seeing the magic semihosting instruction sequence, then there 
+must have been another reason for the halt: it might be caused by a regular software breakpoint, or
+the firmware ran into some error condition and issued the EBREAK.
 
-# Semihosting Library
+# Semihosting library
 
 The embedded CPU typically has a C library that wraps the semihosting calls into familiar C functions such 
 as `printf()`, `fclose()`, `putchar()` etc.,
@@ -168,45 +170,79 @@ There is no need to implement all semihosting function calls in that embedded CP
 print related functions will be sufficient to output debug messages. Add a variant of `getchar()` and 
 there's enough for a simple embedded terminal.
 
-# Avoiding Hangs when a Debugger is not Connected
+# Avoiding hangs when a debugger is not connected
 
-We've seen that a semihosting system call gets issued by executing an `EBREAK` instruction,
+We've seen that a semihosting system call gets issued by executing an EBREAK instruction,
 followed by the debugger detecting a magic instruction sequence, performing the requested
-action, and then letting the CPU continuing.
+action, and then letting the CPU to continue.
 
-![EBREAK handling flow diagram](/assets/semihosting/Semihosting-EBREAK_handling_flow.svg)
+![EBREAK handling flow diagram without recovery](/assets/semihosting/Semihosting-EBREAK_handling_flow_no_recovery.svg)
 
+There's a potential problem with that: an EBREAK is not something that's expected in a normal RISC-V program. In the
+words of the RISC-V specification:
+
+> EBREAK was primarily designed to be used by a debugger to cause execution to stop and fall back into the
+> debugger. EBREAK is also used by the standard gcc compiler to mark code paths that should not be executed.
+
+If a RISC-V CPU issues an EBREAK instruction, and a debugger is connected, CPU halts and it's up to the debugging 
+host to deal with it. But when a debugger is not connected, the CPU issues a trap. When your code is not
+expecting EBREAK-induced traps, chances are that the trap will just get into an endless loop, which 
+hangs your program.
+
+In other words: **running a program that issues semihosting calls when a debugger is not connected will result in a
+hang!**
+
+This is a well known behavior of using semihosting, and you can find plenty of cases where people
+[complain](https://www.openstm32.org/forumthread2323) about 
+[this behavior](https://stackoverflow.com/questions/16396067/bpkt-arm-instruction-freezes-my-embedded-application).
+
+The general solution is to have a debug version of your program where semihosting is enabled, and a release
+version where it's disabled.
+
+But is that really the best we can do?
+
+The answer is no: remember that the CPU jumps to a trap handler when a debugger is not connected. We can
+add recovery code in the trap handler that detects that there was a semihosting call, ignore the call, and
+return back to the regular program.
+
+You need to be a bit careful because the code that made the semihosting call may expect not expect
+that the call didn't go through.  For example, the `SYS_READC` call that's used to read a character from host
+PC keyboard expects that a character is returned. You could return a value of -1 to indicate that the 
+call didn't go through.
+
+![EBREAK handling flow diagram with recovery](/assets/semihosting/Semihosting-EBREAK_handling_flow_with_recovery.svg)
+
+Note that there is one case left when the CPU can still hang: if you first connect the debugger, the
+CPU will be configured to halt upon seeing an EBREAK. If you then disconnect the debugger, e.g. by
+unplugging the JTAG cable, the CPU will still halt when seeing an EBREAK, but there won't be any
+debugger to deal with it.
+
+# When does a CPU hang and when does it trap when seeing an EBREAK?
+
+While working on this blog post, I wondered about the mechanism that determines whether the CPU traps
+or halts upon seeing the EBREAK.
+
+In the case of a RISC-V CPU that follows the official RISC-V Debug specification, the Debug Module (DM)
+has a Debug Control and Status (dcsr) register with `ebreakm`, `ebreaks`, and `ebreaku` 
+configuration registers. When set to 1, the CPU will enter "Debug Mode" upon seeing an EBREAK instruction.
+The spec says that "Debug Mode is a special processor mode used only when a hart is halted for 
+external debugging."
 
 ![DCSR.EBREAKx fields](/assets/semihosting/dcsr_ebreak.png)
 
-That's great, but what if we're running code with semihosting calls enabled when a debugger
-is not connected to the embedded system? In that case, the `EBREAK` will result in a trap of 
-embedded CPU, if there's nothing else to take of the situation, the CPU will hang forever.
+In practice, when the CPU powers up, its `ebreak` debug configuration bits are set to 0, and the 
+CPU will trap. But when a debugger such as OpenOCD gets connected to the CPU, it will program the value of 
+the `ebreak` configuration bits to 1, and the CPU will halt. When you cleanly exit the debugger, 
+you can expect that the configuration bits are set back to 0, but if you unplug the JTAG cable
+in the middle of a debugging sessions, that's obviously not going to happen. So don't do that.
 
-The general advise in ARM literature is that semihosting calls should only be included for specific
-debug builds, and removed for everything else. But is that really necessary?
+The VexRiscv CPU doesn't implement the RISC-V debug specification, but it's behavior is similar:
+there is no programmable configuration bit in the debug hardware, but as soon as the debug
+hardware detects debug related operations, an internal bit is toggled that will make the CPU
+halt on seeing an EBREAK instruction. However, there is no way to reset the EBREAK behavior
+back to trap mode.
 
-The answer is no: the RISC-V debug specification allows 2 different behaviors when an `EBREAK`
-instruction is encountered:
-
-1. jump to a trap handler and let the CPU deal with the `EBREAK` instruction.
-1. halt the CPU so that a connected debugger can inspect the state of the CPU an take appropriate
-  action.
-
-A RISC-V CPU will default to the first option, but once a debugger (like OpenOCD) is connected, that
-debugger toggle a configuration bit and enable the second behavior.
-
-*The VexRiscv CPU doesn't implement the RISC-V debug specification, but it's behavior is similar:
-as soon as debug related operations by the  VexRiscv-specific version of OpenOCD are detected,
-the second behavior will be enabled just the same.*
-
-Semihosting-related hangs can now be avoided by implementing a trap handler that detects the 
-presence of the magic semihosting instruction sequence. When present, it will deal with the
-system call itself, typically by making the system call into a no-op.
-
-For example, in the case of a print system call such as `SYS_WRITE0`, it could just ignore the 
-call and move on. Similarly, the `SYS_READC` call that's used to read a character from host
-PC keyboard, could always return -1: no character was detected.
+# Trap Handler
 
 Things may be harder for more complex system calls, what exactly should a `SYS_TICKFREQ` return
 when there's no time reference, but, in practice, these kind of semihosting calls are
@@ -236,8 +272,6 @@ An example implementation looks like this
 * [PQVexRiscv](https://github.com/mupq/pqriscv-vexriscv)
 * [Litex VexRiscv Configuration](https://github.com/litex-hub/pythondata-cpu-vexriscv/blob/master/pythondata_cpu_vexriscv/verilog/src/main/scala/vexriscv/GenCoreDefault.scala)
 
-* [Semihosting causes crash when not running in the debugger...](https://www.openstm32.org/forumthread2323)
-* [bpkt ARM instruction freezes my embedded application](https://stackoverflow.com/questions/16396067/bpkt-arm-instruction-freezes-my-embedded-application)
 * [What is Semihosting?](https://community.nxp.com/t5/LPCXpresso-IDE-FAQs/What-is-Semihosting/m-p/475390)
  
 * [Official RISC-V OpenOCD semihosting code](https://github.com/riscv/riscv-openocd/blob/riscv/src/target/riscv/riscv_semihosting.c)
