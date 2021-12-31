@@ -1,7 +1,7 @@
 ---
 layout: post
-title: Semihosting, a PC as Terminal and File Server for Your Embedded CPU
-date:  2021-07-18 00:00:00 -1000
+title: Semihosting, your PC as Console of an Embedded RISC-V CPU
+date:  2021-12-30 00:00:00 -1000
 categories:
 ---
 
