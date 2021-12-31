@@ -66,8 +66,8 @@ to see what it's really all about:
 > must be running the emulator, or a debugger that is attached to the ARM target.
 
 Semihosting is a powerful feature, because it can give a tiny embedded CPU that doesn't have any
-generic IO capabilities to do things like accepting keystrokes, print out debug information to a debug
-console, or even read and write from and to a file on the host PC.  It's up to the external debugger 
+generic IO capabilities to the ability to do things like accepting keystrokes, print out debug information 
+to a debug console, or even read and write from and to a file on the host PC.  It's up to the external debugger 
 (OpenOCD in our case) to intercept a semihosting operation request from embedded CPU and perform the requested action.
 
 The performance of semihosting commands is subject to the bandwidth of the communication interface
@@ -118,6 +118,8 @@ of the debug server and the `arm semihosting enable` command in OpenOCD.
 # Under the hood
 
 So how does semihosting work?
+
+![Basic semihosting flow](/assets/semihosting/Semihosting-basic_semihosting_flow.svg)
 
 It's built on top of the software breakpoint mechanism that is traditionally used to halt a CPU while debugging:
 
