@@ -119,6 +119,8 @@ of the debug server and the `arm semihosting enable` command in OpenOCD.
 
 So how does semihosting work?
 
+![Basic semihosting flow](/assets/semihosting/Semihosting-basic_semihosting_flow.svg)
+
 It's built on top of the software breakpoint mechanism that is traditionally used to halt a CPU while debugging:
 
 1. The semihosting call that runs on the embedded CPU has a RISC-V EBREAK instruction
