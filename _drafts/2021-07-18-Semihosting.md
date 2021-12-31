@@ -163,7 +163,8 @@ the firmware ran into some error condition and issued the EBREAK.
 
 Let's look at the practical aspects of adding semihosting to your program.
 
-You need the magic sequence to trigger a semihosting call on in the debugger:
+You need the [magic sequence](https://github.com/tomverbeure/vexriscv_ocd_blog/blob/437263116729a1b317fa7b7723c10c721be8a805/sw_semihosting/semihosting.c#L37-L69)
+to trigger a semihosting call on in the debugger:
 
 ```c
 static inline int __attribute__ ((always_inline)) call_host(int reason, void* arg) {
@@ -227,11 +228,15 @@ char sh_readc(void)
 ```
 
 The embedded CPU typically has a C library that wraps the semihosting calls into familiar C functions such 
-as `printf()`, `fclose()`, `putchar()` etc.,
+as `printf()`, `putchar()` etc.,
 
 There is usually no need to implement all semihosting function calls in that embedded CPU library: in many cases, 
 print related functions are be sufficient to output debug messages. Add a variant of `getchar()` and 
 there's enough for a simple embedded terminal.
+
+In my example code, I adapted Marco Paland's 
+[printf/sprintf Implementation for Embedded Systems](https://github.com/mpaland/printf).
+
 
 # Avoiding hangs when a debugger is not connected
 
@@ -280,6 +285,74 @@ CPU will be configured to halt upon seeing an EBREAK. If you then disconnect the
 unplugging the JTAG cable, the CPU will still halt when seeing an EBREAK, but there won't be any
 debugger to deal with it.
 
+Here is a [trap handler](https://github.com/tomverbeure/vexriscv_ocd_blog) that is semihosting aware:
+
+```c
+void trap()
+{
+    uint32_t mepc   = csr_read(mepc);       // Address of trap
+    uint32_t mtval  = csr_read(mtval);      // Instruction value of trap
+    uint32_t mcause = csr_read(mcause);     // Reason for the trap
+
+    if (mcause == EBREAK_MCAUSE && mtval == EBREAK_OPCODE){
+        // This trap was caused by an EBREAK...
+
+        int aligned = ((mepc-4) & 0x0f) == 0;
+        if (aligned 
+            && *(uint32_t *)mepc     == EBREAK_OPCODE 
+            && *(uint32_t *)(mepc-4) == SLLI_X0_X0_0X1F_OPCODE
+            && *(uint32_t *)(mepc+4) == SRAI_X0_X0_0X07_OPCODE)
+        {
+            // The EBREAK was part of the semihosting call. (See semihosting.c)
+            //
+            // If a debugger were connected, this would have resulted in a CPU halt,
+            // and the debugger would have serviced the the semihosting call.
+            // 
+            // However, the semihosting function was called without a debugger being 
+            // attached. The best course of action is to simply return from the trap 
+            // and let the semihosting function continue after the call to EBREAK to 
+            // prevent the CPU from hanging in the trap handler. 
+            csr_write(mepc, mepc+4);
+
+            // Set a global variable to tell the semihosting code the the semihosting 
+            // call
+            // didn't execute on the host.
+            sh_missing_host = 1;
+
+            return;
+        }
+
+        // EBREAK was not part of a semihosting call. This should not have happened. 
+        // Hang forever.
+        while(1)
+            ;
+    }
+
+    // Trap was issued for another reason than an EBREAK.
+    // Replace the code below with whatever trap handler you'd normally use. (e.g. interrupt 
+    // processing.)
+    while(1)
+        ;
+}
+```
+
+[Functions that rely on a return value from a semihosting call](https://github.com/tomverbeure/vexriscv_ocd_blog/blob/437263116729a1b317fa7b7723c10c721be8a805/sw_semihosting/semihosting.c#L83-L92)
+are be updated like this:
+
+```c
+char sh_readc(void)
+{
+    // Read character from keyboard. (Blocking operation!)
+    char c = call_host(SEMIHOSTING_SYS_READC, (void*)NULL);
+
+    if (sh_missing_host)
+        return 0;
+    else
+        return c;
+}
+```
+
+
 # When does a CPU hang and when does it trap when seeing an EBREAK?
 
 While working on this blog post, I wondered about the mechanism that determines whether the CPU traps
@@ -306,41 +379,55 @@ hardware detects debug related operations, an internal bit is toggled that will 
 halt on seeing an EBREAK instruction. However, there is no way to reset the EBREAK behavior
 back to trap mode.
 
-# Trap Handler
+# A semihosting example design 
 
-Things may be harder for more complex system calls, what exactly should a `SYS_TICKFREQ` return
-when there's no time reference, but, in practice, these kind of semihosting calls are
-rarely used.
+I've extended the [example design](https://github.com/tomverbeure/vexriscv_ocd_blog)
+that I used for my 
+[VexRiscv, OpenOCD, and Traps](/2021/07/18/VexRiscv-OpenOCD-and-Traps.html) blog post. 
 
-An example implementation looks like this 
-[`trap()` function](https://github.com/tomverbeure/vexriscv_ocd_blog/blob/ee36fe568bbfa443ca972c147662b8fd7a84d7e9/sw_semihosting/trap.c#L15)
+There are extensive notes in the repo README file.
 
-```c
+One thing from the README that is worth repeating is that the interplay between the VexRiscv CPU 
+(simulated or not), OpenOCD, and GDB can be pretty fickle when semihosting is enabled, especially when 
+the CPU is using semihosting calls to ask data from the debugging host, e.g. by issuing a `SYS_READC` 
+call to get keyboard input. These calls are blocking: not only will the CPU halt until OpenOCD returns 
+the desired keypress, GDB is also stalled, because OpenOCD is given all its attention to the semihosting
+call and ignore GDB.
 
-```
+If you're not aware of this, chances are that you'll be banging on your keyboard in frustration
+trying to get something out of GDB, when it's simply stuck waiting for you press Enter
+in the OpenOCD window! Using semihosting only to print logging information will generally go
+much smoother.
+
+When OpenOCD doesn't want to handle semihosting calls, chances are that you forgot to enable
+it. You need to enter `arm semihosting enable` in OpenOCD (or `monitor arm semihosting enable`
+from GDB), otherwise a semihosting EBREAK will be treated a regular EBREAK. 
 
 
 # References
 
-* [The ARM7TDMI Debug Architecture - Application Note 28](https://developer.arm.com/documentation/dai0028/a/)
-* [ARM semihosting specification](https://static.docs.arm.com/100863/0200/semihosting.pdf)
-* [Introduction to ARM Semihosting](https://interrupt.memfault.com/blog/arm-semihosting)
-* [RISC-V: Creating a spec for semihosting](https://groups.google.com/a/groups.riscv.org/g/sw-dev/c/M7LDRtBtxrk)
-* [Github: enabled semihosting on vexriscv](https://github.com/SpinalHDL/openocd_riscv/pull/7)
-* [SaxonSoc openocd settings](https://github.com/SpinalHDL/SaxonSoc/blob/dev-0.2/bsp/digilent/ArtyA7SmpLinux/openocd/usb_connect.cfg#L19)
-* [linker script tutorial](https://interrupt.memfault.com/blog/how-to-write-linker-scripts-for-firmware)
-* [Semihosting implementation](https://gitlab.com/iccfpga-rv/iccfpga-eclipse/-/tree/master/xpacks/micro-os-plus-semihosting)
-    * on [GitHub](https://github.com/micro-os-plus/semihosting-xpack)
-    * [micro-OS Plus](http://micro-os-plus.github.io)
-* [VEXRISCV 32-bit MCU](https://thuchoang90.github.io/vexriscv.html)
-* [PQVexRiscv](https://github.com/mupq/pqriscv-vexriscv)
-* [Litex VexRiscv Configuration](https://github.com/litex-hub/pythondata-cpu-vexriscv/blob/master/pythondata_cpu_vexriscv/verilog/src/main/scala/vexriscv/GenCoreDefault.scala)
+**Semihosting-related specifications**
+* [ARM semihosting specification](https://developer.arm.com/documentation/100863/0300/Introduction)
 
-* [What is Semihosting?](https://community.nxp.com/t5/LPCXpresso-IDE-FAQs/What-is-Semihosting/m-p/475390)
- 
-* [Official RISC-V OpenOCD semihosting code](https://github.com/riscv/riscv-openocd/blob/riscv/src/target/riscv/riscv_semihosting.c)
+**Stuff on the web**
+
+* [Memfault - Introduction to ARM Semihosting](https://interrupt.memfault.com/blog/arm-semihosting)
+* [NXP - What is Semihosting?](https://community.nxp.com/t5/LPCXpresso-IDE-FAQs/What-is-Semihosting/m-p/475390)
+* [RISC-V: Creating a spec for semihosting](https://groups.google.com/a/groups.riscv.org/g/sw-dev/c/M7LDRtBtxrk)
+
+    Discussion about creating an official RISC-V semihosting specification. The end result is a
+    PDF that doesn't have a lot more content that the footnote in the RISC-V ISA document...
+
+* [Twitter discussion about EBREAKM](https://twitter.com/wren6991/status/1417042819877941251?s=20)
+
+**Code**
+
+* [OpenOCD official RISC-V semihosting code](https://github.com/riscv/riscv-openocd/blob/riscv/src/target/riscv/riscv_semihosting.c)
+
+    Not applicable for the VexRiscv.
+
+* [OpenOCD VexRiscv semihosting code](https://github.com/SpinalHDL/openocd_riscv/blob/f8c1c8ad9cd844a068a749532cfbc369e66a18f9/src/target/vexriscv.c#L143-L150)
 * [Embedded printf](https://github.com/mpaland/printf)
 
-* [EBREAKM option](https://twitter.com/wren6991/status/1417042819877941251?s=20)
 
 
