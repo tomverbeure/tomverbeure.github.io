@@ -276,6 +276,10 @@ compared to using VCD!**
 
 # GDBWave Internals
 
+*This section goes into some of the implementation aspects of GDBWave. Some of this is for my own use so that
+I don't forget why things were done a certain way. You can safely skip this if all you're interested in is using GDBWave 
+for your own projects.*
+
 Internally GDBWave is pretty straightforward. This is the simplified flow chart:
 
 ![GDBWave program flow](/assets/gdbwave/gdbwave-gdbwave_program_flow.svg)
@@ -467,13 +471,13 @@ Many RSP commands are optional and not implemented. GDBWave only implements:
     [associative array, indexed with the program counter](https://github.com/tomverbeure/gdbwave/blob/d53d7891e7739787f902ce98090246613762ccb4/src/gdbstub_sys.cc#L17), 
     with all active breakpoints. 
 
-* 'p' or 'g' to read one or all CPU registers
+* `p` or `g` to read one or all CPU registers
 
     Whenever the CPU comes to a halt, GDB tries to read the CPU registers. The state of the register file
     was already updated after doing a step or continue operations, so it's must a matter or returning that
     data.
 
-* 'm' to read a section of memory
+* `m` to read a section of memory
 
     Reading sections of memory is another very popular activity of GDB. In GDBWave, this is implemented
     very similar the way it's done for the register file: starting with the initial value that was loaded
@@ -481,7 +485,7 @@ Many RSP commands are optional and not implemented. GDBWave only implements:
     [all memory writes are applied up to the time stamp of the current program counter](https://github.com/tomverbeure/gdbwave/blob/d53d7891e7739787f902ce98090246613762ccb4/src/MemTrace.cc#L164-L177).
 
 And that's really it! There are number of RSP commands for which GDBWave will reply with an 
-["OK" packet](https://github.com/tomverbeure/gdbwave/blob/d53d7891e7739787f902ce98090246613762ccb4/src/gdbstub.cc#L1071-L1078),
+[OK packet](https://github.com/tomverbeure/gdbwave/blob/d53d7891e7739787f902ce98090246613762ccb4/src/gdbstub.cc#L1071-L1078),
 but everything else gets ignored.
 
 
