@@ -9,6 +9,25 @@ categories:
 {:toc}
 
 
+* [RISC-V Function attributes](https://gcc.gnu.org/onlinedocs/gcc/RISC-V-Function-Attributes.html)
+
+    Save all registers that are being used by the trap function:
+    `void  __attribute__ ((interrupt ())) trap(){ ... }`
+
+* noline
+
+    `void __attribute__ ((noinline)) test(void)`
+
+    Useful to test implications when being called by function with interrupt attribute
+
+* [GCC RISC-V Option](https://gcc.gnu.org/onlinedocs/gcc/RISC-V-Options.html)
+
+    * `CFLAGS          += -msave-restore`
+    * `CFLAGS          += -mno-div`
+    * `CFLAGS          += -mtune=processor-string`
+
+
+
 # References
 
 * [GCC Global Pointer and Thread Pointer handling](https://groups.google.com/a/groups.riscv.org/g/sw-dev/c/SkTelK-juC4)
