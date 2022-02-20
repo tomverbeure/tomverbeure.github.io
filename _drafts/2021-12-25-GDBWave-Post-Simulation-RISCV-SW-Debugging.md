@@ -521,7 +521,6 @@ a few bugs.
 * [A novel approach for digital waveform compression](https://www.researchgate.net/publication/234793005_A_novel_approach_for_digital_waveform_compression/link/5462239b0cf2cb7e9da643c0/download)
 
 
-
 **Open source GDB stubs**
 
 * [mborgerson/gdbstub - A simple, dependency-free GDB stub that can be easily dropped in to your project](https://github.com/mborgerson/gdbstub)
@@ -559,6 +558,10 @@ a few bugs.
 
     Way too elaborate for what I needed.
 
+**GDB**
+
+* [How to work with signals in GDB](https://undo.io/resources/gdb-watchpoint/how-work-signals-gdb/)
+* [GDB - Signals](https://sourceware.org/gdb/onlinedocs/gdb/Signals.html)
 
 **Various**
 
