@@ -66,7 +66,8 @@ That last suggestion gave me the idea to **feed the waveform data into a GDB ser
 
 This was considered a cursed idea, a high mark of approval indeed!
 
-Two months and a good amount of Christmas vacaction hours later, the result is GDBWave: a post-simulation waveform-based RISC-V GDB debugging server.
+Two months and a good amount of Christmas vacaction hours later, the result is [GDBWave](https://github.com/tomverbeure/gdbwave): 
+a post-simulation waveform-based RISC-V GDB debugging server.
 
 # What is a GDB Server, and how to create one?
 
@@ -767,6 +768,10 @@ hardware more, so I don't expect to be spending a lot more time on it. But if it
 maybe somebody would be willing to take ownership and take it to the next level? 
 
 # References
+
+**GDBWave**
+
+* [`gdbwave` repo on GitHub](https://github.com/tomverbeure/gdbwave)
 
 **Waveform Formats**
 
