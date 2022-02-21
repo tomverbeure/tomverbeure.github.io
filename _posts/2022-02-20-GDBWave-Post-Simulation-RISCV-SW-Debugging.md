@@ -1,7 +1,7 @@
 ---
 layout: post
 title: GDBWave - A Post-Simulation Waveform-Based RISC-V GDB Debugging Server
-date:  2022-02-22 00:00:00 -1000
+date:  2022-02-20 00:00:00 -1000
 categories:
 ---
 
