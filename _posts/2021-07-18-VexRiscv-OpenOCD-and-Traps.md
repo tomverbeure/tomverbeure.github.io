@@ -288,7 +288,7 @@ that explains the process.
 In my case, I'm using a Xilinx Digilent JTAG SMT2 clone. This is the magic incantation:
 
 ```sh
-/opt/openocd-vex/bin/openocd \ 
+/opt/openocd_vex/bin/openocd \ 
     -f interface/ftdi/digilent_jtag_smt2.cfg 
     -c "adapter speed 1000; transport select jtag" 
     -f "./sw/vexriscv_init.cfg"
