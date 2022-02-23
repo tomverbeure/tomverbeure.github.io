@@ -250,7 +250,7 @@ The instructions below worked on my Ubuntu 20.4 Linux distribution. Note also ho
 an installation directory of `/opt/openocd_vex`. Change that to your own preferences...
 
 ```sh
-sudo apt install libtool automake libusb-1.0.0-dev texinfo libusb-dev libyaml-dev pkg-config
+sudo apt install libtool automake libusb-1.0-0-dev texinfo libusb-dev libyaml-dev pkg-config
 git clone https://github.com/SpinalHDL/openocd_riscv
 cd openocd_riscv
 ./bootstrap
