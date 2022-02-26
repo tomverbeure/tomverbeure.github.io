@@ -250,7 +250,7 @@ The instructions below worked on my Ubuntu 20.4 Linux distribution. Note also ho
 an installation directory of `/opt/openocd_vex`. Change that to your own preferences...
 
 ```sh
-sudo apt install libtool automake libusb-1.0.0-dev texinfo libusb-dev libyaml-dev pkg-config
+sudo apt install libtool automake libusb-1.0-0-dev texinfo libusb-dev libyaml-dev pkg-config
 git clone https://github.com/SpinalHDL/openocd_riscv
 cd openocd_riscv
 ./bootstrap
@@ -288,7 +288,7 @@ that explains the process.
 In my case, I'm using a Xilinx Digilent JTAG SMT2 clone. This is the magic incantation:
 
 ```sh
-/opt/openocd-vex/bin/openocd \ 
+/opt/openocd_vex/bin/openocd \ 
     -f interface/ftdi/digilent_jtag_smt2.cfg 
     -c "adapter speed 1000; transport select jtag" 
     -f "./sw/vexriscv_init.cfg"

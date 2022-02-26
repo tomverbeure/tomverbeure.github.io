@@ -66,7 +66,7 @@ That last suggestion gave me the idea to **feed the waveform data into a GDB ser
 
 This was considered a cursed idea, a high mark of approval indeed!
 
-Two months and a good amount of Christmas vacaction hours later, the result is [GDBWave](https://github.com/tomverbeure/gdbwave): 
+Two months and a good amount of Christmas vacation hours later, the result is [GDBWave](https://github.com/tomverbeure/gdbwave): 
 a post-simulation waveform-based RISC-V GDB debugging server.
 
 # What is a GDB Server, and how to create one?
@@ -97,7 +97,7 @@ This external entity can come in two forms:
     A GDB server is a separate program that is not linked to be part of the program that must be debugged.
     It can be an intermediate program like OpenOCD that converts RSP commands to JTAG commands to control
     the hardware in-circuit debugging logic of the CPU, or it could be a separate process that uses operating 
-    system features on the target machine to debug another program. At good example of the latter is the
+    system features on the target machine to debug another program. A good example of the latter is the
     [ptrace](https://en.wikipedia.org/wiki/Ptrace) functionality in Unix-type operating systems. On these systems, 
     the system native GDB often comes standard with a `gdbserver`, which allows you to debug your Unix program 
     remotely.
@@ -149,8 +149,8 @@ ways to control GTKWave by an external program.*
 Note that all of this is possible without enabling any hardware debugging features in the simulated CPU: 
 you can do this on a [picorv32](https://github.com/YosysHQ/picorv32) or the 
 [award winning bit-serial SERV](https://github.com/olofk/serv)
-RISC-V CPUs and it will still work. The only minimum requirement is that you can find the right signals
-in the RTL and in the waveform file to extract the program counter value of instructions that have
+RISC-V CPU and it will still work. The only minimum requirement is that you can find the right signals
+in the RTL and in the waveform file to extract the program counter of instructions that have
 been successfully executed and retired.[^3]
 
 There are some things that GDBWave won’t allow you to do:
@@ -185,7 +185,8 @@ Verdi comes with the FSDB waveform format which has none of the VCD disadvantage
 proprietary and, to my knowledge, hasn’t been reverse engineered. If you want to write tools that extract data 
 from FSDB files, you need to link a precompiled binary library that comes with the Verdi installation.
 
-Luckily, there’s an open source alternative: the FST format was developed by Tony Bybell, the author of GTKWave. 
+Luckily, there’s an open source alternative: the FST format was developed by Tony Bybell, the author of 
+[GTKWave](http://gtkwave.sourceforge.net/).
 It fixes all the flaws of the VCD format. There is no formal specification of the FST file format, but 
 ["Implementation of an Efficient Method for Digital Waveform Compression"][1], a paper that is included
 in the GTKWave manual, goes a long way to describe the design goals and how they were achieved:
@@ -258,7 +259,7 @@ The FST format isn’t perfect:
     but considering that it would take just 1 additional parameter in the signal declaration, this omission
     annoys me way more that it should.
 
-Still, the benefits ofu using the FST format far outweigh the disadvantages, especially if you're dealing with 
+Still, the benefits of using the FST format far outweigh the disadvantages, especially if you're dealing with 
 huge waveform databases.
 
 Verilator and Icarus Verilog support FST out of the box. GTKWave does too, of course.
@@ -827,8 +828,8 @@ maybe somebody would be willing to take ownership and take it to the next level?
 
 [^1]: A GDB stub doesn't have to communicate with GDB over a TCP/IP socket. A good counter example is the GDB
       version that you use to debug programs that run natively on your PC. But GDB also natively supports
-      serial ports to communicate with a GDB stub. Check out the 
-      [Connecting to a Remote Target](https://sourceware.org/gdb/onlinedocs/gdb/Connecting.html)
+      serial ports to communicate with a GDB stub, or even communication through STDIN/STDOUT streams. 
+      Check out the [Connecting to a Remote Target](https://sourceware.org/gdb/onlinedocs/gdb/Connecting.html)
       section of the GDB manual for more.
 
 [^2]: If you're wondering why I used a GDB stub instead of a GDB server as basis for GDBWave, it's because
@@ -836,9 +837,9 @@ maybe somebody would be willing to take ownership and take it to the next level?
       almost all coding on GDBWave was complete. If I could redo everything from scratch, I'd probably use 
       [UoS-EEC/gdb-server](https://github.com/UoS-EEC/gdb-server).
 
-[^3]: It's usually trivial to find the program counter of instructions that the CPU wants to execute: just look
+[^3]: It's usually trivial to find the program counter of instructions that the CPU *wants* to execute: just look
       at the addresses on the bus that the CPU uses to read from instruction memory or cache. But those addresses
-      are not necessary instructions that the CPU will execute to completion, because CPUs often fetch instructions
+      are not necessary instructions that the CPU will *execute to completion*, because CPUs often fetch instructions
       that are later discarded after a mispredicted branch.
 
 [^4]: This code is a great example to illustrate how much C++ has changed in the last 2 decades. I copied the code
