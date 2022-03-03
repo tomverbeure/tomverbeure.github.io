@@ -8,3 +8,4 @@
 
 * [LDPC Codes – a brief Tutorial](http://www.bernh.net/media/download/papers/ldpc.pdf) (B. Leiner)
 
+* [Information Theory, Inference, and Learning Algorithms, David MacKey](http://www.inference.org.uk/mackay/itila/book.html)
