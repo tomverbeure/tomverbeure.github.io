@@ -39,10 +39,14 @@
 
 # When CPU board is gone, fans are off. CRT still works.
 
-xrandr -d :0 --newmode overscan3 80 \
-    1152 1200 1328 1600 \
-    736 744 750 834 \
-    -VSync -HSync
-xrandr -d :0 --addmode VGA-1 overscan3 --verbose
-xrandr -d :0 --output VGA-1 --mode overscan3 --verbose
+export DISPLAY=:0
+#xrandr -d :0 --addmode VGA-1 overscan --verbose
+xrandr -d :0 --output VGA-1 --mode overscan --verbose
+
+#xrandr -d :0 --newmode overscan3 80 \
+#    1152 1200 1328 1600 \
+#    736 744 750 834 \
+#    -VSync -HSync
+#xrandr -d :0 --addmode VGA-1 overscan3 --verbose
+#xrandr -d :0 --output VGA-1 --mode overscan3 --verbose
 
