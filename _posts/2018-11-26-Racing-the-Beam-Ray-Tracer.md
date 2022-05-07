@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  Racing the Beam Ray Tracer
-date:   2018-11-26 14:00:00 -0700
+date:   2018-11-26 00:00:00 -1000
 categories: RTL
 ---
 
@@ -21,27 +21,8 @@ categories: RTL
 
 # Table of Contents
 
-* [Introduction](#introduction)
-* [The HW Platform](#the-hw-platform)
-* [Racing the Beam - Graphics without a Frame Buffer ](#racing-the-beam---graphics-without-a-frame-buffer)
-* [One Pixel per Clock Ray Tracing](#one-pixel-per-clock-ray-tracing)
-* [A Floating Point C model](#a-floating-point-c-model)
-* [From Floating Point to Fixed Point](#from-floating-point-to-fixed-point)
-* [Math Resource Usage Statistics](#math-resource-usage-statistics)
-* [Scene Math Optimization](#scene-math-optimization)
-* [Start Your SpinalHDL RTL Coding Engines! Or... ?](#start-your-spinalhdl-rtl-coding-engines-or-)
-* [Conversion to 20-bit Floating Point Numbers](#conversion-to-20-bit-floating-point-numbers)
-* [Building the Pipeline](#building-the-pipeline)
-* [SpinalHDL LatencyAnalysis Life Saver - Automatic Latency Matching](#spinalhdl-latencyanalysis-life-saver---automatic-latency-matching)
-* [Progression to C Model Match](#progression-to-c-model-match)
-* [Intermediate FPGA Synthesis Stats - A Pleasant Surprise!](#intermediate-fpga-synthesis-stats---a-pleasant-surprise)
-* [A Sphere Casting a Shadow and a Directional Light](#a-sphere-casting-a-shadow-and-a-directional-light)
-* [SpinalHDL - Selectively Using HW Multipliers](#spinalhdl---selectively-using-hw-multipliers)
-* [Camera Movement and Flexibility - Bringing in a CPU](#camera-movement-and-flexibility---bringing-in-a-cpu)
-* [Final Toplevel Pipeline](#final-toplevel-pipeline)
-* [Text Overlay - The Final Step](#text-overlay---the-final-step)
-* [Total Resource Usage and Critical Path](#total-resource-usage-and-critical-path)
-* [The End](#the-end)
+* TOC
+{:toc}
 
 # Introduction
 
@@ -294,7 +275,7 @@ Here's what the [code](https://github.com/tomverbeure/rt/blob/e557ffebede9426f07
 
 A scalar number:
 
-```C
+```c
 typedef struct {
     float   fp32;
     int     fixed;
@@ -302,7 +283,7 @@ typedef struct {
 ```
 
 [Scalar addition](https://github.com/tomverbeure/rt/blob/e557ffebede9426f077157861130f942aad60e9f/src/main.c#L177-L189):
-```C
+```c
 scalar_t add_scalar_scalar(scalar_t a, scalar_t b)
 {
     scalar_t r;
@@ -322,7 +303,7 @@ Notice the `check_divergent` function call. That's the one that checks if the fp
 equal.
 
 [Scalar multiplication](https://github.com/tomverbeure/rt/blob/e557ffebede9426f077157861130f942aad60e9f/src/main.c#L225-L237)
-```C
+```c
 scalar_t _mul_scalar_scalar(scalar_t a, scalar_t b, int shift_a, int shift_b, int shift_c)
 {
     scalar_t r;
@@ -360,7 +341,7 @@ calculate a single pixel.
 
 Here are all the operations that are being tracked:
 
-```C
+```c
 int scalar_add_cntr         = 0;
 int scalar_mul_cntr         = 0;
 int scalar_div_cntr         = 0;
@@ -388,7 +369,7 @@ need to use the local RAMs for anything else anyway.
 
 Here's one interesting observation: a lot of the math in the current scene is not really necessary.
 
-```
+```c
 ray_t camera = {
     .origin   = { .s={ {0,0}, {10,0}, {-10,0} } }
 };
@@ -411,7 +392,7 @@ When you search in the [code](https://github.com/tomverbeure/rt/blob/e557ffebede
 for `SCENE_OPT`, you'll find a bunch of these kind of optimizations.
 
 There's a good example of this in the plane intersection function:
-```C
+```c
 #ifdef SCENE_OPT
     // Assume plane is always pointing upwards and normalized to 1.
     denom = r.direction.s[1];
@@ -458,7 +439,7 @@ I got interested into limited precision floating point arithmetic.
 I [adjusted the C model](https://github.com/tomverbeure/rt/blob/1f803ce8d4b8c1d590340ce40544b6315c133d33/cmodel/src/main.cpp)
 to support `fpxx`, a third numerical representation in addition to fp32 and fixed point.
 
-```C
+```c
 typedef fpxx<14,6> floatrt;
 
 typedef struct {
@@ -494,20 +475,20 @@ close match between the C model variable names and RTL signals.
 Here's [a good example](https://github.com/tomverbeure/rt/commit/db9fbad12ee4ac026950e32debd1af0cb3b1daa7) of that:
 
 Old:
-```C
+```c
     scalar_t c0r0_c0r0 = dot_product(c0r0, c0r0);
     d2 = subtract_scalar_scalar(d2, mul_scalar_scalar(tca, tca));
 ```
 
 New:
-```C
+```c
     scalar_t c0r0_c0r0 = dot_product(c0r0, c0r0);
     scalar_t tca_tca = mul_scalar_scalar(tca, tca);
     scalar_t d2 = subtract_scalar_scalar(c0r0_c0r0, tca_tca);
 ```
 
 And the corresponding RTL code:
-```Scala
+```scala
     //============================================================
     // c0r0_c0r0
     //============================================================
@@ -687,7 +668,7 @@ It works like this:
 
 * For each Fpxx building block, I have a configuration class. For example, for FpxxMul, there is [FpxxMulConfig](https://github.com/tomverbeure/math/blob/2d9fbf27218d7574083fee5c417021c707ce4d8c/src/main/scala/math/FpxxMul.scala#L6-L100).
 
-```Scala
+```scala
 case class FpxxMulConfig(
     pipeStages      : Int     = 1,
     hwMul           : Boolean = false
@@ -702,7 +683,7 @@ and [one without](https://github.com/tomverbeure/rt/blob/29070b46fa30c290d7e530f
 And, finally, [hwMulGlobal](https://github.com/tomverbeure/rt/blob/29070b46fa30c290d7e530f7700b9ea1ef45a3eb/src/main/scala/rt/RT.scala#L50-L63)
  is the global selector that decides between using HW multipliers or not.
 
-```Scala
+```scala
 object Constants {
 
     val hwMulGlobal = true

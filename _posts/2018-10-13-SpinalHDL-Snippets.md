@@ -1,9 +1,13 @@
 ---
 layout: post
 title:  "SpinalHDL Snippets"
-date:   2018-10-13 22:00:00 -0700
+date:   2018-10-14 00:00:00 -1000
 categories: RTL
 ---
+
+* TOC
+{:toc}
+
 
 # Introduction
 
@@ -32,15 +36,23 @@ Here's an example of doing a single DUT compile, and then having multiple tests 
 
 * [Create a test on the DUT](https://github.com/SpinalHDL/SpinalHDL/blob/a172df4d6e95ae5f21bbeb1989c7bcd1498b2675/tester/src/test/scala/spinal/tester/scalatest/SpinalSimPerfTester.scala#L37)
 
-To kick of all the tests of a Tester class, do the following: `sbt "test-only <scala path to tester class>"`.
+To kick of all the tests of a Tester class, do the following: 
+
+```bash
+sbt "test-only <scala path to tester class>"
+```
 
 Like this:
 
-    `sbt "test-only math.FpxxTester"`
+```bash
+sbt "test-only math.FpxxTester"
+```
 
 To run only 1 of the tests:
 
-    `sbt "test-only math.FpxxTester -- -z FpxxAdd"`
+```bash
+sbt "test-only math.FpxxTester -- -z FpxxAdd"
+```
 
 Note: running 1 test *only* works if you compile the DUT as part of the test itself. If you have a separate `compile` test, then it will not work.
 
@@ -84,7 +96,7 @@ in a recursive and a generic way that works for any sized vector input:
 
     I have this in my Makefile:
 
-```
+```makefile
 progmem8k.bin: progmem.bin
         cp $< $@
         dd if=/dev/zero of=$@ bs=1 count=0 seek=8192
@@ -92,7 +104,7 @@ progmem8k.bin: progmem.bin
 
 * Then load it through the `initialContent` parameter when instantiating the Mem:
 
-```Scala
+```scala
         import java.nio.file.{Files, Paths}
 
         val byteArray = Files.readAllBytes(Paths.get("sw/progmem8k.bin"))
@@ -127,7 +139,7 @@ release.
 # VexRiscv
 
 Run DhystoneBench for multiple CPU cores:
-```
+```bash
 sbt "testOnly vexriscv.DhrystoneBench"
 ```
 
@@ -139,8 +151,92 @@ of SpinalHDL, things don't work well.
 The best way to proceed, then, is to remove all old Scala traces from your system.
 
 Executed from within your project, this should do it:
-```
+```bash
 sbt clean
 rm -fr ~/.ivy2
 rm -fr ~/.sbt
 ```
+
+# Running Something from the SpinalHDL tree itself
+
+This doesn't work:
+
+```bash
+cd projects/SpinalHDL
+sbt "runMain  spinal.lib.com.i2c.Apb3I2cCtrl"
+```
+
+SpinalHDL is itself a multi-module project. So you need to do:
+
+```bash
+cd projects/SpinalHDL
+sbt "lib/runMain  spinal.lib.com.i2c.Apb3I2cCtrl"
+```
+
+# Verilog/VHDL Generation Options
+
+Code generation options are specified through the [`SpinalConfig`](https://github.com/SpinalHDL/SpinalHDL/blob/0918c536b08f5a0584498c3a667dd20a606ed4ba/core/src/main/scala/spinal/core/Spinal.scala#L123).
+
+Some useful options:
+
+* `netlistFileName`
+
+    Specify the name of the generated Verilog or VHDL file. 
+
+    Super useful, because my simulation and synthesis files are often different. (E.g. I use a PLL
+    in the synthesis file but not in the simulation file.)
+
+* `anonymSignalUniqueness`
+
+    When true, intermediate signals are unique across the all modules.
+
+    For example. instead of creating a signals `_zz_10` in different modules,
+    it will create `_zz_MyModule1_10` and `_zz_MyModule2_10`. This makes it much easier
+    to find all instances in a file where a particular signals is used.
+
+    Default is false, but I set it to true for all my designs.
+
+* `anonymSignalPrefix`
+
+    By default, intermediate generated signals start with `_zz`. 
+
+    With this configuration option, you can change it to something else.
+
+* `globalPrefix`
+
+    Add a prefix to all module names.
+
+    For example, setting it to `gp_` will create a module with `gp_MyModule11`
+    instead of `MyModule1.
+
+    This is useful if, for example, you want to include the Verilog of 2 separate 
+    SpinalHDL designs into an overall Verilog toplevel and avoid naming
+    collisions.
+
+* `targetDirectory`
+
+    By default, all generated files (Verilog, VDHL, ROM binary files) are created 
+    in the `./spinal` directory.
+
+    You can change that directory with this option.
+
+* `oneFilePerComponent`
+
+   When true, writes out only the Verilog or VHDL for the toplevel component,
+   not the instances below it.
+
+* `inlineRom`
+
+    When true, initialize memories in the design with an `initial` statement that
+    assigns a value to each location of the array instead of loading the contents from
+    a separate file with `$readmemb`.
+
+* `mergeAsyncProcess`
+
+    When false (the default), there's a separate `always @(*)` block for each combinatorial
+    signal assigment. When true, multiple signals can assigned in the same `always @(*)`
+    block. This can be easier to match the generated Verilog with the original SpinalHDL 
+    code.
+
+
+

@@ -1,20 +1,12 @@
 ---
 layout: post
 title: Building Multiport Memories with Block RAMs
-date:   2019-08-03 10:00:00 -0700
+date:   2019-08-03 00:00:00 -1000
 categories:
 ---
 
-* [Introduction](#introduction)
-* [Multiple-Read, Single-Write RAMs](#multiple-read-single-write-rams)
-* [Flip-Flop RAMs](#flip-flop-rams)
-* [Multipumped Multi-Port RAMs](#multipumped-multi-port-rams)
-* [Banked Multi-Port RAMs](#banked-multi-port-rams)
-* [Live Value Table Multi-Port RAMs](#live-value-table-multi-port-rams)
-* [XOR-Based Multi-Port RAMs](#xor-based-multi-port-rams)
-* [A XOR-Based Multi-Port RAM Implementation](#a-xor-based-multi-port-ram-implementation)
-* [Which Type To Use?](#which-type-to-use)
-* [Conclusion](#conclusion)
+* TOC
+{:toc}
 
 # Introduction
 
@@ -32,12 +24,12 @@ and 2 independent read ports.
 
 ![Highlevel View]({{ "/assets/multiport_memories/xor_memory-Highlevel_View.svg" | absolute_url }})
 
-In FPGA land, things are more limited: you get to use what the FPGA provides and that is that.
+In FPGA land, things are even more limited: you get to use what the FPGA provides and that is that.
 
 If we ignore RAMs that are constructed out of repurposed LUTs and registers, most FPGAs
 have so-called block RAMs (BRAMs) that have at least a single read and a single, separate,
 write port. FPGAs from Intel and Xilinx usually have 2 full read/write ports, but the Lattice
-iCE40, popular in the open source world, only has one read and one write port.
+iCE40 family, popular in the open source world, only has one read and one write port.
 
 Unfortunately, not all design problems can map to the standard BRAMs of the FPGA of your
 choice.
@@ -78,7 +70,7 @@ Register files or RAMs with multiple read ports and only a single write port are
 that can only retire one instruction per second: multiple read ports to gather the operands
 for an instruction, yet you only need 1 write port to write back the result of the instruction.
 
-The implementation on FPGA is simple: you use 1 BRAMs per read port and you connect the write ports
+The implementation on FPGA is simple: you use 1 BRAM per read port and you connect the write ports
 of all BRAMs together.
 
 ![3 Read - 1 Write]({{ "/assets/multiport_memories/xor_memory-3r_1w.svg" | absolute_url }})
@@ -126,7 +118,7 @@ ASIC layout, the register file, the orange region below marked *ARF*, only takes
 ![SweRV Core Physical Design]({{ "/assets/swerv/slides/13 - SweRV - SweRV Core Phyiscal Design.png" | absolute_url }})
 
 The important caveat is that the SWeRV was designed for an ASIC process, where metal layers are
-plentiful and dense rats nets of wires are usually not a problem.
+plentiful and a dense rats nest of wires is usually not a problem.
 
 Translate this design to an FPGA, which often have routing wires as a constrained resource, and you'll
 run into trouble very quickly! Not only will the memory be difficult to place and route, it may
@@ -195,7 +187,7 @@ GPUs has a section on bank conflicts and how to avoid them. In fact, just google
 you've find a lot of information on this topic.
 
 Either way, things will get complex very quickly. And sometimes your design is such that stalling
-the write pipeline is impossible, yet banking conflicts can't be avoided.
+the pipeline is impossible, yet banking conflicts can't be avoided.
 
 A different solution is needed.
 
@@ -232,7 +224,7 @@ be required if you'd implement the complete RAM with discrete gates!
 The LVT approach is great when the size of your multi-port RAM is too large to implement with discrete gates,
 but primarily because the width of the data bus is too wide while the number of addresses is reasonable.
 
-It's also a straightforward and easy to understand.
+It's also a straightforward solution that is easy to understand.
 
 The total number of block RAMs is:
 
@@ -256,7 +248,7 @@ We update M1 with value (NEW xor OLD2).
 
 If we now read the contents of M1 and M2 and XOR them, we get: (NEW xor OLD2) xor OLD2 = NEW.
 
-In other words, by updating just to 1 register, M1, we can recover the last written
+In other words, by updating just 1 register, M1, we can recover the last written
 value by reading the values of both registers and XOR-ing them!
 
 XOR-based multi-port RAMs are using this exact principle. Instead of writing the incoming
@@ -283,15 +275,19 @@ When you'd read the data from address 0x02, you'd get a value of `0x0000 xor 0x0
 
 ![XOR RAM Init]({{ "/assets/multiport_memories/xor_memory-Init_State.svg" | absolute_url }})
 
-We now write a value of 0x1111 to address 0x02 through port 0, we first read the value from
-port 1 (0x0000), XOR that with the incoming value of 0x1111, and write the result (also 0x1111) to the RAMs of
-port 0:
+We now write a value of 0x1111 to address 0x02 through port 0: 
+
+* first read the value from port 1 (0x0000)
+* XOR that with the incoming value of 0x1111
+* write the result (also 0x1111) to the RAMs of port 0:
 
 ![XOR RAM W0 0x1111]({{ "/assets/multiport_memories/xor_memory-W0_0x1111.svg" | absolute_url }})
 
-Finally, if you now write a value of 0x2222 to address 0x02 through port 1, we read the value from
-port 0 (0x1111), XOR it with the incoming value of 0x2222, and write the result (0x3333) to the
-RAMs of port 1:
+Finally, if you now write a value of 0x2222 to address 0x02 through port 1: 
+
+* read the value from port 0 (0x1111)
+* XOR it with the incoming value of 0x2222
+* write the result (0x3333) to the RAMs of port 1:
 
 ![XOR RAM W1 0x2222]({{ "/assets/multiport_memories/xor_memory-W1_0x2222.svg" | absolute_url }})
 
@@ -300,7 +296,7 @@ You'll notice above that if you read back the new values of address 0x02 (0x1111
 and XOR them, you get 0x2222, the value that was last written through port 1.
 
 This technique can easily be expanded to more read or write ports. In the diagram below, you
-see the configuration for 2 write ports and 2 read ports. Notice how, just like with the LVT
+see the configuration for 2 write ports and 2 read ports. Just like with the LVT
 example, we have now 4 RAMs on the right side of the dotted line. The RAMs on the left
 side remain the same, but they would expand quickly if you'd increase the number of write
 ports.
@@ -340,7 +336,7 @@ The base RAM is then a [simple one with 1 write port and 1 read port](https://gi
 
 And there's the [bypass path](https://github.com/tomverbeure/multi_port_mem/blob/e9d456f019913c94d2aa2839e199fed50840d09b/spinal/src/main/scala/multi_port_mem/MultiPortMem.scala#L83-L88):
 
-```Verilog
+```scala
         val rd_eq_wr = io.wr_addr === io.rd_addr
 
         val bypass_ena_p1 = RegNext(io.wr_ena && rd_eq_wr)
@@ -355,7 +351,7 @@ builds on this simple RAM.
 Due to the pipelining where you first need to read before doing a write, this one also has
 [its own bypass logic](https://github.com/tomverbeure/multi_port_mem/blob/e9d456f019913c94d2aa2839e199fed50840d09b/spinal/src/main/scala/multi_port_mem/MultiPortMem.scala#L218-L226):
 
-```Verilog
+```scala
         val rd0_eq_wr0      = io.wr0.addr === io.rd0.addr
         val bypass0_ena_p1  = RegNext(io.wr0.ena && rd0_eq_wr0)
 
@@ -370,7 +366,7 @@ Due to the pipelining where you first need to read before doing a write, this on
 
 You can simulate this RAM by issuing the following command:
 
-```
+```bash
 sbt "runMain multi_port_mem.MultiPortMemSim"
 ```
 
@@ -386,12 +382,12 @@ This raises the question: which one to use for which case?
 
 The paper on which this blog post is based goes deep into this, comparing logic gate use, RAM use, and Fmax.
 
-In some cases, the different can be very signficant. Here's a case where the XOR-based implementation
+In some cases, the difference can be very signficant. Here's a case where the XOR-based implementation
 is clearly the best choice... if you have plenty of block RAMs to spare.
 
 ![lvt_xor_8192_w2r4.png]({{ "/assets/multiport_memories/lvt_xor_8192_w2r4.png" | absolute_url }})
 
-But the real answer is: it depends. Any one of the 3 methods has use cases where they come out on top, depending on
+But the real answer is: it depends. Any one of the 3 methods has use cases that come out on top, depending on
 the data bus width, number of addresses, number of read ports, number of write ports, and desired Fmax.
 
 Here's just one of the graphs that compares the different implementations when using an Intel/Altera Stratix IV FPGA.

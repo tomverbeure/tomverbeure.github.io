@@ -1,16 +1,17 @@
 ---
 layout: post
 title: Setting Up an ADSB-Exchange Feeder
-date:   2019-05-11 10:00:00 -0700
+date:   2019-05-11 00:00:00 -1000
 categories:
 ---
 
-* [Introduction](#introduction)
-* [Tracking Local Airplanes](#tracking-local-airplanes)
-* [The Hardware](#the-hardware)
-* [Software Installation](#software-installation)
-* [Local Live View](#local-live-view)
-* [Conclusion](#conclusion)
+**When this blog post was written, ADS-B Exchange had an API that was free for non-commerical use.
+This is not the case anymore. All references in this blog post to their free API are now outdated. 
+Check out [this page](https://www.adsbexchange.com/data/) on the ADS-B Exchanged website for 
+details about using their API.**
+
+* TOC
+{:toc}
 
 # Introduction
 
@@ -244,7 +245,7 @@ So I go into a little more detail.
     * Open a terminal
     * Follow the [installation steps](https://flightaware.com/adsb/piaware/install):
 
-```
+```bash
 wget http://flightaware.com/adsb/piaware/files/packages/pool/piaware/p/piaware-support/piaware-repository_3.7.1_all.deb
 sudo dpkg -i piaware-repository_3.7.1_all.deb
 sudo apt-get update
@@ -263,7 +264,7 @@ sudo reboot
     can find the exact GPS coordinates of your house through [Google Maps](https://maps.google.com): right click on the 
     desired location, and select *What's here*.
 
-```
+```bash
 sudo apt update
 sudo apt install git socat
 git clone https://github.com/adsbxchange/adsb-exchange.git
@@ -295,7 +296,7 @@ NTP synchronized: yes
 
     If NTP was *not* enabled, enable it by executing the commands below:
 
-```
+```bash
 sudo systemctl enable systemd-timesyncd
 sudo systemctl start systemd-timesyncd
 sudo timedatectl set-ntp 1
