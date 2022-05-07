@@ -79,3 +79,5 @@ I think it's fascinating that adding *noise*
 
     Excellent description of simply dithered noise shaping quantizer.
 
+* [FFT scaling for noise](https://www.ap.com/technical-library/fft-scaling-for-noise/)
+
