@@ -112,3 +112,19 @@ samples per cycle for things like a sine wave.
 * 15MHz, sine, 0.250Vpp
 
 
+FY6900
+
+* 10kHz, sine, 0.5Vpp (1M termination) 
+
+- On scope: 536mV, not 500mV. With 50 Ohm -> 208mV
+
+* 100kHz, sine, 0.5Vpp (1M termination) 
+* 2.5MHz, sine, 0.5Vpp (1M termination) 
+* 60MHz, sine, 0.5Vpp (1M termination) 
+* 15MHz, sine, 0.5Vpp (1M termination) 
+* 15MHz, square, 0.5Vpp (1M termination) 
+* 15MHz, triangle, 0.5Vpp (1M termination) 
+* 15MHz, noise, 0.5Vpp (1M termination) 
+
+
+
