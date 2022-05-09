@@ -1,7 +1,7 @@
 ---
 layout: post
 title: BCH Coding
-date:   2022-05-07 00:00:00 -1000
+date:   2019-08-06 00:00:00 -1000
 categories:
 ---
 
@@ -101,10 +101,5 @@ The key understanding of an LFSR:
 
 * [The mathematics of RAID-d6](https://mirrors.edge.kernel.org/pub/linux/kernel/people/hpa/raid6.pdf)
 * [The RAID-6 Liberation Codes](https://www.usenix.org/legacy/event/fast08/tech/full_papers/plank/plank_html/index.html) 
-
-
-**CD**
-* [Reed-Solomon Codes and CD Encoding](https://web.archive.org/web/20180917213045/https://www.usna.edu/Users/math/wdj/_files/documents/reed-sol.htm)
-* [CD Red Book](https://archive.org/details/RedBookAudioRecordingCompactDiscDigitalAudioSystemIEC60908SecondEdition199902ISBN2831846382/page/n7/mode/2up)
 
 
