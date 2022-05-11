@@ -6,7 +6,7 @@ categories:
 ---
 
 * TOC
-{:toc}
+{:toc}](
 
 # Measurements
 
@@ -127,4 +127,22 @@ FY6900
 * 15MHz, noise, 0.5Vpp (1M termination) 
 
 
+
+
+# Repair
+
+- 625 kHz is ok. 624.9 kHz is not. Clock freq: 62.50MHz
+- 249.5 kHz is ok. 250.0kHz is not. Clock freq: 250MHz
+
+In general: 64MHz to 250MHz is Ok. Below 64MHz is not.
+
+
+
+# GPIB install
+
+* [Keysight Instrument Control Bundle Download](https://www.keysight.com/us/en/lib/software-detail/computer-software/keysight-instrument-control-bundle-download-1184883.html)
+
+	* IO Libraries Suite
+	* Command Expert
+	* BenchVue
 
