@@ -21,7 +21,10 @@ categories:
 </script>
 <script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
 
-<cript src="/node_modules/mathjax/es5/tex-chtml.js" type="text/javascript"></cript>
+* TOC
+{:toc}
+
+# Introduction
 
 In this blog post, I'm trying to build up an intuitive understanding of error correcting codes that
 are built on the concept of linear block codes. As is often the case, this is primarily an exercise
@@ -30,8 +33,8 @@ univerity course and other stuff on the web. So don't take anything here are gos
 that there are major errors or misunderstanding in it!
 
 The goal of error codes is to be able to transmit data over a channel that is not perfect. Data
-is encoded as symbol and those symbol can be damaged in some way. With error codes, we can detect
-damage or even correct it.
+is encoded as stream of symbols and those symbols can be damaged in some way. With error codes, 
+we can detect or even correct some of the damage.
 
 There are different ways to do this, but there are 2 major classes: convolutional codes and block
 codes. Let's talk about block codes.
@@ -51,6 +54,8 @@ as follows:
 $$11_{10} = \begin{bmatrix}
 1 & 0 & 1 & 1
 \end{bmatrix}$$
+
+# Traditional Parity Calculation
 
 Let's do one of the simplest possible error detecting schemes: a parity calculation.
 We add one bit to the messages. When the number of ones a message is odd, the additional
@@ -122,19 +127,65 @@ $$\vec{m}_{received} = \begin{bmatrix}c_1 & c_2 & c_3 & c_4\end{bmatrix}$$
 
 $$c_1 \oplus c_2 \oplus c_3 \oplus c_4 \oplus c_5 \stackrel{?}{=} 0$$
 
+# Expansion to 2 parity bits
+
+To make the example a bit more interesting, let's have 2 instead of just 1 parity bit.
+The first parity bit is calculated over message bits $$m_1$$ to $$m_3$$, and the second parity bit
+is calculated over message bits $$m_2$$ to $$m_4$$. In other words:
+
+$$p_1=m_1 \oplus m_2 \oplus m_3$$
+
+$$p_2=m_2 \oplus m_3 \oplus m_4$$
+
+Messages are encoded as follows:
+
+$$0_{10} = \left[\begin{array}{cccc|cc}
+0 & 0 & 0 & 0 & 0 & 0
+\end{array}\right]$$
+
+$$1_{10} = \left[\begin{array}{cccc|cc}
+0 & 0 & 0 & 1 & 0 & 1
+\end{array}\right]$$
+
+$$2_{10} = \left[\begin{array}{cccc|cc}
+0 & 0 & 1 & 0 & 1 & 1
+\end{array}\right]$$
+
+$$...$$
+
+$$11_{10} = \left[\begin{array}{cccc|cc}
+1 & 0 & 1 & 1 & 0 & 0
+\end{array}\right]$$
+
+$$...$$
+
+The code word now consists of 6 symbols, and parity check equations are as follows:
+
+$$c_1 \oplus c_2 \oplus c_3 \oplus c_5 \stackrel{?}{=} 0$$
+
+$$c_2 \oplus c_3 \oplus c_4 \oplus c_6 \stackrel{?}{=} 0$$
+
+This error encoding scheme reduces the rate from 80% to 66% without offering a lot
+of benefits over having a single parity bit (so don't use it!), but it helps
+us with generalizing things in the next section.
+
 # Formulation with matrix math
 
-In the example above, we defined the encoded symbol as 
+In the double parity bit example above, we defined the encoded symbol as:
 
-$$\vec{c} = \left[\begin{array}{ccccc}m_1 & m_2 & m_3 & m_4 & m_1 \oplus m_2 \oplus m_3 \oplus m_4\end{array}\right]$$
+$$\vec{c} = \left[\begin{array}{ccccc}
+m_1 & m_2 & m_3 & m_4 
+& m_1 \oplus m_2 \oplus m_3
+& m_2 \oplus m_3 \oplus m_4
+\end{array}\right]$$
 
 We can make this more general by describing it as vector/matrix multiplication. Let's introduce the concept of a **generator matrix**:
 
 $$G = \left[\begin{array}{ccccc}
-1 & 0 & 0 & 0 & 1 \\
-0 & 1 & 0 & 0 & 1 \\
-0 & 0 & 1 & 0 & 1 \\
-0 & 0 & 0 & 1 & 1\end{array}\right]$$
+1 & 0 & 0 & 0 & 1 & 0 \\
+0 & 1 & 0 & 0 & 1 & 1 \\
+0 & 0 & 1 & 0 & 1 & 1 \\
+0 & 0 & 0 & 1 & 0 & 1\end{array}\right]$$
 
 The generator matrix has as many columns as there are symbols in the code word, and as many rows as there are
 symbols in the message. 
@@ -143,15 +194,15 @@ When you do matrix multiplication, you multiply-add rows of one matrix against t
 
 $$\vec{c} = \vec{m} \times G$$
 
-$$\begin{bmatrix}c_1 & c_2 & c_3 & c_4 & c_5\end{bmatrix} = \begin{bmatrix}m_1 & m_2 & m_3 & m_4\end{bmatrix} \times \begin{bmatrix}
-g_{11} & g_{12} & g_{13} & g_{14} & g_{15} \\
-g_{21} & g_{22} & g_{23} & g_{24} & g_{25} \\
-g_{31} & g_{32} & g_{33} & g_{34} & g_{35} \\
-g_{41} & g_{42} & g_{43} & g_{44} & g_{45}\end{bmatrix}$$
+$$\begin{bmatrix}c_1 & c_2 & c_3 & c_4 & c_5 & c_6\end{bmatrix} = \begin{bmatrix}m_1 & m_2 & m_3 & m_4\end{bmatrix} \times \begin{bmatrix}
+g_{11} & g_{12} & g_{13} & g_{14} & g_{15} & g_{16} \\
+g_{21} & g_{22} & g_{23} & g_{24} & g_{25} & g_{26} \\
+g_{31} & g_{32} & g_{33} & g_{34} & g_{35} & g_{36} \\
+g_{41} & g_{42} & g_{43} & g_{44} & g_{45} & g_{46}\end{bmatrix}$$
 
 This expands do:
 
-$$c_1 = m_1 g_{11} +  m_2 g_{12} + m_3 g_{13} + m_4 g_{14}$$
+$$c_1 = m_1 g_{11} + m_2 g_{12} + m_3 g_{13} + m_4 g_{14}$$
 
 $$c_2 = m_1 g_{21} + m_2 g_{22} + m_3 g_{23} + m_4 g_{24}$$
 
@@ -161,19 +212,23 @@ $$c_4 = m_1 g_{41} + m_2 g_{42} + m_3 g_{43} + m_4 g_{44}$$
 
 $$c_5 = m_1 g_{51} + m_2 g_{52} + m_3 g_{53} + m_4 g_{54}$$
 
+$$c_6 = m_1 g_{61} + m_2 g_{62} + m_3 g_{63} + m_4 g_{64}$$
+
 For binary values, a multiplication is an AND operation and a sum is the same as a XOR operation. 
 To calculate our code word, we multiply the message vector by the generator matrix, and use 
 these AND and XOR operations:
 
-$$c_0 = m_1 1 \oplus m_2 0 \oplus m_3 0 \oplus m_4 0$$
+$$c_1 = m_1 1 \oplus m_2 0 \oplus m_3 0 \oplus m_4 0$$
 
-$$c_1 = m_1 0 \oplus m_2 1 \oplus m_3 0 \oplus m_4 0$$
+$$c_2 = m_1 0 \oplus m_2 1 \oplus m_3 0 \oplus m_4 0$$
 
-$$c_2 = m_1 0 \oplus m_2 0 \oplus m_3 1 \oplus m_4 0$$
+$$c_3 = m_1 0 \oplus m_2 0 \oplus m_3 1 \oplus m_4 0$$
 
-$$c_3 = m_1 0 \oplus m_2 0 \oplus m_3 0 \oplus m_4 1$$
+$$c_4 = m_1 0 \oplus m_2 0 \oplus m_3 0 \oplus m_4 1$$
 
-$$c_4 = m_1 1 \oplus m_2 1 \oplus m_3 1 \oplus m_4 1$$
+$$c_5 = m_1 1 \oplus m_2 1 \oplus m_3 0 \oplus m_4 1$$
+
+$$c_6 = m_1 0 \oplus m_2 1 \oplus m_3 1 \oplus m_4 1$$
 
 Which reduces to:
 
@@ -185,21 +240,27 @@ $$c_3 = m_3$$
 
 $$c_4 = m_4$$
 
-$$c_5 = m_1 \oplus m_2 \oplus m_3 \oplus m_4$$
+$$c_5 = m_1 \oplus m_2 \oplus m_3$$
+
+$$c_6 = m_2 \oplus m_3 \oplus m_4$$
 
 In other words, we get exactly what we had before:
 
-$$\vec{c} = \begin{bmatrix}m_1 & m_2 & m_3 & m_4 & m_1 \oplus m_2 \oplus m_3 \oplus m_4\end{bmatrix}$$
+$$\vec{c} = \begin{bmatrix}
+m_1 & m_2 & m_3 & m_4 & 
+m_1 \oplus m_2 \oplus m_3 &
+m_2 \oplus m_3 \oplus m_4
+\end{bmatrix}$$
 
 Let's look again at the generator matrix.  In many coding schemes, as the one above, 
-the left side of the generator matrix is the square identity matrix, and the right side
-is the one that calculates the parity bits. This is no different in our example:
+the left side of the generator matrix is a square identity matrix $$I_k$$, and the right side $$P$$
+is one that calculates the parity bits. This is no different in our example:
 
-$$G = \left[\begin{array}{cccc|c}
-1 & 0 & 0 & 0 & 1 \\
-0 & 1 & 0 & 0 & 1 \\
-0 & 0 & 1 & 0 & 1 \\
-0 & 0 & 0 & 1 & 1\end{array}\right]$$
+$$G = \left[\begin{array}{cccc|cc}
+1 & 0 & 0 & 0 & 1 & 0 \\
+0 & 1 & 0 & 0 & 1 & 1 \\
+0 & 0 & 1 & 0 & 1 & 1 \\
+0 & 0 & 0 & 1 & 0 & 1\end{array}\right]$$
 
 The generic structure of the standard form of the generator matrix is as follows:
 
@@ -207,113 +268,41 @@ $${G} = \left[\begin{array}{c|c}I_k & P\end{array}\right]$$
 
 $$k$$ is the number of symbols in the original message.
 
-We can construct an associated partiy check matrix (let's call it $$H$$) to check the 
-validity of the received code word. In our case, there was only a single parity check equation 
-($$c_1 \oplus c_2 \oplus c_3 \oplus c_4 \oplus c_5 \stackrel{?}{=} 0$$). If the general parity check equation
+We can construct an associated **parity check matrix** (let's call it $$H$$) to check the 
+validity of the received code word. In our case, there are two parity check equations: 
+
+$$c_1 \oplus c_2 \oplus c_3 \oplus c_5 \stackrel{?}{=} 0$$ 
+
+$$c_2 \oplus c_3 \oplus c_4 \oplus c_6 \stackrel{?}{=} 0$$
+
+If the general parity check equation
 is 
 
 $$H \times \vec{c} \stackrel{?}{=} 0$$, 
 
 then our $$H$$ matrix should look like this:
 
-$$H = [1 1 1 1 1]$$
+$$H = \left[\begin{array}{cccc|cc}
+1 & 1 & 1 & 0 & 1 & 0 \\
+0 & 1 & 1 & 1 & 0 & 1
+\end{array}\right]$$
 
-# Formulation with matrix math
+The parity check matrix consists of 2 parts: on the left, we find $$P^T$$, the transposed
+version of the sub-matrix $$P$$ that we had in the generator matrix. And on the right
+side, there's a square identity matrix $$I_{n-k}$$ with the size of the number of parity
+bits.
 
-In the example above, we defined the encoded symbol as 
+For full generality, the matrix on the left is actually $$-P^T$$, but when working with binary
+numbers, there's no difference between the two. The general definition of $$H$$ is:
 
-$$\vec{c} = \left[\begin{array}{ccccc}m_1 & m_2 & m_3 & m_4 & m_1 \oplus m_2 \oplus m_3 \oplus m_4\end{array}\right]$$
+$$H = \left[\begin{array}{c|c}-P^T & I_{n-k}\end{array}\right]$$
 
-We can make this more general by describing it as vector/matrix multiplication. Let's introduce the concept of a **generator matrix**:
+While $$G$$ and $$H$$ are often specified in their standard form, this doesn't have to be the
+case: in some codes (LDPC codes is a good example), the generator and parity check matrix don't have a 
+standard form. In that case, deriving the $$H$$ matrix from the $$G$$ matrix, or vice versa, is done
+by the satisfying the following equation: 
 
-$$G = \left[\begin{array}{ccccc}
-1 & 0 & 0 & 0 & 1 \\
-0 & 1 & 0 & 0 & 1 \\
-0 & 0 & 1 & 0 & 1 \\
-0 & 0 & 0 & 1 & 1\end{array}\right]$$
-
-The generator matrix has as many columns as there are symbols in the code word, and as many rows as there are
-symbols in the message. 
-
-When you do matrix multiplication, you multiply-add rows of one matrix against the columns of another:
-
-$$\vec{c} = \vec{m} \times G$$
-
-$$\begin{bmatrix}c_1 & c_2 & c_3 & c_4 & c_5\end{bmatrix} = \begin{bmatrix}m_1 & m_2 & m_3 & m_4\end{bmatrix} \times \begin{bmatrix}
-g_{11} & g_{12} & g_{13} & g_{14} & g_{15} \\
-g_{21} & g_{22} & g_{23} & g_{24} & g_{25} \\
-g_{31} & g_{32} & g_{33} & g_{34} & g_{35} \\
-g_{41} & g_{42} & g_{43} & g_{44} & g_{45}\end{bmatrix}$$
-
-This expands do:
-
-$$c_1 = m_1 g_{11} +  m_2 g_{12} + m_3 g_{13} + m_4 g_{14}$$
-
-$$c_2 = m_1 g_{21} + m_2 g_{22} + m_3 g_{23} + m_4 g_{24}$$
-
-$$c_3 = m_1 g_{31} + m_2 g_{32} + m_3 g_{33} + m_4 g_{34}$$
-
-$$c_4 = m_1 g_{41} + m_2 g_{42} + m_3 g_{43} + m_4 g_{44}$$
-
-$$c_5 = m_1 g_{51} + m_2 g_{52} + m_3 g_{53} + m_4 g_{54}$$
-
-For binary values, a multiplication is an AND operation and a sum is the same as a XOR operation. 
-To calculate our code word, we multiply the message vector by the generator matrix, and use 
-these AND and XOR operations:
-
-$$c_0 = m_1 1 \oplus m_2 0 \oplus m_3 0 \oplus m_4 0$$
-
-$$c_1 = m_1 0 \oplus m_2 1 \oplus m_3 0 \oplus m_4 0$$
-
-$$c_2 = m_1 0 \oplus m_2 0 \oplus m_3 1 \oplus m_4 0$$
-
-$$c_3 = m_1 0 \oplus m_2 0 \oplus m_3 0 \oplus m_4 1$$
-
-$$c_4 = m_1 1 \oplus m_2 1 \oplus m_3 1 \oplus m_4 1$$
-
-Which reduces to:
-
-$$c_1 = m_1$$
-
-$$c_2 = m_2$$
-
-$$c_3 = m_3$$
-
-$$c_4 = m_4$$
-
-$$c_5 = m_1 \oplus m_2 \oplus m_3 \oplus m_4$$
-
-In other words, we get exactly what we had before:
-
-$$\vec{c} = \begin{bmatrix}m_1 & m_2 & m_3 & m_4 & m_1 \oplus m_2 \oplus m_3 \oplus m_4\end{bmatrix}$$
-
-Let's look again at the generator matrix.  In many coding schemes, as the one above, 
-the left side of the generator matrix is the square identity matrix, and the right side
-is the one that calculates the parity bits. This is no different in our example:
-
-$$G = \left[\begin{array}{cccc|c}
-1 & 0 & 0 & 0 & 1 \\
-0 & 1 & 0 & 0 & 1 \\
-0 & 0 & 1 & 0 & 1 \\
-0 & 0 & 0 & 1 & 1\end{array}\right]$$
-
-The generic structure of the standard form of the generator matrix is as follows:
-
-$${G} = \left[\begin{array}{c|c}I_k & P\end{array}\right]$$
-
-$$k$$ is the number of symbols in the original message.
-
-We can construct an associated partiy check matrix (let's call it $$H$$) to check the 
-validity of the received code word. In our case, there was only a single parity check equation 
-($$c_1 \oplus c_2 \oplus c_3 \oplus c_4 \oplus c_5$$). 
-
-If the general parity check equation is 
-
-$$H \times \vec{c}^{T} \stackrel{?}{=} 0$$
-
-then $$H$$ is:
-
-$$H = \left[\begin{array}{ccccc}1 & 1 & 1 & 1 & 1\end{array}\right]$$
+$$GH^T = 0$$
 
 # Notes
 
@@ -373,3 +362,5 @@ g & h & i
 * [LDPC Codes – a brief Tutorial](http://www.bernh.net/media/download/papers/ldpc.pdf) (B. Leiner)
 
 * [Information Theory, Inference, and Learning Algorithms, David MacKey](http://www.inference.org.uk/mackay/itila/book.html)
+
+* [Introducing Low-Density Parity-Check Codes, Sarah J. Johnson](https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.165.258&rep=rep1&type=pdf)
