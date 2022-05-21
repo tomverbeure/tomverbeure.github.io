@@ -90,7 +90,7 @@ $$p=m_1 \oplus m_2 \oplus m_3 \oplus m_4 $$
 
 The encoded original message $$\vec{m}$$ is transformed into a code word $$\vec{c}$$ as follows:
 
-$$\vec{c} = \begin{bmatrix}m_1 & m_2 & m_3 & m_4 & p\end{bmatrix}$$
+$$\vec{c} = \begin{bmatrix}c_1 & c_2 & c_3 & c_4 & c_5\end{bmatrix} = \begin{bmatrix}m_1 & m_2 & m_3 & m_4 & p\end{bmatrix}$$
 
 By adding a parity bit, we obviously need to transmit more bits, or symbols, than strictly needed. If
 the hardware has the ability to transmit a fix number of symbols per unit of time, adding more
@@ -110,23 +110,36 @@ $$11 \to \left[\begin{array}{cccc}1 & 0 & 1 & 1\end{array}\right]
 \to
 $$ odd number of bits!
 
-# Formulation in terms of generator matrix
+Thanks to the addition of a parity bit, we have added Single Error Detection capability. It's not a lot:
+as soon as there are 2 bit flips within a single code word, it will pass the validity check, but
+it's something.
+
+At the receiving end, we can extract the original message by taking the first 4 bits of the code word,
+and we can check the validity of the message by doing a parity calculation and verifying that
+the parity of the received code word is 0:
+
+$$\vec{m}_{received} = \begin{bmatrix}c_1 & c_2 & c_3 & c_4\end{bmatrix}$$
+
+$$c_1 \oplus c_2 \oplus c_3 \oplus c_4 \oplus c_5 \stackrel{?}{=} 0$$
+
+# Formulation with matrix math
 
 In the example above, we defined the encoded symbol as 
 
 $$\vec{c} = \left[\begin{array}{ccccc}m_1 & m_2 & m_3 & m_4 & m_1 \oplus m_2 \oplus m_3 \oplus m_4\end{array}\right]$$
 
-We can make this more general by describing it as vector/matrix multiplication. Let's introduce the concept of a generator matrix.
+We can make this more general by describing it as vector/matrix multiplication. Let's introduce the concept of a **generator matrix**:
 
-$$\boldsymbol{G} = \left[\begin{array}{ccccc}
+$$G = \left[\begin{array}{ccccc}
 1 & 0 & 0 & 0 & 1 \\
 0 & 1 & 0 & 0 & 1 \\
 0 & 0 & 1 & 0 & 1 \\
 0 & 0 & 0 & 1 & 1\end{array}\right]$$
 
-When you do matrix multiplication, you multiply-add rows of one matrix against the columns of another.
-For binary encoded values, a multiplication is an AND operation and a sum is the same as a XOR operation, 
-so to calculate a parity encoded code word, we multiply the message vector by the generator matrix:
+The generator matrix has as many columns as there are symbols in the code word, and as many rows as there are
+symbols in the message. 
+
+When you do matrix multiplication, you multiply-add rows of one matrix against the columns of another:
 
 $$\vec{c} = \vec{m} \times G$$
 
@@ -148,8 +161,9 @@ $$c_4 = m_1 g_{41} + m_2 g_{42} + m_3 g_{43} + m_4 g_{44}$$
 
 $$c_5 = m_1 g_{51} + m_2 g_{52} + m_3 g_{53} + m_4 g_{54}$$
 
-With our specific generator matrix, and taking into account that a binary + translates into
-an OR operation:
+For binary values, a multiplication is an AND operation and a sum is the same as a XOR operation. 
+To calculate our code word, we multiply the message vector by the generator matrix, and use 
+these AND and XOR operations:
 
 $$c_0 = m_1 1 \oplus m_2 0 \oplus m_3 0 \oplus m_4 0$$
 
@@ -177,28 +191,129 @@ In other words, we get exactly what we had before:
 
 $$\vec{c} = \begin{bmatrix}m_1 & m_2 & m_3 & m_4 & m_1 \oplus m_2 \oplus m_3 \oplus m_4\end{bmatrix}$$
 
-# Blah
+Let's look again at the generator matrix.  In many coding schemes, as the one above, 
+the left side of the generator matrix is the square identity matrix, and the right side
+is the one that calculates the parity bits. This is no different in our example:
 
-$$\left(
-\begin{array}{lcr}
-a & b & c \\
-d & e & f \\
-g & h & i
-\end{array}
-\right)$$
+$$G = \left[\begin{array}{cccc|c}
+1 & 0 & 0 & 0 & 1 \\
+0 & 1 & 0 & 0 & 1 \\
+0 & 0 & 1 & 0 & 1 \\
+0 & 0 & 0 & 1 & 1\end{array}\right]$$
 
-# MathJax
+The generic structure of the standard form of the generator matrix is as follows:
 
-$$\int e^{-kx} \, dx = -\frac{1}{k} e^{-kx}$$
+$${G} = \left[\begin{array}{c|c}I_k & P\end{array}\right]$$
 
-$$\left(
-\begin{array}{lcr}
-a & b & c \\
-d & e & f \\
-g & h & i
-\end{array}
-\right)$$
+$$k$$ is the number of symbols in the original message.
 
+We can construct an associated partiy check matrix (let's call it $$H$$) to check the 
+validity of the received code word. In our case, there was only a single parity check equation 
+($$c_1 \oplus c_2 \oplus c_3 \oplus c_4 \oplus c_5 \stackrel{?}{=} 0$$). If the general parity check equation
+is 
+
+$$H \times \vec{c} \stackrel{?}{=} 0$$, 
+
+then our $$H$$ matrix should look like this:
+
+$$H = [1 1 1 1 1]$$
+
+# Formulation with matrix math
+
+In the example above, we defined the encoded symbol as 
+
+$$\vec{c} = \left[\begin{array}{ccccc}m_1 & m_2 & m_3 & m_4 & m_1 \oplus m_2 \oplus m_3 \oplus m_4\end{array}\right]$$
+
+We can make this more general by describing it as vector/matrix multiplication. Let's introduce the concept of a **generator matrix**:
+
+$$G = \left[\begin{array}{ccccc}
+1 & 0 & 0 & 0 & 1 \\
+0 & 1 & 0 & 0 & 1 \\
+0 & 0 & 1 & 0 & 1 \\
+0 & 0 & 0 & 1 & 1\end{array}\right]$$
+
+The generator matrix has as many columns as there are symbols in the code word, and as many rows as there are
+symbols in the message. 
+
+When you do matrix multiplication, you multiply-add rows of one matrix against the columns of another:
+
+$$\vec{c} = \vec{m} \times G$$
+
+$$\begin{bmatrix}c_1 & c_2 & c_3 & c_4 & c_5\end{bmatrix} = \begin{bmatrix}m_1 & m_2 & m_3 & m_4\end{bmatrix} \times \begin{bmatrix}
+g_{11} & g_{12} & g_{13} & g_{14} & g_{15} \\
+g_{21} & g_{22} & g_{23} & g_{24} & g_{25} \\
+g_{31} & g_{32} & g_{33} & g_{34} & g_{35} \\
+g_{41} & g_{42} & g_{43} & g_{44} & g_{45}\end{bmatrix}$$
+
+This expands do:
+
+$$c_1 = m_1 g_{11} +  m_2 g_{12} + m_3 g_{13} + m_4 g_{14}$$
+
+$$c_2 = m_1 g_{21} + m_2 g_{22} + m_3 g_{23} + m_4 g_{24}$$
+
+$$c_3 = m_1 g_{31} + m_2 g_{32} + m_3 g_{33} + m_4 g_{34}$$
+
+$$c_4 = m_1 g_{41} + m_2 g_{42} + m_3 g_{43} + m_4 g_{44}$$
+
+$$c_5 = m_1 g_{51} + m_2 g_{52} + m_3 g_{53} + m_4 g_{54}$$
+
+For binary values, a multiplication is an AND operation and a sum is the same as a XOR operation. 
+To calculate our code word, we multiply the message vector by the generator matrix, and use 
+these AND and XOR operations:
+
+$$c_0 = m_1 1 \oplus m_2 0 \oplus m_3 0 \oplus m_4 0$$
+
+$$c_1 = m_1 0 \oplus m_2 1 \oplus m_3 0 \oplus m_4 0$$
+
+$$c_2 = m_1 0 \oplus m_2 0 \oplus m_3 1 \oplus m_4 0$$
+
+$$c_3 = m_1 0 \oplus m_2 0 \oplus m_3 0 \oplus m_4 1$$
+
+$$c_4 = m_1 1 \oplus m_2 1 \oplus m_3 1 \oplus m_4 1$$
+
+Which reduces to:
+
+$$c_1 = m_1$$
+
+$$c_2 = m_2$$
+
+$$c_3 = m_3$$
+
+$$c_4 = m_4$$
+
+$$c_5 = m_1 \oplus m_2 \oplus m_3 \oplus m_4$$
+
+In other words, we get exactly what we had before:
+
+$$\vec{c} = \begin{bmatrix}m_1 & m_2 & m_3 & m_4 & m_1 \oplus m_2 \oplus m_3 \oplus m_4\end{bmatrix}$$
+
+Let's look again at the generator matrix.  In many coding schemes, as the one above, 
+the left side of the generator matrix is the square identity matrix, and the right side
+is the one that calculates the parity bits. This is no different in our example:
+
+$$G = \left[\begin{array}{cccc|c}
+1 & 0 & 0 & 0 & 1 \\
+0 & 1 & 0 & 0 & 1 \\
+0 & 0 & 1 & 0 & 1 \\
+0 & 0 & 0 & 1 & 1\end{array}\right]$$
+
+The generic structure of the standard form of the generator matrix is as follows:
+
+$${G} = \left[\begin{array}{c|c}I_k & P\end{array}\right]$$
+
+$$k$$ is the number of symbols in the original message.
+
+We can construct an associated partiy check matrix (let's call it $$H$$) to check the 
+validity of the received code word. In our case, there was only a single parity check equation 
+($$c_1 \oplus c_2 \oplus c_3 \oplus c_4 \oplus c_5$$). 
+
+If the general parity check equation is 
+
+$$H \times \vec{c}^{T} \stackrel{?}{=} 0$$
+
+then $$H$$ is:
+
+$$H = \left[\begin{array}{ccccc}1 & 1 & 1 & 1 & 1\end{array}\right]$$
 
 # Notes
 
@@ -234,6 +349,19 @@ of algorithm to correct the error.
 
 Since the generator matrix has the identify matrix on the left, encoding only needs to happen for the
 non-identity part of the matrix. That's the partity part P of the matrix.
+
+
+# MathJax
+
+$$\int e^{-kx} \, dx = -\frac{1}{k} e^{-kx}$$
+
+$$\left(
+\begin{array}{lcr}
+a & b & c \\
+d & e & f \\
+g & h & i
+\end{array}
+\right)$$
 
 
 # References
