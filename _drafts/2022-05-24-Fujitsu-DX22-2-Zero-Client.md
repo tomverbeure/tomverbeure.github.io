@@ -66,6 +66,62 @@ summary:
 * Skip's pano_progfpga project creates a tool, patch_progfpga, that, well, patches
   progfpga with a bitstream that you've created yourself.
 
+# Spartan 6 Multiboot Operation
+
+The Spartan 6 FPGA that's used in a Pano Logic G2 has this really cool feature that Xilinx calls "multiboot".
+It allows user logic that's already running on the FPGA to ask the FPGA to reset itself and 
+reconfigure itself with a bitstream that's located at a user specified location of the
+SPI flash.
+
+This makes it possible to select between multiple bitstream, depending on which feature
+is required.  A typical use case would be the following:
+
+* the FPGA first boots up with a bitstream that does a number of self-checks. 
+* when self-check are passing, the FPGA reboots again, but this time with a bitstream
+  that contains the actual, functional, application.
+
+There's more to it thought: the Spartan 6 also has a fallback feature. When loading from SPI flash
+fails (after a couple of retries), the FPGA goes into fallback mode and loads a so-called "golden"
+bitstream.
+
+All of this makes it possible to create a system for in-the-field updates, with fallback if things are going
+wrong. For example, when the power goes down during the programming operation of a new bitstream, and
+this new bitstream gets corrupted, there'll still be the golden bitstream as a fallback when power comes
+back up.
+
+The Pano Logic G2 makes use of this: its SPI flash contains a main, "multiboot", bitstream and 
+a fallback, "golden", bitstream.  Both bitstream contains the necessary logic to support flashing 
+a new bitstream image over Ethernet, so when progfpga fails, there's nothing to worry about.
+
+But what if progfpga worked fine **and you used it to flash you own custom bitstream**? Well, 
+unless you added yourself, your custom bitstream won't have SPI flashing functionality, or
+a way to reboot with the Pano Logic golden bitstream, so your only way to flash the SPI again
+is by using a JTAG connector. 
+
+Or... you use [panog2_ldr](https://github.com/skiphansen/panog2_ldr), another great project by
+Skip. Panog2_ldr replaces the original Pano Logic G2 updating infrastructure by a new, open
+source one, and adds an additional booting step so that it's always possible to reflash your Pano
+G2, even when it has your custom application bitstream!
+
+The panog2_ldr boot sequence is as follows:
+
+* Power up the Pano G2
+* Configure the FPGA with the panog2_ldr bitstream that's stored at the multiboot location
+* when an autoboot flag is set, stored in the SPI flash as well, and when the Pano button is
+  NOT pressed, immediately load the application bitstream. 
+
+The panog2_ldr bitstream constains a small open source RISC-V CPU system that borrows heavily
+from other open source projects:
+
+* the core SOC is UltraEmbedded's [fpga_test_soc](...)
+* the Ethernet MAC comes from 
+* 
+
+
+The details are described in 
+[Chapter 7 - Reconfiguration and Multiboot](/assets/panologic-g2/multiboot/xilinx_spartan6_config_ug380.pdf#page=127)
+of the Spartan-6 FPGA Configuration User Guide (UG380).
+
 
 
 # References
