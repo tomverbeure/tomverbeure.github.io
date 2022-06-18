@@ -5,6 +5,11 @@ date:   2019-05-11 00:00:00 -1000
 categories:
 ---
 
+**When this blog post was written, ADS-B Exchange had an API that was free for non-commerical use.
+This is not the case anymore. All references in this blog post to their free API are now outdated. 
+Check out [this page](https://www.adsbexchange.com/data/) on the ADS-B Exchanged website for 
+details about using their API.**
+
 * TOC
 {:toc}
 
