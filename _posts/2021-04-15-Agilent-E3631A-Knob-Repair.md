@@ -80,6 +80,20 @@ Just pull a bit, it should come off easily.
 
 ![Remove the rotary encoder nut](/assets/e3631a_repair/0c_remove_nut.jpg)
 
+
+**Fast Forward to "Lift PCB retaining tab and slide out PCB"**
+
+Kevin reported that it's possible to replace the rotary knobs by just removing
+the front panel, without the need to completely dismantle the rest of the unit:
+
+> After opening my first unit and making a repair, I realized that Agilent 
+> left enough slack in the front panel cable bundle such that you can make 
+> this repair without opening up the back frame, outer sleeve, and cage. To 
+> do this, do everything until "Remove back frame". Then, remove the front 
+> panel screws and gently pull the front panel out. Of course, the cable will 
+> still be attached, but you can fold it down far enough to lift the retaining 
+> tab and unplug the front cable bundle to detach the front panel PCB.
+
 **Remove back frame**
 
 If the power supply warranty sticker wasn't broken yet, removing the back frame wil
