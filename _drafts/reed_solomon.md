@@ -155,3 +155,7 @@ however, the correct value is the result that is most common.
 
 * [Wikipedia - Finite field arithmetic](https://en.wikipedia.org/wiki/Finite_field_arithmetic)
 * [Galois Fields and Hardware Design](https://my.ece.utah.edu/~kalla/ECE6745/gf.pdf)
+* [Comparison Bose-Chaudhuri-Hocquenghem BCH and Reed Solomon](https://www.itu.int/wftp3/av-arch/video-site/h261/H261_Specialists_Group/Contributions/476.pdf)
+* [Wikipedia - BCH code](https://en.wikipedia.org/wiki/BCH_code)
+* [NTPU - BCH Codes](https://web.ntpu.edu.tw/~yshan/BCH_code.pdf)
+* [The Error Correcting Codes (ECC) Page](http://www.eccpage.com/)
