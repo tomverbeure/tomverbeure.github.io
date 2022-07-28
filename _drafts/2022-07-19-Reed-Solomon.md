@@ -212,15 +212,14 @@ L(x) = y_0 \cdot \frac{x-x_1}{x_0-x_1} \frac{x-x_2}{x_0-x_2} ... \frac{x-x_n}{x_
 $$
 
 
-# Some Common Definitions
+# Some Often Used Terminology
 
 There is no rigid standard about which kind of letters or symbols to use when discussing coding
-theory, but there's a least some commonality between different text. I'll try to use them
-as good as I can.
+theory, but there's a least some commonality between different texts. 
 
 * a message 
 
-    A message is the uncoded piece of information that need to be encoded for storage or
+    A message is the original piece of information that need to be encoded for storage or
     transmission. A message is a sequence of symbols.
 
     For example, a message could be "Hello world ".
@@ -250,8 +249,15 @@ as good as I can.
     $$q$$ is often used as the number of elements in an alphabet.
 
     If we had a system where messages only consist of lower case letters and a space, then our
-    alphabet would be ('a', 'b', 'c', ... , 'z', ' '), and the size of the alphabet would be 
-    27.
+    alphabet would be ('A', ..., 'Z', 'a', 'b', 'c', ... , 'z', ' '), and the size of the alphabet 
+    would be 53. Almost all coding algorithms algorithms require the ability to perform mathematical 
+    operations such as addition, subtraction, multiplication and division on symbols of a word, so don't
+    expect to see this kind of alphabet in the real world!
+
+    In practice, the alphabet of most coding algorithms is a sequence of binary digits. 8 bits
+    is common, but it doesn't have to be. I hesitate to call it an 8-bit number, because
+    that would imply that regular integer math would be used on it, and that's almost never
+    the case. Instead, the operations of such an alphabet use the rules of a Galois field.
 
 * a code word
 
@@ -259,10 +265,10 @@ as good as I can.
     a Reed-Solomon encoder, a code word has a length $$n$$ symbols, where $$n>k$$ and the symbols
     are from the same alphabet as the message word.
 
-    Code words are often indicate with a vector $$s = (s_0, s_1, ... , s_{n-1})$$.
+    Code words are often indicated with a vector $$s = (s_0, s_1, ... , s_{n-1})$$.
 
     When our message of three 4-symbol messages words is converted into three 6-symbol code words, 
-    it look like this:
+    it looks like this:
 
     ('H', 'e', 'l', 'l', 'a', 'b'), ('o', ' ', 'w', 'o', 'g', 't'), ('r', 'l', 'd', ' ', 'm', 'j')
 
@@ -271,27 +277,38 @@ as good as I can.
     [systematic code](https://en.wikipedia.org/wiki/Systematic_code). As we'll soon see, not all coding 
     schemes are systematic in nature, but it's a nice property to have.
 
-In all the examples below, we will be using an alphabet that consists of regular, unlimited range 
-integers. The message words will have a length of 4, and code words will have a length 6. 
-In other words: $$k=4$$ and $$n=6$$.
+    For Reed-Solomon code, the length $$n$$ of a code word must be smaller or equal than the number of
+    elements of the alphabet that is uses.
 
-Using integers as symbols is a terrible choice: there is no real-world, practical encoding algorithm
-that uses them. But my primary goal is to first understand how Reed-Solomon codes work fundamentally.
-That's easier with integers.  Later on, we can improve the algorithm to something practical, by using an
+In all the examples below, the message words will have a length of 4, and code words will have a length 6. 
+We will be using an alphabet that consists of regular, unlimited range integer
+
+In other words: $$k=4$$, $$n=6$$, and the size of the alphabet will be unlimited.
+
+Using integers as symbols is a terrible choice: there are no real-world, practical encoding algorithms
+that use them. But my primary goal is to first understand how Reed-Solomon codes work fundamentally,
+and that's easier with integers. Later on, we can improve the algorithm to something practical, by using an
 alphabet that's a Galois field.
+
+If we'd want to send the "Hello world" message using an alphabet of integers, one possibility is
+to just convert each letter to their corresponding integer. For example, "Hello world " would be
+converted to $$(7, 30, 37, 37, 40, ...)$$, because 'A' is assigned a value of 0, 'B' a value of
+1, and so forth.
 
 # Reed Solomon Encoding through Polynomial Evaluation
 
-Reed-Solomon coding was introduced to the world by Irving S. Reed and Gustave Solomon with a
+Reed-Solomon codes were introduced to the world by Irving S. Reed and Gustave Solomon with a
 paper with the very unassuming title "Polynomial Codes over Certain Finite Fields." The
 4-page paper can be [purchased](https://doi.org/10.1137/0108018) for the low price of $36.75.
 You should definitely not use Google to find one of the many copies for free.
 
 Once you understand how Reed-Solomon coding and Galois fields work, the paper is surprisingly
-readable, and light on math too! But you don't even need to know Galois fields to understand 
-the core idea: regular integers do the job just fine.
+readable... by today's standards at least, and light on math too! But you don't even need to 
+know Galois fields to understand the core idea: regular integers do the job just fine.
 
-In the previous section, we learned that we can set up a third degree polynomial with 4 numbers: either
+So let's finally get to business!
+
+In an earlier section, we learned that we can set up a third degree polynomial with 4 numbers: either
 the 4 coefficients $$(c_0, c_1, c_2, c_3)$$, or 4 points $$f(x)$$ on the polynomial for some 
 given $$x$$ values.
 
@@ -300,7 +317,7 @@ Those additional points are not required to specify the polynomial, they are
 redundant, which is *exactly* what we're looking for: redundant information that allows us find the original
 values in case a value gets corrupted during transmission!
 
-And that's what Reed-Solomon encoding is all about:
+And that's what the original way of Reed-Solomon encoding is all about:
 
 **Creating redundant information by evaluating a polynomial for more $$x$$ values than is strictly necessary**.
 
@@ -308,109 +325,108 @@ Let's go through a concrete example where I want to setup a communication protoc
 consists of a sequence of numbers, but where I also want to add redundancy so that the message still can be 
 recovered after a corruption.
 
-Here's one way to go about it...
+Here's one way to go about it:
 
 **Protocol Specification**
 
-The transmitting and receiving parties must come up with some fixed aspects of the transmission protocol.
-These aspect are not message dependent and will be used for all communication between the 2 parties:
+The encoding and decoding parties must come up with some fixed parameters of the coding protocol
+are not message dependent: you set the parameters once and that's it:
 
-* Agree on the length of sequence. 
+* Agree on an alphabet.
 
-* Agree on the length of the message that is sent between transmitter and receiver
+* Agree on the length of the message word. 
 
-    This number must be larger than the length of the sequence. The longer the transmitted
-    message, the more redunancy.
+* Agree on the length of the code word.
 
-* Agree on how some polynomial $$f(x)$$ should be constructed.
+    The longer the code word, the more redundancy, the more corrupted symbols
+    can be error corrected.
 
-    For the receiver, it's easiest to use the numbers of the sequence as coefficients of the polynomial!
-    But that's not always the best choice. See later...
+* Agree on how some polynomial $$p(x)$$ should be constructed out of the symbols of the message word.
 
-* Agree with the receiving party which values of $$x$$ to use to evaluate the polynomial $$f(x)$$.
+    Let's just follow the paper and use the message word symbols as coefficients of the polynomial.
+    (But that's not always the best choice. See later sections...)
 
-* Agree that the message sent between transmitter and receiver are the values $$f(x)$$ for
-  the numbers of $$x$$ that we agreed on in the previous step.
+* Agree on values of $$x$$ for which we'll evaluate the polynomial $$p(x)$$.
 
-That's really it.
+* Agree that the code word is formed by $$p(x)$$ for the numbers of $$x$$ that were agreed on 
+  in the previous step.
 
+That's really it!
 
 Let's apply this to an example with the following protocol settings:
 
-* The length of the sequence with information is 4.
-* We want to 2 pieces of redundancy, so the message that we'll transmit has a length of 6.
-* The polynomial is always evaluated for the numbers $$(-1, 0, 1, 2, 3, 4)$$.
+* The alphabet are integers.
+* The size $$k$$ of the message word $$m$$ is 4.
+* We want to 2 redundant symbols, so the code word has length $$n$$ of 6.
+* The polynomial $$p(x)$$ is always evaluated for the following values of $$x$$: $$(-1, 0, 1, 2, 3, 4)$$.
 
-For a sequence of $$(2, 3, -5, 1)$$ that gives:
+Here's what happens of a message word with a value of $$(2, 3, -5, 1)$$:
 
-**Transmitter**
+**Encoder**
 
-* Create polynomial $$f(x)=2 + 3x -5x^2 + x^3$$.
+* Create polynomial $$p(x)=2 + 3x -5x^2 + x^3$$.
 
-    *This is obviously the same polynomial as the one that I used for the example in the
+    *This is obviously the same polynomial as the one that I used for the example in a
      previous section!*
 
-* Evaluate the polynomial $$f(x)$$ at the 6 locations: $$(-1, 7), (0,2), (1, 1), (2, -4), (3, -7), (4, -2)$$.
-* Transmit the values $$f(x)$$: $$(7,2,1,-4,-7,-2)$$.
+* Evaluate the polynomial $$p(x)$$ at the 6 locations of $$x$$: $$(-1, 7), (0,2), (1, 1), (2, -4), (3, -7), (4, -2)$$.
+* The code word is: $$(7,2,1,-4,-7,-2)$$.
 
-**Receiver**
+**Decoder**
 
-The receiver, on the other hand, does the following:
+The decoder, on the other hand, does the following:
 
-* Receive the 6 values. When there was no corruption, it will receive $$(7,2,1,-4,-7,-2)$$.
-* Take 4 of the 6 received values, and add their corresponding $$x$$ value. 
+* Get the 6 symbols of the code word. If there was no corruption, that's still $$(7,2,1,-4,-7,-2)$$.
+* Take any 4 of the 6 received symbols, and link them to their corresponding $$x$$ value. 
 
-    For example, $$(-1, 7), (0,2), (1, 1), (2, -4)$$.
+    If we take the first 4 code word symbols, we get $$(-1, 7), (0,2), (1, 1), (2, -4)$$.
 
-* Use these 4 points to derive the coefficients of the polynomial that was used by the transmitter,
-  using Gaussian elimination.
+* Use these 4 points to derive the coefficients of the polynomial $$p(x)$$ that was used by the 
+  transmitter, using Lagrange interpolation.
 
-    In the previous section, we already saw how the points $$(-1, 7), (0,2), (1, 1), (2, -4)$$
-    gave back the numbers $$(2, 3, -5, 1)$$.
+    In the section on Lagrange interpolation, we already saw how the points $$(-1, 7), (0,2), (1, 1), (2, -4)$$
+    result in coefficients $$(2, 3, -5, 1)$$.
 
-    With these coefficients, we've recovered the original message!
+    These coefficients are the recovered the original message words!
 
-The receiver picked 4 of the 6 received values to recover the coefficients, and ignored the 2 others, 
-so what was the point of sending those 2 extra? A real receiver will obviously be smarter and use
-those 2 additional points to either check the integrity of the received message, or even to correct it.
+The decoder picked 4 of the 6 code word symbols to recover the coefficients, and ignored the 2 others, 
+so what was the point of sending those 2 extra symbols? A real decoder will obviously be smarter and use
+those 2 additional symbols to either check the integrity of the received message, or even to correct
+corrupted values.
 
 Let's talk about that next...
 
 # A Simple Error Correcting Reed Solomon Decoder
 
-Reed-Solomon encoding is simple. Reed-Solomon decoder is harder.  In this blog post, I'll cover 
-the decoding algorithm that was suggested in the original Reed-Solomon paper, because that one is 
-trivially simple.
+Reed-Solomon encoding is simple. Reed-Solomon decoding is harder. In this blog post, I'll 
+only cover the decoding algorithm that was proposed in the original Reed-Solomon paper.
 
 Let's first talk about how many redundant numbers are needed to correct an error:
 to correct errors:
 
-**To correct up to $$s$$ errors, you need at least $$2s$$ redundant numbers.**
+**To correct up to $$s$$ symbol errors, you need at least $$2s$$ redundant symbols.**
 
-In the example above, 2 additional numbers were added, which allows us to correct 1 corrupt symbol.
+In the example above, 2 additional symbols were added, which allows us to correct 1 corrupt symbol.
 
 The original Reed-Solomon paper proposes the following algorithm: 
 
-* from all the received numbers, go through all distinct combinations of the minimum
-  required number of numbers
-* for each such combination, calculate the coefficients of the polynomial
-* count how many times each unique set of coefficients occurs
-* the set of coefficients with the highest count will be coefficients of the polynomial
-  that was used by the transmitter.
-
-Note that this will only work as long the number of corrupted errors doesn't exceed
-the maximum allowed.
+* From $$n$$ the received symbols of the code word, go through all combinations of $$k$$ out 
+  of $n$$ symbols.
+* For each such combination, calculate the coefficients of the polynomial.
+* Count how many times each unique set of coefficients occurs.
+* If there were $$s$$ corruptions or less, the set of coefficients with the highest count will 
+  be coefficients of the polynomial that was used by the encoder.
 
 Let's apply this algorithm to our example...
 
-* We received 6 numbers and know their corresponding $$x$$ coordinate:
+* Let's say the decoder received the following code word: $$(7, 2, 6, -4, -7, -2)$$.
+
+    Notice how the third symbol isn't 1 but 6. There was a corruption!
+
+* Associate each symbol with its corresponding $$x$$ value:
   $$(-1, 7), (0,2), (1, 6), (2, -4), (3, -7), (4, -2)$$.
 
-    Notice how the third coordinate isn't $$(1, 1)$$ but $$(1, 6)$$. There was a corruption
-    during transmission!
-
-* From these 6 coordinates, we need to draw all possible combinations of 4 elements.
-  Here they are:
+* From these 6 coordinates, we need to draw all combinations of 4 elements:
 
   $$(-1, 7),(0, 2),(1, 6),(2, -4)$$
 
@@ -444,8 +460,8 @@ Let's apply this algorithm to our example...
 
   There are 15 combinations.
 
-* For each of these 15 combinations, we now need to solve the set of 4 linear equations
-  to obtain the 4 polynomial coefficients:
+* For each of these 15 combinations, determine the 4 polynomial coefficients through
+  Lagrange interpolation:
 
   $$(-1, 7),(0, 2),(1, 6),(2, -4) \rightarrow (2, 8, -5/2, -3/2)$$
 
@@ -477,15 +493,15 @@ Let's apply this algorithm to our example...
 
   $$(1, 6),(2, -4),(3, -7),(4, -2) \rightarrow (2, 3, -5, 1)$$
 
-* The coefficients $$(2,3,-5,1)$$ comes up 6 times. All other solutions are different
+* The coefficients $$(2,3,-5,1)$$ come up 6 times. All other solutions are different
   from each other, so $$(2,3,-5,1)$$ is clearly the winner, and the correct solution!
 
 Conclusion: we have a very straightforward error correcting algorithm. However, it's not
-a practical algorithm: even for this toy example with an original message length of 4 and
-only 2 additional redudant symbols, we need to perform a Gaussian elimination 15 times.
+a practical algorithm: even for this toy example with a message word of size 4 and
+only 2 additional redudant symbols, we need to perform Lagrange interpolation 15 times.
 
-In the real world, a very popular choice is to have an original message of 223 numbers, and to
-add 22 redundant numbers for a total of 255.
+In the real world, a very popular choice is to have a message word of size 223, and a
+code word of size 255.
 
 The [formula to calculate the number of combinations](https://en.wikipedia.org/wiki/Combination) is: 
 
@@ -495,75 +511,127 @@ With $$r=223$$ and $$n=255$$, this gives a total of 50,964,019,775,576,912,153,7
 
 That's just not very practical...
 
-It's clear that a much better algorithm is required to make Reed-Solomon decoding practical. Luckily,
-these algorithms exists, and some of them aren't even that complicated, but that's 
-worthy of a separate blog post.
+It's clear that a much better algorithm is required to make Reed-Solomon decoding useful. Luckily,
+these algorithms exists, and some of them aren't even that complicated, but that's worthy of a 
+separate blog post.
 
-# Systematic Encoding
+# A Systematic Reed-Solomon Code
 
-The earlier described encoding procedure is the one that was proposed in the original
-Reed-Solomon paper. Let's recap how it works:
+Let's recap how the previous encoder worked:
 
-* The incoming numbers are used to *coefficients* of a polynomial $$f(x)$$.
-* The polynomial $$f(x)$$ is evaluated at a certain number of values $$x$$.
-* The values $$f(x)$$ are transmitted to the received.
+* The symbols of the message word are used as *coefficients* of a polynomial $$p(x)$$.
+* The polynomial $$p(x)$$ is evaluated for $$n$$ values of $$x$$.
+* The code word is the $$n$$ values of $$p(x)$$.
 
-This encoding system works fine, but note how the transmitted values are different
-than the numbers of the original message.
+This encoding system works fine, but note how all symbols of the code word are different
+from the symbols of the message word. In our example, message word $$(2,3,-5,1)$$ was 
+encoded as $$(7, 2, 6, -4, -7, -2)$$.
 
-In our example, incoming numbers $$(2,3,-5,1)$$ are encoded as $$(7, 2, 6, -4, -7, -2)$$.
+Wouldn't it be nice if we could encode our message word so that the original symbols are part
+of the code word, with some addition symbols tacked on for redunancy? In other words,
+encode $$(2,3,-5,1)$$ into something like $$(2,3,-5,1,r_4, r_5)$$. We already
+saw earlier that such a code is called a systematic code.
 
-Wouldn't it be nice if we could encode our message so that the original numbers are part
-of the encoded message, with some addition numbers tacked on for redunancy? In other words,
-encode $$(2,3,-5,1)$$ into $$(2,3,-5,1,r_4, r_5)$$.
+One of the benefits of a systematic code is that you don't need to run a decoder at all
+if there is some way to show early on that the code word was received without any error.
 
-One of the benefits of such an encoding scheme is that you can bypass the relatively complex
-decode scheme if you can show early on that the message has been received without any error.
+It's easy to modify the original encoding scheme into one that is systematic 
+**by treating the message word symbols as the result of evaluating a $$p(x)$$ polynomial**.
 
-A code with such a property is called a [systematic code](https://en.wikipedia.org/wiki/Systematic_code),
-and it's easy to modify the original encoding scheme in one that's systematic by treating the
-incoming numbers as values $$f(x)$$ of a polynomial.
+**Encoder**
 
-The encoding procedure is then as follows:
+* The message word symbols $$(m_0, m_1, ..., m_{k-1})$$ are the value of the polynomial 
+  $$p(x)$$ at certain agreed upon values of $$x$$.
+* Construct the coefficients of this polynomial $$p(x)$$ from the $$(x_i, m_i)$$ pairs.
 
-* The incoming numbers are the value of the polynomial $$f(x)$$ as certain agree-upon values of $$x$$.
-* Construct the coefficients of this polynomial $$f(x)$$ from the $$(x_i, f(x_i))$$ pairs.
+    Once again, Lagrange interpolation is used.
 
-    You can use Lagrange interpolation for this.
-
-* Evaluate this polynomial $$f(x)$$ at as many more values of $$x$$ as the desired number of redundant values.
-* Transmit the original incoming numbers and the additional values.
+* Evaluate this polynomial $$p(x)$$ for an additional $$(n-k)$$ values of $$x$$ to create
+  redundant symbols.
+* The code word consists of the message word followed by the redundant symbols.
 
 Let's try this out with the same number sequence as before: 
 
-* The incoming message is $$(2,3,-5,1)$$. These are now the $$f(x)$$ values. Let's still
-  use $$(-1, 0, 1, 2)$$ as corresponding $$x$$ values.
-* Construct the polynomial $$f(x)$$ out of the following coordinate pairs: $$((-1, 2), (0, 3), (1, 1), (2, 1))$$.
+* The message word is still $$(2,3,-5,1)$$. These are now considered the result of evaluating
+  polynomial $$p(x)$$ for the corresponding values $$(-1, 0, 1, 2)$$ of $$x$$.
+* Construct the polynomial $$p(x)$$ out of these coordinate pairs: $$((-1, 2), (0, 3), (1, 1), (2, 1))$$.
 
     I found [this website](https://www.dcode.fr/lagrange-interpolating-polynomial) to do this for me.
 
-    The result is: $$f(x) = \frac{23}{6}x^3 + \frac{9}{2}x^2 + \frac{22}{3}x^1 + 3$$
+    The result is: $$p(x) = \frac{23}{6}x^3 + \frac{9}{2}x^2 + \frac{22}{3}x + 3$$
 
-* Evaluate $$f(x)$$ for $$x$$ values $$3$$ and $$4$$ gives $$(3, 44)$$ and $$(4, 147)$$
-* Transmit the encoded message $$(2,3,-5,1,44,147)$$
+    *Note how some of the coefficients of $$p(x)$$ are rational numbers instead of integers. This
+    is one of the reasons why, in practice, integers shouldn't be used for Reed-Solomon coding!*
 
-On the receiving end, the procedure is *exactly* the same as before. 
+* Evaluating $$p(x)$$ for $$x$$ values of 3 and 4 gives 44 and 147.
+* The code word is $$(2,3,-5,1,44,147).$$
+
+The decoder is *exactly* the same as before! 
 
 # A Code Word as a Sequence of Polynomial Coefficients
 
-In the two encoding methods above, the code word, the sequence of numbers that are transmitted, consists
-of evaluated values of $$f(x)$$.  There another coding variant where the encoded message are the coefficients 
-of a polynomial.
+In the two encoding methods above, the code word consists of evaluated values of some polynomial $$p(x)$$. 
+There is yet another Reed-Solomon coding variant where the code word consists of the coefficients 
+of a polynomial. And since this variant is the most popular, we have to cover it too.
 
-These coefficients can't be just the coefficients that are formed by the incoming numbers because there
-wouldn't be any redunancy in that case. So we need to come up with something. Like before, we want the encoded 
-message to be systematic. This time there's a little bit of math involved, but don't worry.
+A message word has $$k$$ symbols, and we need $$n$$ symbols to form a code word. So if  we need
+$$(n-k)$$ coefficients, we need to construct a polynomial $$s(x)$$ of degree $$(n-1)$$.
 
-* Define polynomial $$p(x)$$. Its coefficients are the incoming numbers.
-* Define a so-called generator polynomial
+Here are some desirable properties polynomial $$s(x)$$:
 
+1. $$k$$ of its coefficients should be the same as the symbols of the message word to create
+  a systematic code.
+2. When $$s(x)$$ is evaluated at $$(n-k)$$ values of $$x$$, the result should be 0.
 
+    We'll soon see why that's useful.
 
+Here's how to do this:
+
+* Create a polynomial $$p(x)$$ with symbols $$(m_0, m_1, ..., m_{k-1})$$ as coefficients, just like
+  before.
+* Create a so-called generator polynomial $$g(x) = (x-x_0)(x-x_1)...(x-x_{n-k-1})$$.
+
+    As before, the values $$(x_0, x_1, ..., x_{n-k-1}$$ are fixed parameters of the protocol and
+    agreed upon between encoder and decoder up front. However, this time there are only are as $$(n-k)$$ 
+    values of $$x$$, as many as there are redundant symbols.
+
+    Polynomial $$g(x)$$ has a degree of $$(n-k)$$.
+
+* Perform a polynomial division of $$\frac{p(x)x^{n-k}}{g(x)}$$, such that 
+  $$p(x)x^{n-k} = q(x)g(x) + r(x)$$.
+
+    In other words, $$q(x)$$ is the result of the divison, and $$r(x)$$ is the remainder.
+
+* Define polynomial $$s(x)$$ as $$p(x)x^{n-k} - r(x)$$.
+
+Let's see what this gets us:
+
+**Desirable property 1: $$k$$ coefficients of $$s(x)$$ are $$(m_0, m_1, ..., m_{k-1})$$**
+
+* $$p(x)$$ has degree $$(k-1)$$. When multiplied by $$x^{n-k}$$, that results in 
+  a polynomial $$m_{0}x^{n-k} + m_{1}x^{n-k+1} + ... + m_{k-1}x^{n-1}$$. In other
+  words, it has a degree $$(n-1)$$, but the first non-zero coefficient is the one for
+  $$x^{n-k}$$.
+* $$r(x)$$ is the remainder of the division of polynomial $$p(x)x^{n-k}$$ with degree $$(n-1)$$
+  and $$g(x)$$ of degree $$(n-k)$$. The remainder of a polynomial division has a degree
+  that's equal to the degree of the divident minus 1: $$(n-k-1)$$. $$r(x) = r_0 + r_1 + ... + r_{n-k-1}$$.
+* There is no overlap in coefficients for $$x^i$$ between $$p(x)x^{n-k}$$ and $$r(x)$$: $$r(x)$$
+  goes from 0 to $$(n-k-1)$$ and $$p(x)x^{n-k}$$ goes from $$(n-k)$$ to $$(n-1)$$.
+  So if we subtract $$p(x)x^{n-k}$$ from $$r(x)$$, the coefficients of the 2 terms don't
+  interact. As a result, the coefficients of $$s(x)$$ for terms $$x^{n-k}$$ to $$x^{n-1}$$
+  are the same as coefficients $$m_0..m_{k-1}$$ of the message word. 
+  This satisfies the first desirable property.
+
+**Desirable property 2:$$s(x_i) = 0$$**
+
+That's easier to prove:
+
+* By definition, $$ s(x) = p(x)x^{n-k} - r(x)$$
+* By definition, $$p(x)x^{n-k} = q(x)g(x) + r(x)$$, so after substitution:
+  $$s(x) =  q(x)g(x) + r(x) - r(x)$$ and $$s(x) =  q(x)g(x)$$.
+* By definition, $$g(x)= (x-x_0)(x-x_1)...(x-x_{n-k-1})$$. Another substitution gives:
+  $$s(x) =  q(x)(x-x_0)(x-x_1)...(x-x_{n-k-1})$$.
+* Fill in any value $$x_i$$ and $$s(x_i)$$ evaluates to 0!
 
 # References
 
