@@ -79,6 +79,7 @@ Notes:
   ??? I don't understand the alpha^7 case though?
 
 
+
 Encoding methods:
 
 * Original view: codeword as a sequence of values
