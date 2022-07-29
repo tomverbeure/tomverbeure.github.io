@@ -572,12 +572,13 @@ The decoder is *exactly* the same as before!
 
 In the two encoding methods above, the code word consists of evaluated values of some polynomial $$p(x)$$. 
 There is yet another Reed-Solomon coding variant where the code word consists of the coefficients 
-of a polynomial. And since this variant is the most popular, we have to cover it too.
+of a polynomial. And since this variant is the most popular, we have to cover it too. To understand
+how it works, there's a bit more math involved, but an example later should make it all clear.
 
-A message word has $$k$$ symbols, and we need $$n$$ symbols to form a code word. So if  we need
-$$(n-k)$$ coefficients, we need to construct a polynomial $$s(x)$$ of degree $$(n-1)$$.
+A message word has $$k$$ symbols, and we need $$n$$ symbols to form a code word. If a code word
+consists of coefficients, we need to construct some polynomial $$s(x)$$ of degree $$(n-1)$$.
 
-Here are some desirable properties polynomial $$s(x)$$:
+Here are some desirable properties for $$s(x)$$:
 
 1. $$k$$ of its coefficients should be the same as the symbols of the message word to create
   a systematic code.
@@ -585,13 +586,13 @@ Here are some desirable properties polynomial $$s(x)$$:
 
     We'll soon see why that's useful.
 
-Here's how to do this:
+Here's a way to create a polynomial with these properties:
 
 * Create a polynomial $$p(x)$$ with symbols $$(m_0, m_1, ..., m_{k-1})$$ as coefficients, just like
   before.
 * Create a so-called generator polynomial $$g(x) = (x-x_0)(x-x_1)...(x-x_{n-k-1})$$.
 
-    As before, the values $$(x_0, x_1, ..., x_{n-k-1}$$ are fixed parameters of the protocol and
+    As before, the values $$(x_0, x_1, ..., x_{n-k-1})$$ are fixed parameters of the protocol and
     agreed upon between encoder and decoder up front. However, this time there are only are as $$(n-k)$$ 
     values of $$x$$, as many as there are redundant symbols.
 
@@ -600,7 +601,7 @@ Here's how to do this:
 * Perform a polynomial division of $$\frac{p(x)x^{n-k}}{g(x)}$$, such that 
   $$p(x)x^{n-k} = q(x)g(x) + r(x)$$.
 
-    In other words, $$q(x)$$ is the result of the divison, and $$r(x)$$ is the remainder.
+    In other words, $$q(x)$$ is the quotient of the divison, and $$r(x)$$ is the remainder.
 
 * Define polynomial $$s(x)$$ as $$p(x)x^{n-k} - r(x)$$.
 
@@ -609,12 +610,13 @@ Let's see what this gets us:
 **Desirable property 1: $$k$$ coefficients of $$s(x)$$ are $$(m_0, m_1, ..., m_{k-1})$$**
 
 * $$p(x)$$ has degree $$(k-1)$$. When multiplied by $$x^{n-k}$$, that results in 
-  a polynomial $$m_{0}x^{n-k} + m_{1}x^{n-k+1} + ... + m_{k-1}x^{n-1}$$. In other
-  words, it has a degree $$(n-1)$$, but the first non-zero coefficient is the one for
+  a polynomial $$m_{0}x^{n-k} + m_{1}x^{n-k+1} + ... + m_{k-1}x^{n-1}$$. 
+  The degree of $$p(x)x^{n-k}$$ is $$(n-1)$$, but its first non-zero coefficient is the one for
   $$x^{n-k}$$.
-* $$r(x)$$ is the remainder of the division of polynomial $$p(x)x^{n-k}$$ with degree $$(n-1)$$
-  and $$g(x)$$ of degree $$(n-k)$$. The remainder of a polynomial division has a degree
-  that's equal to the degree of the divident minus 1: $$(n-k-1)$$. $$r(x) = r_0 + r_1 + ... + r_{n-k-1}$$.
+* $$r(x)$$ is the remainder of the division of polynomial $$p(x)x^{n-k}$$, degree $$(n-1)$$,
+  and $$g(x)$$, degree $$(n-k)$$. The remainder of a polynomial division has a degree
+  that is at most the degree of the divident minus 1: $$(n-k-1)$$. And thus, 
+  $$r(x) = r_0 + r_1 + ... + r_{n-k-1}$$.
 * There is no overlap in coefficients for $$x^i$$ between $$p(x)x^{n-k}$$ and $$r(x)$$: $$r(x)$$
   goes from 0 to $$(n-k-1)$$ and $$p(x)x^{n-k}$$ goes from $$(n-k)$$ to $$(n-1)$$.
   So if we subtract $$p(x)x^{n-k}$$ from $$r(x)$$, the coefficients of the 2 terms don't
@@ -624,14 +626,40 @@ Let's see what this gets us:
 
 **Desirable property 2:$$s(x_i) = 0$$**
 
-That's easier to prove:
-
-* By definition, $$ s(x) = p(x)x^{n-k} - r(x)$$
+* By definition, $$s(x) = p(x)x^{n-k} - r(x)$$
 * By definition, $$p(x)x^{n-k} = q(x)g(x) + r(x)$$, so after substitution:
   $$s(x) =  q(x)g(x) + r(x) - r(x)$$ and $$s(x) =  q(x)g(x)$$.
 * By definition, $$g(x)= (x-x_0)(x-x_1)...(x-x_{n-k-1})$$. Another substitution gives:
   $$s(x) =  q(x)(x-x_0)(x-x_1)...(x-x_{n-k-1})$$.
 * Fill in any value $$x_i$$ and $$s(x_i)$$ evaluates to 0!
+
+What can we do with these properties? For that, we need to look at the decoder.
+
+The decoder will use the code word symbols as coefficients of a polynomial $$s'(x)$$. 
+If there was no corruption, $$s'(x)$$ will be the same as $$s(x)$$. Due to property
+2, the decoder can verify this by filling in $$x_i$$ into $$s'(x)$$ and check that the result is 0.
+
+The vector $$(s'(x_0), s'(x_1), ..., s'(x_{n-k-1}))$$ is called the *syndrome* of the
+received code word.
+
+If the syndrome is not equal to 0, we know that the received polynomial $$s'(x)$$ is not
+the same as the transmitted polynomial, and we can define an error polynomial $$e(x)$$ so
+that $$s'(x) = s(x) + e(x)$$. Polynomial $$e(x)$$ has the same degree $$(n-1)$$ as $$s(x)$$.
+
+Since $$s(x_i) = 0$$, it follows that $$e(x_i) = s'(x_i)$$. There are $$(n-k)$$ such
+equations.
+
+If we can find a way to derive the $$n$$ coefficients of $$e(x)$$ out of the $$(n-k)$$
+equations, we can derive $$s(x)$$ as $$s'(x)-e(x)$$. This is, of course, not 
+generally possible, but it *is* possible when half or less of the coefficients of 
+$$s'(x)$$ are correct, just like it was for the other coding variant.
+
+And the simply way to figure this out is again by going through all combinations and solving
+a set of equations.
+
+
+
+
 
 # References
 
