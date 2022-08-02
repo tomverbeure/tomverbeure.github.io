@@ -596,7 +596,7 @@ Here's a way to create a polynomial with these properties:
     agreed upon between encoder and decoder up front. However, this time there are only are as $$(n-k)$$ 
     values of $$x$$, as many as there are redundant symbols.
 
-    Polynomial $$g(x)$$ has a degree of $$(n-k)$$.
+    $$g(x)$$ expands to $$g_0 + g_1 x + ... + g_{n-k}x^{n-k}$$ and has a degree of $$(n-k)$$.
 
 * Perform a polynomial division of $$\frac{p(x)x^{n-k}}{g(x)}$$, such that 
   $$p(x)x^{n-k} = q(x)g(x) + r(x)$$.
@@ -639,15 +639,15 @@ The decoder will use the code word symbols as coefficients of a polynomial $$s'(
 If there was no corruption, $$s'(x)$$ will be the same as $$s(x)$$. Due to property
 2, the decoder can verify this by filling in $$x_i$$ into $$s'(x)$$ and check that the result is 0.
 
-The vector $$(s'(x_0), s'(x_1), ..., s'(x_{n-k-1}))$$ is called the *syndrome* of the
-received code word.
+Each value $$s'(x_i)$$ is called a *syndrome* of the received code word, so
+vector $$(s'(x_0), s'(x_1), ..., s'(x_{n-k-1}))$$ contains all the syndromes.
 
 If the syndrome is not equal to 0, we know that the received polynomial $$s'(x)$$ is not
 the same as the transmitted polynomial, and we can define an error polynomial $$e(x)$$ so
 that $$s'(x) = s(x) + e(x)$$. Polynomial $$e(x)$$ has the same degree $$(n-1)$$ as $$s(x)$$.
 
 Since $$s(x_i) = 0$$, it follows that $$e(x_i) = s'(x_i)$$. There are $$(n-k)$$ such
-equations.
+equations. Expanded, the set of equations looks like this:
 
 If we can find a way to derive the $$n$$ coefficients of $$e(x)$$ out of the $$(n-k)$$
 equations, we can derive $$s(x)$$ as $$s'(x)-e(x)$$. This is, of course, not 
@@ -657,9 +657,133 @@ $$s'(x)$$ are correct, just like it was for the other coding variant.
 And the simply way to figure this out is again by going through all combinations and solving
 a set of equations.
 
+Deriving a general error correction procedure is complicated and outside of the scope
+of this blog post, but I'll show a practical example where there's only 1 corrupted but
+unknow symbol, just like the examples above.
+
+Let's once again start with message word $$(2,3,-5,1)$$ and go through the motions.
+
+* The message word converts into polynomial $$p(x) = 2 + 3x - 5x^2 + x^3$$.
+* Let's use $$x_0 = 1$$ and $$x_1 = 2$$ as roots of the generator polynomial:
+  $$g(x) = (x-1)(x-2) = 2 -3x + x^2$$.
+* Divide $$p(x)x^2$$ by $$g(x)$$. 
+  [WolframAlpha](https://www.wolframalpha.com/input?i=%282%2B3x-5x%5E2%2Bx%5E3%29x%5E2%2F%28%28x-1%29%28x-2%29%29) is perfect
+  for this! It returns: $$x^5 - 5 x^4 + 3 x^3 + 2 x^2 = (x^3 - 2 x^2 - 5 x - 9)(x^2 - 3 x + 2) + (18 - 17 x)$$. We're
+  only in the last part, the remainder $$r(x) = (18 - 17 x)$$.
+* $$s(x) = p(x)x^2 - r(x)$$ or $$s(x) = (2 x^2 + 3 x^3 -5 x^4 +  x^5 ) - 18 + 17 x$$. 
+* The code word is $$(2, 3, -5, 1, -18, 17)$$.
+* As a verification step, you can fill in the values of 1 and 2 in $$s(x)$$. It will evaluate to 0, as it should.
+  [Here](https://www.wolframalpha.com/input?i=evaluate+x%5E5+-+5+x%5E4+%2B+3+x%5E3+%2B+2+x%5E2+-+%2818+-+17+x%29+at+1)
+  is a way to do that with WolframAlpha...
+
+That was the encoding step...
+
+Let's now do a decoding step when there's was a corruption.
+
+* The received code word is $$(2, 3, -4, 1, -18, 17)$$. The third symbol has been changed from
+  -5 to -4.
+* The received polynomial $$s'(x)$$ is thus $$s'(x) = (2 x^2 + 3 x^3 -4 x^4 +  x^5 ) - (18 - 17 x)$$. 
+* Fill in the roots of $$g(x)$$, 1 and 2, into $$s'(x)$$ to find the 2 syndromes: 
+  [$$s'(1)=1$$](https://www.wolframalpha.com/input?i=evaluate+x%5E5+-+4+x%5E4+%2B+3+x%5E3+%2B+2+x%5E2+-+%2818+-+17+x%29+at+1)
+  and [$$s'(2)=16$$](https://www.wolframalpha.com/input?i=evaluate+x%5E5+-+4+x%5E4+%2B+3+x%5E3+%2B+2+x%5E2+-+%2818+-+17+x%29+at+2).
+* The syndromes are not 0, there was a corruption!
+* There are 2 redundant symbols, so the maximum number of corrupted symbols we can recover is 1. The most
+  straightforward (and braindead) way to figure out which symbols was corrupted is to go through all
+  6 possibilities and see if we get a consistent equation. Like this:
+* Let's assume the first coefficient, 2, is wrong, and all the others are right. In that case, $$s_0$$
+  is an unknown, and all other coefficients are known: $$s(x) = s_0 x^2 + 3 x^3 -4 x^4 +  x^5 - 18 + 17x$$.  
+  If we fill in $$x=1$$, we get: $$s_0 +3 -4 +1 -18 +17 = 0 \rightarrow s_0 = -1$$. 
+  For $$x=2$$: $$4 s_0 +24 -64 +32 -18 +34 = 0 \rightarrow s_0 = 1/2$$. We have contradicting values
+  for $$s_0$$, so we can conclude that $$s_0$$ was not a corrupted coefficient.
+* We can do the same for all other coefficients. For all of them, you'll get conflicting values, except
+  for $$s_2$$.
+  For $$x=1$$: $$2 +3 + s_2 +1 -18 +17 = 0 \rightarrow s_2 = -5$$. 
+  And for $$x=2$$: $$8 +24 + 16 s_2 +32 -18 +34 = 0 \rightarrow s_2 = -5$$. The values match!
+* The received code word has been corrected to $$(2, 3, -5, 1, -18, 17)$$.
+
+# A First Look at a Hardware Implementation
+
+The third encoding method is the one that you'll find most often in the wild. That's because it requires
+the least amount of resources to implement in hardware. While intuitively it seems hardware to implement
+a polynomial division, it's in fact just the opposite!
+
+Let quickly revisit the divison for our example:
+
+$$
+\begin{aligned}
+\frac{p(x)x^2}{g(x)} & 
+    & = \begin{align*}
+        &\text{ }\text{ }\text{ }-2 x^4 + 4 x^3 -2x^2 -5x -9\\
+        x^2 - 3x + 2 &\overline{\big)-2 x^6 + 4 x^5 - 5 x^4 +3 x^3 +  2 x^2}\\
+        &\underline{\text{ }x^5 -3x^4 +2 x^3 }\\
+        &\text{ }\text{ }\text{ }-2x^4 +1x^3 +2x^2\\
+        &\text{ }\text{ }\underline{\text{ }-2x^4 + 6x^3 - 4  x^2}\\
+        &\text{ }\text{ }\text{ }\text{ }-5x^3 +6x^2\\
+        &\text{ }\text{ }\text{ }\underline{\text{ }-5x^3 + 15x^2 - 10 x}\\
+        &\text{ }\text{ }\text{ }\text{ }\text{ }-9 x^2 + 10 x\\
+        &\text{ }\text{ }\text{ }\text{ }\underline{\text{ }-9x^2 +27 x - 18}\\
+        &\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\bf{-17x+18}
+    \end{align*} \\
+\end{aligned}
+$$
+
+There are few things to note here:
+
+* We only care about the remainder. The quotient is never used during the encoding 
+  and the decoding process.
+* The coefficient for the highest exponent of generator $$g(x)$$ is always 1.
+* When we perform long division, it's always in 2 steps:
+    1. Multiply the divisor by the highest coefficient of the current remainder. Let's
+       call this the adjustment.
+    2. Subtract the adjustment from the remainder
+When you do this, the remainder starts with the full divisor, and then for each power
+of $$x$$, adjustments are subtracted. In other words, if we divide $f$(x)$$ by $$g(x)$$, then
+$$r_i = f_i - adj_7 g_4 - adj_6 g3 - adj_5 g2 - adj_4 g1 - adj_3 g0$$
+
+There are 3 interesting parts:
+* $$adj_i$$ only depends on divident and divider coefficients for exponents that are higher or equal than the current one.
+* Instead of adding $$f_i$$ to the remainder at the start of a division operation, we can add it
+  only when we need to calculate its corresponding adjustment value. 
+* When you do the previous step, the number of non-zero coefficients in the remainder is only as hight
+  as the number of non-zero coefficients in $$g(x)$$.
+
+The diagram below shows the traditional long division where the remainder starts
+as a copy of the dividend:
+
+Notice how the remainder starts with 5 non-zero coefficients, the number of coefficients
+of the divident.
+
+And here's the same long division where the divident coefficients are only 
+added right at the moment where they're needed: 
+
+The remainder has never more than 3 non-zero coefficients.
 
 
 
+
+
+
+
+* Have 2 memories, $$r_0$$ and $$r_1$$, initialize them at 0.
+* Receive the coefficients in descending order of x^{i}.
+* Receive $$c$$, the next coefficient of $$p(x)$$.
+* Send out $$c$$, unmodified.
+* Subtract memory $$r_0$$ from $$c$$.
+* Multiply $$c$$ by 
+
+
+$$
+i_0(x) = m_7 x^7 + m_6 x^6 + m_5 x^5 + m_4 x^4 + m_3 x^3  \\
+i_1(x) = i_0(x) - m_7 x^4 (x^3 + g_2 x^2 + g_1 x^1+ g_0 x^0) \\
+i_1(x) = i_0(x) - m_7 x^7 + m_{7}g_{2} x^6 + m_{7}g_{1} x^5+ m_{7}g_{0} x^4 \\
+i_1(x) = (m_6 - m_{7}g_{2}) x^6 + (m_5 - m_{7}g_{1}) x^5+ (m_4 - m_{7}g_{0}) x^4 - m_3 x^3 \\
+
+i_2(x) = i_1(x) - (m_6 - m_{7}g_{2}) x^3 (x^3 + g_2 x^2 + g_1 x^1+ g_0 x^0) \\
+i_2(x) = i_1(x) - (m_6 - m_{7}g_{2}) x^6 + (m_6 - m_{7}g_{2})g_2 x^5 + (m_6 - m_{7}g_{2})g_1 x^4+ (m_6 - m_{7}g_{2})g_0 x^3 \\
+$$
+
+
+# References
 
 # References
 
