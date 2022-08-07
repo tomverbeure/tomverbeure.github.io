@@ -713,32 +713,60 @@ Let's now do a decoding step when there's was a corruption.
 * The received code word has been corrected to $$(2, 3, -5, 1, -18, 17)$$. The message word is the first 4
   symbols of the code word.
 
-# A First Look at a Hardware Implementation
+# Polynomial Division in Hardware
 
 Reed-Solomon encoding with coefficients as code word is the method that you'll most often find in the wild, and
 we just saw that it uses polynomial division.
 
 How can we implement that in hardware?
 
-Let quickly revisit the divison for our example:
+Fundamentally, polynomial division works as follows:
 
-$$
-\begin{aligned}
-\frac{p(x)x^2}{g(x)} & 
-    & = \begin{align*}
-        &\text{ }\text{ }\text{ }-2 x^4 + 4 x^3 -2x^2 -5x -9\\
-        x^2 - 3x + 2 &\overline{\big)-2 x^6 + 4 x^5 - 5 x^4 +3 x^3 +  2 x^2}\\
-        &\underline{\text{ }x^5 -3x^4 +2 x^3 }\\
-        &\text{ }\text{ }\text{ }-2x^4 +1x^3 +2x^2\\
-        &\text{ }\text{ }\underline{\text{ }-2x^4 + 6x^3 - 4  x^2}\\
-        &\text{ }\text{ }\text{ }\text{ }-5x^3 +6x^2\\
-        &\text{ }\text{ }\text{ }\underline{\text{ }-5x^3 + 15x^2 - 10 x}\\
-        &\text{ }\text{ }\text{ }\text{ }\text{ }-9 x^2 + 10 x\\
-        &\text{ }\text{ }\text{ }\text{ }\underline{\text{ }-9x^2 +27 x - 18}\\
-        &\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\text{ }\bf{-17x+18}
-    \end{align*} \\
-\end{aligned}
-$$
+* Start with the divisor as initial remainder.
+* Subtract a multiple of the dividend from the remainder so that its highest power of $$x$$ becomes zero.
+
+    The multiple becomes a part of the quotient. What remains after the subtraction becomes
+    the new remainder.
+
+* Repeat the previous step until the highest non-zero coefficient of the remainder is for a power of 
+  $$x$$ that is lower than the dividend.
+
+This is exaclty what you do when performing a long division...
+
+Here's an example of dividing $$(-2 x^7 + 3 x^5 - x^4 + 10 x^3 -4 x^2)/(x^3-3x^2+2x-1)$$, though
+I put it in a spreadsheet:
+
+![Long division - standard way](/assets/reed_solomon/long_division_standard.png)
+
+The quotient $$q(x)$$ is $$ -2 x^4 -3 x^3 -6 x^2 -4 x -7$$ and the remainder $$r(x)$$ is $$-19 x^2 + 10 x -7$$.
+
+Marked in blue is the initial remainder, which is identical to the divisor. Since the highest coefficient of
+the divident is $$1$$, the multiple by which the divident gets adjusted is equal to the highest order
+coefficient of the remainder every step of the way.
+
+However, the steps above require that the divisor is fully known at the start of the whole operation. In a real
+Reed-Solomon encoder, the divisor, $$p(x)x^{n-k}$$ can have a lot of coefficients. For example, in the Voyager program, 
+$$p(x)$$ has 223 coefficients. It'd be great if we could rework the division so that we can perform it iteratively
+without the need to know the full divisor at the start.
+
+We can easily do that:
+
+![Long division - modified](/assets/reed_solomon/long_division_modified.png)
+
+In the modified version above, instead of starting with a remainder that has all the terms of the
+divisor added to it, the coefficients of the divisor are added step by step, right when they're
+needed to determine the next divident multiplier. The result of the division is obviously still
+the same.
+
+Also notice that the remainder, marked in green, has never more than 3 non-zero coefficient.
+
+When performed iteratively, the divider above can be converted in the following logic:
+
+
+
+
+
+
 
 There are few things to note here:
 
