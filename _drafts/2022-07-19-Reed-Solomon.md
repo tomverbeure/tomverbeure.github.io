@@ -1,7 +1,7 @@
 ---
 layout: post
-title: Understanding Reed-Solomon Error Correction Basics with Integer Math Only
-date:  2022-07-19 00:00:00 -1000
+title: Reed-Solomon Error Correcting Codes from the Bottom Up
+date:  2022-08-07 00:00:00 -1000
 categories:
 ---
 
@@ -28,18 +28,16 @@ categories:
 
 I've always been intimidated by coding techniques: encryption and decryption, hashing operations,
 error correction codes, and even compression and decompression techniques. It's not that I
-didn't know what they do, and there have been cases where I've used with them professionally, 
-but I felt that I never quite understood the basics, let alone had an intuitive understanding of 
-how they worked.
+didn't know what they do, but I often felt that I never quite understood the basics, let alone 
+had an intuitive understanding of how they worked.
 
-One coding technique that I've found intriguing was Reed-Solomon forward
-error correction (FEC). Until the discovery of even better coding techniques (Turbo codes and
-low-density parity codes), it was one of the most powerful ways to make data storage or
-data transmission resilient against corruption: the 
+Reed-Solomon forward error correction (FEC) is one such coding method. Until the discovery of 
+better coding techniques (Turbo codes and low-density parity codes), it was one of the most 
+powerful ways to make data storage or data transmission resilient against corruption: the 
 [Voyager spacecrafts](https://en.wikipedia.org/wiki/Voyager_program) used Reed-Solomon
 coding to 
 [transmit images when it was between Saturn and Uranus](https://en.wikipedia.org/wiki/Voyager_program#Communications), 
-and CDs can recover from scratches that corrupt up to 4000 bits thanks to some clever use of not one 
+and CDs can recover from scratches that corrupt up to 4000 bits thanks to the clever use of not one 
 but two Reed-Solomon codes. 
 
 The subject is covered in many college-level courses on coding and signal processing techniques, 
@@ -51,17 +49,17 @@ That changed when found this
 article. It explains how polynomials and polynomial evaluation at certain points are a way to
 create a code with redundancy, and how to recover the original message back from it. The article
 is excellent, and it makes some of what I'm covering below unnecessary or redundant (ha!), 
-because some parts of what follows will be a recreation of that material. However it's dumbed down 
-even more, and it tries to cover a larger variety of Reed-Solomon codes. 
+because some parts of what follows will be a recreation of that material. However my take on it
+has dumbed things down even more, and covers a larger variety of Reed-Solomon codes. 
 
-One of the best parts of that article is the focus on integer math. Academic papers or books about 
+One of the best parts of that article is the focus on integer math. Academic literature about 
 coding theory almost always start with the theory of finite fields, also known as Galois fields, and then 
 build on that when explaining coding algorithms. I found this one of the bigger obstacles in 
-understanding the fundamentals of Reed-Solomon coding, and BCH coding, a close relative: instead of 
-getting to know one new topic, you have to tackle two at the same time. 
+understanding the fundamentals of Reed-Solomon coding (and BCH coding, a close relative) because instead of 
+getting to know one new topic, you now have to tackle two at the same time. 
 
 For this reason, everything in this blog post will be integer math as well. Using integer math
-makes Reed-Solomon code impractical for real world use, but it results in a better understanding
+makes Reed-Solomon codes impractical for real world use, but it results in a better understanding
 about the fundamentals, before stepping up to the next level with the introduction of finite field
 math.
 
@@ -79,8 +77,10 @@ as possible.
 # A Quick Recap on Polynomials 
 
 It's impossible to discuss anything that's related to coding without touching the subject of polynomials.
-I'm assume that you've learned about integer based polynomials during algebra classes in high school
-or in college. A polynomial $$f(x)$$ of degree $$n$$ is a function that looks like this:
+I'm assuming that you've learned about integer based polynomials during algebra classes in high school
+or in college but here's a quick recap.
+
+A polynomial $$f(x)$$ of degree $$n$$ is a function that looks like this:
 
 $$f(x) = c_0 + c_1 x + c_2 x^2 + ... c_n x^n$$
 
@@ -89,7 +89,7 @@ added together.
 The polynomial can evaluated by replacing variable $$x$$ by some number for which you want to know the 
 value of the function. 
 
-You can also add, subtract, multiply or divide polynomials with each other.
+You can add, subtract, multiply or divide polynomials with each other.
 
 Let's illustrate this with some examples, and define $$f(x)$$ and $$g(x)$$ as follows:
 
@@ -98,7 +98,7 @@ f(x) & = 3 + 2 x + 5 x^2 - 4 x^3 \\
 g(x) & = 7 x - x^2 \\
 \end{aligned}$$
 
-Addition works by adding together the coefficients that belong to the same $$x^i$$:
+Addition and subtraction work by adding or subtracting together the coefficients that belong to the same $$x^i$$:
 
 $$\begin{aligned}
 f(x)+g(x) & = (3+0) + (2+7) x + (5-1) x^2 + (4+0) x^3 \\
@@ -143,7 +143,7 @@ Here's one the most important characteristics of polynomials:
 **Any polynomial function of degree $$n-1$$ is uniquely defined by any $$n$$ points that 
 lay on this function.**
 
-In other words, when I can give you the value $$f(x) = c_0 + c_1 x + c_2 x^2 + c_3 x^3$$ for any $$n$$ 
+In other words, when I give you the value $$f(x) = c_0 + c_1 x + c_2 x^2 + c_3 x^3$$ for any $$n$$ 
 distinct values of $$x$$,  you can derive the $$n$$ coefficients $$c_0$$ to $$c_{n-1}$$, and these
 values $$c_i$$ will be the same no matter which $$n$$ values of $$x$$ I used.
 
@@ -247,13 +247,13 @@ theory, but there's a least some commonality between different texts.
 
 * an alphabet
 
-    An alphabet is the set of values that can be used for each symbol. 
+    An alphabet is the full set of values that can be assigned to a symbol. 
 
     $$q$$ is often used as the number of values in an alphabet.
 
-    If we had a system where messages only consist of lower case letters and a space, then an
+    If we had a system where messages only consist of upper case and lower case letters and a space, then an
     alphabet could be ('A', ..., 'Z', 'a', 'b', 'c', ... , 'z', ' '), and the size of the alphabet 
-    would be 53. Almost all coding algorithms algorithms require the ability to perform mathematical 
+    would be 53. Almost all coding algorithms require the ability to perform mathematical 
     operations such as addition, subtraction, multiplication and division on symbols of a word, so don't
     expect to see this kind of alphabet in the real world!
 
@@ -266,11 +266,11 @@ theory, but there's a least some commonality between different texts.
 
     A code word is what you get after you run a message word through an encoder. In the case of
     a Reed-Solomon encoder, a code word has a length $$n$$ symbols, where $$n>k$$ and the symbols
-    are from the same alphabet as the message word.
+    are using the same alphabet as the message word.
 
     Code words are often indicated with a vector $$s = (s_0, s_1, ... , s_{n-1})$$.
 
-    When our message of three 4-symbol messages words is converted into three 6-symbol code words, 
+    When our message of three 4-symbol message words is converted into three 6-symbol code words, 
     it looks like this:
 
     ('H', 'e', 'l', 'l', 'a', 'b'), ('o', ' ', 'w', 'o', 'g', 't'), ('r', 'l', 'd', ' ', 'm', 'j')
@@ -301,7 +301,7 @@ converted to $$(7, 30, 37, 37, 40, ...)$$, because 'A' is assigned a value of 0,
 # Reed Solomon Encoding through Polynomial Evaluation
 
 Reed-Solomon codes were introduced to the world by Irving S. Reed and Gustave Solomon with a
-paper with the very unassuming title "Polynomial Codes over Certain Finite Fields." The
+paper with the unassuming title "Polynomial Codes over Certain Finite Fields." The
 4-page paper can be [purchased](https://doi.org/10.1137/0108018) for the low price of $36.75.
 You should definitely not use Google to find one of the many copies for free.
 
@@ -309,7 +309,7 @@ Once you understand how Reed-Solomon coding and Galois fields work, the paper is
 readable, by today's standards at least, and light on math too. Let's get to business
 and explain how things work so that you can read the paper as well.
 
-In an earlier section, we learned that we can set up a third degree polynomial with 4 numbers: either
+In an earlier section, we saw that we can set up a third degree polynomial with 4 numbers: either
 the 4 coefficients $$(c_0, c_1, c_2, c_3)$$, or 4 points $$f(x)$$ on the polynomial for some 
 given $$x$$ values.
 
@@ -318,7 +318,7 @@ Those additional points are not required to specify the polynomial, they are
 redundant, which is *exactly* what we're looking for: redundant information that allows us find the original
 values in case a value gets corrupted during transmission!
 
-And that's what the original way of Reed-Solomon encoding is all about:
+And that's what the original way of Reed-Solomon coding is all about:
 
 **Creating redundant information by evaluating a polynomial at more values of $$x$$ than is strictly necessary**.
 
@@ -335,9 +335,9 @@ that are not message dependent: you set the parameters once and that's it:
 
 * Agree on an alphabet.
 
-* Agree on the length of the message word. 
+* Agree on the length $$k$$ of the message word. 
 
-* Agree on the length of the code word.
+* Agree on the length $$n$$ of the code word.
 
     The longer the difference in length between code word and message word, the more redundancy, and 
     the more corrupted symbols can be error corrected.
@@ -360,22 +360,22 @@ Let's apply this to an example with the following protocol settings:
 * The size $$k$$ of the message word $$m$$ is 4.
 * We want to 2 redundant symbols, so the code word has length $$n$$ of 6.
 * The polynomial $$p(x)$$ is always evaluated for the following values of $$x$$: $$(-1, 0, 1, 2, 3, 4)$$.
+  Note that there are as many values $$x_i$$ as there are symbols in a code word.
 
-Here's what happens of a message word with a value of $$(2, 3, -5, 1)$$:
+Here's what happens to a message word with a value of $$(2, 3, -5, 1)$$:
 
 **Encoder**
 
 * Create polynomial $$p(x)=2 + 3x -5x^2 + x^3$$.
 
-    *This is obviously the same polynomial as the one that I used for the example in a
-     previous section!*
+    *I'm reusing here the polynomial that I used for the example in a previous section.*
 
 * Evaluate the polynomial $$p(x)$$ at the 6 locations of $$x$$: $$(-1, 7), (0,2), (1, 1), (2, -4), (3, -7), (4, -2)$$.
 * The code word is: $$(7,2,1,-4,-7,-2)$$.
 
 **Decoder**
 
-The decoder, on the other hand, does the following:
+Meanwhile, the decoder does the following:
 
 * Get the 6 symbols of the code word. If there was no corruption, that's still $$(7,2,1,-4,-7,-2)$$.
 * Take any 4 of the 6 received symbols, and link them to their corresponding $$x$$ value. 
@@ -385,13 +385,13 @@ The decoder, on the other hand, does the following:
 * Use these 4 points to derive the coefficients of the polynomial $$p(x)$$ that was used by the 
   transmitter.
 
-    In an earlier section, we already saw how Gaussian elimination with the points $$(-1, 7), (0,2), (1, 1), (2, -4)$$
+    We already saw how Gaussian elimination with the points $$(-1, 7), (0,2), (1, 1), (2, -4)$$
     results in coefficients $$(2, 3, -5, 1)$$.
 
     These coefficients are the symbols of the original message word!
 
 The decoder picked 4 of the 6 code word symbols to recover the coefficients, and ignored the 2 others, 
-so what was the point of sending those 2 extra symbols? A real decoder will obviously be smarter and use
+so what was the point of sending those 2 extra symbols? A real decoder will be smarter and use
 those 2 additional symbols to either check the integrity of the received message, or to correct
 corrupted values.
 
@@ -494,11 +494,11 @@ Here's how to works out for our example:
   from each other, so $$(2,3,-5,1)$$ is the winner, and the correct solution!
 
 This is a very straightforward error correcting algorithm, but it's not
-a practical one: even for this toy example with a message word of size 4 and
+a usable one: even for this toy example with a message word of size 4 and
 only 2 additional redudant symbols, we need to determine the polynomial coefficients 15 times.
 
-In the real world, a very popular choice is to have a message word of size 223, and a
-code word of size 255.
+In the real world, a very popular configuration is to have a message word with 223, and a
+code word with 255 symbols.
 
 The [formula to calculate the number of combinations](https://en.wikipedia.org/wiki/Combination) is: 
 
@@ -517,7 +517,7 @@ separate blog post.
 Let's recap how the previous encoder worked:
 
 * The symbols of the message word are used as *coefficients* of a polynomial $$p(x)$$.
-* The polynomial $$p(x)$$ is evaluated for $$n$$ values of $$x$$.
+* The polynomial $$p(x)$$ is evaluated for $$n$$ fixed values of $$x$$.
 * The code word is the $$n$$ values of $$p(x)$$.
 
 This encoding system works fine, but note how all symbols of the code word are different
@@ -550,12 +550,14 @@ Let's try this out with the same number sequence as before:
   polynomial $$p(x)$$ for the corresponding values $$(-1, 0, 1, 2)$$ of $$x$$.
 * Construct the polynomial $$p(x)$$ out of these coordinate pairs: $$((-1, 2), (0, 3), (1, 1), (2, 1))$$.
 
-    I found [this website](https://www.dcode.fr/lagrange-interpolating-polynomial) to do this for me.
+    I found [this website](https://www.dcode.fr/lagrange-interpolating-polynomial) to do that for me.
+    It uses the Lagrange interpolation method, but Gaussian elimination would have given the
+    same polynomial.
 
     The result is: $$p(x) = \frac{23}{6}x^3 + \frac{9}{2}x^2 + \frac{22}{3}x + 3$$
 
     *Note how some of the coefficients of $$p(x)$$ are rational numbers instead of integers. This
-    is one of the reasons why, in practice, integers shouldn't be used for Reed-Solomon coding!*
+    is one of the reasons why integers shouldn't be used for Reed-Solomon coding!*
 
 * Evaluating $$p(x)$$ for $$x$$ values of 3 and 4 gives 44 and 147.
 * The code word is $$(2,3,-5,1,44,147).$$
@@ -587,7 +589,7 @@ Here's a way to create a polynomial with these properties:
 * Create a so-called generator polynomial $$g(x) = (x-x_0)(x-x_1)...(x-x_{n-k-1})$$.
 
     As before, the values $$(x_0, x_1, ..., x_{n-k-1})$$ are fixed parameters of the protocol and
-    agreed upon between encoder and decoder up front. However, this time there are only are as $$(n-k)$$ 
+    agreed upon between encoder and decoder up front. However, this time there are only are $$(n-k)$$ 
     values of $$x_i$$, as many as there are redundant symbols.
 
     $$g(x)$$ expands to $$g_0 + g_1 x + ... + g_{n-k}x^{n-k}$$ and has a degree of $$(n-k)$$.
@@ -626,7 +628,7 @@ Let's see what this gets us:
   $$s(x) =  q(x)g(x) + r(x) - r(x)$$ and $$s(x) =  q(x)g(x)$$.
 * By definition, $$g(x)= (x-x_0)(x-x_1)...(x-x_{n-k-1})$$. Another substitution gives:
   $$s(x) =  q(x)(x-x_0)(x-x_1)...(x-x_{n-k-1})$$.
-* Fill in any value $$x_i$$ and $$s(x_i)$$ evaluates to 0!
+* $$x_i$$ are roots of $$g(x)$$, so fill in any value $$x_i$$ and $$s(x_i)$$ evaluates to 0!
 
 What can we do with these properties? For that, we need to look at the decoder.
 
@@ -653,7 +655,8 @@ $$
 
 If we can find a way to derive the $$n$$ coefficients of $$e(x)$$ out of the $$(n-k)$$
 equations, we can derive $$s(x)$$ as $$s'(x)-e(x)$$. This is, of course, not 
-generally possible, but it *is* possible when half or less of the coefficients of 
+generally possible: there are more unknowns than there are equations.
+But it *is* possible when half or less of the coefficients of 
 $$s'(x)$$ are correct, just like it was for the other coding variant.
 
 And the simple way to figure this out is again by going through all combinations and solving
@@ -663,7 +666,8 @@ Deriving an efficient general error correction procedure is complicated and outs
 of the scope of this blog post, but I'll show a practical example where there's only 1 corrupted but
 unknown symbol, just like the examples above.
 
-Let's once again start with message word $$(2,3,-5,1)$$ and go through the motions.
+Let's once again start with message word $$(2,3,-5,1)$$ and go through the encoding and decoding
+steps.
 
 **Encoder**
 
@@ -673,7 +677,7 @@ Let's once again start with message word $$(2,3,-5,1)$$ and go through the motio
 * Divide $$p(x)x^2$$ by $$g(x)$$. 
   [WolframAlpha](https://www.wolframalpha.com/input?i=%282%2B3x-5x%5E2%2Bx%5E3%29x%5E2%2F%28%28x-1%29%28x-2%29%29) is perfect
   for this! It returns: $$x^5 - 5 x^4 + 3 x^3 + 2 x^2 = (x^3 - 2 x^2 - 5 x - 9)(x^2 - 3 x + 2) + (18 - 17 x)$$. We're
-  only in the last part, the remainder $$r(x) = (18 - 17 x)$$.
+  only interested in the last part, the remainder $$r(x) = (18 - 17 x)$$.
 * $$s(x) = p(x)x^2 - r(x)$$ or $$s(x) = (2 x^2 + 3 x^3 -5 x^4 +  x^5 ) - 18 + 17 x$$. 
 * The code word is $$(2, 3, -5, 1, -18, 17)$$.
 * As a verification step, you can fill in the values of 1 and 2 in $$s(x)$$. It will evaluate to 0, as it should.
@@ -692,7 +696,7 @@ Let's now do a decoding step when there's was a corruption.
   and [$$s'(2)=16$$](https://www.wolframalpha.com/input?i=evaluate+x%5E5+-+4+x%5E4+%2B+3+x%5E3+%2B+2+x%5E2+-+%2818+-+17+x%29+at+2).
 * The syndromes are not 0, there was a corruption!
 * There are 2 redundant symbols, so the maximum number of corrupted symbols we can recover is 1. The most
-  straightforward (and braindead) way to figure out which symbol was corrupted is to go through all
+  straightforward way to figure out which symbol was corrupted is to go through all
   6 possibilities and see if we get a consistent equation. Like this:
 * Let's assume the first coefficient $$s_0$$ is wrong, and all the others are right. In that case, $$s_0$$
   is an unknown, and all other coefficients are known: $$s(x) = s_0 x^2 + 3 x^3 -4 x^4 +  x^5 - 18 + 17x$$.  
@@ -704,7 +708,7 @@ Let's now do a decoding step when there's was a corruption.
   We have contradicting values for $$s_0$$, so we can conclude that $$s_0$$ was not a corrupted coefficient.
 
 * We can do the same for all other coefficients. For all of them, you'll get conflicting values, except
-  for $$s_2$$.
+  for $$s_2$$:
 
   For $$x=1$$: $$2 +3 + s_2 +1 -18 +17 = 0 \rightarrow s_2 = -5$$. 
 
@@ -733,20 +737,20 @@ Fundamentally, polynomial division works as follows:
 
 This is exaclty what you do when performing a long division...
 
-Here's an example of dividing $$(-2 x^7 + 3 x^5 - x^4 + 10 x^3 -4 x^2)/(x^3-3x^2+2x-1)$$, though
-I put it in a spreadsheet:
+Here's an example of dividing $$(-2 x^7 + 3 x^5 - x^4 + 10 x^3 -4 x^2)/(x^3-3x^2+2x-1)$$, performed in 
+a spreadsheet:
 
 ![Long division - standard way](/assets/reed_solomon/long_division_standard.png)
 
 The quotient $$q(x)$$ is $$ -2 x^4 -3 x^3 -6 x^2 -4 x -7$$ and the remainder $$r(x)$$ is $$-19 x^2 + 10 x -7$$.
 
 Marked in blue is the initial remainder, which is identical to the divisor. Since the highest coefficient of
-the divident is $$1$$, the multiple by which the divident gets adjusted is equal to the highest order
+the dividend is $$1$$, the multiple by which the dividend gets adjusted is equal to the highest order
 coefficient of the remainder every step of the way.
 
 However, the steps above require that the divisor is fully known at the start of the whole operation. In a real
 Reed-Solomon encoder, the divisor, $$p(x)x^{n-k}$$ can have a lot of coefficients. For example, in the Voyager program, 
-$$p(x)$$ has 223 coefficients. It'd be great if we could rework the division so that we can perform it iteratively
+$$p(x)$$ has 223 coefficients. It'd be great if we could rework the division so that we can perform it sequentially
 without the need to know the full divisor at the start.
 
 We can easily do that:
@@ -755,143 +759,70 @@ We can easily do that:
 
 In the modified version above, instead of starting with a remainder that has all the terms of the
 divisor added to it, the coefficients of the divisor are added step by step, right when they're
-needed to determine the next divident multiplier. The result of the division is obviously still
+needed to determine the next dividend multiplier. The result of the division is obviously still
 the same.
 
-Also notice that the remainder, marked in green, has never more than 3 non-zero coefficient.
+Also notice that the remainder, marked in green, has never more than 3 non-zero coefficients.
 
-When performed iteratively, the divider above can be converted in the following logic:
+When performed sequentially, the divider above can be implemented with the following logic:
 
+![Divider Hardware diagram](/assets/reed_solomon/reed_solomon-divider_diagram.png)
 
+* At the bottom left, we have an input with the divisor $$p(x)$$. 
+* On the right, there's the output, which can either be the quotient $$q(x)$$ or the remainder $$r(x)$$,
+  dependent on whether `force_zero` is deasserted or not.
+* 3 registers contain the current remainder
+* The circles marked $$g_0, g_1, g_2$$ multiply dividend by the adjustment factor.
 
+When we apply the divisor to the $$p(x)$$ input in order of descending powers of $$x^i$$, we get
+the following animation:
 
+![Divider Hardware animation](/assets/reed_solomon/divider_steps.gif)
 
+A full cycle is 8 steps:
 
+* during the first 5 steps, the output contains the same quotient values as the one
+  calculated by the long division.
+* during the last 3 steps, the remainder rolls out.
+* while shifting out the remainder values, the remainder registers are gradually
+  re-initialized with a value of 0, so that a division cycle can immediately restart
+  again at step 1 for the next divisor.
 
-There are few things to note here:
+# Reed-Solomon Encoding in Hardware
 
-* We only care about the remainder. The quotient is never used during the encoding 
-  and the decoding process.
-* The coefficient for the highest exponent of generator $$g(x)$$ is always 1.
-* When we perform long division, it's always in 2 steps:
-    1. Multiply the divisor by the highest coefficient of the current remainder. Let's
-       call this the adjustment.
-    2. Subtract the adjustment from the remainder
-When you do this, the remainder starts with the full divisor, and then for each power
-of $$x$$, adjustments are subtracted. In other words, if we divide $f$(x)$$ by $$g(x)$$, then
-$$r_i = f_i - adj_7 g_4 - adj_6 g3 - adj_5 g2 - adj_4 g1 - adj_3 g0$$
+In the previous section, we developed a sequential polynomial divider in hardware that outputs
+both the quotient and the remainder.
 
-There are 3 interesting parts:
-* $$adj_i$$ only depends on divident and divider coefficients for exponents that are higher or equal than the current one.
-* Instead of adding $$f_i$$ to the remainder at the start of a division operation, we can add it
-  only when we need to calculate its corresponding adjustment value. 
-* When you do the previous step, the number of non-zero coefficients in the remainder is only as hight
-  as the number of non-zero coefficients in $$g(x)$$.
+For a systematic Reed-Solomon encoder that outputs polynomial coefficients, the output should
+be the input, followed by the remainder. So a small modification is required:
 
-The diagram below shows the traditional long division where the remainder starts
-as a copy of the dividend:
+![Reed Solomon Encoder diagram](/assets/reed_solomon/reed_solomon-reed_solomon_diagram.png)
 
-Notice how the remainder starts with 5 non-zero coefficients, the number of coefficients
-of the divident.
+The *only* difference compared to the hardware of a regular polynomial divider is the addition
+of an output multiplexer that allows us to route the input directly to the output! 
+`force_zero` and `select_output` can be wired together.
 
-And here's the same long division where the divident coefficients are only 
-added right at the moment where they're needed: 
+If you do a Google image search for "reed solomon encoder", you'll get a million variations
+of this diagram, with one exception: you won't find any $$-1$$ multiplier. This is because
+my Reed-Solomon encoder uses integer operations. In Galois math, subtraction and addition 
+are the same operation.
 
-The remainder has never more than 3 non-zero coefficients.
+The bus size of the hardware presented here is not defined, but for integer operations, the number
+of bits needed would be be much larger than the number of bits of the incoming symbols. Another
+big negative of using integers for these kind of coders. With Galois math, the result of
+any operation stays within the same range as the operands: an operation between 2 symbols that 
+can be represented with 8 bits, will still be 8 bits, even if it's a multiplication.
 
+# Conclusion
 
+This concludes a first look at Reed-Solomon codes. There is a lot that was not discussed: Galois Field
+mathematics, Galois Field hardware logic, decoding algorithms, the link between Reed-Solomon
+codes and BCH codes, and much more.
 
+In the future, I'd love to try out Reed-Solomon codes on some practical examples, but who knows
+if I'll ever get to that.
 
-
-
-
-* Have 2 memories, $$r_0$$ and $$r_1$$, initialize them at 0.
-* Receive the coefficients in descending order of x^{i}.
-* Receive $$c$$, the next coefficient of $$p(x)$$.
-* Send out $$c$$, unmodified.
-* Subtract memory $$r_0$$ from $$c$$.
-* Multiply $$c$$ by 
-
-
-$$
-i_0(x) = m_7 x^7 + m_6 x^6 + m_5 x^5 + m_4 x^4 + m_3 x^3  \\
-i_1(x) = i_0(x) - m_7 x^4 (x^3 + g_2 x^2 + g_1 x^1+ g_0 x^0) \\
-i_1(x) = i_0(x) - m_7 x^7 + m_{7}g_{2} x^6 + m_{7}g_{1} x^5+ m_{7}g_{0} x^4 \\
-i_1(x) = (m_6 - m_{7}g_{2}) x^6 + (m_5 - m_{7}g_{1}) x^5+ (m_4 - m_{7}g_{0}) x^4 - m_3 x^3 \\
-
-i_2(x) = i_1(x) - (m_6 - m_{7}g_{2}) x^3 (x^3 + g_2 x^2 + g_1 x^1+ g_0 x^0) \\
-i_2(x) = i_1(x) - (m_6 - m_{7}g_{2}) x^6 + (m_6 - m_{7}g_{2})g_2 x^5 + (m_6 - m_{7}g_{2})g_1 x^4+ (m_6 - m_{7}g_{2})g_0 x^3 \\
-$$
-
-
-# Lagrange Interpolation Polynomial
-
-
-When given a set of points of a polynomial, we can generate the coefficient by constructing
-the [Lagrange interpolating polynomial](https://en.wikipedia.org/wiki/Systematic_code),
-or in short, but using Lagrange interpolation.
-
-A Lagrange polynomial looks like this:
-
-$$
-L(x) = y_0 \cdot \frac{x-x_1}{x_0-x_1} \frac{x-x_2}{x_0-x_2} ... \frac{x-x_n}{x_0-x_n} + \\
-       y_1 \cdot \frac{x-x_0}{x_1-x_0} \frac{x-x_2}{x_1-x_2} ... \frac{x-x_n}{x_1-x_n} + \\
-       ... \\
-       y_n \cdot \frac{x-x_0}{x_n-x_0} \frac{x-x_1}{x_n-x_2} ... \frac{x-x_{n-1}}{x_n-x_{n-1}} + \\
-$$
-
-The process is quite straightforward: you create a function that sums as many polynomial terms $$t_i(x)$$ as
-there are points. Each term takes care of one of the points $$(x_i,y_i)$$: term $$t_i(x)$$
-evaluate to $$y_i$$ when $$x=x_i$$, and it evaluates to 0 when $$x=x_j$$, where $$j<>i$$.
-
-Let's put that to practice with the 4 points that we have.
-
-Term $$t_0(x)$$ is for point $$(-1,7)$$:
-
-$$
-t_0(x) = 7 \cdot \frac{x - 0}{-1 - 0} \cdot \frac{x - 1}{-1 - 1} \cdot \frac{x - 2}{-1 - 2}
-$$
-
-When we fill in $$-1$$ in $$t_0(x)$$, we get:
-
-$$
-t_0(-1) = 7 \cdot \frac{-1 - 0}{-1 - 0} \cdot \frac{-1 - 1}{-1 - 1} \cdot \frac{-1 - 2}{-1 - 2} = 7
-$$
-
-And when we fill in the $$x$$ value of any of the other points, for example $$2$$, we get:
-
-$$
-t_0(2) = 7 \cdot \frac{2 - 0}{-1 - 0} \cdot \frac{2 - 1}{-1 - 1} \cdot \frac{2 - 2}{-1 - 2} = 0
-$$
-
-The general equation for each term is:
-
-$$
-t_i(x) = y_i \cdot \frac{(x-x_0)}{(x_i-x_0)} \cdots \frac{(x-x_{i-1})}{(x_i-x_{i - 1})} \frac{(x-x_{i+1})}{(x_i-x_{i+1})} \cdots \frac{(x-x_{n-1})}{(x_i-x_{n-1})} \\
-$$
-
-
-Let's create $$t_i(x)$$ for all points:
-
-$$
-t_0(x) =  7 \cdot \frac{x -  0}{-1 - 0} \cdot \frac{x - 1}{-1 - 1} \cdot \frac{x - 2}{-1 - 2} \\
-t_1(x) =  2 \cdot \frac{x +  1}{ 0 + 1} \cdot \frac{x - 1}{ 0 - 1} \cdot \frac{x - 2}{ 0 - 2} \\
-t_2(x) =  1 \cdot \frac{x +  1}{ 1 + 1} \cdot \frac{x - 0}{ 1 - 0} \cdot \frac{x - 2}{ 1 - 2} \\
-t_3(x) = -4 \cdot \frac{x +  1}{ 2 + 1} \cdot \frac{x - 0}{ 2 - 0} \cdot \frac{x - 1}{ 2 - 1} \\
-$$
-
-Simplify:
-
-$$
-t_0(x) =  7 \cdot \frac{x -  0}{-1 - 0} \cdot \frac{x - 1}{-1 - 1} \cdot \frac{x - 2}{-1 - 2} \\
-t_1(x) =  2 \cdot \frac{x +  1}{ 0 + 1} \cdot \frac{x - 1}{ 0 - 1} \cdot \frac{x - 2}{ 0 - 2} \\
-t_2(x) =  1 \cdot \frac{x +  1}{ 1 + 1} \cdot \frac{x - 0}{ 1 - 0} \cdot \frac{x - 2}{ 1 - 2} \\
-t_3(x) = -4 \cdot \frac{x +  1}{ 2 + 1} \cdot \frac{x - 0}{ 2 - 0} \cdot \frac{x - 1}{ 2 - 1} \\
-$$
-
-And add these 4 terms together:
-
-$$f(x) = t_0(x) + t_1(x) + t_2(x) + t_3(x)$$
+If you've made it this far, I hope that this writedown was as useful for you as it was for me.
 
 
 # References
@@ -908,9 +839,7 @@ $$f(x) = t_0(x) + t_1(x) + t_2(x) + t_3(x)$$
 
         Code that goes with the RS article.
 
-* [NASA - Tutorial on Reed-Solomon error correction coding](https://ntrs.nasa.gov/citations/19900019023)
-
-    * [Actual PDF file](https://ntrs.nasa.gov/api/citations/19900019023/downloads/19900019023.pdf)
+* [NASA - Tutorial on Reed-Solomon error correction coding](https://ntrs.nasa.gov/citations/19900019023) ([PDF file](https://ntrs.nasa.gov/api/citations/19900019023/downloads/19900019023.pdf))
 
     A very comprehensive but long tutorial that covers Galois fields, encoding, and decoding, with
     examples.
@@ -925,4 +854,8 @@ $$f(x) = t_0(x) + t_1(x) + t_2(x) + t_3(x)$$
 
     Only 4 pages!
 
-* [DESCANSO Design and Performance Summary Series Article 4 - Voyager Telecommunications](https://descanso.jpl.nasa.gov/DPSummary/Descanso4--Voyager_new.pdf)
+* [Voyager Telecommunications - Design and Performance Summary Series Article 4](https://descanso.jpl.nasa.gov/DPSummary/Descanso4--Voyager_new.pdf)
+
+    Not very relevant, but an interesting overview of the telecommunications systems and the
+    design considerations of the Voyager program.
+
