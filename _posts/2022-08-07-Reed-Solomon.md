@@ -50,7 +50,7 @@ article. It explains how polynomials and polynomial evaluation at certain points
 create a code with redundancy, and how to recover the original message back from it. The article
 is excellent, and it makes some of what I'm covering below unnecessary or redundant (ha!), 
 because some parts of what follows will be a recreation of that material. However my take on it
-has dumbed things down even more, and covers a larger variety of Reed-Solomon codes. 
+has dumbed things down even more, and yet also covers a larger variety of Reed-Solomon codes. 
 
 One of the best parts of that article is the focus on integer math. Academic literature about 
 coding theory almost always start with the theory of finite fields, also known as Galois fields, and then 
@@ -77,7 +77,7 @@ as possible.
 # A Quick Recap on Polynomials 
 
 It's impossible to discuss anything that's related to coding without touching the subject of polynomials.
-I'm assuming that you've learned about integer based polynomials during algebra classes in high school
+You've probably learned about integer based polynomials during algebra classes in high school
 or in college but here's a quick recap.
 
 A polynomial $$f(x)$$ of degree $$n$$ is a function that looks like this:
@@ -86,7 +86,7 @@ $$f(x) = c_0 + c_1 x + c_2 x^2 + ... c_n x^n$$
 
 $$n+1$$ fixed coefficients $$c_i$$ are multiplied by function variable $$x$$ to the power of $$i$$ and
 added together. 
-The polynomial can evaluated by replacing variable $$x$$ by some number for which you want to know the 
+The polynomial can be evaluated by replacing variable $$x$$ by some number for which you want to know the 
 value of the function. 
 
 You can add, subtract, multiply or divide polynomials with each other.
@@ -134,7 +134,7 @@ $$
 
 In the examples above, the coefficients $$c_i$$, and function variable $$x$$ are regular integers, 
 but polynomials can be used for any mathematical system that has the concept of addition and
-multiplication. But that's for another day.
+multiplication.
 
 # Minimum Information to Define a Polynomial
 
@@ -207,9 +207,7 @@ for the reader.
 
 Note that Gaussian elimination isn't the most efficient way to come up with $$f(x)$$, since it requires
 a number of operations that is $$O(n^3)$$.  Construction of a [Lagrange polynomial](https://en.wikipedia.org/wiki/Lagrange_polynomial) 
-works just as well and that's only a $$O(n^2)$$ operations. It's just a bit more tedious...
-
-
+works just as well and that's only a $$O(n^2)$$ operations.
 
 # Some Often Used Terminology
 
@@ -219,13 +217,13 @@ theory, but there's a least some commonality between different texts.
 * a symbol
 
     A symbol is the smallest piece of information. In many coding methods, a symbol is a single bit, 
-    and thus only one of two values, but in many other methods, it can have more than 2 values.
-    Reed-Solomon coding is a good example where each symbol can have more than 2 values.
+    with only two possible values. Reed-Solomon coding, however, uses symbols that have more than
+    2 values.
 
 * a message 
 
-    A message is the original piece of information that need to be encoded for storage or
-    transmission. A message is a sequence of symbols.
+    A message is the original piece of information that need to be encoded. A message is a sequence 
+    of symbols.
 
     For example, a message could be "Hello world ", where each character is a symbol.
 
@@ -251,10 +249,12 @@ theory, but there's a least some commonality between different texts.
 
     $$q$$ is often used as the number of values in an alphabet.
 
+    When a symbol is a single bit, the alphabet consists of 2 values, 0 and 1.
+
     If we had a system where messages only consist of upper case and lower case letters and a space, then an
     alphabet could be ('A', ..., 'Z', 'a', 'b', 'c', ... , 'z', ' '), and the size of the alphabet 
     would be 53. Almost all coding algorithms require the ability to perform mathematical 
-    operations such as addition, subtraction, multiplication and division on symbols of a word, so don't
+    operations such as addition, subtraction, multiplication and division on the symbols of a word, so don't
     expect to see this kind of alphabet in the real world!
 
     In practice, the alphabet of most coding algorithms is a sequence of binary digits. 8 bits
@@ -286,12 +286,12 @@ theory, but there's a least some commonality between different texts.
 In all the examples below, the message words will have a length of 4, code words will have a length 6,
 and the symbols are using an alphabet of regular, unlimited range integers.
 
-In other words: $$k=4$$, $$n=6$$, and the size $$q$$ of the alphabet is unlimited.
+In other words: $$k=4$$, $$n=6$$, and the size $$q$$ of the alphabet is infinite.
 
 Using integers as symbols is a terrible choice: there are no real-world, practical Reed-Solomon 
-implementations that use them. But as stated in the introduction, integer symbols make it easier
-to understand the fundamentals of Reed-Solomon coding.
-Later on, we can improve the algorithm to something practical, by using an alphabet that's a Galois field.
+implementations that use them. But as stated in the introduction, integer symbols allow us to focus
+on just the fundamentals of Reed-Solomon coding without getting distracted by the specifics of
+Galois field math.
 
 If we'd want to send the "Hello world" message using an alphabet of integers, one possibility is
 to just convert each letter to their corresponding integer. For example, "Hello world " would be
@@ -311,12 +311,12 @@ and explain how things work so that you can read the paper as well.
 
 In an earlier section, we saw that we can set up a third degree polynomial with 4 numbers: either
 the 4 coefficients $$(c_0, c_1, c_2, c_3)$$, or 4 points $$f(x)$$ on the polynomial for some 
-given $$x$$ values.
+given values of $$x$$.
 
 Once we know the coefficients, we can evaluate the polynomial at more than 4 values of $$x$$. 
 Those additional points are not required to specify the polynomial, they are 
 redundant, which is *exactly* what we're looking for: redundant information that allows us find the original
-values in case a value gets corrupted during transmission!
+values in case a code word gets corrupted during transmission!
 
 And that's what the original way of Reed-Solomon coding is all about:
 
@@ -331,7 +331,7 @@ Here's one way to go about it:
 **Protocol Specification**
 
 The encoding and decoding parties must come up with some fixed parameters of the coding protocol
-that are not message dependent: you set the parameters once and that's it:
+that are not message dependent: 
 
 * Agree on an alphabet.
 
@@ -397,10 +397,7 @@ corrupted values.
 
 # A Simple Error Correcting Reed Solomon Decoder
 
-Reed-Solomon encoding is simple. Reed-Solomon decoding is harder. In this blog post, I'll 
-only cover the decoding algorithm that was proposed in the original Reed-Solomon paper.
-
-Let's first talk about how many redundant numbers are needed to correct to correct errors:
+Before decoding, let's first talk about how many redundant symbols are needed to correct to correct errors:
 
 **To correct up to $$s$$ symbol errors, you need at least $$2s$$ redundant symbols.**
 
@@ -509,7 +506,7 @@ With $$r=223$$ and $$n=255$$, this gives a total of 50,964,019,775,576,912,153,7
 That's just not very practical...
 
 It's clear that a much better algorithm is required to make Reed-Solomon decoding useful. Luckily,
-these algorithms exists, and some of them aren't even that complicated, but that's worthy of a 
+these algorithms exist, and some of them aren't even that complicated, but that's worthy of a 
 separate blog post.
 
 # A Systematic Reed-Solomon Code
@@ -656,10 +653,10 @@ $$
 If we can find a way to derive the $$n$$ coefficients of $$e(x)$$ out of the $$(n-k)$$
 equations, we can derive $$s(x)$$ as $$s'(x)-e(x)$$. This is, of course, not 
 generally possible: there are more unknowns than there are equations.
-But it *is* possible when half or less of the coefficients of 
-$$s'(x)$$ are correct, just like it was for the other coding variant.
+But it *is* possible when the number of corrupted coefficients is half or less than 
+$$n-k$$, just like it was for the other coding variant.
 
-And the simple way to figure this out is again by going through all combinations and solving
+A simple way to figure this out is again by going through all combinations and solving
 a set of equations.
 
 Deriving an efficient general error correction procedure is complicated and outside 
@@ -676,11 +673,11 @@ steps.
   $$g(x) = (x-1)(x-2) = 2 -3x + x^2$$.
 * Divide $$p(x)x^2$$ by $$g(x)$$. 
   [WolframAlpha](https://www.wolframalpha.com/input?i=%282%2B3x-5x%5E2%2Bx%5E3%29x%5E2%2F%28%28x-1%29%28x-2%29%29) is perfect
-  for this! It returns: $$x^5 - 5 x^4 + 3 x^3 + 2 x^2 = (x^3 - 2 x^2 - 5 x - 9)(x^2 - 3 x + 2) + (18 - 17 x)$$. We're
+  for this! It returns: $$x^5 - 5 x^4 + 3 x^3 + 2 x^2 = (x^3 - 2 x^2 - 5 x - 9)_{q(x)}(x^2 - 3 x + 2)_{g(x)} + (18 - 17 x)_{r(x)}$$. We're
   only interested in the last part, the remainder $$r(x) = (18 - 17 x)$$.
 * $$s(x) = p(x)x^2 - r(x)$$ or $$s(x) = (2 x^2 + 3 x^3 -5 x^4 +  x^5 ) - 18 + 17 x$$. 
 * The code word is $$(2, 3, -5, 1, -18, 17)$$.
-* As a verification step, you can fill in the values of 1 and 2 in $$s(x)$$. It will evaluate to 0, as it should.
+* As a verification step, you can fill in the values of 1 and 2 in $$s(x)$$. They will evaluate to 0, as they should.
   [Here](https://www.wolframalpha.com/input?i=evaluate+x%5E5+-+5+x%5E4+%2B+3+x%5E3+%2B+2+x%5E2+-+%2818+-+17+x%29+at+1)
   is a way to do that with WolframAlpha...
 
@@ -772,7 +769,7 @@ When performed sequentially, the divider above can be implemented with the follo
 * On the right, there's the output, which can either be the quotient $$q(x)$$ or the remainder $$r(x)$$,
   dependent on whether `force_zero` is deasserted or not.
 * 3 registers contain the current remainder
-* The circles marked $$g_0, g_1, g_2$$ multiply dividend by the adjustment factor.
+* The circles marked $$g_0, g_1, g_2$$ multiply the dividend by the adjustment factor.
 
 When we apply the divisor to the $$p(x)$$ input in order of descending powers of $$x^i$$, we get
 the following animation:
@@ -785,7 +782,7 @@ A full cycle is 8 steps:
   calculated by the long division.
 * during the last 3 steps, the remainder rolls out.
 * while shifting out the remainder values, the remainder registers are gradually
-  re-initialized with a value of 0, so that a division cycle can immediately restart
+  re-initialized with a value of 0, so that a division operation can immediately restart
   again at step 1 for the next divisor.
 
 # Reed-Solomon Encoding in Hardware
@@ -808,21 +805,22 @@ my Reed-Solomon encoder uses integer operations. In Galois math, subtraction and
 are the same operation.
 
 The bus size of the hardware presented here is not defined, but for integer operations, the number
-of bits needed would be be much larger than the number of bits of the incoming symbols. Another
+of bits needed would be be much larger than the number of bits of the incoming symbols. That's another
 big negative of using integers for these kind of coders. With Galois math, the result of
 any operation stays within the same range as the operands: an operation between 2 symbols that 
 can be represented with 8 bits, will still be 8 bits, even if it's a multiplication.
 
 # Conclusion
 
-This concludes a first look at Reed-Solomon codes. There is a lot that was not discussed: Galois Field
-mathematics, Galois Field hardware logic, decoding algorithms, the link between Reed-Solomon
-codes and BCH codes, and much more.
+This concludes a first look at Reed-Solomon codes. There is a lot that was not discussed: Galois field
+mathematics, Galois field hardware logic, decoding algorithms, the link between Reed-Solomon
+codes and BCH codes, error corrections with erasures, and much more.
 
 In the future, I'd love to try out Reed-Solomon codes on some practical examples, but who knows
 if I'll ever get to that.
 
-If you've made it this far, I hope that this writedown was as useful for you as it was for me.
+If you've made it this far, thanks for reading! I hope that this writedown was as useful for you as 
+it was for myself.
 
 
 # References
