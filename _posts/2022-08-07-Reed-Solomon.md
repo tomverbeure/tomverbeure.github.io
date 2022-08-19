@@ -609,7 +609,7 @@ Let's see what this gets us:
   $$x^{n-k}$$.
 * $$r(x)$$ is the remainder of the division of polynomial $$p(x)x^{n-k}$$, degree $$(n-1)$$,
   and $$g(x)$$, degree $$(n-k)$$. The remainder of a polynomial division has a degree
-  that is at most the degree of the dividend, $$g(x)$$, minus 1: $$(n-k-1)$$. And thus, 
+  that is at most the degree of the divisor, $$g(x)$$, minus 1: $$(n-k-1)$$. And thus, 
   $$r(x) = r_0 + r_1 + ... + r_{n-k-1}$$.
 * There is no overlap in coefficients for $$x^i$$ between $$p(x)x^{n-k}$$ and $$r(x)$$: $$r(x)$$
   goes from 0 to $$(n-k-1)$$ and $$p(x)x^{n-k}$$ goes from $$(n-k)$$ to $$(n-1)$$.
@@ -723,14 +723,14 @@ How can we implement that in hardware?
 
 Fundamentally, polynomial division works as follows:
 
-* Start with the divisor as initial remainder.
-* Subtract a multiple of the dividend from the remainder so that its highest power of $$x$$ becomes zero.
+* Start with the dividend as initial remainder.
+* Subtract a multiple of the divisor from the remainder so that its highest power of $$x$$ becomes zero.
 
     The multiple becomes a part of the quotient. What remains after the subtraction becomes
     the new remainder.
 
 * Repeat the previous step until the highest non-zero coefficient of the remainder is for a power of 
-  $$x$$ that is lower than the dividend.
+  $$x$$ that is lower than the divisor.
 
 This is exaclty what you do when performing a long division...
 
@@ -741,22 +741,22 @@ a spreadsheet:
 
 The quotient $$q(x)$$ is $$ -2 x^4 -3 x^3 -6 x^2 -4 x -7$$ and the remainder $$r(x)$$ is $$-19 x^2 + 10 x -7$$.
 
-Marked in blue is the initial remainder, which is identical to the divisor. Since the highest coefficient of
-the dividend is $$1$$, the multiple by which the dividend gets adjusted is equal to the highest order
+Marked in blue is the initial remainder, which is identical to the dividend. Since the highest coefficient of
+the divisor is $$1$$, the multiple by which the divisor gets adjusted is equal to the highest order
 coefficient of the remainder every step of the way.
 
-However, the steps above require that the divisor is fully known at the start of the whole operation. In a real
-Reed-Solomon encoder, the divisor, $$p(x)x^{n-k}$$ can have a lot of coefficients. For example, in the Voyager program, 
+However, the steps above require that the dividend is fully known at the start of the whole operation. In a real
+Reed-Solomon encoder, the dividend, $$p(x)x^{n-k}$$ can have a lot of coefficients. For example, in the Voyager program, 
 $$p(x)$$ has 223 coefficients. It'd be great if we could rework the division so that we can perform it sequentially
-without the need to know the full divisor at the start.
+without the need to know the full dividend at the start.
 
 We can easily do that:
 
 ![Long division - modified](/assets/reed_solomon/long_division_modified.png)
 
 In the modified version above, instead of starting with a remainder that has all the terms of the
-divisor added to it, the coefficients of the divisor are added step by step, right when they're
-needed to determine the next dividend multiplier. The result of the division is obviously still
+dividend added to it, the coefficients of the dividend are added step by step, right when they're
+needed to determine the next divisor multiplier. The result of the division is obviously still
 the same.
 
 Also notice that the remainder, marked in green, has never more than 3 non-zero coefficients.
@@ -765,13 +765,13 @@ When performed sequentially, the divider above can be implemented with the follo
 
 ![Divider Hardware diagram](/assets/reed_solomon/reed_solomon-divider_diagram.png)
 
-* At the bottom left, we have an input with the divisor $$p(x)$$. 
+* At the bottom left, we have an input with the dividend $$p(x)$$. 
 * On the right, there's the output, which can either be the quotient $$q(x)$$ or the remainder $$r(x)$$,
   dependent on whether `force_zero` is deasserted or not.
 * 3 registers contain the current remainder
-* The circles marked $$g_0, g_1, g_2$$ multiply the dividend by the adjustment factor.
+* The circles marked $$g_0, g_1, g_2$$ multiply the divisor by the adjustment factor.
 
-When we apply the divisor to the $$p(x)$$ input in order of descending powers of $$x^i$$, we get
+When we apply the dividend to the $$p(x)$$ input in order of descending powers of $$x^i$$, we get
 the following animation:
 
 ![Divider Hardware animation](/assets/reed_solomon/divider_steps.gif)
@@ -783,7 +783,7 @@ A full cycle is 8 steps:
 * during the last 3 steps, the remainder rolls out.
 * while shifting out the remainder values, the remainder registers are gradually
   re-initialized with a value of 0, so that a division operation can immediately restart
-  again at step 1 for the next divisor.
+  again at step 1 for the next dividend.
 
 # Reed-Solomon Encoding in Hardware
 
