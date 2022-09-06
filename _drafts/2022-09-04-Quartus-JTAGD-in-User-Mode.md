@@ -13,7 +13,7 @@ categories:
 When you're working with Intel's Quartus software, you'll almost certainly also be using it to load 
 bitstreams to an FPGA with the *Quartus Programmer* tool.
 
-![Quartus Programmer](/assets/jtagd_user/quartus_programmer.png)
+![Quartus Programmer](/assets/jtagd/quartus_programmer.png)
 
 Behind this GUI, a number of steps and processes are working under the hood to make all of this happen:
 
@@ -341,6 +341,76 @@ Start thread for port 46231             <<<<<<
 
     I think this option makes it possible to specify configuration options that are normally
     defined in jtagd.conf, but jtagd always returns `Unknown argument '--set-config'`. 
+
+# Using jtagconfig to set configuration options
+
+We saw earlier that jtagd picks up configuration options from a `jtagd.conf` file. But how do set theses options?
+
+There are 3 ways to do that:
+
+* Use Quartus Programmer
+
+    When you use Quartus Programmer to set some special parameters, it will create the `~/.jtagd.conf` file and
+    store the parameters in this file.
+
+    For example, here I use the GUI to connect Quartus Programmer to a jtagd server that runs on a
+    laptop with IP address 192.168.1.132:
+
+    ![Quartus Programmer JTAG Server Configuration](/assets/jtagd/quartus_programmer_set_server.png)
+
+    After clicking [OK], `~/.jtag.conf` (NOT: `~/jtagd.conf`!!!) has the following:
+
+```sh
+# /home/tom/.jtag.conf
+#
+# This file is written by the JTAG client when its configuration is changed.
+# If you edit this file directly then your changes will probably be lost.
+
+
+Remote1 {
+	Host = "192.168.1.132";
+	Password = "my_pwd";
+}
+```
+
+* Server information goes into `jtagd.conf`. Client information goes into `jtag.conf`.
+* jtagd will read both `jtagd.conf` and `jtag.conf`.
+* Programmer GUI can set the jtagd server password if jtagd is started by the user, and
+  config file is under /etc and writable.
+  If not, then you get this:
+  ```
+tom@thinkcenter:~/projects/jtagd$ jtagconfig --enableremote blah
+Error when setting password - Feature not implemented or unavailable under current execution privilege level
+  ```
+* jtagconfig is used to deal with hardware dongles. 
+* You can chain jtagd servers. One points to a server (with jtag.conf file) which in turns
+  points to the next server.
+* `jtagconfig --addserver 192.168.1.132 my_pwd`
+* jtagconfig starts jtagd if there isn't already one running and if it exists.
+  * jtagconfig still works to access remote server, even if jtagd doesn't exist, but it's much slower.
+  * jtagd creates a permanent connection?
+* jtagconfig --define <JTAG IDCODE> <device name> <IR Length>
+  * jtagconfig --defined
+
+  ```
+tom@thinkcenter:~/projects/jtagd$ jtagconfig --defined
+  jtagconfig --define "test" 020B10ED 10
+  ```
+
+  * Doesnt work when IDCODE matches Intel device.
+* jtagconfig --undefine <JTAG IDCODE> <device name>  removes it.
+* jtagconfig --getparam 1 JtagClock
+    * Other parameters: `strings -a jtagd`
+        * NormalBypass
+        * CapturedBypass
+        * CapturedIR        -> last captured IR?
+        * CapturedDR        -> last captured DR?
+        * ExtendedId
+        * SerialNumber
+
+    
+* jtagconfig --setparam 1 JtagClock 6M -> No parameter named JtagClock
+
 
 
 # References
