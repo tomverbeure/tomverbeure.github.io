@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Using Quartus JTAGD in User Mode
+title: The Quartus JTAGD Server Missing Info Blog Post
 date:  2022-09-04 00:00:00 -1000
 categories:
 ---
@@ -358,6 +358,8 @@ There are 3 ways to do that:
 
     ![Quartus Programmer JTAG Server Configuration](/assets/jtagd/quartus_programmer_set_server.png)
 
+    ![Quartus Programmer JTAG Remote Server Connected](/assets/jtagd/quartus_programmer_remote_server_connected.png)
+
     After clicking [OK], `~/.jtag.conf` (NOT: `~/jtagd.conf`!!!) has the following:
 
 ```sh
@@ -411,6 +413,25 @@ tom@thinkcenter:~/projects/jtagd$ jtagconfig --defined
     
 * jtagconfig --setparam 1 JtagClock 6M -> No parameter named JtagClock
 
+* After set remote password in `/etc/jtagd/jtagd.conf`:
+
+```
+# /etc/jtagd/jtagd.conf
+#
+# This file is written by the JTAG daemon when its configuration is changed.
+# If you edit this file directly then your changes will probably be lost.
+
+Password = "my_pwd";
+```
+
+* Permissions on /etc/jtagd:
+
+```
+tom@thinkcenter:~/projects/tomverbeure.github.io/_drafts$ ll -d /etc/jtagd/
+drwxrwxrwx 2 root root 4096 Sep  5 16:47 /etc/jtagd//
+```
+* Easiest to set global permissions, make changes, then set them back to restricted read-only.
+
 
 
 # References
@@ -418,3 +439,13 @@ tom@thinkcenter:~/projects/jtagd$ jtagconfig --defined
 * [Installing and Configuring a Local JTAG Server (jtagd) on Linux](https://www.intel.com/content/www/us/en/docs/programmable/683472/22-2/installing-and-configuring-a-local-jtag.html)
 * [JTAG Connections Over SSH](https://www.intel.com/content/www/us/en/docs/programmable/683756/21-2/jtag-connections-over-ssh.html)
 * [Remote access to Altera FPGA via jtagd in Linux](https://www.fpgarelated.com/showthread/comp.arch.fpga/74229-1.php)
+* [JTA-Over-Protocol (JOP) Intel FPGA IP](https://www.intel.com/content/www/us/en/docs/programmable/728673/21-3/jtag-over-protocol-overview.html)
+    
+    Explains how to send JTAG information over a custom protocol.
+
+    * [remote-debug-for-intel-fpga](https://github.com/altera-opensource/remote-debug-for-intel-fpga)
+
+        Creates a server that jtagd server can connect to.
+
+    * [AN 972: JTAG Remote Debugging Over a PCIe Interface Example Design](https://www.intel.com/content/www/us/en/docs/programmable/728675/21-3/running-the-remote-debugging-over-a.html)
+* [Remote FPGA Debug at RocketBoards](https://www.rocketboards.org/foswiki/Documentation/RemoteDebug)
