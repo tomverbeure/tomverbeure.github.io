@@ -796,14 +796,34 @@
                 </tr>
 		<tr bgcolor=#ffffff><td colspan=8><b>DisplayPort</b></td></tr>
                 <tr bgcolor=#ffffff>
-                    <td><label>DisplayPort 2.0 (20 GHz)</label></td>
-                    <td><label id="cvt-dp_2"></label></td>
-                    <td><label id="cvt_rb-dp_2"></label></td>
-                    <td><label id="cvt_rb2-dp_2"></label></td>
-                    <td><label id="cea-dp_2"></label></td>
-                    <td><label id="dmt-dp_2"></label></td>
-                    <td><label id="custom-dp_2"></label></td>
+                    <td><label>DisplayPort UBR20 (20 GHz)</label></td>
+                    <td><label id="cvt-dp_ubr20"></label></td>
+                    <td><label id="cvt_rb-dp_ubr20"></label></td>
+                    <td><label id="cvt_rb2-dp_ubr20"></label></td>
+                    <td><label id="cea-dp_ubr20"></label></td>
+                    <td><label id="dmt-dp_ubr20"></label></td>
+                    <td><label id="custom-dp_ubr20"></label></td>
                     <td><label>Max BW 77,575 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>DisplayPort UBR13.5 (13.5 GHz)</label></td>
+                    <td><label id="cvt-dp_ubr13"></label></td>
+                    <td><label id="cvt_rb-dp_ubr13"></label></td>
+                    <td><label id="cvt_rb2-dp_ubr13"></label></td>
+                    <td><label id="cea-dp_ubr13"></label></td>
+                    <td><label id="dmt-dp_ubr13"></label></td>
+                    <td><label id="custom-dp_ubr13"></label></td>
+                    <td><label>Max BW 52,364 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>DisplayPort UBR10 (10 GHz)</label></td>
+                    <td><label id="cvt-dp_ubr10"></label></td>
+                    <td><label id="cvt_rb-dp_ubr10"></label></td>
+                    <td><label id="cvt_rb2-dp_ubr10"></label></td>
+                    <td><label id="cea-dp_ubr10"></label></td>
+                    <td><label id="dmt-dp_ubr10"></label></td>
+                    <td><label id="custom-dp_ubr10"></label></td>
+                    <td><label>Max BW 38,788 Mbit/s</label></td>
                 </tr>
                 <tr bgcolor=#ffffff>
                     <td><label>DisplayPort HBR3 (8.1 GHz)</label></td>
@@ -1155,7 +1175,9 @@
                         active_bw       = vfreq * bpc * vactive * hactive * color_fmt_multiplier;
                         vblank_duration = vblank * hperiod;
 
-                        dp_2_bw         =  20000000000*4/132*128;
+                        dp_ubr20_bw     =  20000000000*4/132*128;
+                        dp_ubr13_bw     =  13500000000*4/132*128;
+                        dp_ubr10_bw     =  10000000000*4/132*128;
                         dp_hbr3_bw      =   8100000000*4/10*8;
                         dp_hbr2_bw      =   5400000000*4/10*8;
                         dp_hbr_bw       =   2700000000*4/10*8;
@@ -1189,11 +1211,13 @@
                         rfc4175_eth1g_bw    = 1000000000  * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500;
                         rfc4175_eth10g_bw   = 10000000000 * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500;
 
-                        dp_2_ok         = (peak_bw < dp_2_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        dp_hbr3_ok      = (peak_bw < dp_hbr3_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        dp_hbr2_ok      = (peak_bw < dp_hbr2_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        dp_hbr_ok       = (peak_bw < dp_hbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        dp_rbr_ok       = (peak_bw < dp_rbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_ubr20_ok     = (peak_bw < dp_ubr20_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_ubr13_ok     = (peak_bw < dp_ubr13_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_ubr10_ok     = (peak_bw < dp_ubr10_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_hbr3_ok      = (peak_bw < dp_hbr3_bw)     ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_hbr2_ok      = (peak_bw < dp_hbr2_bw)     ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_hbr_ok       = (peak_bw < dp_hbr_bw)      ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_rbr_ok       = (peak_bw < dp_rbr_bw)      ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
 
                         dpam_2_ok         = (peak_bw < dpam_2_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                         dpam_hbr3_ok      = (peak_bw < dpam_hbr3_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
@@ -1218,11 +1242,13 @@
                         rfc4175_eth1g_ok   = (active_bw < rfc4175_eth1g_bw)   ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                         rfc4175_eth10g_ok  = (active_bw < rfc4175_eth10g_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
 
-                        dp_2_ok         = dp_2_ok    + " (" + Math.round(peak_bw/dp_2_bw*100) + "%)"
-                        dp_hbr3_ok      = dp_hbr3_ok + " (" + Math.round(peak_bw/dp_hbr3_bw*100) + "%)"
-                        dp_hbr2_ok      = dp_hbr2_ok + " (" + Math.round(peak_bw/dp_hbr2_bw*100) + "%)"
-                        dp_hbr_ok       = dp_hbr_ok  + " (" + Math.round(peak_bw/dp_hbr_bw*100) + "%)"
-                        dp_rbr_ok       = dp_rbr_ok  + " (" + Math.round(peak_bw/dp_rbr_bw*100) + "%)"
+                        dp_ubr20_ok     = dp_ubr20_ok  + " (" + Math.round(peak_bw/dp_ubr20_bw*100) + "%)"
+                        dp_ubr13_ok     = dp_ubr13_ok  + " (" + Math.round(peak_bw/dp_ubr13_bw*100) + "%)"
+                        dp_ubr10_ok     = dp_ubr10_ok  + " (" + Math.round(peak_bw/dp_ubr10_bw*100) + "%)"
+                        dp_hbr3_ok      = dp_hbr3_ok   + " (" + Math.round(peak_bw/dp_hbr3_bw*100) + "%)"
+                        dp_hbr2_ok      = dp_hbr2_ok   + " (" + Math.round(peak_bw/dp_hbr2_bw*100) + "%)"
+                        dp_hbr_ok       = dp_hbr_ok    + " (" + Math.round(peak_bw/dp_hbr_bw*100) + "%)"
+                        dp_rbr_ok       = dp_rbr_ok    + " (" + Math.round(peak_bw/dp_rbr_bw*100) + "%)"
                         dpam_2_ok       = dpam_2_ok    + " (" + Math.round(peak_bw/dpam_2_bw*100) + "%)"
                         dpam_hbr3_ok    = dpam_hbr3_ok + " (" + Math.round(peak_bw/dpam_hbr3_bw*100) + "%)"
                         dpam_hbr2_ok    = dpam_hbr2_ok + " (" + Math.round(peak_bw/dpam_hbr2_bw*100) + "%)"
@@ -1281,7 +1307,9 @@
 
                             if (VIC) $(prefix + "-vic").text(VIC);
     
-                            $(prefix + "-dp_2").html(dp_2_ok);
+                            $(prefix + "-dp_ubr20").html(dp_ubr20_ok);
+                            $(prefix + "-dp_ubr13").html(dp_ubr13_ok);
+                            $(prefix + "-dp_ubr10").html(dp_ubr10_ok);
                             $(prefix + "-dp_hbr3").html(dp_hbr3_ok);
                             $(prefix + "-dp_hbr2").html(dp_hbr2_ok);
                             $(prefix + "-dp_hbr").html(dp_hbr_ok);
@@ -1347,7 +1375,9 @@
 
                             $(prefix + "-vic").text("");
     
-                            $(prefix + "-dp_2").html("");
+                            $(prefix + "-dp_ubr20").html("");
+                            $(prefix + "-dp_ubr13").html("");
+                            $(prefix + "-dp_ubr10").html("");
                             $(prefix + "-dp_hbr3").html("");
                             $(prefix + "-dp_hbr2").html("");
                             $(prefix + "-dp_hbr").html("");
