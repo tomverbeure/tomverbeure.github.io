@@ -415,6 +415,19 @@ tom@thinkcenter:~/projects/jtagd$ jtagconfig --defined
 
 * After set remote password in `/etc/jtagd/jtagd.conf`:
 
+* jtagconfig configuration parameter:
+
+    * env var: QUARTUS_JTAG_CLIENT_NO_LOCAL_SERVER
+
+        When defined, don't start a local jtagd server.
+
+    * config variable in jtag.conf: ReplaceLocalJtagServer
+
+        Specify hostname?
+
+    * config variable in jtag.conf: Remote<nr>Host
+
+
 ```
 # /etc/jtagd/jtagd.conf
 #
