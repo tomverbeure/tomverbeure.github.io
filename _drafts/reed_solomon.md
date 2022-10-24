@@ -159,3 +159,9 @@ however, the correct value is the result that is most common.
 * [Wikipedia - BCH code](https://en.wikipedia.org/wiki/BCH_code)
 * [NTPU - BCH Codes](https://web.ntpu.edu.tw/~yshan/BCH_code.pdf)
 * [The Error Correcting Codes (ECC) Page](http://www.eccpage.com/)
+* [Decoding algorithms of Reed-Solomon code](https://www.diva-portal.org/smash/get/diva2:833161/FULLTEXT01.pdf)
+
+    Master's thesis that compares RS decoding algorithms.
+
+
+
