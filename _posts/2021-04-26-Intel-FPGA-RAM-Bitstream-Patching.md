@@ -255,7 +255,7 @@ the design database, and `quartus_asm` creates the new bitstream.
 # Fast Bitstream Update for the Generic Verilog Case
 
 To update inferred RAMs that were initialized with `$readmemh()`, we need to hack
-the Quartus design database ourselves. This is easier that you'd think because Quartus uses the MIF file format 
+the Quartus design database ourselves. This is easier than you'd think because Quartus uses the MIF file format 
 in that database!
 
 The steps to update your inferred RAMs are as follows:
