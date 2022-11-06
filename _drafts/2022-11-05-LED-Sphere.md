@@ -37,37 +37,38 @@ An ideal LED sphere has the LEDs spread perfectly even all over the surface: no 
 angle you look at it, the LEDs are organized exactly the same. There is no top, no bottom, no obvious sub-structure around
 which the LEDs are organized.
 
-The problem with this is that it is not possible to do this. There are only good approximations.
-https://stackoverflow.com/questions/9600801/evenly-distributing-n-points-on-a-sphere
+The problem with this is that it is not possible to do this. There are only 
+[good approximations](https://stackoverflow.com/questions/9600801/evenly-distributing-n-points-on-a-sphere).
 
-One extremely good such approximation is Fibonacci sphere algorithm. https://openprocessing.org/sketch/41142
-https://www.vertexshaderart.com/art/79HqSrQH4meL63aAo/revision/9c9YN5LwBQKLDa4Aa
+One extremely good such approximation is [Fibonacci sphere](https://openprocessing.org/sketch/41142)
+[algorithm](https://www.vertexshaderart.com/art/79HqSrQH4meL63aAo/revision/9c9YN5LwBQKLDa4Aa).
 
-Another one is the HEALPix algorithm. https://en.wikipedia.org/wiki/HEALPix
+![Fibonacci sphere](/assets/led_sphere/fibonacci_sphere.png)
 
-Unfortunately, it's one thing to come up with an arrangment that is visually almost perfect, it's another to come
-up with something that can be physically created with a reasonable amount of effort. One of my additional constraints
-was that the LEDs can be soldered down onto some kind of PCB. Because amazing as it is, precision soldering 192 LEDs, or more, 
-onto a metal wire frame is just not something I'm willing to do.
+Another one is the [HEALPix algorithm](https://en.wikipedia.org/wiki/HEALPix).
 
-One solution Jens and I looked in to were flex PCBs that are arranged as follows:
+Unfortunately, it's one thing to come up with an arrangment that is visually almost perfect, it's another 
+have one that can be physically created with a reasonable amount of effort. One of my additional constraints
+was that the LEDs can be soldered down onto some kind of PCB. Because amazing as it is, precision soldering  
+more than 192 LEDs onto a metal wire frame is just not something I'm willing to do.
 
-Flex PCBs have the advantage that you can solder down the LEDs onto the PCB using the regular and efficient
-surface mounted method of solder paste and reflow oven, yet afterwards you can wrap them around a curved
-surface... within limits.
+One solution Jens and I explored were flex PCBs. These have the advantage that you can solder down the 
+LEDs onto the PCB using the regular and efficient surface mounted method of solder paste and reflow oven, 
+yet afterwards you can wrap them around a curved surface... within limits. I still believe that this solution 
+is promising, but flex PCBs are a big unknown (how much can they really be flexed?) and they're pretty 
+expensive too.
 
-I still believe that this solution is promising, but flex PCBs are a big unknown (how much can they really be
-flexed?) and they're pretty expensive too.
+So to the reduce the problem, I fell back to a more traditional approach of a polyhedral inner base with 
+3D printed curved sphere elements around it, a flat PCB, and through-hole LEDs.
 
-So after a while, I decided the reduce the problem even more, and fell back to a more traditional approach of a 
-polyhedral inner base with 3D printed curved sphere elements around it, a flat PCB, and through-hole LEDs.
+Whity's LED sphere takes that concept to the extreme in the sense that there isn't a curved surface at all: 
+it's triangles all the way down, and there's 1 PCB per LED.
 
-Whity's LED sphere takes that concept essentially to the extreme in the sense that there isn't a curved surface at all: 
-it's just triangles all the way down, and there's 1 PCB per LED.
+# Choosing the Icosahdron as Core Internal Structure
 
 There are many ways to split up a sphere into a set of individual pieces. The basic principle goes rougly 
 as follows: you start with a polyhedron that is circumscribed by a sphere (meaning: all the vertices
-of the polyhedron lay on the surface of the sphere.) Then you project the edges of the polyhedrom onto
+of the polyhedron lay on the surface of the sphere.) Then you project the edges of the polyhedron onto
 the sphere surface.
 
 Wikipedia has a [table with all such regular and semi-regular polyhedra](https://en.wikipedia.org/wiki/Spherical_polyhedron#Examples)
@@ -75,39 +76,41 @@ Wikipedia has a [table with all such regular and semi-regular polyhedra](https:/
 One could use something as simple as a regular tetrahedron, built out of 4 triangles, that splits the sphere surface
 into 4 identical spherical sections:
 
-![Regular tetrahedron projected onto sphere](/blog_assets/spherical_tetrahedron.png)
+![Regular tetrahedron projected onto sphere](/assets/led_sphere/spherical_tetrahedron.png)
 
 Here's the version with a cube (6 identical sections):
 
-![Cube projected onto sphere](/blog_assets/spherical_cube.png)
+![Cube projected onto sphere](/assets/led_sphere/spherical_cube.png)
 
 A regular octahedron (8 identical section):
 
-![Regular octahedron projected onto sphere](/blog_assets/spherical_octahedron.png)
+![Regular octahedron projected onto sphere](/assets/led_sphere/spherical_octahedron.png)
 
 A regular dodecahedron (12 identical sections):
 
-![Regular dodecahedron projected onto sphere](/blog_assets/spherical_dodecahedron.png)
+![Regular dodecahedron projected onto sphere](/assets/led_sphere/spherical_dodecahedron.png)
 
 And finally a regular icosahedron (20 identical section): 
 
-![Regular icosahedron projected onto sphere](/blog_assets/spherical_icosahedron.png)
+![Regular icosahedron projected onto sphere](/assets/led_sphere/spherical_icosahedron.png)
 
-From that large Wikipedia table with polyhedra, I've cherry-picked the regular version. These are also called
-theh [Platonic solids](https://en.wikipedia.org/wiki/Platonic_solid). For a project like this, they have
-the atrractive property that you need exactly 1 sphere element to build up the full sphere. This means that 
+From that large Wikipedia table with polyhedra, I've cherry-picked the regular versions. These are 
+the also called [Platonic solids](https://en.wikipedia.org/wiki/Platonic_solid). They have
+the attractive property that you need exactly 1 sphere element to build up the full sphere. This means that 
 you only need to design 1 such piece for your 3D printer and only 1 PCB.
 
 This is certainly not a hard limitation: the truncated icosahedron, used for soccer balls, is a very good 
 candidate as well:
 
-![Truncated icosahedron projected onto sphere](/blog_assets/spherical_truncated_icosahedron.png)
+![Truncated icosahedron projected onto sphere](/assets/led_sphere/spherical_truncated_icosahedron.png)
 
-Compared to a regular icosahedron, which requires 20 identical spherical triangles, the truncated version
+Compared to a regular icosahedron with 20 identical spherical triangles, the truncated version
 needs 20 spherical hexagons and 12 spherical pentagons. That's 2 PCBs and 2 sphere elements to design, and
 there's also the question about how to evenly spread LEDs across these 2 surfaces such that the general
-density of the LEDs is the same: since we're dealing with thru-hole LEDs which density constraints and
+density of the LEDs is the same. We're dealing with thru-hole LEDs which have their own density constraints and
 some other geometrical limitations as well.
+
+# Geometrical Limitations with Thru-Hole LEDs
 
 Let's talk about those geometrical limitations. 
 
@@ -116,6 +119,8 @@ a lower order polyhedron will result in a higher variance in distance between su
 maximum incident angle at which the leads meet with the PCB surface.
 
 Let me illustrated that with a 2D diagram, but it applies to the 3D version as well.
+
+![Thru-hole geometry](/assets/led_sphere/thru-hole-geometry.svg)
 
 In the figure on the left, a circle is split up into 3 equal sections. In the figure of the right, the same
 circle is split into 8 equal sections. The outside circle is the actual surface, the dotted inside circle
