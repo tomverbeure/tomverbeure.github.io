@@ -31,7 +31,7 @@ sphere isn't really round, and 80, 180, or even 192 LEDs is just not enough.
 I wanted an LED sphere that's truly round, without an obvious north-south axis, and with moar LEDs too. 
 But who am I kidding, most of all, I wanted to design it from the ground up all by myself.
 
-# Deconstruction of a Sphere into Smaller Pieces
+# Spreading LEDs across a Sphere Surface
 
 An ideal LED sphere has the LEDs spread perfectly even all over the surface: no matter how to rotate the object, or which
 angle you look at it, the LEDs are organized exactly the same. There is no top, no bottom, no obvious sub-structure around
@@ -64,7 +64,7 @@ So to the reduce the problem, I fell back to a more traditional approach of a po
 Whity's LED sphere takes that concept to the extreme in the sense that there isn't a curved surface at all: 
 it's triangles all the way down, and there's 1 PCB per LED.
 
-# Choosing the Icosahdron as Core Internal Structure
+# Splitting a Sphere into Smaller Sections
 
 There are many ways to split up a sphere into a set of individual pieces. The basic principle goes rougly 
 as follows: you start with a polyhedron that is circumscribed by a sphere (meaning: all the vertices
@@ -115,92 +115,50 @@ some other geometrical limitations as well.
 Let's talk about those geometrical limitations. 
 
 If the LEDs are located on a curved, spherical, surface while the LED leads are soldered to a flat PCB,
-a lower order polyhedron will result in a higher variance in distance between surface and PCB, and in a higher
+a lower order polyhedron will have in a higher variance in distance between surface and PCB, and in a higher
 maximum incident angle at which the leads meet with the PCB surface.
 
-Let me illustrated that with a 2D diagram, but it applies to the 3D version as well.
+Here's a 2D illustration of that, but it applies to 3D just the same:
 
 ![Thru-hole geometry](/assets/led_sphere/thru-hole-geometry.svg)
 
-In the figure on the left, a circle is split up into 3 equal sections. In the figure of the right, the same
+On the left, a circle is split up into 3 equal sections. In the figure of the right, the same
 circle is split into 8 equal sections. The outside circle is the actual surface, the dotted inside circle
-is the one in which a triangle or octagon is inscribed. The size of the inside circle depends on the size
+is the one in which a triangle or octagon is inscribed. The size of the inside circle depends on the portion
 of the LEDs that must reside within the shell: it contains part of the main LED body as well as a small
-part of the LED leads. The line between the outer points of a section is the 2D equivalent of a PCB.
+part of the LED leads. The straight line between the outer points of a section is the 2D equivalent of a PCB.
 
-LEDs that are in the center of a section are perpendicular to this PCB. They are the easiest to mount because
+LEDs that are in the center of a section are perpendicular to this PCB. They are easy to mount because
 they behave just like any other thru-hole component. The LEDs on the boundary of a section, however, 
-hit the PCB at a sharp angle, and yet need to go through the PCB perpendicularly.
+hit the PCB at a sharp angle, but they still need to go through the PCB perpendicularly.
 
 When there are only 3 sections, the left case, this incident angle is much sharper than for the right case.
 
-The second issue is even more problematic: LED leads have a fixed length. This length limits the maximum
-radius of the circle. In the case on the left, the leads of the LED in the center of a section don't
+The second issue is even more problematic: LED leads have a fixed length that limits the maximum
+radius of the outside diameter. In the case on the left, the leads of the LED in the center of a section don't
 reach all the way to the PCB! The case on the right doesn't have that problem.
 
-It should be clear that dividing a circle, or a sphere, into a higher number of section has some
-crucial mechanical advantages.
+It's clear that dividing a circle, or a sphere, into a higher number of section has some crucial mechanical 
+advantages.
 
-But there's one additional benefit: it just looks better to have more sections.
+One final consideration: having more sections just looks better.
 
-For all the reasons above, I decided on the highest possible regular inscribed polyhedron: the icosahedron.
-
-
-Another consideration is that a lower order inner polyhedron will result in an outside LED arrangement that's 
-is just too coarse to be visually appealing. Since there'll be one PCB design per inner face, the LED arrangement
-of each sphere element will be identical. Have more sphere elements just looks better.
-
-XXXX define sphere element XXXX
-
-The higher the number of faces, the closer the polyhedron will match an actual sphere, and the better it will look.
-
-https://cage.ugent.be/~hs/polyhedra/polyhedra.html
-
-One of the most common examples is the a regular soccer ball, which uses a truncated icosahdron to approximate
-a sphere.
-
-https://en.wikipedia.org/wiki/Truncated_icosahedron
-
-There's also the class of geodesic domes.
-
-...geodesic dome...
-
-There's an important other consideration than just how it looks: the number of unique parts, and the total number
-of parts in general. A truncated icosahdron looks great, but it requires 2 different parts and a total of 32 pieces:
-20 hexagons and 12 pentagon. It adds to the overall design, solder and assembly work.
-
-...more faces means smaller pieces as well...
-
-In the end, an icosahedron seemed like the best compromise: it's constructed out of identical triangles, and it has 20 face, 
-which is low enough to be manageable, yet high enough reduce the angle between LEDs on opposite sides of a single element.
+So for all the reasons above, I chose on the highest possible regular inscribed polyhedron: the icosahedron.
 
 # LED Selection
 
-Most objects with a large amount of LEDs have flat surfaces, which makes it possible to use surface mounted devices.
-This makes mass assembly pretty easy, even for hobbyist: you order a PCB with stencil from your favorite PCB provider,
-apply solder paste, put things on a hot plate or in a toaster, and you're done.
+The next question is about the kind of LEDs: you can go with low-level 3-in-1 RGB LEDs that shift the intelligence
+to get different color shades onto a PWM LED driving controller. Or you can use smart LEDs from the WS2812 class 
+that where you serially shift 24-bit color values into a chain of LEDs.
 
-But a flat surface is not what I wanted, which left me with a number of options:
+WS2812 LEDs are more expensive, they consume more power, and they aren't many thu-hole versions: LCSC only has the 
+WS2812B-F8. But the fact that you only need 3 pins (power, ground, input data) per PCB to control 
+a whole string of LEDs is very attractive, because it's something you can do with regular 2.54mm pin connectors. 
 
-* use a flex PCB 
-* glue individual SMD LEDs onto the sphere and solder them manually
-* use through-hole LEDs
-
-Compared to standard PCBs where you can get a whole bunch of just a couple of dollars, Flex PCB are still quite expensive.
-And since I've never worked with them before, I almost certainly would need at least one iterations to really get things right.
-Hand-soldering wires to hundreds of LEDs was out of the question, so I chose to go with through-hole LEDs.
-
-The next question is about the kind of LEDs: you can go with the low-level 3-in-1 RGB LEDs that shift all the intelligence
-to get different color shades to the driving logic, or you can use smart LEDs from the WS2812 class that where you serially
-shift 24-bit color values into a chain of LEDs.
-
-WS2812 LEDs are more expensive, they consume more power, and they aren't many thu-hole versions, LCSC only has the WS2812B-F8,
-but the fact that you only need 3 pins per PCB is very attractive: it's something you can still do with regular 2.54mm pin
-connectors. So that's what I choose.
-
-As for size, I choose the WS2812B-F8 over the WS2812B-F5. The F8 has an 8mm main diameter versus 5mm for the F5, so the F5 seems
-at first more attractive 
-
+As for size, I choose the WS2812B-F8 over the WS2812B-F5. The F8 has an 8mm main diameter versus 5mm for the F5. 
+The F5 is attractive if you want to squeeze as many LEDs per area as possible, but the highest density would
+have resulted in some other geometry difficulties such as not having enough room for magnet holes. In the end,
+LCSC made the decision easy: they only had the F8 version in stock.
 
 # Design of a Sphere with an Icosahedron Base
 
