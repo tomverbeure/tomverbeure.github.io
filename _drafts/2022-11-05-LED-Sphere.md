@@ -162,38 +162,16 @@ LCSC made the decision easy: they only had the F8 version in stock.
 
 # Design of a Sphere with an Icosahedron Base
 
-# LED Distribution within each Triangular Element
-
-So the decision was made to go with an icosahedron 
 
 
 
+# References
 
-* 194 LED sphere
-
-    * [Youtube](https://www.youtube.com/watch?v=Q5d8gTppuYo)
-
-* LED foldable spheres
-
-    * [Youtube](https://www.youtube.com/watch?v=3ijp2IU6-3s)
-
-* Interactive Geodesic LED dome
-
-    120 lights.
-
-    Uniform triangles -> non-uniforms LEDs
-
-    * [Youtube](https://www.youtube.com/watch?v=E2HVLBBQtZI)
-    * [Instructables](https://www.instructables.com/Interactive-Geodesic-LED-Dome/)
-
-* Geodesic(k) RGB LED Spheres
-
-    Uses 18650 batteries spotwelded together.
-
-    Small: 80 LEDs. Large: 180 LEDs.
-
-    * [Prusaprinters.org](https://www.prusaprinters.org/prints/40182-geodesick-rgb-led-spheres))
-
+* [Video](https://www.youtube.com/watch?v=Q5d8gTppuYo) of Jiri's 192 LED sphere
+* [Build instructions](https://www.printables.com/model/40182-geodesick-rgb-led-spheres)
+  for the Geodesic(k) RGB LED Spheres with 80 and 180 LEDs
+* Huge [Interactive Geodesic LED dome with 120 lights](https://www.youtube.com/watch?v=E2HVLBBQtZI)
+  ([build instructions](https://www.instructables.com/Interactive-Geodesic-LED-Dome/))
 
 * Battery
 
