@@ -10,6 +10,8 @@ categories:
 
 # Introduction
 
+![LED Sphere](/assets/led_sphere/led_sphere.jpg)
+
 This project started roughly in the summer of 2019. I've always been fascinated by LED creations: massive LED panels on
 buildings with animations that seem to jump out into the 3D world, LED cubes with mesmerizing animations, 
 [Greg Davill's icosahedron](https://www.hackster.io/news/greg-davill-s-led-icosahedron-packs-20-panels-2-400-leds-into-a-tiny-handheld-fascinator-5de9ad35872a) 
@@ -45,7 +47,9 @@ One extremely good such approximation is [Fibonacci sphere](https://openprocessi
 
 ![Fibonacci sphere](/assets/led_sphere/fibonacci_sphere.png)
 
-Another one is the [HEALPix algorithm](https://en.wikipedia.org/wiki/HEALPix).
+Another one is the [HEALPix algorithm](https://en.wikipedia.org/wiki/HEALPix):
+
+![Sphere with HEALPix pixelization](/assets/led_sphere/healpix.jpg)
 
 Unfortunately, it's one thing to come up with an arrangment that is visually almost perfect, it's another 
 have one that can be physically created with a reasonable amount of effort. One of my additional constraints
@@ -71,36 +75,23 @@ as follows: you start with a polyhedron that is circumscribed by a sphere (meani
 of the polyhedron lay on the surface of the sphere.) Then you project the edges of the polyhedron onto
 the sphere surface.
 
-Wikipedia has a [table with all such regular and semi-regular polyhedra](https://en.wikipedia.org/wiki/Spherical_polyhedron#Examples)
+Wikipedia has a long page with all kinds of [regular polyhedra](https://en.wikipedia.org/wiki/Regular_polyhedron#The_regular_polyhedra),
+but we're particularly interested in the the [Platonic solids](https://en.wikipedia.org/wiki/Platonic_solid),
+because they have the attractive property that all sides identical. This means that you only need to design 1 such 
+piece for your 3D printer and only 1 PCB.
 
-One could use something as simple as a regular tetrahedron, built out of 4 triangles, that splits the sphere surface
-into 4 identical spherical sections:
+The figure below shows all possible platonic solids: tetrahedron, cube, octahedron, dodecahedron, and
+icosahedron, with respectivelh 4, 6, 8, 12, and 20 faces:
 
-![Regular tetrahedron projected onto sphere](/assets/led_sphere/spherical_tetrahedron.png)
+![Platonic polyhedra](/assets/led_sphere/regular_polyhedra.png)
 
-Here's the version with a cube (6 identical sections):
+When the sides of these polyhedra are projected onto a circumscribed sphere, you get the following
+corresponding [spherical polyhedra](https://en.wikipedia.org/wiki/Spherical_polyhedron#Examples):
 
-![Cube projected onto sphere](/assets/led_sphere/spherical_cube.png)
+![Spherial Platonic polyhedra](/assets/led_sphere/spherical_regular_polyhedra.png)
 
-A regular octahedron (8 identical section):
-
-![Regular octahedron projected onto sphere](/assets/led_sphere/spherical_octahedron.png)
-
-A regular dodecahedron (12 identical sections):
-
-![Regular dodecahedron projected onto sphere](/assets/led_sphere/spherical_dodecahedron.png)
-
-And finally a regular icosahedron (20 identical section): 
-
-![Regular icosahedron projected onto sphere](/assets/led_sphere/spherical_icosahedron.png)
-
-From that large Wikipedia table with polyhedra, I've cherry-picked the regular versions. These are 
-the also called [Platonic solids](https://en.wikipedia.org/wiki/Platonic_solid). They have
-the attractive property that you need exactly 1 sphere element to build up the full sphere. This means that 
-you only need to design 1 such piece for your 3D printer and only 1 PCB.
-
-This is certainly not a hard limitation: the truncated icosahedron, used for soccer balls, is a very good 
-candidate as well:
+Using a platonic polyhedron is certainly not a hard limitation: the truncated icosahedron, used for soccer 
+balls, is a very good candidate as well:
 
 ![Truncated icosahedron projected onto sphere](/assets/led_sphere/spherical_truncated_icosahedron.png)
 
