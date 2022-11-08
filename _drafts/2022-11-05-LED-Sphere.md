@@ -15,14 +15,14 @@ categories:
 This project started roughly in the summer of 2019. I've always been fascinated by LED creations: massive LED panels on
 buildings with animations that seem to jump out into the 3D world, LED cubes with mesmerizing animations, 
 [Greg Davill's icosahedron](https://www.hackster.io/news/greg-davill-s-led-icosahedron-packs-20-panels-2-400-leds-into-a-tiny-handheld-fascinator-5de9ad35872a) 
-at the Hackaday Superconference. There was always the plan to make something myself, and over the years 
+at the 2019 Hackaday Supercon. There was always the plan to make something myself, and over the years 
 I assembled nice assortment of LED panels, RGB LED strips, and even a few bags of plain vanilla single color 
 through-hole LEDs: the "buy" button on AliExpress is sometimes irresitable. 
 
 But nothing ever came off it, until a bunch of lunch time discussions at work (remember them?) with my friend and
 3D printing wizzard Jens about how to approach an LED sphere. The idea is not totally original, but there's surprisingly
 little out there, even today, almost 3 years after our first discussion: Jiri Paus built a 
-[beautiful wireframe sphere with 192 LEDs](https://www.instructables.com/Christmas-LED-Sphere/), 
+[beautiful wireframe sphere with 194 LEDs](https://www.instructables.com/Christmas-LED-Sphere/), 
 Whity created created these [2 geodesic structures](https://www.printables.com/model/40182-geodesick-rgb-led-spheres)
 that are a close enough approximation, with 80 and 180 LEDs.
 
@@ -33,9 +33,12 @@ sphere isn't really round, and 80, 180, or even 192 LEDs is just not enough.
 I wanted an LED sphere that's truly round, without an obvious north-south axis, and with moar LEDs too. 
 But who am I kidding, most of all, I wanted to design it from the ground up all by myself.
 
+*When I started to write this blog post, Debra aka [@geekmomprojects](https://twitter.com/GeekMomProjects) hadn't 
+released her amazing herd of LED orbs to the world yet. I'll get back to her creations further down.*
+
 # Spreading LEDs across a Sphere Surface
 
-An ideal LED sphere has the LEDs spread perfectly even all over the surface: no matter how to rotate the object, or which
+An ideal LED sphere has the LEDs spread perfectly even all over the surface: no matter how you rotate the object, or which
 angle you look at it, the LEDs are organized exactly the same. There is no top, no bottom, no obvious sub-structure around
 which the LEDs are organized.
 
@@ -52,9 +55,9 @@ Another one is the [HEALPix algorithm](https://en.wikipedia.org/wiki/HEALPix):
 ![Sphere with HEALPix pixelization](/assets/led_sphere/healpix.jpg)
 
 Unfortunately, it's one thing to come up with an arrangment that is visually almost perfect, it's another 
-have one that can be physically created with a reasonable amount of effort. One of my additional constraints
+to have one that can be physically created with a reasonable amount of effort. One of my additional constraints
 was that the LEDs can be soldered down onto some kind of PCB. Because amazing as it is, precision soldering
-more than 192 LEDs onto a metal wire frame is just not something I'm willing to do.
+more than 194 LEDs onto a metal wire frame is just not something I'm willing to do.
 
 One solution Jens and I explored were flex PCBs. These have the advantage that you can solder down the 
 LEDs onto the PCB using the regular and efficient surface mounted method of solder paste and reflow oven, 
@@ -63,7 +66,7 @@ is promising, but flex PCBs are a big unknown (how much can they really be flexe
 expensive too.
 
 So to the reduce the problem, I fell back to a more traditional approach of a polyhedral inner base with 
-3D printed curved sphere elements around it, a flat PCB, and through-hole LEDs.
+3D printed, spherical sections around it, a flat PCB, and through-hole LEDs.
 
 Whity's LED sphere takes that concept to the extreme in the sense that there isn't a curved surface at all: 
 it's triangles all the way down, and there's 1 PCB per LED.
@@ -72,16 +75,16 @@ it's triangles all the way down, and there's 1 PCB per LED.
 
 There are many ways to split up a sphere into a set of individual pieces. The basic principle goes rougly 
 as follows: you start with a polyhedron that is circumscribed by a sphere (meaning: all the vertices
-of the polyhedron lay on the surface of the sphere.) Then you project the edges of the polyhedron onto
-the sphere surface.
+of the polyhedron lay on the surface of the sphere.) Then you project the edges of the polyhedron from the
+center point onto the sphere surface.
 
 Wikipedia has a long page with all kinds of [regular polyhedra](https://en.wikipedia.org/wiki/Regular_polyhedron#The_regular_polyhedra),
-but we're particularly interested in the the [Platonic solids](https://en.wikipedia.org/wiki/Platonic_solid),
-because they have the attractive property that all sides identical. This means that you only need to design 1 such 
-piece for your 3D printer and only 1 PCB.
+but I'm particularly interested in the [Platonic solids](https://en.wikipedia.org/wiki/Platonic_solid),
+because they have the attractive property that all polyhedral sides are identical. This has the consequence
+that you only need to design 1 side piece for your 3D printer and only 1 PCB.
 
 The figure below shows all possible platonic solids: tetrahedron, cube, octahedron, dodecahedron, and
-icosahedron, with respectivelh 4, 6, 8, 12, and 20 faces:
+icosahedron, with respectively 4, 6, 8, 12, and 20 faces:
 
 ![Platonic polyhedra](/assets/led_sphere/regular_polyhedra.png)
 
@@ -95,19 +98,19 @@ balls, is a very good candidate as well:
 
 ![Truncated icosahedron projected onto sphere](/assets/led_sphere/spherical_truncated_icosahedron.png)
 
-Compared to a regular icosahedron with 20 identical spherical triangles, the truncated version
-needs 20 spherical hexagons and 12 spherical pentagons. That's 2 PCBs and 2 sphere elements to design, and
-there's also the question about how to evenly spread LEDs across these 2 surfaces such that the general
-density of the LEDs is the same. We're dealing with thru-hole LEDs which have their own density constraints and
+Compared to a regular icosahedron with 20 identical spherical sections, the truncated version needs 20 
+spherical hexagons and 12 spherical pentagons. That's 2 PCBs and 2 sphere sections to design, and there's 
+also the question about how to evenly spread LEDs across these 2 surfaces such that the general density 
+of the LEDs is the same. We're dealing with thru-hole LEDs which have their own density constraints and 
 some other geometrical limitations as well.
 
 # Geometrical Limitations with Thru-Hole LEDs
 
 Let's talk about those geometrical limitations. 
 
-If the LEDs are located on a curved, spherical, surface while the LED leads are soldered to a flat PCB,
-a lower order polyhedron will have in a higher variance in distance between surface and PCB, and in a higher
-maximum incident angle at which the leads meet with the PCB surface.
+If the LEDs are located on a curved, spherical surface while the LED leads are soldered to a flat PCB,
+a lower order polyhedron will have a higher variance in distance between sphere surface and PCB, and 
+a higher maximum incident angle at which the LED leads meet with the PCB surface.
 
 Here's a 2D illustration of that, but it applies to 3D just the same:
 
@@ -125,11 +128,11 @@ hit the PCB at a sharp angle, but they still need to go through the PCB perpendi
 
 When there are only 3 sections, the left case, this incident angle is much sharper than for the right case.
 
-The second issue is even more problematic: LED leads have a fixed length that limits the maximum
+The second issue is even more problematic: LED leads have a fixed length and that limits the maximum
 radius of the outside diameter. In the case on the left, the leads of the LED in the center of a section don't
 reach all the way to the PCB! The case on the right doesn't have that problem.
 
-It's clear that dividing a circle, or a sphere, into a higher number of section has some crucial mechanical 
+It's clear that dividing a circle, or a sphere, into a higher number of sections has some important mechanical 
 advantages.
 
 One final consideration: having more sections just looks better.
@@ -139,17 +142,23 @@ So for all the reasons above, I chose on the highest possible regular inscribed 
 # LED Selection
 
 The next question is about the kind of LEDs: you can go with low-level 3-in-1 RGB LEDs that shift the intelligence
-to get different color shades onto a PWM LED driving controller. Or you can use smart LEDs from the WS2812 class 
+to create different color shades onto a PWM-based LED driving controller. Or you can use smart LEDs from the WS2812 class 
 that where you serially shift 24-bit color values into a chain of LEDs.
 
-WS2812 LEDs are more expensive, they consume more power, and they aren't many thu-hole versions: LCSC only has the 
-WS2812B-F8. But the fact that you only need 3 pins (power, ground, input data) per PCB to control 
+WS2812 LEDs are more expensive, they consume more power, and they aren't many thu-hole variants.
+But the fact that you only need 3 pins (power, ground, input data) per PCB to control 
 a whole string of LEDs is very attractive, because it's something you can do with regular 2.54mm pin connectors. 
 
-As for size, I choose the WS2812B-F8 over the WS2812B-F5. The F8 has an 8mm main diameter versus 5mm for the F5. 
+The options were the 
+[WS2812D-F8](https://lcsc.com/product-detail/Light-Emitting-Diodes-LED_Worldsemi-WS2812D-F8_C139126.html)
+or the [WS2812D-F5](https://lcsc.com/product-detail/Light-Emitting-Diodes-LED_Worldsemi-WS2812D-F5_C190565.html).
+The F8 has an 8mm main diameter versus 5mm for the F5. 
 The F5 is attractive if you want to squeeze as many LEDs per area as possible, but the highest density would
-have resulted in some other geometry difficulties such as not having enough room for magnet holes. In the end,
-LCSC made the decision easy: they only had the F8 version in stock.
+have resulted in some other geometry difficulties such as not having enough room to squeeze in magnet holes on the
+sides. In the end, LCSC made the decision easy: at the time of construction, they only had the F8 version in stock.
+I ordered 500 of them for a price of $78.
+
+![WS2812D-F8 technical drawing](/assets/led_sphere/ws2812d-f8.jpg)
 
 # Design of a Sphere with an Icosahedron Base
 
@@ -157,7 +166,7 @@ LCSC made the decision easy: they only had the F8 version in stock.
 
 # Let's Talk about Magnets
 
-Magnets are the primary way to hold the sphere elements together. And there's a lot of them!
+Magnets are the primary way to hold the sphere sections together. And there's a lot of them!
 There are 2 mechanism in which magnets are used:
 
 * triangle-to-triangle attraction
@@ -268,8 +277,12 @@ have almost 300 of them!
 
 # Keeping Track of Magnet Polarity
 
-It is absolutely **crucial** to keep track of the polarity of the magnets. I used special markers
-that worked to mark them sides with either red or gray. I also prepare a whole batch of them:
+During assembly, it is absolutely **crucial** to keep track of the polarity of the magnets. I used special markers
+that worked on metal to mark them sides with either red or gray. 
+
+![Marked magnets](/assets/led_sphere/marked_magnets.jpg)
+
+I prepared a whole batch at a time:
 
 * have a reference magnet attached to a metal plate: the casing of my tiny Lenovo PC. (No magnetic
 hard drive, of course!)
@@ -277,10 +290,10 @@ hard drive, of course!)
 * keep the magnets far enough away from each other.
 * mark them with red or gray depending on which polarity I needed.
 
-I found these markers in my daughter's toolkit. They worked well for me.
+I found these markers in my daughter's arts and crafts toolkit. They worked well for me.
 
-I just can't stress enough how important it is to do this right! The polarity markings sometimes don't
-still well and fade away. Don't guess and double check that you mark sides correctly when you reapply
+I can't stress enough how important it is to do this right! The polarity markings sometimes don't
+stick well and fade away. Don't guess but double check that you have the sides correct when you reapply
 marker.
 
 # Glueing Magnets to PLA
