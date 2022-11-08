@@ -53,7 +53,7 @@ Another one is the [HEALPix algorithm](https://en.wikipedia.org/wiki/HEALPix):
 
 Unfortunately, it's one thing to come up with an arrangment that is visually almost perfect, it's another 
 have one that can be physically created with a reasonable amount of effort. One of my additional constraints
-was that the LEDs can be soldered down onto some kind of PCB. Because amazing as it is, precision soldering  
+was that the LEDs can be soldered down onto some kind of PCB. Because amazing as it is, precision soldering
 more than 192 LEDs onto a metal wire frame is just not something I'm willing to do.
 
 One solution Jens and I explored were flex PCBs. These have the advantage that you can solder down the 
@@ -154,6 +154,159 @@ LCSC made the decision easy: they only had the F8 version in stock.
 # Design of a Sphere with an Icosahedron Base
 
 
+
+# Let's Talk about Magnets
+
+Magnets are the primary way to hold the sphere elements together. And there's a lot of them!
+There are 2 mechanism in which magnets are used:
+
+* triangle-to-triangle attraction
+* triangle-to-center attraction
+
+
+# Triangle-to-Triangle Magnets
+
+Triangle-to-triangle magnets keep different spherical elements attached to each other, with magents
+embedded in each of the 3 sides. It's possible to keep the whole sphere together with just
+the triangle-to-triangle magnets, as long as there aren't any major compression or expansion forced
+exerted on the sphere. Once the elements see a bit of separation under pressure, all the elements
+will collapse and scatter all over the place. It'd be possible to reduce this effect somewhat
+by using stronger or more magnet, but there are number of restrictions:
+
+The thickness of the magnets is severly limited by the desire to have a similar gap between
+neighboring LEDs within the same spherical element, and neighboring LEDs between neighboring
+spherical elements. And since one of the general goals of the LED sphere was to have LEDs as
+close to each other as possible, this immediately impacts the thickness of the outside triangle
+wall in which the magnets must be embedded. Depending on the chosen pair, the gap between
+two LEDs on the same triangle varies between 2.7 and 4.0 mm.
+
+![LED hole-to-hole separation](/assets/led_sphere/led_hole_to_hole_separation.png)
+
+For outside wall, I chose the higher value, 4.0mm, because that number had to be divided by 2, creating
+an outside wall thickness of 2mm.
+
+Another thickness related limitation is the number of magnets of each side: because the walls
+are so thin, the only location to place the magnets is between LEDs, otherwise the hole for the
+magnets cuts in the hole for the LED itself. And since I'm using superglue to fix the magnet in
+place, the glue would spill over into the LED hole. My implementation has 6 LEDs on each side,
+which restricts the number of magnets to 5.
+
+![Magnets between LED holes](/assets/led_sphere/magnets_between_led_holes.png)
+
+Finally, the same limitation also restricts the diameter of each magnet. Once again, a diameter
+that's too high will make the magnet hole intrude into the LED hole.
+
+I first tried magnets with 1mm thickness and a 3mm diameter, but the magnetic force between those
+was pathetic. The next step up were magnets advertised as 2mm thick and 5mm diameter. In reality,
+the actual thickness is a bit less than that, but the magnet hole is still 2mm to have some
+room for some room for a layer of glue and because the printer isn't very accurate either: you
+don't want the magnet to stick out of the surrounding surface.
+
+![Some magnet hole measurements](/assets/led_sphere/magnet_depth.png)
+
+In the picture above, you can see that the magnet hole does not intersect with the LED hole. But
+after sending this through Cura (the slicers that prepares the model for 3D printing), there
+was still 1 magnet hole that intersected with the LED hole. I noticed this too late, but it
+wasn't a big deal.
+
+Then there's the issue of magnet polarity.
+
+For the first triangle elements that I assembled, I populated all 5 magnets per side, but after that
+I switched to a configuration with only 4 magnets per side. The diagram below shows why:
+
+![Polarity of 5 magnets](/assets/led_sphere/magnet_polarity_5.png)
+
+With 5 magnets populated, there are 2 magnet polarity configurations: `- + - + -` and `+ - + - +`.
+Since there are 3 sides per triangle, you need to plan ahead how many triangles there'll be with
+2 polarity configurations of one and 1 polarity configuration of the other. In other words,
+there'll be 2 classes of triangles, and you'll need to carefully plan ahead. Ideally, you
+want all triangles to be identical.
+
+So after the assembling the first 5 triangles, I switched to the following polarity configuration : 
+`+ - 0 + -`, where `0` means neutral, or no magnet at all.
+
+![Polarity of 4 magnets](/assets/led_sphere/magnet_polarity_4.png)
+
+With this configuration, every single side of every triangle has the same configuration. You don't 
+need to plan anything ahead. 
+
+You'd think tha removing 1 magnet reduces the attraction strength between 2 triangle by 20%, but 
+it's more than that, at least on my cheap 3D printer. The reason is because because of what
+you see in the picture below:
+
+XXXX picture with gaps between pointed ends of each triangle XXXX
+
+The sides are designed to be completely flat, but after printing they are ever so slightly curved.
+The magnetic force is inversely proporitional to the distance squared, so going from 2
+magnets between literally smashed against eachother to a very tiny gap makes a big difference. And
+since the magnet that was removed is the one that's most likely to be the touching one on a curved
+surface, it contributes to a bigger share of the overall attraction between 2 sides.
+
+# Triangle to Center Magnets
+
+# Number of magnets
+
+If you want to copy the design that I've used, you'll need this amount of magnets:
+
+* [5mm x 2mm](https://www.amazon.com/gp/product/B09QHKKWMC): 20 triangles x 3 sides x 4 magnets = 240 (3 packs)
+* [4mm x 4mm](https://www.amazon.com/gp/product/B097Z5TKCY): 5 triangles x 4 magnets x 2 both sides  = 40 (1 pack)
+
+So that's a grand total of 280.
+
+![Magnets 4x4 and 5x2](/assets/led_sphere/magnets_4x4_and_5x2.jpg)
+
+My LED sphere has more than 300 magnets because I plans for two center PCBs and triangle attachments,
+as well as support attachments for the top and bottom 5-piece circles. But I never implemented those...
+
+You could save on 5x2 magnets, and make the sphere much stronger, by gluing the top and bottom sections of
+5 triangles together. This has one major negative: if 1 triangle goes bad, it will be hard to replace just 
+that one...
+
+You'd think that the biggest contributor to the weight of the sphere are the batteries, but that's not
+the case: it's the magnets! The magnets are tiny and light individually, but not so much when you
+have almost 300 of them!
+
+# Keeping Track of Magnet Polarity
+
+It is absolutely **crucial** to keep track of the polarity of the magnets. I used special markers
+that worked to mark them sides with either red or gray. I also prepare a whole batch of them:
+
+* have a reference magnet attached to a metal plate: the casing of my tiny Lenovo PC. (No magnetic
+hard drive, of course!)
+* peal off a whole bunch of magnets with the same polarity and attach them to the metal plate.
+* keep the magnets far enough away from each other.
+* mark them with red or gray depending on which polarity I needed.
+
+I found these markers in my daughter's toolkit. They worked well for me.
+
+I just can't stress enough how important it is to do this right! The polarity markings sometimes don't
+still well and fade away. Don't guess and double check that you mark sides correctly when you reapply
+marker.
+
+# Glueing Magnets to PLA
+
+Google told me that super glue is the way to go to attach magnets to 3D printed PLA. Hot glue is not
+recommended because high temperatures reduce the strength of the neodymium magnets. Super glue comes
+in all kinds of containers and application methods. I tried a bunch of them. I found the one with a
+little brush easiest to use.
+
+Still, gluing that many magnets is a total pain. Even if you're careful, expect that stuff to stick
+everywhere. My application method was as follows:
+
+* dip the brush in the glue
+* apply to the magnet hole of interest
+* push the magnet in place. Expect glue to stick on your finger.
+* use a cotton swab to remove excess glue.
+
+Optional extra steps:
+
+* remove the new magnet from an earlier placed magnet because they love each other very much.
+* replace cotton swabs often, because the glue hardens quickly... but only on cotton swabs, not
+  between the magnet and the PLA....
+
+Here's the polarity that I used for my build:
+
+XXXXXX
 
 
 # References
