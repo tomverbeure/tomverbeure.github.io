@@ -160,6 +160,13 @@ I ordered 500 of them for a price of $78.
 
 ![WS2812D-F8 technical drawing](/assets/led_sphere/ws2812d-f8.jpg)
 
+Many WS2812 variants have a decoupling cap and data line series resistor built-in, but according to the datasheet, 
+the thru-hole version still requires them: one per LED.
+
+![WS2812D peripheral components](/assets/led_sphere/ws2812d_peripherals.jpg)
+
+So 500 75 Ohm resistors and 500 100nF caps set me back an additional $1.75. 
+
 # Design of a Sphere with an Icosahedron Base
 
 
