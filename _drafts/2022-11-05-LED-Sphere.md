@@ -167,7 +167,89 @@ the thru-hole version still requires them: one per LED.
 
 So 500 75 Ohm resistors and 500 100nF caps set me back an additional $1.75. 
 
-# Design of a Sphere with an Icosahedron Base
+# A Cheap 3D Printer on Black Friday
+
+One of the explicit design limitations of my [LED Cube](/2021/05/16/Pixel-Purse-LED-Cube.html) was to create one
+without 3D printed parts, and (ab)use PCBs instead to create the internal structural framework. This option was
+obviously not possible for a sphere, so I was on the market for a 3D printer. And as luck would have it, there was
+a 2019 Black Friday special where a 
+[Creality Ender 3 Pro](https://www.amazon.com/Comgrow-Creality-Ender-Aluminum-220x220x250mm/dp/B07BR3F9N6) was for 
+sale for just $160. *That was an amazing deal at the time. It's still a good deal today, but regular prices have 
+since gone signifantly. And first-time walk-in customers at Microcenter can now often get it for $100.*
+
+The Ender 3 Pro is extremely popular. There's a large modding community around where pretty much any part gets
+replaced by something better, and you can find plenty of Youtube or enthousiasts on forums to help you out if things
+don't work as expected.
+
+![Creality Ender 3 Pro](/assets/led_sphere/ender3_pro.jpg)
+
+This is good, because the printer requires a lot of tender loving care to get somewhat acceptable results. I spent
+way too much time calibrating the annoying thing, and the quality is still only passable: good enough to print
+low detail triangle sections at medium quality, but that's really about it.
+
+The experience was bad enough that it's holding me back from picking up a new 3D printing project. You get what
+you pay for, and if I really want to take my 3D printing adventures to the next level, I'll probably 
+invest in a Prusa printer.
+
+Anyway... early December, the printer arrived at my work office. It was supposed to stay there for a few months 
+because we were just about to start a major house remodel, but then the pandemic hit, the office shut down, and the
+printer only came home 2 years later.
+
+# Mechanical Design with FreeCAD
+
+Up to this project, my only experience with mechanical design was a few hours of dabbling with
+[OpenSCAD](https://openscad.org), installing Fusion 360 and giving up after watching a few videos, and 3
+extensive but failed attempts at learning [FreeCAD](https://www.freecad.org).
+
+With AutoCAD doing its very best to alienate potential new users with high prices, Fusion 360 is now out 
+of the question for anyone who's license hasn't been grandfathered in, so I once again set out make FreeCAD work. 
+There are now tons of pretty good tutorial videos on Youtube. Over the Christmas holidays, I spend tens of
+hours watching them, and trying to replicate what they're doing.
+
+I can now say with confidence that I can usually copy whatever it is that happens in these videos, but
+I'm often still hopelessly lost. Much is said about 
+FreeCAD's [topological naming problem](https://wiki.freecadweb.org/Topological_naming_problem), but that's not
+at all what I'm struggling with, because at least it's something you can reason about. The biggest issues are that
+it often takes only a few steps to get stuck in a place where the thing just doesn't want to do what you reasonably(?)
+expect it to do, and that manipulations that one would expect to be common are ridiculously non-intuitive.
+
+FreeCAD's forums are very welcoming and helpful: your question often get answered in minutes, with a quick
+screen-recorded video that shows exactly how to things, but asking questions for every little detail gets old
+quickly.
+
+After months of fighting with the GUI, I eventually gave up completely, and switched to FreeCAD's Python API to
+use FreeCAD as a Python equivalent of OpenSCAD. That API has its own issues, some of them infuriating. Here's a good example:
+
+The code below adds 2 vectors and assigns the result to `v3`:
+
+```python
+    v3 = v1.add(v2)
+```
+
+You'd expect the code below to assign a value of 2 times `v1` to `v2`:
+
+```python
+    v2 = v1.multiply(2)
+```
+
+It does that, but only after changing `v1` in place as well! If you don't want `v1` to mutate, you need to do a 
+deep copy first:
+
+```python
+    v2 = Base.Vector(v1).multiply(2)
+```
+
+Similarly, some API functions specify angles in degrees (e.g. `Rotation()`) while others work with
+radians (e.g. `getAngle()`).
+
+Still, once I switched to using the API, the projects took off, and after stuggling for months with the GUI,
+the whole design was completed in just 2 weeks.
+
+FreeCAD has a huge potential, and 
+
+
+# Design of an LED Sphere with an Icosahedron Base
+
 
 
 
