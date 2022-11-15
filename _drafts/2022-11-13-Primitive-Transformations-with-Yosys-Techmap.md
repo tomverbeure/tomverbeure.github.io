@@ -388,3 +388,51 @@ If you start Yosys, running `help techmap` will give you an exhaustive list of a
 you might ever need. Instead of repeating everything in there, let's create an `add_reduce` techmap
 file to solve the problem of the previous section.
 
+XXX TODO
+
+
+Now that all preliminary formalities are behind use, the actual reduction
+code is pretty straightfoward:
+
+
+```verilog
+else if (A_WIDTH+1 < Y_WIDTH) begin
+    // Y is too large and can be truncated.
+
+    localparam ADDER_WIDTH  = `MAX(`Y_MIN_WIDTH, A_WIDTH+1);
+
+    \$add #(
+        .A_SIGNED(A_SIGNED), 
+        .B_SIGNED(B_SIGNED), 
+        .A_WIDTH(A_WIDTH),
+        .B_WIDTH(B_WIDTH),
+        .Y_WIDTH(ADDER_WIDTH)
+    ) _TECHMAP_REPLACE_ (
+        .A(A), 
+        .B(B), 
+        .Y(Y[ADDER_WIDTH-1:0]) 
+    );
+    assign Y[Y_WIDTH-1:ADDER_WIDTH] = { (Y_WIDTH-ADDER_WIDTH){SIGNED_ADDER ? Y[ADDER_WIDTH-1] : 1'b0} };
+end
+```
+
+The result is exactly what we wanted, as shown in the graphical diagram:
+
+![top_unsigned after custom reduce](/assets/yosys_techmap/add_reduce.png)
+
+And in the CXXRTL-generated code:
+
+```c
+bool p_top__unsigned::eval() {
+	bool converged = true;
+	p_sum0.slice<31,0>() = add_uu<32>(p_op1, p_op0);
+	p_sum0.slice<63,32>() = value<32>{0u};
+	return converged;
+}
+```
+
+# Conclusion
+
+XXX TODO
+
+
