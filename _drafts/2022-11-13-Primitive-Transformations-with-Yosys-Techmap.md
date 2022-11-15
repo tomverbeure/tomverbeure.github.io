@@ -197,9 +197,10 @@ What we see here is that `techmap` is doing the `$mul` to `SB_MAC16` conversion 
 1. convert `$mul` to a generic, technology independent DSP multiplier cell.
 2. convert the generic multiplier DSP cell to an iCE40 DSP cell.
 
+**Step 1: map2dsp.v**
+
 Step 1 is done by [`map2dsp.v`](https://github.com/YosysHQ/yosys/blob/master/techlibs/common/mul2dsp.v).
-The code is a bit convoluted, but if you were wondering why this intermediate step was needed, it has
-the answers:
+The code is a bit convoluted, but it has the answer as to why this intermediate step was needed:
 
 * it deals with cases where a single `$mul` operation requires more than one DSP.
 
@@ -210,7 +211,8 @@ the answers:
 
     This avoids wasting precious DSP resources on something that can be implemented with core logic.
   
-The `-D ...` argument of the `techmap` command specify Verilog defines to parameterize the conversion process:
+The `-D ...` arguments of the `techmap` command specify Verilog defines that are passed to the techmap
+file. It's used to parameterize the conversion process:
 
 * `-D DSP_A_MAXWIDTH=16 -D DSP_B_MAXWIDTH=16` informs `mul2dsp` that the maximum input size of
   the DSP is 16 bits.
@@ -240,6 +242,7 @@ to iCE40 DSPs. The blue rectangle is a `$__soft_mul` cell that will be converted
 at a large stage, and the 3 green rectangles are `$add` cells to bring the results of the different multipliers
 together.
 
+**Step 2: ice40/dsp_map.v**
 
 Step 2 of the `techmap` process, [`ice40/dsp_map.v`](https://github.com/YosysHQ/yosys/blob/master/techlibs/ice40/dsp_map.v) 
 is trivial: it converts the generic `__MUL16X16` multiplier cell into an `SB_MAC16` cell, wires up the data path inputs and output,
@@ -283,10 +286,105 @@ module \$__MUL16X16 (input [15:0] A, input [15:0] B, output [31:0] Y);
 endmodule
 ```
 
-# How techmap works
+# A Horribly Contrived Example Problem
 
+Have a look at the following Verilog example code:
 
+```verilog
+module top_unsigned(input [5:0] op0, input [6:0] op1, output [63:0] sum);
+    assign sum = op0 + op1;
+endmodule
+```
 
+The graphical representation is as expected:
 
+![top_unsigned original version](/assets/yosys_techmap/add_orig.png)
 
+I sometimes use [CXXRTL](/2020/08/08/CXXRTL-the-New-Yosys-Simulation-Backend.html) to simulate my designs.
+When I run `write_cxxrtl`, the generated file contains the following:
+
+```c
+bool p_top__unsigned::eval() {
+	bool converged = true;
+	p_sum0 = add_uu<64>(p_op0, p_op1);
+	return converged;
+}
+```
+
+This is exactly as expected, and there's nothing wrong with it. But one thing that bothers me is that CXXRTL 
+uses 32-bit integer values ("chunks") for all its operations. In the code above, there's a 64-bit addition, and
+CXXRTL implements those by 
+[splitting things up into multiple 32-bit additions](https://github.com/YosysHQ/yosys/blob/853f4bb3c695d9f5183ef5064ec4cf9cdd8b5300/backends/cxxrtl/cxxrtl.h#L521-L532):
+
+```c
+   template<bool Invert, bool CarryIn>
+   std::pair<value<Bits>, bool /*CarryOut*/> alu(const value<Bits> &other) const {
+      value<Bits> result;
+      bool carry = CarryIn;
+      for (size_t n = 0; n < result.chunks; n++) {
+         result.data[n] = data[n] + (Invert ? ~other.data[n] : other.data[n]) + carry;
+         if (result.chunks - 1 == n)
+            result.data[result.chunks - 1] &= result.msb_mask;
+         carry = (result.data[n] <  data[n]) ||
+                 (result.data[n] == data[n] && carry);
+      }
+      return {result, carry};
+   }
+```
+
+It's a hand-crafted carry-ripple adder. Now, don't worry, things are really not as bad as it seems,
+because all the variables that are used for the the `if` conditionals and the `for` loop are constants. Any
+good C++ compiler will optimize the addition above into only a few assembler instructions.
+
+If you know your binary adder basics, you see that the addition of a 7-bit and a 6 bit operand will result
+at most in an 8-bit result. All higher bits will always be 0. It's overkill to have a 64-bit adder.
+
+Yosys already has the `wreduce` command that reduces logic operations to just the number of bits that are
+really needed.
+
+We can see this when we run the following commands:
+
+```
+read_verilog add_orig.v
+hierarchy -top top_unsigned
+wreduce
+clean -purge
+```
+
+![top_unsigned after wreduce](/assets/yosys_techmap/add_wreduce.png)
+
+And the here's the relevant CXXRTL generated code:
+
+```c
+bool p_top__unsigned::eval() {
+    bool converged = true;
+    p_sum0.slice<7,0>() = add_uu<8>(p_op0, p_op1);
+    p_sum0.slice<63,8>() = value<56>{0u,0u};
+    return converged;
+}
+```
+
+That looks better, but is that really true? The addition now returns an 8-bit value, but since
+the smallest chunk is 32-bits, the `slice<7,0>` command now requires a read-modify-write.
+
+What I really want is this:
+
+```c
+bool p_top__unsigned::eval() {
+    bool converged = true;
+    p_sum0.slice<31,0>() = add_uu<32>(p_op0, p_op1);    <<<<< 32 bits
+    p_sum0.slice<63,32>() = value<32>{0u,0u};		<<<<< 32 bits
+    return converged;
+}
+```
+
+Unfortunately, Yosys doesn't have a command that does this for me, and I really don't
+want to modify the [C++ code of the `wreduce` command](https://github.com/YosysHQ/yosys/blob/master/passes/opt/wreduce.cc)
+to make it so.
+
+# A Custom Techmap Module to the Rescue!
+
+If you start Yosys, running `help techmap` will give you an exhaustive list of all the feature that
+you might ever need. Instead of repeating everything in there, let's create an `add_reduce` techmap
+file to solve the problem of the previous section.
 
