@@ -382,23 +382,212 @@ Unfortunately, Yosys doesn't have a command that does this for me, and I really 
 want to modify the [C++ code of the `wreduce` command](https://github.com/YosysHQ/yosys/blob/master/passes/opt/wreduce.cc)
 to make it so.
 
-# A Custom Techmap Module to the Rescue!
+# A Custom Techmap Transformation to the Rescue!
 
 If you start Yosys, running `help techmap` will give you an exhaustive list of all the feature that
-you might ever need. Instead of repeating everything in there, let's create an `add_reduce` techmap
-file to solve the problem of the previous section.
+you might ever need. But instead of repeating everything in there, let's create an `add_reduce` techmap
+tranformation to solve the problem of the previous section.
 
-XXX TODO
+Here are some of the basics of a techmap transformation Verilog module:
 
+* a techmap transformation only operates on a single design cell. 
+
+    You can not use a techmap to perform multi-cell optimizations such mapping a `$mul` followed 
+    by an `$add` onto an FPGA DSP has contains both.
+
+* a design cell that is tranformed by a techmap is selected by a string that contains a list of cell 
+  types that are specified with the `(* techmap_celltype "...")` attribute. If the techmap module doesn't have
+  such an attribute, then it's determined by the name of the Verilog module.
+
+* by default, a techmap operation will iterate on itself until there's nothing left that matches.
+
+    If a techmap operation replaces an `$add` primitive by a new `$add` primitive, techmap will run again 
+    on the second one. Without some kind of abort mechanism, this will result in an endless loop!
+
+    There are multiple ways to avoid such an endless loop though. I'll get to that later.
+
+* it's always a good idea to normalize the configuration on which you want to do the main transformation.
+
+    Here's a good example of what I mean with normalization: we want to reduce the size of an adder
+    based on the size of its inputs. But an adder has 2 inputs, and if these inputs have a different
+    size, then the transformation will have a different code path depending on which input is largest.
+
+    An addition is commutative: the order of the inputs doesn't matter.
+
+    It's easier first do a normalization where the A input is guaranteed to be larger or equal than
+    the B input, so that actual reduction transformation only has to deal with one case.
+
+    The earlier discussed `mul2dsp` techmap module 
+    [does the same thing](https://github.com/YosysHQ/yosys/blob/master/techlibs/common/mul2dsp.v#L97-L108).
+    
+
+**The add_reduce techmap module declaration**
+
+In this example, I only want a transformation that only works on a `$add` instance, so I could 
+create a techmap Verilog module like this:
+
+```verilog
+module \$add(A, B, Y);
+    ...
+```
+
+But I prefer to use a descriptive name instead and use the `(* techmap_celltype ...)` option to select
+the cell types on which the module operates:
+
+```verilog
+(* techmap_celltype "$add" *)
+module add_reduce(A, B, Y);
+    ...
+```
+
+**The add_reduce techmap module interface**
+
+The techmap module interface should be the same as the cell on which it operates. Both the
+input/output signals and the parameters must be the same. Yosys has a Verilog file called 
+[`simlib.v`](https://github.com/YosysHQ/yosys/blob/master/techlibs/common/simlib.v) that
+contains the reference simulation modules of all its internal primitives. You can use
+this to check out the interface details of particular primitive.  
+
+Here's [the one for the `$add` primitive](https://github.com/YosysHQ/yosys/blob/master/techlibs/common/simlib.v#L834-L844)
+
+```verilog
+module \$add (A, B, Y);
+
+parameter A_SIGNED = 0;
+parameter B_SIGNED = 0;
+parameter A_WIDTH = 0;
+parameter B_WIDTH = 0;
+parameter Y_WIDTH = 0;
+
+input [A_WIDTH-1:0] A;
+input [B_WIDTH-1:0] B;
+output [Y_WIDTH-1:0] Y;
+```
+
+The `add_reduce` techmap module has the same interface:
+
+```verilog
+(* techmap_celltype = "$add" *)
+module add_reduce (A, B, Y);
+	parameter A_SIGNED = 0;
+	parameter B_SIGNED = 0;
+	parameter A_WIDTH = 1;
+	parameter B_WIDTH = 1;
+	parameter Y_WIDTH = 1;
+
+	(* force_downto *)
+	input [A_WIDTH-1:0] A;
+	(* force_downto *)
+	input [B_WIDTH-1:0] B;
+	(* force_downto *)
+	output [Y_WIDTH-1:0] Y;
+
+```
+
+**add_reduce stop conditions**
+
+Since we're replacing an `$add` primitive with another `$add` primitive, we need to make sure that
+there are special conditions to prevent the `techmap` operation to run forever.
+
+A Verilog techmap module can tell the `techmap` command to stop transforming the current cell instance
+by assigning a non-zero value to the `_TECHMAP_FAIL_` wire:
+
+```verilog
+    wire _TECHMAP_FAIL_ = 1;    
+```
+
+For this operation, we want stop transforming an `$add` primitive for a number of conditions:
+
+* when the size of the adder is already equal or smaller than the minimal desired adder.
+
+    We can set the minimum size with the \`Y_MIN_WIDTH define.
+
+* When the size of the adder can't be reduced because it would change the result of the calculation.
+* When it's a signed addition and we only want to transform unsigned additions.
+
+    The \`REDUCE_SIGNED define must be set to allow signed adder transformation.
+
+This translates into the following code:
+
+```verilog
+    localparam SIGNED_ADDER = (A_SIGNED == 1 && B_SIGNED == 1);
+
+    generate 
+        if (Y_WIDTH <= `Y_MIN_WIDTH) begin
+            wire _TECHMAP_FAIL_ = 1;    
+        end
+        else if (Y_WIDTH < A_WIDTH+1) begin
+            wire _TECHMAP_FAIL_ = 1;    
+        end
+        else if (SIGNED_ADDER && !`REDUCE_SIGNED) begin
+            wire _TECHMAP_FAIL_ = 1;    
+        end
+```
+
+
+
+
+**add_reduce normalization**
+
+We can copy the code of `mul2dsp.v`, and, when necessary, replace the original `$add` instance with
+one where the A input is guaranteed to be larger or equal than B:
+
+```verilog
+    generate 
+	...
+	else if (B_WIDTH > A_WIDTH) begin
+            \$add #(
+                .A_SIGNED(B_SIGNED), <<< A and B are swapped
+                .B_SIGNED(A_SIGNED), <<<
+                .A_WIDTH(B_WIDTH),   <<<
+                .B_WIDTH(A_WIDTH),   <<<
+                .Y_WIDTH(Y_WIDTH)
+            ) _TECHMAP_REPLACE_ (
+                .A(B),               <<<
+                .B(A),               <<<
+                .Y(Y)
+            );
+	end
+	else if ...
+```
+
+By using `_TECHMAP_REPLACE_` as instance name of the swapped `$add` primitive, it
+will inherit the instance name of the original instance. This is one of the 
+many predefined variables that are explained by running `help techmap` in Yosys.
+
+Since we replace `$add` with `$add`, running `techmap` will result in the
+`$add` cell being transformed twice times if B is larger than A: the first time
+to swap the inputs, and the second time for the actual reduction.
+
+If `techmap` will keep on transforming the same cell multiple times, it can
+be hard to debug. You can use the `-max_iter <number>` option to limit
+the number of transformations.
+
+For example, here's what the design originally looked like:
+
+![top_unsigned original version](/assets/yosys_techmap/add_orig.png)
+
+
+And here's how it looks after running 
+
+```
+techmap -map add_reduce.v -max_iter 1
+clean -purge
+```
+
+![top_unsigned after swapping inputs](/assets/yosys_techmap/add_swap_clean.png)
+
+`op1` with the largest input size of 7 is now connected to A!
+
+
+**The actual add_reduce transformation**
 
 Now that all preliminary formalities are behind use, the actual reduction
 code is pretty straightfoward:
 
 
 ```verilog
-else if (A_WIDTH+1 < Y_WIDTH) begin
-    // Y is too large and can be truncated.
-
+else begin
     localparam ADDER_WIDTH  = `MAX(`Y_MIN_WIDTH, A_WIDTH+1);
 
     \$add #(
@@ -410,10 +599,17 @@ else if (A_WIDTH+1 < Y_WIDTH) begin
     ) _TECHMAP_REPLACE_ (
         .A(A), 
         .B(B), 
-        .Y(Y[ADDER_WIDTH-1:0]) 
+        .Y(Y[ADDER_WIDTH-1:0]) 	// Reduced output size
     );
+    // Higher bits are 0 or sign extension
     assign Y[Y_WIDTH-1:ADDER_WIDTH] = { (Y_WIDTH-ADDER_WIDTH){SIGNED_ADDER ? Y[ADDER_WIDTH-1] : 1'b0} };
 end
+```
+
+We can now run the whole thing with:
+
+```
+techmap -map add_reduce.v -D Y_MIN_WIDTH=32
 ```
 
 The result is exactly what we wanted, as shown in the graphical diagram:
@@ -431,8 +627,25 @@ bool p_top__unsigned::eval() {
 }
 ```
 
+# Checking Formal Equivalence
+
+# Cleaning Up
+
+When Yosys creates new cells and reconnects wires, it won't immediately delete older cells and wires
+that aren't used anymore. You need to expliclity tell Yosys to do so with the `clean -purge`
+command that you can see in some of the command sequences above.
+
+Here's what the reduced adder looks like without first running a clean:
+
+![top_unsigned after custom reduce without clean](/assets/yosys_techmap/add_reduce_unclean.png)
+
 # Conclusion
 
-XXX TODO
+Techmap is a very nice tool to have to transform single cells into somethng that better maps to
+your chosen target. The example that I've given here is a bit dumb (I'm not even sure if it would
+actually result in better compiled CXXRTL code!), but it shows some of the potential of what
+can be achieved.
 
+If you want to go deeper, you should definitely start by checking out the help instructions, not
+only of `techmap` command, but also some of the other ones. 
 
