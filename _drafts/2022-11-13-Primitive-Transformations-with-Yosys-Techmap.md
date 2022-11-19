@@ -627,7 +627,110 @@ bool p_top__unsigned::eval() {
 }
 ```
 
-# Checking Formal Equivalence
+# Formal Equivalence Check
+
+Whenever you do logic transformations, it's not a bad idea to check that the pre- and 
+post-transformation logic behaves exactly the same. Yosys has a basic built-in equivalence
+checker. It's not a performance monster, but it's good enough for this kind of use case.
+
+In the example below, I'm verifying the `add_reduce` techmap on a design with an adder that
+has an output that's 10 instead of 64 bits, and the minimum size is set to 8.
+This makes the size of the graphs more managable.
+
+```
+# Load the original design
+read_verilog add_orig.v
+hierarchy -top top_unsigned10
+rename top_unsigned10 top_unsigne
+
+# Make a golden reference copy of the unmodified design
+copy top_unsigned top_unsigned_gold
+
+# Use the original version to do the techmap
+select top_unsigned
+
+# Do the techmap on top_unsigned
+techmap -map add_reduce.v -D Y_MIN_WIDTH=8 
+clean -purge
+```
+
+So far, so good: Yosys now has 2 designs. `top_unsigned_gold` is the original one: 
+
+![top_unsigned10 golden](/assets/yosys_techmap/add10_gold.png)
+
+And `top_unsigned` has been transformed with the techmap: 
+
+![top_unsigned10 reduce](/assets/yosys_techmap/add10_reduce.png)
+
+
+Let's compare them:
+
+```
+equiv_make top_unsigned_gold top_unsigned top_equiv
+select top_equiv
+```
+
+The `equiv_make` has the golden and the transformed design as input and creates a new
+design with `$equiv` primitive cells inserted the output of both designs. These cells
+will tell the equivalent checker which nets to check for formal equivalence. The
+new design `top_equiv` looks like this:
+
+[![top_unsigned10 equiv_make](/assets/yosys_techmap/add10_equiv_make.png)](/assets/yosys_techmap/add10_equiv_make.png)
+*(Click to enlarge)*
+
+As you can see, the new design has both the golden and the transformed logic on the left,
+and driven by the same inputs. For there are 10 `$equiv` cell, one for each bit of the output.
+
+We can now run the equivalence check:
+
+```
+equiv_simple
+```
+
+You'll see something like this:
+
+```
+8. Executing EQUIV_SIMPLE pass.
+Found 10 unproven $equiv cells (1 groups) in top_equiv:
+ Grouping SAT models for \sum0:
+  Trying to prove $equiv for \sum0 [0]: success!
+  Trying to prove $equiv for \sum0 [1]: success!
+  Trying to prove $equiv for \sum0 [2]: success!
+  Trying to prove $equiv for \sum0 [3]: success!
+  Trying to prove $equiv for \sum0 [4]: success!
+  Trying to prove $equiv for \sum0 [5]: success!
+  Trying to prove $equiv for \sum0 [6]: success!
+  Trying to prove $equiv for \sum0 [7]: success!
+  Trying to prove $equiv for \sum0 [8]: success!
+  Trying to prove $equiv for \sum0 [9]: success!
+Proved 10 previously unproven $equiv cells.
+```
+
+Each individual bit has been proven to be correct.
+
+We can make Yosys fail if there were any unproven `$equiv` cells like this:
+
+```
+equiv_status -assert
+```
+
+However, in our case, all is well:
+
+```
+9. Executing EQUIV_STATUS pass.
+Found 10 $equiv cells in top_equiv:
+  Of those cells 10 are proven and 0 are unproven.
+  Equivalence successfully proven!
+```
+
+We've now proven that our `add_reduce` techmap is correct, but that doesn't mean
+it's guaranteed bug free: we've only tested one combination of input and output
+signals sizes. To be absolutely sure, you'd need more variety of test cases.
+
+This is only a quick example of what Yosys can do, there's a variety of additional 
+equivalency and logic proof features, most of which I don't know much about! You
+could start by checking out the help information for the `equiv_*`, `miter`, and `sat` 
+commands to learn more.
 
 # Cleaning Up
 
