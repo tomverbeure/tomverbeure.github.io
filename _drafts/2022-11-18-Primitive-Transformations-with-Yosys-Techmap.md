@@ -356,7 +356,7 @@ operations to just the number of bits that are really needed.
 We can see this when we run the following commands:
 
 ```
-read_verilog add_orig.v
+read_verilog add.v
 hierarchy -top top_unsigned
 wreduce
 clean -purge
@@ -505,7 +505,7 @@ wires so that you don't need to worry about wackos who use bit 0 as MSB.
 Since we're replacing an `$add` primitive with another `$add` primitive, we need to make sure that
 there are special conditions to prevent the `techmap` operation to run forever.
 
-A Verilog techmap module can tell the `techmap` command to stop transforming the current cell instance
+We can tell the `techmap` command to stop transforming the current cell instance
 by assigning a non-zero value to the `_TECHMAP_FAIL_` wire:
 
 ```verilog
@@ -538,15 +538,22 @@ This translates into the following code:
         else if (SIGNED_ADDER && !`REDUCE_SIGNED) begin
             wire _TECHMAP_FAIL_ = 1;    
         end
+        ...
 ```
 
+There are other ways to prevent `techmap` to run forever.  For example, in the `mul2dsp.v` code, 
+a `$__soft_mul` cell used instead of a `$mul` primitive. Yosys has no such primitive, but
+in a later step, after `techmap` has been completed, this `$__soft_mul` cell is converted
+back to a `$mul$` cell:
 
-
+```
+chtype -set $mul t:$__soft_mul
+```
 
 **add_reduce normalization**
 
-We can copy the code of `mul2dsp.v`, and, when necessary, replace the original `$add` instance with
-one where the A input is guaranteed to be larger or equal than B:
+The normalization codd of `add_reduce` is pretty much a straight copy of the one
+from `mul2dsp`:
 
 ```verilog
     generate 
@@ -567,7 +574,7 @@ one where the A input is guaranteed to be larger or equal than B:
 	else if ...
 ```
 
-By using `_TECHMAP_REPLACE_` as instance name of the swapped `$add` primitive, it
+When using `_TECHMAP_REPLACE_` as instance name of the swapped `$add` primitive, it
 will inherit the instance name of the original instance. This is one of the 
 many predefined variables that are explained by running `help techmap` in Yosys.
 
@@ -575,7 +582,7 @@ Since we replace `$add` with `$add`, running `techmap` will result in the
 `$add` cell being transformed twice times if B is larger than A: the first time
 to swap the inputs, and the second time for the actual reduction.
 
-If `techmap` will keep on transforming the same cell multiple times, it can
+If `techmap` needs to transform the same cell multiple times, it can
 be hard to debug. You can use the `-max_iter <number>` option to limit
 the number of transformations.
 
@@ -584,7 +591,8 @@ For example, here's what the design originally looked like:
 ![top_unsigned original version](/assets/yosys_techmap/add_orig.png)
 
 
-And here's how it looks after running 
+And here's how things look when stopping the `add_reduce` operation after the 
+first iteration:
 
 ```
 techmap -map add_reduce.v -max_iter 1
@@ -622,17 +630,19 @@ else begin
 end
 ```
 
-We can now run the whole thing with:
+The final `add_reduce.v` code can be found [here](https://github.com/tomverbeure/yosys_techmap_blog/blob/main/add_reduce.v).
+We can run the whole thing with:
 
 ```
 techmap -map add_reduce.v -D Y_MIN_WIDTH=32
+clean -purge
 ```
 
-The result is exactly what we wanted, as shown in the graphical diagram:
+The result is exactly what we wanted, as shown in the graphical diagram...
 
 ![top_unsigned after custom reduce](/assets/yosys_techmap/add_reduce.png)
 
-And in the CXXRTL-generated code:
+...and in the CXXRTL-generated code:
 
 ```c
 bool p_top__unsigned::eval() {
@@ -655,14 +665,14 @@ This makes the size of the graphs more managable.
 
 ```
 # Load the original design
-read_verilog add_orig.v
+read_verilog add.v
 hierarchy -top top_unsigned10
-rename top_unsigned10 top_unsigne
+rename top_unsigned10 top_unsigned
 
 # Make a golden reference copy of the unmodified design
 copy top_unsigned top_unsigned_gold
 
-# Use the original version to do the techmap
+# Select the original version to do the techmap
 select top_unsigned
 
 # Do the techmap on top_unsigned
@@ -688,14 +698,14 @@ select top_equiv
 
 The `equiv_make` has the golden and the transformed design as input and creates a new
 design with `$equiv` primitive cells inserted the output of both designs. These cells
-will tell the equivalent checker which nets to check for formal equivalence. The
+will tell the equivalence checker which nets to check for formal equivalence. The
 new design `top_equiv` looks like this:
 
 [![top_unsigned10 equiv_make](/assets/yosys_techmap/add10_equiv_make.png)](/assets/yosys_techmap/add10_equiv_make.png)
 *(Click to enlarge)*
 
 As you can see, the new design has both the golden and the transformed logic on the left,
-and driven by the same inputs. For there are 10 `$equiv` cell, one for each bit of the output.
+driven by the same inputs. For there are 10 `$equiv` cells, one for each bit of the output.
 
 We can now run the equivalence check:
 
@@ -724,7 +734,7 @@ Proved 10 previously unproven $equiv cells.
 
 Each individual bit has been proven to be correct.
 
-We can make Yosys fail if there were any unproven `$equiv` cells like this:
+We can make Yosys fail if there were any unproven `$equiv` cells, like this:
 
 ```
 equiv_status -assert
@@ -758,12 +768,21 @@ Here's what the reduced adder looks like without first running a clean:
 
 ![top_unsigned after custom reduce without clean](/assets/yosys_techmap/add_reduce_unclean.png)
 
+That's why you see a `clean -purge` statement all over the place 
+[in the script](https://github.com/tomverbeure/yosys_techmap_blog/blob/main/add_reduce.yosys)
+generates all the pretty pictures of this blog post.
+
 # Conclusion
 
-Techmap is a very nice tool to have to transform single cells into somethng that better maps to
+Techmap is a very nice tool to have to transform single cells into something that better maps to
 your chosen target. The example that I've given here is a bit dumb (I'm not even sure if it would
 actually result in better compiled CXXRTL code!), but it shows some of the potential of what
 can be achieved.
+
+I have only scratched the surface of what can be done with it: there are ways to make a `techmap`
+module behave differently based on whether or not certain input bits are constant or not, you can
+instruct Yosys to run another random Yosys command after performance a `techmap` iterations, and
+so forth.
 
 If you want to go deeper, you should definitely start by checking out the help instructions, not
 only of `techmap` command, but also some of the other ones. 
