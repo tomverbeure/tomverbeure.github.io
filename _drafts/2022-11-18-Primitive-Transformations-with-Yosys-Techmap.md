@@ -16,27 +16,33 @@ my [earlier blog post about CXXRTL](/2020/08/08/CXXRTL-the-New-Yosys-Simulation-
 I call it the *swiss army knife of digital logic manipulation*. 
 
 In most cases, using Yosys
-means running pre-made scripts with commands: when I'm synthesizing RTL for an FPGA of the 
+means running pre-made scripts that contain Yosys commands: when I'm synthesizing RTL for an FPGA of the 
 Lattice iCE40 family, the `synth_ice40` command is usually sufficient to convert my RTL
 into a netlist that can be sent straight to [nextpnr](https://github.com/YosysHQ/nextpnr)
 for place, route, and bitstream creation.
 
-But sometimes you want to perform very particular operations that aren't part of a standard
-sequence. My current version of Yosys has 232 commands, and many of these commands have an
-impressive list of additional options. 
+My current version of Yosys has 232 commands, and many of these commands have an impressive list 
+of additional options, but sometimes you want to perform very particular logic operations that 
+don't come standard with the tool.
 
 In this blog post, I'll talk about `techmap`, a particularly powerful command that allows
-one to transform an instance of a given type to one or more different ones. 
+one to make custom logic transformations by replacing a logic cell instance of a given type 
+to one or more different ones. 
 
 # Mapping a multiplication to an FPGA DSP Cell
+
+*There is a companion [yosys_techmap_blog project on GitHub](https://github.com/tomverbeure/yosys_techmap_blog)
+that contains the Verilog source files and the scripts to generate the graphics and Yosys results
+of this blog post.*
 
 A good example of a `techmap` operation is one where a generic multipication
 is converted into a DSP block of an FPGA. For those who are unfamiliar with the technology,
 FPGAs usually have only a few core logic primitives: lookup-table cells (LUTs) are used to construct
-any kind of random logic circuit, RAMs cells for, well, RAMs, and DSPs, larger cells that contain one
+any kind of random logic circuit, RAM cells are, well, RAMs, and DSPs are larger cells that contain one
 or more hardware multipliers, often in combination with an accumulator.
 
-Let's look at this Verilog module that multiplies two 10-bit x 10-bit values into a 20-bit result:
+Let's look at this Verilog module, [`mul.v`](https://github.com/tomverbeure/yosys_techmap_blog/blob/main/mul.v), 
+that multiplies two 10-bit x 10-bit values into a 20-bit result:
 
 ```verilog
 module top(input [9:0] op0, input [9:0] op1, output [19:0] result);
@@ -45,7 +51,8 @@ endmodule
 ```
 
 When reading in the Verilog file, Yosys translates it into RTLIL (RTL Internal Language), 
-the internal representation of the design. The multiplication operation becomes a `$mul` primitive:
+the internal representation of the design. The multiplication operation becomes a `$mul` primitive,
+and the whole design looks like this:
 
 ```
 module \top
@@ -68,17 +75,17 @@ Yosys has the super useful `show` command that renders an RTLIL representation a
 
 ![top module as a graph with $mul instance](/assets/yosys_techmap/mul_rtlil.png)
 
-This primitive must be converted into cell primitives of the target technology. Most FPGAs from the
-iCE40 family have handful of DSPs. When you synthesize this module to the iCE40 technology with
-`synth_ice40 -dsp`, you'll see that the `$mul` primitive has been converted to an 
-`SB_MAC16` cell which is the DSP primitive of the iCE40 family.
+This primitive must be converted into cells of the target technology. Most FPGAs from the
+iCE40 family have a handful of DSPs. When you synthesize this module to the iCE40 technology with
+`synth_ice40 -dsp`, the `$mul` primitive gets converted to an `SB_MAC16` cell which is the DSP 
+primitive of the iCE40 family.
 
-![SB_MAC16 internal block diagram](/assets/yosys_techmap/SB_MAC16_block_diagram.png)
+[![SB_MAC16 internal block diagram](/assets/yosys_techmap/SB_MAC16_block_diagram.png)](/assets/yosys_techmap/SB_MAC16_block_diagram.png)
 
-the `SB_MAC16` DSP has a ton of data path and configuration signals. The multiplier inputs can be 
-up to 16-bit wide and the output can be 32-bits. It's up to a `techmap` step to assign all the right 
-value to the configuration signals, and to correctly tie down unused input data bits or ignore excess 
-output bits so that it performs the desired 10-bit x 10-bit multiplication.
+The `SB_MAC16` DSP has a ton of data path and configuration signals, and the multiplier inputs and 
+output can be up to 16 and 32-bits wide respectively. It's up to a `techmap` step to assign all the right 
+values to the configuration signals, and to correctly tie down unused input data bits or ignore excess 
+output bits so that the DSP performs the desired 10-bit x 10-bit multiplication.
 
 After cleaning up some irrelevant cruft, the post-synthesis RTLIL looks like this:
 
@@ -143,11 +150,11 @@ module \top
 end
 ```
 
-And here's the graphical representation. (*Click to enlarge*)
+And here's the equivalent graphical representation. (*Click to enlarge*)
 
 [![top module as a graph after synthesis](/assets/yosys_techmap/mul_ice40.png)](/assets/yosys_techmap/mul_ice40.png)
 
-All Yosys commands are written in C++, but in the case of `techmap`, the specific mapping
+All Yosys commands are written in C++, but in the case of `techmap` the specific mapping
 operations are described in... Verilog! It's a very neat system that makes it possible for
 anyone create their custom mapping operations without the need to touch a line of C++.
 
@@ -156,10 +163,10 @@ Let's see exactly how that works for our example, and look at the source code of
 Yosys places all the technology-specific operations under the [`techlibs`](https://github.com/YosysHQ/yosys/tree/master/techlibs) 
 directory. The code for `synth_ice40` can be found in 
 [`techlibs/ice40/synth_ice40.cc`](https://github.com/YosysHQ/yosys/blob/master/techlibs/ice40/synth_ice40.cc).
-`synth_ice40` doesn't really have any smarts by itself, it's a macro command, a series of lower level
-Yosys commands strung together into a recipe. The code is really easy to follow.
+`synth_ice40` doesn't really have any smarts by itself: it's a macro command, a series of lower level
+Yosys commands strung together into a recipe. The code is easy to follow.
 
-When you run `help synth_ice40` in Yosys, you'll see the following:
+When you run `help synth_ice40` in Yosys, you'll see the following command line option:
 
 ```
     -dsp
