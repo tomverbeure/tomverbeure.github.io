@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Logic Primitive Transformations with Yosys Techmap
-date:  2022-11-13 00:00:00 -1000
+date:  2022-11-18 00:00:00 -1000
 categories:
 ---
 
@@ -751,4 +751,11 @@ can be achieved.
 
 If you want to go deeper, you should definitely start by checking out the help instructions, not
 only of `techmap` command, but also some of the other ones. 
+
+# References
+
+* [yosys_techmap_blog repo on GitHub](https://github.com/tomverbeure/yosys_techmap_blog)
+
+    Contains the Verilog code and the Yosys scripts to generate all the graphs of ths blog post.
+
 
