@@ -17,17 +17,18 @@ I call it the *swiss army knife of digital logic manipulation*.
 
 In most cases, using Yosys
 means running pre-made scripts that contain Yosys commands: when I'm synthesizing RTL for an FPGA of the 
-Lattice iCE40 family, the `synth_ice40` command is usually sufficient to convert my RTL
-into a netlist that can be sent straight to [nextpnr](https://github.com/YosysHQ/nextpnr)
+Lattice iCE40 family, the [`synth_ice40` command](http://yosyshq.net/yosys/cmd_synth_ice40.html) is 
+usually sufficient to convert my RTL into a netlist that can be sent straight to 
+[nextpnr](https://github.com/YosysHQ/nextpnr)
 for place, route, and bitstream creation.
 
 My current version of Yosys has 232 commands, and many of these commands have an impressive list 
 of additional options, but sometimes you want to perform very particular logic operations that 
 don't come standard with the tool.
 
-In this blog post, I'll talk about `techmap`, a particularly powerful command that allows
-one to make custom logic transformations by replacing a logic cell instance of a given type 
-to one or more different ones. 
+In this blog post, I'll talk about the [`techmap` command](http://yosyshq.net/yosys/cmd_techmap.html), 
+a particularly powerful command that allows one to make custom logic transformations by replacing a 
+logic cell instance of a given type to one or more different ones. 
 
 # Mapping a multiplication to an FPGA DSP Cell
 
@@ -42,7 +43,7 @@ any kind of random logic circuit, RAM cells are, well, RAMs, and DSPs are larger
 or more hardware multipliers, often in combination with an accumulator.
 
 Let's look at this Verilog module, [`mul.v`](https://github.com/tomverbeure/yosys_techmap_blog/blob/main/mul.v), 
-that multiplies two 10-bit x 10-bit values into a 20-bit result:
+that multiplies two 10-bit values into a 20-bit result:
 
 ```verilog
 module top(input [9:0] op0, input [9:0] op1, output [19:0] result);
@@ -71,7 +72,9 @@ module \top
   end
 ```
 
-Yosys has the super useful `show` command that renders an RTLIL representation as a graph:
+Yosys has the super useful [`show` command](http://yosyshq.net/yosys/cmd_show.html) 
+that renders an RTLIL representation as a graph. I usually add the `-width -signed` options to 
+annotate signals with their size and to show which cell ports are signed:
 
 ![top module as a graph with $mul instance](/assets/yosys_techmap/mul_rtlil.png)
 
@@ -156,7 +159,7 @@ And here's the equivalent graphical representation. (*Click to enlarge*)
 
 All Yosys commands are written in C++, but in the case of `techmap` the specific mapping
 operations are described in... Verilog! It's a very neat system that makes it possible for
-anyone create their custom mapping operations without the need to touch a line of C++.
+anyone to create their own custom mapping operations without the need to touch a line of C++.
 
 Let's see exactly how that works for our example, and look at the source code of the `synth_ice40` command.
 
@@ -164,7 +167,7 @@ Yosys places all the technology-specific operations under the [`techlibs`](https
 directory. The code for `synth_ice40` can be found in 
 [`techlibs/ice40/synth_ice40.cc`](https://github.com/YosysHQ/yosys/blob/master/techlibs/ice40/synth_ice40.cc).
 `synth_ice40` doesn't really have any smarts by itself: it's a macro command, a series of lower level
-Yosys commands strung together into a recipe. The code is easy to follow.
+Yosys commands strung together into a recipe. 
 
 When you run `help synth_ice40` in Yosys, you'll see the following command line option:
 
@@ -199,15 +202,15 @@ There's quite a bit going on here, but the most interesting command is this one:
         -D DSP_NAME=$__MUL16X16
 ```
 
-What we see here is that `techmap` is doing the `$mul` to `SB_MAC16` conversion in two steps:
+What we see here is that `techmap` is performing the `$mul` to `SB_MAC16` conversion in two steps:
 
 1. convert `$mul` to a generic, technology independent DSP multiplier cell.
 2. convert the generic multiplier DSP cell to an iCE40 DSP cell.
 
-**Step 1: map2dsp.v**
+**Step 1: mul2dsp.v**
 
 Step 1 is done by [`map2dsp.v`](https://github.com/YosysHQ/yosys/blob/master/techlibs/common/mul2dsp.v).
-The code is a bit convoluted, but it has the answer as to why this intermediate step was needed:
+The code is a bit convoluted, but it has the answer as to why there's this intermediate step:
 
 * it deals with cases where a single `$mul` operation requires more than one DSP.
 
@@ -242,9 +245,10 @@ show -width -signed -format png -prefix mul_mul2dsp
 In case you were wondering, here's what this first step looks like for a 20-bit x 20-bit to 40-bit multiplier:
 
 [![top module for $mul 20x20=40 after mul2dsp phase](/assets/yosys_techmap/large_mul_techmap.png)](/assets/yosys_techmap/large_mul_techmap.png)
+*(Click to enlarge)*
 
-Yosys can often creates very long internal labels which stretches the graphical representation, so
-I zoomed the image to the part that counts. The 3 red rectangles are `__MUL16X16` cells that will be converted
+Yosys can often create very long internal labels that stretch the graphical representation, so
+I zoomed the image to the part that counts. The 3 red rectangles are the `$__MUL16X16` cells that will be converted
 to iCE40 DSPs. The blue rectangle is a `$__soft_mul` cell that will be converted into random logic
 at a large stage, and the 3 green rectangles are `$add` cells to bring the results of the different multipliers
 together.
@@ -252,7 +256,7 @@ together.
 **Step 2: ice40/dsp_map.v**
 
 Step 2 of the `techmap` process, [`ice40/dsp_map.v`](https://github.com/YosysHQ/yosys/blob/master/techlibs/ice40/dsp_map.v) 
-is trivial: it converts the generic `__MUL16X16` multiplier cell into an `SB_MAC16` cell, wires up the data path inputs and output,
+is trivial: it converts the generic `$__MUL16X16` multiplier cell into an `SB_MAC16` cell, wires up the data path inputs and output,
 and straps all the other configuration inputs so that the cell is configured as a straight 
 multiplier.
 
@@ -340,14 +344,14 @@ CXXRTL implements those by
 ```
 
 It's a hand-crafted carry-ripple adder. Now, don't worry, things are really not as bad as it seems,
-because all the variables that are used for the the `if` conditionals and the `for` loop are constants. Any
+because all the variables that are used for the `if` conditionals and the `for` loop are constants. Any
 good C++ compiler will optimize the addition above into only a few assembler instructions.
 
 If you know your binary adder basics, you see that the addition of a 7-bit and a 6 bit operand will result
 at most in an 8-bit result. All higher bits will always be 0. It's overkill to have a 64-bit adder.
 
-Yosys already has the `wreduce` command that reduces logic operations to just the number of bits that are
-really needed.
+Yosys already has the [`wreduce` command](http://yosyshq.net/yosys/cmd_wreduce.html) that reduces logic 
+operations to just the number of bits that are really needed.
 
 We can see this when we run the following commands:
 
@@ -371,8 +375,9 @@ bool p_top__unsigned::eval() {
 }
 ```
 
-That looks better, but is that really true? The addition now returns an 8-bit value, but since
-the smallest chunk is 32-bits, the `slice<7,0>` command now requires a read-modify-write.
+That looks better, but is that really true? The addition returns an 8-bit value, but since
+the smallest chunk is 32-bits, the `slice<7,0>` command now requires a read-modify-write
+operation.
 
 What I really want is this:
 
@@ -399,8 +404,8 @@ Here are some of the basics of a techmap transformation Verilog module:
 
 * a techmap transformation only operates on a single design cell. 
 
-    You can not use a techmap to perform multi-cell optimizations such mapping a `$mul` followed 
-    by an `$add` onto an FPGA DSP has contains both.
+    You can not use `techmap` to perform multi-cell optimizations such mapping a `$mul` followed 
+    by an `$add` onto an FPGA DSP has multiply-accumulator support.
 
 * a design cell that is tranformed by a techmap is selected by a string that contains a list of cell 
   types that are specified with the `(* techmap_celltype "...")` attribute. If the techmap module doesn't have
@@ -415,11 +420,11 @@ Here are some of the basics of a techmap transformation Verilog module:
 
 * it's always a good idea to normalize the configuration on which you want to do the main transformation.
 
-    Here's a good example of what I mean with normalization: we want to reduce the size of an adder
+    Here's a good example of what I mean by that: we want to reduce the size of an adder
     based on the size of its inputs. But an adder has 2 inputs, and if these inputs have a different
     size, then the transformation will have a different code path depending on which input is largest.
 
-    An addition is commutative: the order of the inputs doesn't matter.
+    However, an addition is commutative: the order of the inputs doesn't matter.
 
     It's easier first do a normalization where the A input is guaranteed to be larger or equal than
     the B input, so that actual reduction transformation only has to deal with one case.
@@ -430,7 +435,7 @@ Here are some of the basics of a techmap transformation Verilog module:
 
 **The add_reduce techmap module declaration**
 
-In this example, I only want a transformation that only works on a `$add` instance, so I could 
+In this example, I want a transformation that only works on an `$add` instance, so I could 
 create a techmap Verilog module like this:
 
 ```verilog
@@ -438,7 +443,7 @@ module \$add(A, B, Y);
     ...
 ```
 
-But I prefer to use a descriptive name instead and use the `(* techmap_celltype ...)` option to select
+But I prefer to use a descriptive name for the module and use the `(* techmap_celltype ...)` option to select
 the cell types on which the module operates:
 
 ```verilog
@@ -490,6 +495,10 @@ module add_reduce (A, B, Y);
 	output [Y_WIDTH-1:0] Y;
 
 ```
+
+The `force_downto` attribute ensures that the highest numbered bit of each signal is
+the MSB. When this attribute is present, Yosys will automatically swap around the bits of connected
+wires so that you don't need to worry about wackos who use bit 0 as MSB.
 
 **add_reduce stop conditions**
 
@@ -761,6 +770,7 @@ only of `techmap` command, but also some of the other ones.
 
 # References
 
+* [Main Yosys repo on GitHub](https://github.com/YosysHQ/yosys)
 * [yosys_techmap_blog repo on GitHub](https://github.com/tomverbeure/yosys_techmap_blog)
 
     Contains the Verilog code and the Yosys scripts to generate all the graphs of ths blog post.
