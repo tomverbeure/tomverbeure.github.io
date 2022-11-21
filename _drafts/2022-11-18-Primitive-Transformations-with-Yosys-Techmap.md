@@ -523,7 +523,7 @@ This translates into the following code:
         if (Y_WIDTH <= `Y_MIN_WIDTH) begin
             wire _TECHMAP_FAIL_ = 1;    
         end
-        else if (Y_WIDTH < A_WIDTH+1) begin
+        else if (Y_WIDTH <= A_WIDTH+1) begin
             wire _TECHMAP_FAIL_ = 1;    
         end
         else if (SIGNED_ADDER && !`REDUCE_SIGNED) begin
