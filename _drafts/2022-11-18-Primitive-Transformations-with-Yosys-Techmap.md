@@ -209,7 +209,7 @@ What we see here is that `techmap` is performing the `$mul` to `SB_MAC16` conver
 
 **Step 1: mul2dsp.v**
 
-Step 1 is done by [`map2dsp.v`](https://github.com/YosysHQ/yosys/blob/master/techlibs/common/mul2dsp.v).
+Step 1 is done by [`mul2dsp.v`](https://github.com/YosysHQ/yosys/blob/master/techlibs/common/mul2dsp.v).
 The code is a bit convoluted, but it has the answer as to why there's this intermediate step:
 
 * it deals with cases where a single `$mul` operation requires more than one DSP.
@@ -364,7 +364,7 @@ clean -purge
 
 ![top_unsigned after wreduce](/assets/yosys_techmap/add_wreduce.png)
 
-And the here's the relevant CXXRTL generated code:
+And here's the relevant CXXRTL generated code:
 
 ```c
 bool p_top__unsigned::eval() {
@@ -396,9 +396,9 @@ to make it so.
 
 # A Custom Techmap Transformation to the Rescue!
 
-If you start Yosys, running `help techmap` will give you an exhaustive list of all the feature that
+If you start Yosys, running `help techmap` will give you an exhaustive list of all the features that
 you might ever need. But instead of repeating everything in there, let's create an `add_reduce` techmap
-tranformation to solve the problem of the previous section.
+transformation to solve the problem of the previous section.
 
 Here are some of the basics of a techmap transformation Verilog module:
 
@@ -407,7 +407,7 @@ Here are some of the basics of a techmap transformation Verilog module:
     You can not use `techmap` to perform multi-cell optimizations such mapping a `$mul` followed 
     by an `$add` onto an FPGA DSP has multiply-accumulator support.
 
-* a design cell that is tranformed by a techmap is selected by a string that contains a list of cell 
+* a design cell that is transformed by a techmap is selected by a string that contains a list of cell 
   types that are specified with the `(* techmap_celltype "...")` attribute. If the techmap module doesn't have
   such an attribute, then it's determined by the name of the Verilog module.
 
@@ -427,7 +427,7 @@ Here are some of the basics of a techmap transformation Verilog module:
     However, an addition is commutative: the order of the inputs doesn't matter.
 
     It's easier first do a normalization where the A input is guaranteed to be larger or equal than
-    the B input, so that actual reduction transformation only has to deal with one case.
+    the B input by swapping the inputs, so that actual reduction transformation only has to deal with one case.
 
     The earlier discussed `mul2dsp` techmap module 
     [does the same thing](https://github.com/YosysHQ/yosys/blob/master/techlibs/common/mul2dsp.v#L97-L108).
@@ -552,7 +552,7 @@ chtype -set $mul t:$__soft_mul
 
 **add_reduce normalization**
 
-The normalization codd of `add_reduce` is pretty much a straight copy of the one
+The normalization code of `add_reduce` is pretty much a straight copy of the one
 from `mul2dsp`:
 
 ```verilog
@@ -590,7 +590,6 @@ For example, here's what the design originally looked like:
 
 ![top_unsigned original version](/assets/yosys_techmap/add_orig.png)
 
-
 And here's how things look when stopping the `add_reduce` operation after the 
 first iteration:
 
@@ -603,12 +602,10 @@ clean -purge
 
 `op1` with the largest input size of 7 is now connected to A!
 
-
 **The actual add_reduce transformation**
 
 Now that all preliminary formalities are behind use, the actual reduction
 code is pretty straightfoward:
-
 
 ```verilog
 else begin
@@ -697,7 +694,7 @@ select top_equiv
 ```
 
 The `equiv_make` has the golden and the transformed design as input and creates a new
-design with `$equiv` primitive cells inserted the output of both designs. These cells
+design with `$equiv` primitive cells inserted at the output of both designs. These cells
 will tell the equivalence checker which nets to check for formal equivalence. The
 new design `top_equiv` looks like this:
 
@@ -751,10 +748,10 @@ Found 10 $equiv cells in top_equiv:
 
 We've now proven that our `add_reduce` techmap is correct, but that doesn't mean
 it's guaranteed bug free: we've only tested one combination of input and output
-signals sizes. To be absolutely sure, you'd need more variety of test cases.
+signal sizes. To be absolutely sure, you'd need more variety of test cases.
 
 This is only a quick example of what Yosys can do, there's a variety of additional 
-equivalency and logic proof features, most of which I don't know much about! You
+equivalence and logic proof features, most of which I don't know much about! You
 could start by checking out the help information for the `equiv_*`, `miter`, and `sat` 
 commands to learn more.
 
@@ -780,8 +777,8 @@ actually result in better compiled CXXRTL code!), but it shows some of the poten
 can be achieved.
 
 I have only scratched the surface of what can be done with it: there are ways to make a `techmap`
-module behave differently based on whether or not certain input bits are constant or not, you can
-instruct Yosys to run another random Yosys command after performance a `techmap` iterations, and
+module behave differently based on whether or not certain input bits are constant, you can
+instruct Yosys to run another  Yosys command after performing a `techmap` iteration, and
 so forth.
 
 If you want to go deeper, you should definitely start by checking out the help instructions, not
