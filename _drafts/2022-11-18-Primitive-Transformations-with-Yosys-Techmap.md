@@ -792,6 +792,6 @@ only of `techmap` command, but also some of the other ones.
 * [Main Yosys repo on GitHub](https://github.com/YosysHQ/yosys)
 * [yosys_techmap_blog repo on GitHub](https://github.com/tomverbeure/yosys_techmap_blog)
 
-    Contains the Verilog code and the Yosys scripts to generate all the graphs of ths blog post.
+    Contains the Verilog code and the Yosys scripts to generate all the graphs of this blog post.
 
 
