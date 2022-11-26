@@ -5,6 +5,8 @@ date:  2022-11-18 00:00:00 -1000
 categories:
 ---
 
+*This blog posts was also published on the [YosysHQ blog](https://blog.yosyshq.com/p/logic-primitive-transformations-with-yosys-techmap/).*
+
 * TOC
 {:toc}
 
