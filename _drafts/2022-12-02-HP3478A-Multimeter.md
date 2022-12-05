@@ -32,24 +32,51 @@ tries to bring some of the information together.
 
 # Replacing the Capacitors
 
-There's really not a whole lot to write about this: I bought 
+There's really not a whole lot to write about the replacement process: I bought 
 2 [B32021A3102K000](https://www.digikey.com/en/products/detail/epcos-tdk-electronics/B32021A3102K000/3489458)
 and 2 [B32022A3223M000](https://www.digikey.com/en/products/detail/epcos-tdk-electronics/B32022A3223M000/1648111)
 capacitors, desoldered the old ones, and replaced them.
 
 [![Capacitors on Digikey](/assets/hp3478a/capacitors_on_digikey.png)](/assets/hp3478a/capacitors_on_digikey.png)
 
+The 2 small RIFA caps can be found in the back, underneath the GPIB flat cable. You can
+see the replacements here:
+
+![2 small RIFA caps](/assets/hp3478a/small_rifa_caps.jpg)
+
+The 2 large RIFA caps are underneath the power switch:
+
+![2 large RIFA caps](/assets/hp3478a/large_rifa_caps.jpg)
+
+In the case of the 2 smaller caps, I only had to remove unplug the flat cable and unscrew 
+that gray wire. For the larger ones, I had to unscrew a larger transistor or power regulator that was
+attached to the metal case, and remove 2 screws to loosen the power switch.
+
+After that, it was the usual fiddling to desolder through-hole components. My desolder pump,
+desolder wick, and desoldering needles were all useful.
+
+The RIFA caps on my unit were in pretty decent conditions. Mine weren't completely cracked, but 
+you could start to see some hairlines in the polyester. 
+
+![Desoldered old RIFA caps](/assets/hp3478a/old_rifa_caps.jpg)
+
+The insidious part of RIFA caps is that a part of an always-on AC mains circuit: when
+the instrument is powered off but plugged in, they still can catch fire!
+
+![RIFA caps on the schematic](/assets/hp3478a/rifa_cap_schematic.png)
+
+It's good that they're gone now. Replacing the caps took about 45 minutes from start to finish.
 
 
 # HP 3478A Calibration Data Backup, Format, and Restore
 
 These days, a working 3478A sells for around $150 on eBay. You'll probably pay more just to have
-it professionally recalibrated, or to acquire reference voltage or resistor standards, so most
-people will just keep using what they have. In many cases, you care more about measuring
-relative than absolute values anyway.
+it professionally recalibrated, or to acquire reference voltage or resistor standards if you want to
+calibrate yourself, so most people will just keep using what they have. In many cases, you care more 
+about measuring relative than absolute values anyway.
 
 As mentioned earlier, the 3478A stores the calibration data in a 
-[256x4 SRAM](/assets/hp3478a/uPD5101L_datasheet.pdf) that's 'permanently' powered
+[256x4 SRAM](/assets/hp3478a/uPD5101L_datasheet.pdf) that's "permanently" powered
 by a lithium battery. You should definitely replace the RIFA capacitors, there's a real
 fire risk when they fail, but if you don't want to replace the battery just yet, at least 
 back up the calibration data. 
@@ -63,7 +90,7 @@ There are two ways to do that:
 
 ![uPD5101L pinout](/assets/hp3478a/uPD5101L_pinout.png)
 
-The SRAM has 22 pins, but only 20 of those are functional. Of those, you need to
+The uPD5105L SRAM has 22 pins, but only 20 of those are functional. Of those, you need to
 probe A[7:0], DO[3:0], and some pins to determine that the microcontroller is
 accessing the chip. CE2, pin 17, should do the trick.
 
@@ -76,6 +103,8 @@ do need a 16-channel logic analyzer, which are quite a bit more expensive than
 these ubiquitous $15 8-channel Saleae clones. And even if you have access to the 
 [real deal](https://usd.saleae.com/products/saleae-logic-pro-16), I had the problem that... 
 it didn't work: after wiring up the probes, my 3478A didn't want to boot up! 
+
+![SRAM with probes](/assets/hp3478a/sram_with_probes.jpg)
 
 Still, others have done it, so it's definitely possible.
 
@@ -90,12 +119,13 @@ plenty of people post their own scripts and tools to dump the SRAM contents, but
 of them fit my needs: they were either windows-only, used Matlab, required an old version
 of PyVISA, or used the linux-gpib kernel API directly.
 
-I wanted to use the PyVISA API under Linux, so I just wrote my own version. 
+I wanted to use the PyVISA API which works for both Linux and Windows, so I just wrote my 
+own version. 
 
 Reading the data is straightforward: when you send a `W<addr>` GPIB message to the 3478A,
 it will reply with a single character that has an ASCII value from 64 to 79. Subtract
 64 from that, and you get a 4-bit value, the SRAM content of the specified address. 
-Note that `<addr>` a binary number, not an ASCII value of the address!
+Note that `<addr>` is a binary number, not the ASCII representation of the address!
 
 In Python, the code to fetch the 256 SRAM values looks like this:
 
@@ -110,7 +140,6 @@ def read_cal_data(hp3478a):
         rvalue = ord(hp3478a.read()[0])
         assert rvalue >= 64 and rvalue < 80
         cal_data.append(rvalue)
-    print()
 
     return cal_data
 ```
@@ -119,9 +148,9 @@ def read_cal_data(hp3478a):
 
 The SRAM contents are organized as follows:
 
-* at address 0, there's a read/write check nibble. The microcontroller does a read/write
+* Address 0 contains a read/write check nibble. The microcontroller does a read/write
   operation to it to check whether or not the SRAM is write protected.
-* after that, there are 19 calibration entries of 13 nibbles. 
+* After that, there are 19 calibration entries of 13 nibbles. 
 
 In total that's 248 SRAM values. The remaining ones are don't-care.
 
@@ -138,7 +167,8 @@ Each of the 19 calibration entries is organized as follows:
 
     *Use the source of the utility as the 
     [golden reference](https://github.com/fenugrec/hp3478a_utils/blob/07e6311c9eb6118537e3238882c75efc8fe164d5/hp3478util.c#L230-L247): 
-    later in the EEVBlog thread, there were some corner cases where the gain encoding didn't quite work.*
+    later in the EEVBlog thread, there were some corner cases where the initial gain encoding 
+    didn't quite work.*
 
 * 2 nibbles that form an 8-bit checksum
 
@@ -272,7 +302,7 @@ welders and was able to create contact myself.
 
 # SRAM Power Circuit
 
-Let's have a look at the [service manual](assets/hp3478a/hp-3478a-Service.pdf) and check out how
+Let's have a look at the [service manual](/assets/hp3478a/hp-3478a-Service.pdf) and check out how
 the SRAM is powered.
 
 ![schematic of battery circuit](/assets/hp3478a/battery_circuit.png)
