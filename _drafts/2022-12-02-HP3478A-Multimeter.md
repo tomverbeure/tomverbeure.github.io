@@ -1,6 +1,6 @@
 ---
 layout: post
-title: HP 3478A Multimeter RIFA Capacitors and Battery Replacement
+title: HP 3478A Multimeter Calibration Data Backup and Battery Replacement
 date:  2022-12-02 00:00:00 -1000
 categories:
 ---
@@ -11,24 +11,35 @@ categories:
 # Introduction
 
 Just a bit of a year ago, I wrote a blog post about 
-[repairing an HP 3478A multimeter with a hacksay](/2021/11/26/HP3478A-Multimeter-Repair-with-a-Hacksaw.html).
-After posting a link on Twitter, alex commented that I should 
+[repairing an HP 3478A multimeter with a hacksaw](/2021/11/26/HP3478A-Multimeter-Repair-with-a-Hacksaw.html).
+After posting a link on Twitter, @alex commented that I should 
 [replace the RIFA capacitors](https://twitter.com/geekc64os/status/1464331326652395530?s=20&t=WQFQvTtJkUr7HXN0EoEWgg)
 because they have a tendency to go up in smoke:
 
 ![Tweet about replacing RIFA capacitors](/assets/hp3478a/replace_rifa_caps_tweet.png)
 
 The multimeter went back on the shelve, but I have now some projects in mind where I could 
-use some continuous voltage recording. So now is a good time to replace the capacitors.
+use some continuous voltage recording. Now is a good time to replace the capacitors. 
 
-Another weak spot of the 3478A is that fact that calibration parameters are stored in a SRAM that's
-permanentely powered on by a long-lasting 3V Lithium battery.  There's no explicit production
-date on my unit, but a bunch of chips were produced in 1988, so after almost 34 years, I
+Another weak spot of the 3478A is that fact that calibration parameters are stored in a voltatile 
+SRAM that's permanentely powered on by a long-lasting 3V Lithium battery. There's no explicit 
+production date on my unit, but a bunch of chips were produced in 1988, so after almost 34 years, I
 might as well replace that one too.
 
 There is quite a bit of information on the web about how to do this, though some info is
 buried in long forums threads on EEVBlog or (long winded) Youtube videos. This blog post
 tries to bring some of the information together.
+
+# Replacing the Capacitors
+
+There's really not a whole lot to write about this: I bought 
+2 [B32021A3102K000](https://www.digikey.com/en/products/detail/epcos-tdk-electronics/B32021A3102K000/3489458)
+and 2 [B32022A3223M000](https://www.digikey.com/en/products/detail/epcos-tdk-electronics/B32022A3223M000/1648111)
+capacitors, desoldered the old ones, and replaced them.
+
+[![Capacitors on Digikey](/assets/hp3478a/capacitors_on_digikey.png)](/assets/hp3478a/capacitors_on_digikey.png)
+
+
 
 # HP 3478A Calibration Data Backup, Format, and Restore
 
@@ -251,17 +262,98 @@ with spot welded contacts:
 ![BR-2/3AE5SPN battery](/assets/hp3478a/br-23ae5spn.png)
 
 An alternative is to use a battery with wires, as in [this on Youtube](https://www.youtube.com/watch?v=e-itiJSftzs). 
-It has the benefit over being able to wrap the battery in a plastic so that leaks won't destroy the PCB, but then 
-you need a way to fix the battery in place somewhere.
+It has the benefit over being able to wrap the battery in a plastic so that battery leaks won't destroy the PCB, 
+but then you need a way to fix the battery in place somewhere.
 
 ![battery with wires](/assets/hp3478a/battery_with_wires.png)
 
 I mistakenly ordered the BR-2/3A battery without the pin contacts. Luckily, I bought one of those $40 spot
 welders and was able to create contact myself. 
 
-# Replacing the Battery
+# SRAM Power Circuit
+
+Let's have a look at the [service manual](assets/hp3478a/hp-3478a-Service.pdf) and check out how
+the SRAM is powered.
+
+![schematic of battery circuit](/assets/hp3478a/battery_circuit.png)
+
+On page 156, marked in green, you can see the battery itself (BT701), a resistor and a diode. I don't quite
+understand why you'd put a resistor in series with a battery, but when the main power is switched
+off, there's no resistive path to ground, so it shouldn't matter, especially when the standby current of
+the SRAM is only 10uA:
+
+![SRAM standby current](/assets/hp3478a/uPD5101L_standby_current.png)
+
+The diode is important though: it prevents current from going from the 5V rail to the 3V battery
+when the main power is switched on.
+
+Meanwhile, on page 154, the SRAM itself is U512. Once again, you can see the power supply area in green:
+
+![schematic of calibration RAM logic](/assets/hp3478a/calibration_ram.png)
+
+We can see another diode, this time between the SRAM and the +5V supply. This diode
+exists to prevent current flowing from the 3V battery to 5V power rail when the main
+power is off.
+
+When you pull everything together, the schematic looks like this:
+
+![SRAM power schematic](/assets/hp3478a/sram_power_schematic.png)
+
+This is all very conventional.
+
+# Swapping the Battery
+
+If you want to swap the battery with a new one, these are your options:
+
+* The obvious way: Back up calibration data. Unplug the power cable. Desolder old battery. 
+  Solder new battery. Restore calibration data.
+
+    With his method, you need that GPIB interface to read and write the calibration data.
+
+    Or do you? 
+
+    I went this route **and didn't need to restore the calibration data!** I've seen similar reports
+    online. I'm speculating that there's sufficient charge in capacitor C510 to keep the SRAM from
+    losing its contents?
+
+* The dangerous way: replace the battery while the whole device is switched on.
+
+    This way, the 5V power rail stays on as well and the SRAM won't lose its contents. 
+
+    This method is dangerous for 2 reasons: you'll be soldering on a device with active 110V or
+    220V AC. For me, that reason enough to not consider this option.
+
+    Another issue is that the heating tip of almost all soldering irons is connected to ground. When
+    the multimeter is plugged in as well, this can result in a short when you accidentally touch
+    some random contacts with the soldering iron. So you should use one that isn't plugged into a
+    regular power socket: there are irons that are heated with butane gas, or you could use one
+    that's powered by a USB power bank.
+
+    I wouldn't do it...
+
+* The intermediate way: use an additional, temporary 3V battery to keep the SRAM powered on.
+
+    This the way to go if you don't have a GPIB interface.
+
+    Put 2 AA or AAA batteries in a dual battery cage to create an additional 3V, add yet another diode,
+    and temporarily(!) solder it to PCB.
+
+    The schematic of the updated contraption looks like this:
+
+    ![circuit with extra battery](/assets/hp3478a/extra_battery_circuit.png)
+
+    The SRAM only needs 2V for data retention while in standby mode, so any diode with a forward
+    voltage of less than 1V should work. If you don't have any such diode in your toolbox,
+    just add a few $0.10 [1N4148 diodes](https://www.digikey.com/en/products/detail/onsemi/1N4148/458603) to 
+    your Digikey shopping list. 
+
+    There are plenty of places to solder the ground. The easiest place to solder the cathode
+    of the new diode is at the cathode of CR500:
 
 
+    [This blog post by Mr. Modemhead](http://mrmodemhead.com/blog/hp-3468a-battery-replacement/) 
+    combines the last two methods for redundancy on a similar but-no-quite-the-same HP 3468A
+    multimeter.
 
 
 
@@ -274,9 +366,7 @@ welders and was able to create contact myself.
 * [hp3478a-calibration](https://github.com/steve1515/hp3478a-calibration)
 * [HP3478A instrument control software](https://mesterhome.com/gpibsw/hp3478a/index.html)
 
-![schematic of calibration RAM logic](/assets/hp3478a/calibration_ram.png)
 
-![schematic of battery circuit](/assets/hp3478a/battery_circuit.png)
 
 
 # Various
@@ -297,7 +387,6 @@ welders and was able to create contact myself.
     "3478 are not bad but they are virtually unrepairable if they break. Especially the display is unobtainium..."
 
 * [Service Manual](http://www.arimi.it/wp-content/Strumenti/HP/Multimetri/hp-3478a-Service.pdf)
-* [Battery replacement article](http://mrmodemhead.com/blog/hp-3468a-battery-replacement/)
 
 * [Boat Anchor Manual Archive](https://bama.edebris.com)
 
