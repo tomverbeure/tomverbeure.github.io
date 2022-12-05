@@ -1012,7 +1012,58 @@
                     <td><label>Max BW 3960 Mbit/s</label></td>
                 </tr>
                 <tr/>
-		<tr bgcolor=#ffffff><td colspan=8><b>RFC4175</b></td></tr>
+        <tr bgcolor=#ffffff><td colspan=8><b>SDI</b></td></tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>12G-SDI</label></td>
+                    <td><label id="cvt-sdi_12g"></label></td>
+                    <td><label id="cvt_rb-sdi_12g"></label></td>
+                    <td><label id="cvt_rb2-sdi_12g"></label></td>
+                    <td><label id="cea-sdi_12g"></label></td>
+                    <td><label id="dmt-sdi_12g"></label></td>
+                    <td><label id="custom-sdi_12g"></label></td>
+                    <td><label>Max BW 11,880 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>6G-SDI</label></td>
+                    <td><label id="cvt-sdi_6g"></label></td>
+                    <td><label id="cvt_rb-sdi_6g"></label></td>
+                    <td><label id="cvt_rb2-sdi_6g"></label></td>
+                    <td><label id="cea-sdi_6g"></label></td>
+                    <td><label id="dmt-sdi_6g"></label></td>
+                    <td><label id="custom-sdi_6g"></label></td>
+                    <td><label>Max BW 5,940 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>3G-SDI</label></td>
+                    <td><label id="cvt-sdi_3g"></label></td>
+                    <td><label id="cvt_rb-sdi_3g"></label></td>
+                    <td><label id="cvt_rb2-sdi_3g"></label></td>
+                    <td><label id="cea-sdi_3g"></label></td>
+                    <td><label id="dmt-sdi_3g"></label></td>
+                    <td><label id="custom-sdi_3g"></label></td>
+                    <td><label>Max BW 2,970 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>HD-SDI</label></td>
+                    <td><label id="cvt-sdi_hd"></label></td>
+                    <td><label id="cvt_rb-sdi_hd"></label></td>
+                    <td><label id="cvt_rb2-sdi_hd"></label></td>
+                    <td><label id="cea-sdi_hd"></label></td>
+                    <td><label id="dmt-sdi_hd"></label></td>
+                    <td><label id="custom-sdi_hd"></label></td>
+                    <td><label>Max BW 1,485 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>SD-SDI</label></td>
+                    <td><label id="cvt-sdi_sd"></label></td>
+                    <td><label id="cvt_rb-sdi_sd"></label></td>
+                    <td><label id="cvt_rb2-sdi_sd"></label></td>
+                    <td><label id="cea-sdi_sd"></label></td>
+                    <td><label id="dmt-sdi_sd"></label></td>
+                    <td><label id="custom-sdi_sd"></label></td>
+                    <td><label>Max BW 270 Mbit/s</label></td>
+                </tr>
+            <tr bgcolor=#ffffff><td colspan=8><b>RFC4175</b></td></tr>
                 <tr bgcolor=#ffffff>
                     <td><label>RFC4175/100M Ethernet</label></td>
                     <td><label id="cvt-rfc4175_eth100m"></label></td>
@@ -1190,6 +1241,7 @@
                         dpam_rbr_bw     =   1640000000*2/10*8;
 
                         dvi_d_bw        =    165000000*24;
+                                             165000000
                         dvi_dl_bw       =    330000000*24;
 
                         hdmi_1_0_bw     =    165000000*24;
@@ -1200,6 +1252,7 @@
                         hdmi_2_1_10g_bw =  10000000000*4*16/18;
                         hdmi_2_1_12g_bw =  12000000000*4*16/18;
 
+
                         ethernet_mtu1500 = 1500/1542;   // includes inter-packet gap
 
                         rfc4175_overhead = 20 +         // IP header
@@ -1207,9 +1260,16 @@
                                            12 +         // Minimal RTP header
                                            13;          // RFC 4175 additional header
 
+                        sdi_sd_bw = 270000000;
+                        sdi_hd_bw = 1485000000;
+                        sdi_3g_bw = 2970000000;
+                        sdi_6g_bw = 5940000000;
+                        sdi_12g_bw = 11880000000;
+
                         rfc4175_eth100m_bw  = 100000000   * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500;
                         rfc4175_eth1g_bw    = 1000000000  * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500;
                         rfc4175_eth10g_bw   = 10000000000 * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500;
+
 
                         dp_ubr20_ok     = (peak_bw < dp_ubr20_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                         dp_ubr13_ok     = (peak_bw < dp_ubr13_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
@@ -1238,6 +1298,12 @@
                         hdmi_2_1_10g_ok = (peak_bw < hdmi_2_1_10g_bw)? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                         hdmi_2_1_12g_ok = (peak_bw < hdmi_2_1_12g_bw)? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
 
+                        sdi_sd_ok       = (peak_bw < sdi_sd_bw)      ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        sdi_hd_ok       = (peak_bw < sdi_hd_bw)      ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        sdi_3g_ok       = (peak_bw < sdi_3g_bw)      ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        sdi_6g_ok       = (peak_bw < sdi_6g_bw)      ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        sdi_12g_ok      = (peak_bw < sdi_12g_bw)     ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+
                         rfc4175_eth100m_ok = (active_bw < rfc4175_eth100m_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                         rfc4175_eth1g_ok   = (active_bw < rfc4175_eth1g_bw)   ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                         rfc4175_eth10g_ok  = (active_bw < rfc4175_eth10g_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
@@ -1263,6 +1329,12 @@
                         hdmi_2_1_8g_ok  = hdmi_2_1_8g_ok  + " (" + Math.round(peak_bw/hdmi_2_1_8g_bw*100) + "%)"
                         hdmi_2_1_10g_ok = hdmi_2_1_10g_ok + " (" + Math.round(peak_bw/hdmi_2_1_10g_bw*100) + "%)"
                         hdmi_2_1_12g_ok = hdmi_2_1_12g_ok + " (" + Math.round(peak_bw/hdmi_2_1_12g_bw*100) + "%)"
+
+                        sdi_sd_ok       = sdi_sd_ok       + " (" + Math.round(peak_bw/sdi_sd_bw*100) + "%)"
+                        sdi_hd_ok       = sdi_hd_ok       + " (" + Math.round(peak_bw/sdi_hd_bw*100) + "%)"
+                        sdi_3g_ok       = sdi_3g_ok       + " (" + Math.round(peak_bw/sdi_3g_bw*100) + "%)"
+                        sdi_6g_ok       = sdi_6g_ok       + " (" + Math.round(peak_bw/sdi_6g_bw*100) + "%)"
+                        sdi_12g_ok       = sdi_12g_ok       + " (" + Math.round(peak_bw/sdi_12g_bw*100) + "%)"
 
                         rfc4175_eth100m_ok = rfc4175_eth100m_ok + " (" + Math.round(active_bw/rfc4175_eth100m_bw*100) + "%)"
                         rfc4175_eth1g_ok   = rfc4175_eth1g_ok   + " (" + Math.round(active_bw/rfc4175_eth1g_bw*100) + "%)"
@@ -1331,6 +1403,12 @@
                             $(prefix + "-hdmi2_1_8g").html(hdmi_2_1_8g_ok);
                             $(prefix + "-hdmi2_1_10g").html(hdmi_2_1_10g_ok);
                             $(prefix + "-hdmi2_1_12g").html(hdmi_2_1_12g_ok);
+
+                            $(prefix + "-sdi_sd").html(sdi_sd_ok);
+                            $(prefix + "-sdi_hd").html(sdi_hd_ok);
+                            $(prefix + "-sdi_3g").html(sdi_3g_ok);
+                            $(prefix + "-sdi_6g").html(sdi_6g_ok);
+                            $(prefix + "-sdi_12g").html(sdi_12g_ok);
     
                             $(prefix + "-rfc4175_eth100m").html(rfc4175_eth100m_ok);
                             $(prefix + "-rfc4175_eth1g").html(rfc4175_eth1g_ok);
@@ -1399,12 +1477,20 @@
                             $(prefix + "-hdmi2_1_8g").html("");
                             $(prefix + "-hdmi2_1_10g").html("");
                             $(prefix + "-hdmi2_1_12g").html("");
+
+                            $(prefix + "-sdi_sd").html("");
+                            $(prefix + "-sdi_hd").html("");
+                            $(prefix + "-sdi_3g").html("");
+                            $(prefix + "-sdi_6g").html("");
+                            $(prefix + "-sdi_12g").html("");
     
                             $(prefix + "-rfc4175_eth100m").html("");
                             $(prefix + "-rfc4175_eth1g").html("");
-                            $(prefix + "-rfc4175_eth10g").html("");
+                            $(prefix + "-rfc4175_eth10g").html("");   
 
                             $(prefix + "-modeline").html("");
+
+                            
                         }
 
                     });
