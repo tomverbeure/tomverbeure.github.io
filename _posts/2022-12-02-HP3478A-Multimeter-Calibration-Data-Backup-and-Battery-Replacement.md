@@ -32,6 +32,8 @@ tries to bring some of the information together.
 
 # Replacing the Capacitors
 
+**Unplug the power cable of the 3478A before soldering!**
+
 There's really not a whole lot to write about the replacement process: I bought 
 2 [B32021A3102K000](https://www.digikey.com/en/products/detail/epcos-tdk-electronics/B32021A3102K000/3489458)
 and 2 [B32022A3223M000](https://www.digikey.com/en/products/detail/epcos-tdk-electronics/B32022A3223M000/1648111)
@@ -374,6 +376,8 @@ If you want to swap the battery with a new one, these are your options:
 * The obvious way: back up calibration data. Unplug the power cable. Desolder old battery. 
   Solder new battery. Restore calibration data.
 
+    **Unplug the power cable of the 3478A before soldering!**
+
     With his method, you need that GPIB interface to read and write the calibration data.
 
     Or do you? 
@@ -397,6 +401,8 @@ If you want to swap the battery with a new one, these are your options:
     But really, just don't do it...
 
 * The intermediate way: use an additional, temporary 3V battery to keep the SRAM powered on.
+
+    **Unplug the power cable of the 3478A before soldering!**
 
     This the way to go if you don't have a GPIB interface.
 
