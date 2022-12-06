@@ -26,7 +26,7 @@ SRAM that's permanentely powered on by a long-lasting 3V Lithium battery. There'
 production date on my unit, but a bunch of chips were produced in 1988, so after almost 34 years, I
 might as well replace that one too.
 
-There is quite a bit of information on the web about how to do this, though some info is
+There is a lot of information on the web about how to do this, though some info is
 buried in long forums threads on EEVBlog or (long winded) Youtube videos. This blog post
 tries to bring some of the information together.
 
@@ -130,7 +130,7 @@ it will reply with a single character that has an ASCII value from 64 to 79. Sub
 64 from that, and you get a 4-bit value, the SRAM content of the specified address. 
 Note that `<addr>` is a binary number, not the ASCII representation of the address!
 
-*Don't worry about corrupting the calibration data with GPIB transactions: when 
+*Don't worry about corrupting the calibration data with GPIB transactions: as long as 
 the indent of the CAL ENABLE switch on the front panel is horizontal, it's impossible
 for the microcontroller to write to the SRAM.*
 
@@ -422,37 +422,21 @@ If you want to swap the battery with a new one, these are your options:
     multimeter.
 
 
-
-# Calibration Data Backup over GPIB
-
-* [EEVblog forum: HP 3478A: How to read/write cal SRAM](https://www.eevblog.com/forum/repair/hp-3478a-how-to-readwrite-cal-sram/)
-* [hp3478a_utils](https://github.com/fenugrec/hp3478a_utils)
-    * [Format of calibration parameters](https://www.eevblog.com/forum/repair/hp-3478a-how-to-readwrite-cal-sram/msg1966463/#msg1966463)
-* [HP3478Ctrl](https://github.com/pigrew/HP3478Ctrl)
-* [hp3478a-calibration](https://github.com/steve1515/hp3478a-calibration)
-* [HP3478A instrument control software](https://mesterhome.com/gpibsw/hp3478a/index.html)
-
-
-
-
-# Various
-
-* Works by charging a capacitor and measuring time (according to EEVblog video)
-
 # References
 
-* [EEVblog teardown](https://www.youtube.com/watch?v=9v6OksEFqpA) 
-* [Tony Albus HP 3478A Multimeter Teardown](https://www.youtube.com/watch?v=q6JhWIUwEt4)
-* [Datasheet](https://accusrc.com/uploads/datasheets/agilent_hp_3478a.pdf)
-* [HP Journal](https://www.hpl.hp.com/hpjournal/pdfs/IssuePDFs/1983-02.pdf)
+**Info**
 
-    Contains technical description.
+* [EEVblog forum: HP 3478A: How to read/write cal SRAM](https://www.eevblog.com/forum/repair/hp-3478a-how-to-readwrite-cal-sram/)
+* [Mr. Modemhead: HP 3468A battery replacement](http://mrmodemhead.com/blog/hp-3468a-battery-replacement/) 
+* [Replacing the battery in a HP 3478A Multimeter](https://jdhartman.wordpress.com/2013/04/08/replacing-the-battery-in-a-hp-3478a-multimeter/)
 
-* [Discussion on EEVblog](https://www.eevblog.com/forum/beginners/is-190$-a-bargain-for-a-hp-2378a-bench-multimeter/)
+**Tools**
 
-    "3478 are not bad but they are virtually unrepairable if they break. Especially the display is unobtainium..."
+* [HP3478A instrument control software](https://mesterhome.com/gpibsw/hp3478a/index.html)
 
-* [Service Manual](http://www.arimi.it/wp-content/Strumenti/HP/Multimetri/hp-3478a-Service.pdf)
+    Windows tool to configure an HP 3478A.
 
-* [Boat Anchor Manual Archive](https://bama.edebris.com)
+* [hp3478a_utils](https://github.com/fenugrec/hp3478a_utils)
+
+    The reference implementation for calibration access. DOS only.
 
