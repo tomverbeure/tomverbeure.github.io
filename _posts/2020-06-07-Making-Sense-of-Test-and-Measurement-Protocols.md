@@ -359,6 +359,33 @@ The only consistency here is that there is none.
 In practise, every kind of instrumentation equipment will need a vendor or even device specific driver 
 for remote control...
 
+# The Forgotten MATE-CIIL Command Language
+
+*This section was written in December 2022.*
+
+I was recently looking at adding a [`pymeasure`](https://github.com/pymeasure/pymeasure) driver
+for my Racal-Dana 1992 universal counter with GPIB interface.
+
+![Racal-Dana 1992](/assets/racal1992/racal1992.jpg)
+
+It took me a couple of hours of not getting anywhere at all before I found out my unit has a 
+GPIB plug-in card with a jumper that selects between the advertised GPIB commands from the manual,
+and an entirely different command set that's called MATE-CIIL.  MATE and CIIL are acronyms for 
+*Modular Automated Test Equipment* and *Control Interface Intermediate Language*.
+
+Google doesn't turn up a lot of information, but Project MATE was an initiative of the US Air 
+Force to convert CIIL with Test Module Adapter (TMA) into the device-specific, non-standard commands 
+of existing equipement.  There's supposed to a MATE STD 2806763 specification that defines the 
+CIIL commands for different types of instruments, but once again, Google doesn't get my any futher 
+other than confirming its existence.
+
+In the early 1990ies, HP came up with TML, Test Measurement Language, which was eventually
+made license-free and renamed as... SCPI.
+
+Like my Racal-Dana, you can find some equipment from the mid to late eighties that supports
+MATE/CIIL natively, without the need for an external TMA box, but all of that is now just a distant 
+memory.
+
 # To Be Continued...
 
 So far, everything covered here is only describes what's out there and how it all plays with eachother.
@@ -367,4 +394,6 @@ The next step is to show how all of this can be made to work, the pitfalls etc.
 
 That's for upcoming blog posts...
 
+# References
 
+* [GPIB 101 - A Tutorial about the GPIB Bus](https://www.icselect.com/pdfs/ab48_11%20GPIB-101.pdf)
