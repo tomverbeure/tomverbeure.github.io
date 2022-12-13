@@ -19,7 +19,7 @@ I call it the *swiss army knife of digital logic manipulation*.
 
 In most cases, using Yosys
 means running pre-made scripts that contain Yosys commands: when I'm synthesizing RTL for an FPGA of the 
-Lattice iCE40 family, the [`synth_ice40` command](http://yosyshq.net/yosys/cmd_synth_ice40.html) is 
+Lattice iCE40 family, the [`synth_ice40` command](https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/synth_ice40.html) is 
 usually sufficient to convert my RTL into a netlist that can be sent straight to 
 [nextpnr](https://github.com/YosysHQ/nextpnr)
 for place, route, and bitstream creation.
@@ -28,7 +28,7 @@ My current version of Yosys has 232 commands, and many of these commands have an
 of additional options, but sometimes you want to perform very particular logic operations that 
 don't come standard with the tool.
 
-In this blog post, I'll talk about the [`techmap` command](http://yosyshq.net/yosys/cmd_techmap.html), 
+In this blog post, I'll talk about the [`techmap` command](https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/techmap.html), 
 a particularly powerful command that allows one to make custom logic transformations by replacing a 
 logic cell instance of a given type to one or more different ones. 
 
@@ -74,7 +74,7 @@ module \top
   end
 ```
 
-Yosys has the super useful [`show` command](http://yosyshq.net/yosys/cmd_show.html) 
+Yosys has the super useful [`show` command](https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/show.html) 
 that renders an RTLIL representation as a graph. I usually add the `-width -signed` options to 
 annotate signals with their size and to show which cell ports are signed:
 
@@ -352,7 +352,7 @@ good C++ compiler will optimize the addition above into only a few assembler ins
 If you know your binary adder basics, you see that the addition of a 7-bit and a 6 bit operand will result
 at most in an 8-bit result. All higher bits will always be 0. It's overkill to have a 64-bit adder.
 
-Yosys already has the [`wreduce` command](http://yosyshq.net/yosys/cmd_wreduce.html) that reduces logic 
+Yosys already has the [`wreduce` command](https://yosyshq.readthedocs.io/projects/yosys/en/latest/cmd/wreduce.html) that reduces logic 
 operations to just the number of bits that are really needed.
 
 We can see this when we run the following commands:
