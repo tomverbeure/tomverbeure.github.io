@@ -114,6 +114,8 @@ These 4 screws fix the inner power supply cage connected to the outer metal slee
 
 ![Remove side screws](/assets/e3631a_repair/2_remove_side_screws.jpg)
 
+*Some E3631A versions only have the 2 screws of the handle to hold the chassis in place.*
+
 **Slide off the outer sleeve**
 
 ![Slide off outer sleeve](/assets/e3631a_repair/3_slide_enclosure.jpg)
