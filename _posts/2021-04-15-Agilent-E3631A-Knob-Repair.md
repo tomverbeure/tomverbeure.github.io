@@ -195,3 +195,7 @@ I did a quick check that things worked, before closing things up in reverse orde
 Success!!!
 
 Time spent from start to finish: 45 min.
+
+# References 
+
+* Blog post about my second E3631a: [The Agilent/HP E3631A Power Supply Repair that Wasn't](/2022/12/15/E3631A-Repair-that-Wasnt.html)
