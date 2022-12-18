@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Setting Up GPIB Communication with a Racal-Dana 1992 Universal Counter
-date:  2022-12-11 00:00:00 -1000
+date:  2022-12-18 00:00:00 -1000
 categories:
 ---
 
