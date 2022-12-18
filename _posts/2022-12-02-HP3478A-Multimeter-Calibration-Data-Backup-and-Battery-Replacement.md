@@ -446,3 +446,8 @@ If you want to swap the battery with a new one, these are your options:
 
     The reference implementation for calibration access. DOS only.
 
+* [pymeasure](https://github.com/pymeasure/pymeasure)
+
+    Python-base instrument control library. I added calibration data backup/restore support 
+    to the HP 3478A driver.
+
