@@ -397,3 +397,4 @@ That's for upcoming blog posts...
 # References
 
 * [GPIB 101 - A Tutorial about the GPIB Bus](https://www.icselect.com/pdfs/ab48_11%20GPIB-101.pdf)
+* [Setting Up GPIB Communication with a Racal-Dana 1992 Universal Counter](/2022/12/18/Setting-Up-a-GPIB-Communication-with-a-Racal-Dana-1992-Counter.html)
