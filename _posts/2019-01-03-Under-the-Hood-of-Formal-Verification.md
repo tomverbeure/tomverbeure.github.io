@@ -150,7 +150,7 @@ The cover statement has 3 terms that must be satisfied to get a meaningful resul
     cover(!initstate() && reset_
 ```
 
-1. the transmit data FIFO much have reached a fill level of at least 10 *at some point* in the past:
+1. the transmit data FIFO must have reached a fill level of at least 10 *at some point* in the past:
 ```scala
                 && tx_data_fifo_level_reached
 ```
