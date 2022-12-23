@@ -239,14 +239,6 @@ inst.timeout=10000
 
 # Weird Modal Syntax Error Behavior with 3-character Commands
 
-**This issue has been fixed. David on a test equipment forunm on Facebook commented:
-"IEEE has an extended character data line that when having issues causes this problem. It could 
-be a cable or one of the I/O chips." This made me realize that the issue started to appear after
-I had cabled together multiple instruments.  My cabling was like this: 
-instrument 1 - Dongle/Instrument 2 - Instrument 3 - Instrument 4.
-After changing it to: Dongle/instrument 1 - Instrument 2 - Instrument 3 - Instrument 4, the
-problem went away.**
-
 On my system, all the example code above worked fine... until it didn't. I don't know what happened, but
 from one moment to next, all commands with 3 characters resulted in a syntax error, as indicated
 by the `stb` property:
