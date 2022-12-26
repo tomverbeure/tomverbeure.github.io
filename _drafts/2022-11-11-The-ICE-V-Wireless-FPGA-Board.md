@@ -12,21 +12,21 @@ categories:
 
 It's been more than 7 years now since the first public release of 
 [Project IceStorm](http://bygone.clairexen.net/icestorm/).  Its goal was to reverse engineer to the internals
-of Lattice ICE40 FPGA, and create all fully open source toolchain to go from RTL all the way
-to place-and-routed bitstream.  Project IceStorm was a huge success and it kicked off a small
-revolution in the world of hobby electronics. While it had been possible to design for FPGAs before,
-it required multi-GB behemoth software installatations, and there weren't a lot of cheap development
+of Lattice ICE40 FPGAs, and create full open source toolchain to go from RTL all the way
+to place-and-routed bitstream.  Project IceStorm was a huge success and a small revolution in the 
+world of hobby electronics. While it had been possible to design for FPGAs before,
+it required multi-GB behemoth software installations, and there weren't a lot of cheap development
 boards.
 
-Project IceStorm kicked off industry of small scale makers who created their own development board, each
+Project IceStorm kicked off industry of small scale makers who created their own development boards, each
 with a distinct set of features. One crowd favorite has been the 
 [TinyFPGA BX](https://www.crowdsupply.com/tinyfpga/tinyfpga-ax-bx), which is still available for
 $38, one of the lowest prices to get your hands dirty with an FPGA that has a capacity that will
 exceed the needs of most users.
 
-The BX board is very bare bones: it's on BYOP, bring your own peripherals, and there's not even a PMOD 
+The BX board is very bare bones: it's BYOP, Bring Your Own Peripherals, and there's not even a PMOD 
 connector for quick experimentation with external modules. That's great if you're working on a custom 
-build with size constraints, but often you want to have something a bit more features.
+build with physical size constraints, but often you want to have something with a bit more features.
 
 The ICE-V Wireless is a relatively new entrant in this market. Developed by 
 [Querty Embedded Design](http://www.qwertyembedded.com/), it's available at 
@@ -41,25 +41,25 @@ Let's check it out!
 # The ICE-V Wireless FPGA Board
 
 The [ICE-V Wireless GitHub project](https://github.com/ICE-V-Wireless/ICE-V-Wireless) has schematics
-and PCB layout available in KiCAD 6.0 format, but I always find a 
-[PDF version of the schematic](/assets/icev/esp32c3_fpga.pdf) convenient. The schematic
-is straightforward. 
+and PCB layout available both in their KiCAD 6.0 format. There's also a
+[PDF version of the schematic](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/docs/esp32c3_fpga_schematic.pdf)
+which is always convenient.
 
 Let's check out the different components:
 
 * ESP32-C3-MINI-1 module ([datasheet](/assets/icev/esp32-c3-mini-1_datasheet_en.pdf))
 
-    An excellent member of well-known Espressif portfolio. It includes:
+    An excellent member of the well-known Espressif portfolio. It includes:
 
     * support for 2.4 Wifi (802.11 b/g/n) and Bluetooth 5
     * a RISC-V CPU
-    * 4MB flash
+    * 4MB embedded flash
     * on-board PCB antenna
 
 * ICE5LP4K-SG48 from the [Lattice iCE40 Ultra family](https://www.latticesemi.com/Products/FPGAandCPLD/iCE40Ultra)
 
-    This FPGA is less commonly used than ICE40-UP5K FPGA, but still has a respectable number of 
-    features:
+    This FPGA is less commonly used and slightly smaller than the ICE40-UP5K FPGA, but still has a respectable 
+    number of features:
 
     * 3520 LUTs
     * 80 kbits of block RAM
@@ -70,34 +70,43 @@ Let's check out the different components:
     for this version. This makes the FPGA particularly well-suited for battery operated use cases.
 
     One feature lacking from this FPGA compared to the more popular iCE40UP5K is the lack of a large slab
-    of SRAM. Fear not, however, because the board also has:
+    of SRAM. But fear not, because the board also has:
 
-* LY68L6400, a SPI/QPI serial pseudo-SRAM with a whopping 64M bits of RAM ([datasheet](/assets/icev/LY68L6400-0.4.pdf))
+* LY68L6400, a SPI/QPI serial pseudo-SRAM (PSRAM) with a whopping 64M bits of RAM ([datasheet](/assets/icev/LY68L6400-0.4.pdf))
 
-    The RAM is connected directly to the FPGA. It has a clock rate of 100MHz. In QPI mode, a peak transfer rate
-    of 4MB/s should be sufficient for many applications. 
+    The RAM is connected directly to the FPGA. It has a clock rate of 100MHz. In QPI mode, with 4 data lines working
+    in parallel, a peak transfer rate of 4MB/s should be sufficient for many applications. 
 
 * 3 PMOD ports
 
     These are your standard double-row configuation PMOD connectors with 8 GPIOs per port, all of which are
     controlled by the FPGA. Unusual is that the power of each PMOD can be individually selected to be
-    either the 3v3 rail from the on-board power regulator, or the 4v/5v rail coming from USB (when plugged in)
-    or LiPo battery (when present.)
+    either the 3v3 rail from the on-board power regulator, or the 4V/5V rail coming from USB (5V, when plugged in)
+    or LiPo battery (4V, when present.)
 
     A nice touch is that the PCB silk screen shows the FPGA pin number of each PMOD IO pin, as well as the
     polarity of differential FPGA IO pairs.
 
-    ![PMOF FPGA pin numbering](/assets/icev/pmod_fpga_pin_numbers.png)
+    ![PMOD FPGA pin numbering](/assets/icev/pmod_fpga_pin_numbers.jpg)
 
 * Auxiliary GPIO connector
 
     The 8 remaining GPIOs of the FPGA and the ESP32 are routed to a 12-pin connector that can optionally
     be populated with a pin header. Reset, power and ground are also avaiable.
 
+    ![GPIO pin numbering](/assets/icev/gpio_connector_pin_numbers.jpg)
+
 * Standard LiPo battery JST connector with charging logic
 
     It's always nice to have a charge management controller on board. This one uses a 
     [Microchip MCP73831 ](https://ww1.microchip.com/downloads/en/DeviceDoc/MCP73831-Family-Data-Sheet-DS20001984H.pdf).
+
+    Here's such a battery, [sold by Adafruit](https://www.adafruit.com/product/3898). 
+
+    ![LiPo battery with JST connector](/assets/icev/lipo_battery_with_jst.jpg)
+
+    If there were any doubts left about the IoT/mobile intensions of this board, the inclusion of the charging logic 
+    and battery connector should put these to rest.
 
 * XC6222B331MR-G 3v3 LDO Power Regulator ([datasheet](https://www.digikey.com/en/products/detail/torex-semiconductor-ltd/XC6222B331MR-G/2138187))
 
@@ -116,6 +125,444 @@ Let's check out the different components:
     * various status LEDs
     * 12MHz oscillator
 
+# Preloading the PSRAM with User Data
+
+FPGA boards with just an FPGA are usually pretty simple affairs: there's usually a flash SPI PROM
+on the board from which the FPGA sucks in the bitstream automatically after power up. Sometimes,
+there's also JTAG interface to directly load a new bitstream into the FPGA, but that's not something
+a the Lattice ICE40 family supports.
+
+In addition to storing the bitstream, the SPI flash PROM often also contains user data that can
+fetched by the FPGA as needed. A common use case is one where the FPGA has a soft-CPU core with the
+firmware of the CPU residing in the SPI flash.
+
+During the bitstream loading process, the FPGA is configured in *active serial mode*: the FPGA
+is the controller of the SPI bus. And after the bitstream is loaded, the FPGA is controller
+of the SPI bus as well, if it needs access to SPI user data.
+
+![Traditional FPGA configuration](/assets/icev/ICEV_drawings-traditional_configuration.png)
+
+Things are more complicated when there's an SOC like the ESP32C3 on the board. 
+
+![ICE-V configuration](/assets/icev/ICEV_drawings-ICEV_configuration.png)
+
+Since the SOC module already contains embedded flash, which has its own 
+[SPIFFS filesystem](https://docs.espressif.com/projects/esp-idf/en/v5.0/esp32c3/api-reference/storage/spiffs.html).
+
+It'd be a waste to add an additional SPI bitstream flash just for the FPGA. Instead, the 
+FPGA boots up in *passive serial mode*: during bitstream loading, the SPI port on the FPGA 
+side is configured as a device and the ESP32C3 is the controller that loads the bitstream from
+the embedded flash into the FPGA.
+
+A negative of this approach, however, is that there isn't a place anymore where the
+FPGA can fetch user data! The ICE-V Wireless board solves this by adding a
+(Q)SPI Pseudo RAM to the system.
+
+This PSRAM can of course be used by the FPGA as a pure RAM, but if the PSRAM can be
+pre-loaded with user data, part of it can just as well be used a pseudo flash PROM.
+The pseudo SRAM is a psuedo SPI PROM if you will.
+
+The only question that remains then is how to get the user data into the PSRAM before the
+FPGA starts executing the main user bitstream? 
+
+It's a multi-stage process:
+
+0. The ESP32C3 first check if the PSRAM needed to be preloaded with user data. It does this
+   by [checking if there exists a non-empty `psram.bin` file on its embedded flash file system](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/104818448c758a6e8a5270a8c9ae80c04ac047d2/Firmware/main/main.c#L85).
+
+   If there isn't a `psram.bin` file, it jumps to step 3 and just loads the user FPGA bitstream.
+
+1. the ESP32C3 fetches a bitstream called [`spi_pass.bin`](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/104818448c758a6e8a5270a8c9ae80c04ac047d2/Firmware/main/main.c#L23)
+   from the embedded flash and [loads it into the FPGA](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/104818448c758a6e8a5270a8c9ae80c04ac047d2/Firmware/main/main.c#L90).
+
+    This bitstream is completely trivial (you can check the code 
+    [here](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/spi_pass/spi_pass.v)).
+    All it does is connect the ESP32C3 SPI interface to the PSRAM SPI interface.
+
+2. the ESP32C3 now fetches a binary file called 
+    [`psram.bin`](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/104818448c758a6e8a5270a8c9ae80c04ac047d2/Firmware/main/main.c#L24)
+    from embedded flash and [programs it straight into the PSRAM](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/104818448c758a6e8a5270a8c9ae80c04ac047d2/Firmware/main/main.c#L114-L133), 
+    with the FPGA as SPI signal conduit.
+
+3. the ESP32C3 now fetches the user bitstream called [`bitstream.bin`](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/104818448c758a6e8a5270a8c9ae80c04ac047d2/Firmware/main/main.c#L22)
+   from the embedded flash and [loads it into the FPGA](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/104818448c758a6e8a5270a8c9ae80c04ac047d2/Firmware/main/main.c#L154).
+
+4. with the FPGA configured with the user bitstream, it is now free to let the FPGA whatever the user
+   has programmed it to do.
+
+    If there is a need for communication between the ESP32C and the FPGA, it can do so through the
+    same SPI interface. Similarly, if the FPGA needs user data, it can fetch that from the
+    PSRAM.
+
+![ICE-V PSRAM usage](/assets/icev/ICEV_drawings-ICEV_PSRAM_usage.png)
+
+The default ICE-V Wireless ESP32C3 firmware has all of this implemented. The GitHub repo
+also has the necessary support tools to complete the flow. It's great! However, it's only after
+disecting the firmware source code that I was able to piece the puzzle together. 
+
+# The Overall Boot Process
+
+With the details of PSRAM preloading out of the way, let's zoom out a bit more and look at the
+overall boot process.
+
+* As is already clear, the ESP32C3 is the orchestrator of the whole process.
+* after powering up, the ESP32C3 follows the boot procedure that is described in the 
+  [ESP32C Boot Mode Selection documentation](https://docs.espressif.com/projects/esptool/en/latest/esp32c3/advanced-topics/boot-mode-selection.html):
+
+    GPIO9 is the bootloader select pin. On the ICE-V board, it's connected to the BOOT button.
+
+    * When GPIO9 is low (BOOT button pressed while releasing reset), the ESP32C3 boots from a
+      ROM inside the ESP32C3 chip that sets up a bootloader over the USB serial port. 
+
+      No matter how much you screw up your custom firmware, you will always be able to reflash new firmware,
+      such as the default ICE-V firmware, by pressing the BOOT button and releasing RESET.
+
+    * When GPIO9 is high (BOOT button not pressed), the ESP32C3 goes in *Normal execution mode*. 
+
+      It will first perform a bunch of internal boot housekeeping after which it loads
+      firmware that is stored in its embedded SPI flash and execute it.
+
+      This is the normal operation. Expect to use this mode a lot, especially when you primarily use
+      the ICE-V board as a FPGA board that just happens to have an ESP32 module as well.
+
+# UART Console
+
+In what's become a common theme: it's not mentioned in any of the manual pages, but the board schematic
+shows how GPIO21 of the ESP32C3 has boot logging:
+
+![ESP32C console UART](/assets/icev/ESP32C3_console_UART.png)
+
+This is a standard ESP32C3 feature. I wired up a USB serial port dongle to GPIO21 pin
+and connected to with with `picocom -b 115200 /dev/ttyUSB0`.
+
+In boot loader mode (BOOT button pressed when releasing RST), it shows the following:
+
+```
+ESP-ROM:esp32c3-api1-20210207
+Build:Feb  7 2021
+rst:0x1 (POWERON),boot:0x7 (DOWNLOAD(USB/UART0/1))
+waiting for download
+```
+
+And here's what it prints out during normal boot:
+
+```
+ESP-ROM:esp32c3-api1-20210207
+Build:Feb  7 2021
+rst:0x1 (POWERON),boot:0xf (SPI_FAST_FLASH_BOOT)
+SPIWP:0xee
+mode:DIO, clock div:1
+load:0x3fcd6100,len:0x16b4
+load:0x403ce000,len:0x91c
+load:0x403d0000,len:0x2d00
+entry 0x403ce000
+I (30) boot: ESP-IDF v4.4.2 2nd stage bootloader
+I (30) boot: compile time 13:14:59
+I (30) boot: chip revision: 3
+I (32) boot.esp32c3: SPI Speed      : 80MHz
+I (37) boot.esp32c3: SPI Mode       : DIO
+I (41) boot.esp32c3: SPI Flash Size : 4MB
+I (46) boot: Enabling RNG early entropy source...
+I (51) boot: Partition Table:
+I (55) boot: ## Label            Usage          Type ST Offset   Length
+I (62) boot:  0 nvs              WiFi data        01 02 00009000 00006000
+I (70) boot:  1 phy_init         RF data          01 01 0000f000 00001000
+I (77) boot:  2 factory          factory app      00 00 00010000 00100000
+I (85) boot:  3 storage          Unknown data     01 82 00110000 00100000
+I (92) boot: End of partition table
+I (96) esp_image: segment 0: paddr=00010020 vaddr=3c090020 size=16958h ( 92504) map
+I (119) esp_image: segment 1: paddr=00026980 vaddr=3fc90600 size=02bb8h ( 11192) load
+I (122) esp_image: segment 2: paddr=00029540 vaddr=40380000 size=06ad8h ( 27352) load
+I (130) esp_image: segment 3: paddr=00030020 vaddr=42000020 size=8c434h (574516) map
+I (223) esp_image: segment 4: paddr=000bc45c vaddr=40386ad8 size=09ae8h ( 39656) load
+I (231) esp_image: segment 5: paddr=000c5f4c vaddr=50000010 size=00010h (    16) load
+I (236) boot: Loaded app from partition at offset 0x10000
+I (236) boot: Disabling RNG early entropy source...
+I (241) cpu_start: Pro cpu up.
+I (256) cpu_start: Pro cpu start user code
+I (256) cpu_start: cpu freq: 160000000
+I (256) cpu_start: Application information:
+I (259) cpu_start: Project name:     ICE-V_Wireless
+I (264) cpu_start: App version:      1048184
+I (269) cpu_start: Compile time:     Dec 25 2022 13:15:04
+I (275) cpu_start: ELF file SHA256:  0ed39813b88c943b...
+I (281) cpu_start: ESP-IDF:          v4.4.2
+I (286) heap_init: Initializing. RAM available for dynamic allocation:
+I (293) heap_init: At 3FC97940 len 000286C0 (161 KiB): DRAM
+I (300) heap_init: At 3FCC0000 len 0001F060 (124 KiB): STACK/DRAM
+I (306) heap_init: At 50000020 len 00001FE0 (7 KiB): RTCRAM
+```
+
+Once you start changing the ESP32C3 firmware for your own applications, this kind of
+UART console can be worth its weight in gold.
+
+# Getting Started with the ICE-V Wireless board for Real
+
+When you first plug in the ICE-V Wireless board, it should immediately come up with a bunch of LEDs doing their thing:
+
+* a red LED indicates that the board has power.
+* a yellow LED will be blinking at high frequency to indicate that a LiPo battery is not connected.
+* a slowly blinking green LED indicates that the ESP32C3 is not connected to a wireless network.
+* a big tri-color LED will be cycling smoothly through the colors of the rainbow.
+
+At the time of writing this review, the GitHub repo has a 
+The [Getting Started page](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Getting-Started.md) 
+GitHub repo will get you, well, started... eventually, but the documentation is generally lacking for a 
+beginner. Some of the information is there, but it's more written in the style of a reference guide. 
+
+What it needs is a tutorial with a clear, unambiguous path to go for unpacking to getting familiarized 
+with the board.
+
+Let's try to correct that.
+
+**Main Repo Installation**
+
+You always start with getting a copy of the main GitHub repo:
+
+```sh
+git clone https://github.com/ICE-V-Wireless/ICE-V-Wireless.git
+```
+
+Among others, the repo contains `Firmware`[^1], `Gateware`, `Hardware` and `python` directories. 
+
+Initially, the `python` directory is the most important one: it contains the tools to estabilish 
+communication between the default ESP32C3 firmware and your PC, and allows you to perform
+a variety of maintenance and configuration operations.
+
+**The Default ICE-V Wireless Firmware**
+
+The default ICE-V Wireless firmware is the one that can be found in the `./Firmware`
+directory. This firmware uses the ESP32C3 RISV-C CPU only as a support CPU for FPGA
+bitstream bootup, the procedure that I describe earlier.
+
+* It sets up a USB serial port (on `/dev/ttyACM0` on my Ubuntu 20.04 system) for
+  PC to board communication.
+* After additional configuration over USB, it also sets up a Wifi connection for  
+  PC to board communication.
+* Using these communication channels, it allows you to configure the FPGA after
+  booting up.
+* Read and write files with data to the PSRAM on the board.
+* It returns information about battery status and IP address of the Wifi connection.
+
+When you want to run your own custom firwmare, you should try to jumpstart your development
+from the original firmware and keep some of the existing functionality. This will allow
+you to keep on using the provided tools to reflash the FPGA bitstream.
+
+**Basic Sanity Testing and Maintenance Functions**
+
+There are 3 tools in the `python` directory:
+
+* `send_c3usb.py`
+
+    Talks to the standard ESP32C3 firmware over USB. You'll be using this to check
+    the battery level, check firmware version, and write files to the SPIFFS
+    file system that resides on the ESP32C32 4MB embedded SPI NOR flash.
+
+    The SPIFFS file system contains, among other things, the bitstream that gets loaded
+    into the FPGA at bootup.
+
+    You also use this tool to configure a Wifi network and password to which the ESP32C3
+    can connect to.
+
+* `send_c3sock.py`
+
+    This tool has largely the same functionatily as `send_c3usb.py`, but it does its
+    magic over a TCP/IP socket using Wifi. That's great, because it means that you can
+    change the FPGA bitstream over Wifi, and thus while your ICE-V board is embedded deep
+    into whichever application you want to use it for.
+
+    Of course, you can only start using this tool once you have the configured a Wifi
+    network to connect to with `send_c3usb.py`.
+
+* `icevwprog.py`
+
+    Something something something about loading a bitstream to the FPGA, but 
+    completely undocument... 
+
+So let's play around a bit:
+
+```sh
+cd ./ICE-V-Wireless/python
+tom@zen:~/projects/ICE-V-Wireless/python$ ./send_c3usb.py --info
+Version 0.3 , IP Addr unavailable
+tom@zen:~/projects/ICE-V-Wireless/python$ ./send_c3usb.py --battery
+Vbat = 4052 mV
+```
+
+The board is responding. Good!
+
+I didn't have a battery installed, but in that case, 4.052V measured is the voltage
+that's driven by the LiPo charger: 
+
+![Battery voltage path](/assets/icev/battery_voltage.png)
+
+**Configure Wifi**
+
+Here's the help page of `./send_c3usb.py`:
+
+```sh
+tom@zen:~/projects/ICE-V-Wireless/python$ ./send_c3usb.py -h
+./send_c3usb.py  [options] [<file>] | [DATA] | [LEN] communicate with ESP32C3 FPGA
+  -h, --help              : this message
+  -p, --port=<tty>        : usb tty of ESP32C3 (default /dev/ttyACM0)
+  -b, --battery           : report battery voltage (in millivolts)
+  -f, --flash=<file>      : write <file> to SPIFFS flash
+  -i, --info              : get info (version, IP addr)
+  -l, --load=<cfg#>       : load config from SPIFFS (0=default, 1=spi_pass
+  -r, --read=REG          : register to read
+  -w, --write=REG DATA    : register to write and data to write
+      --ps_rd=ADDR LEN    : read PSRAM at ADDR for LEN to stdout
+      --ps_wr=ADDR <file> : write PSRAM at ADDR with data in <file>
+      --ps_in=ADDR <file> : write PSRAM init at ADDR with data in <file>
+  -s, --ssid <SSID>       : set WiFi SSID
+  -o, --password <pwd>    : set WiFi Password
+```
+
+I tried to configure the Wifi connection as follows:
+
+```sh
+./send_c3usb.py -s MyWifi -o VerySecretPassword
+```
+
+**This didn't work!**
+
+It turns that the tool can process only one command line option at the time. The right 
+procedure is as follows:
+
+```sh
+./send_c3usb.py -s MyWifi 
+./send_c3usb.py -o VerySecretPassword
+```
+
+After this, you need to reset the board with the RST botton. If all goes well, the green LED will
+start blinking vigorously at 5Hz to indicate that the ESP32C3 has successfully make a connection 
+with your wifi network.
+
+You can now use `send_c3sock.py` instead of `send_c3usb.py` to control the board. Like this:
+
+```sh
+tom@zen:~/projects/ICE-V-Wireless/python$ ./send_c3sock.py --info
+Version = 0.3 , IP Addr = 192.168.1.178
+```
+
+Success!
+
+I've played a little bit with ESP Wifi modules in the past. One of the things that I found
+annoying was the hassle of finding the right IP address, something that can change after
+each reset on a DHCP configured local network.
+
+I'm pleasantly suprised about the frictionless process of the ICE-V Wireless board. The
+default firmware declares the board with a default
+[`ICE-V.local`](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/104818448c758a6e8a5270a8c9ae80c04ac047d2/Firmware/main/wifi.c#L310)
+hostname, which is also the hostname that `send_c3sock.py` looks for. You'll probably have
+to change this when you have multiple active ICE-V boards, but it just worked in
+my case.
+
+
+
+* All my instructions apply to an Ubuntu 20.04 installation.
+* `/dev/ttyACM0` shows up right after plugging in.
+* Directories are camel-case. Yuck.
+* From the documentation:
+
+    > Clone this repository or download the scripts and follow the documentation to get your board running on 
+    > your WiFi network and begin communicating with it.
+
+    There should be a link to "the documentation".
+
+* Announces itself to the PC as follows:
+
+    ```
+Bus 001 Device 009: ID 0d8c:0103 C-Media Electronics, Inc. CM102-A+/102S+ Audio Controller
+Bus 001 Device 021: ID 046d:c404 Logitech, Inc. TrackMan Wheel
+Bus 001 Device 006: ID 0bda:5411 Realtek Semiconductor Corp. 4-Port USB 2.0 Hub
+Bus 001 Device 029: ID 303a:1001                <<<<<<<<<<
+Bus 001 Device 007: ID 0957:0718 Agilent Technologies, Inc. 
+Bus 001 Device 005: ID 05e3:0610 Genesys Logic, Inc. 4-port hub
+Bus 001 Device 004: ID 0b05:1939 ASUSTek Computer, Inc. AURA LED Controller
+    ```
+
+    You can only figure this out by plugging in and out, and checking the difference.
+    Isn't it possible to give this a name? 
+
+* Is it necessary to create a /etc/udev/rules.d file? Not clear...
+* `send_c3usb.py --battery` or `send_c3usb.py --info` don't work. Neither does running them with `sudo`.
+  (Using python3 version 3.8.10)
+* I tried with `cu -l /dev/ttyACM0 -s 115200`. It says 'Connected.', but it's not clear if I'm
+  using the right baud rate.
+* After a long time, I got this! So 115200 seems to be correct at least. 
+
+    ```
+tom@zen:~/projects/ICE-V-Wireless/python$ cu -l /dev/ttyACM0 -s 115200
+Connected.
+I (432) gpio: GPIO[1]| InputEn: 0| OutputEn: 0| OpenDrainW (101022) main: Timeout waiting for Boot Button Pressed.
+W (101022) main: #TEST# Boot Button Test FAIL
+I (101022) gpio: GPIO[3]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 
+I (101022) main: ADC Initialized
+I (102312) main: #TEST# |Vbat| = 4080 mV, min = 4020 mV, max = 4152 mV INFO
+I (102312) main: #TEST# Period = 0.060000 sec (16.666668 Hz) INFO
+W (102312) main: #TEST# Charge Test FAIL
+I (102322) pp: pp rom version: 9387209
+I (102322) net80211: net80211 rom version: 9387209
+I (102332) wifi:wifi driver task: 3fca10ec, prio:23, stack:6656, core=0
+I (102332) system_api: Base MAC address is not set
+I (102332) system_api: read default base MAC address from EFUSE
+I (102342) wifi:wifi firmware version: 133d2ca
+I (102352) wifi:wifi certification version: v7.0
+I (102352) wifi:config NVS flash: enabled
+I (102352) wifi:config nano formating: disabled
+I (102362) wifi:Init data frame dynamic rx buffer num: 32
+I (102362) wifi:Init management frame dynamic rx buffer num: 32
+I (102372) wifi:Init management short buffer num: 32
+I (102372) wifi:Init dynamic tx buffer num: 32
+I (102382) wifi:Init static tx FG buffer num: 2
+I (102382) wifi:Init static rx buffer size: 1600
+I (102392) wifi:Init static rx buffer num: 10
+I (102392) wifi:Init dynamic rx buffer num: 32
+I (102392) wifi_init: rx ba win: 6
+I (102402) wifi_init: tcpip mbox: 32
+I (102402) wifi_init: udp mbox: 6
+I (102412) wifi_init: tcp mbox: 6
+I (102412) wifi_init: tcp tx win: 5744
+I (102422) wifi_init: tcp rx win: 5744
+I (102422) wifi_init: tcp mss: 1440
+I (102422) wifi_init: WiFi IRAM OP enabled
+I (102432) wifi_init: WiFi RX IRAM OP enabled
+I (102432) wifi: Attempting to re-enable USB
+I (102442) wifi: Connecting to SpectrumSetup-3A...
+I (102442) phy_init: phy_version 912,d001756,Jun  2 2022,16:28:07
+I (102492) wifi:mode : sta (68:b6:b3:61:d8:74)
+I (102492) wifi:enable tsf
+I (102492) wifi: Waiting for IP(s)
+I (104902) wifi: Wi-Fi disconnected, trying to reconnect...
+I (107312) wifi: Wi-Fi disconnected, trying to reconnect...
+I (109722) wifi: Wi-Fi disconnected, trying to reconnect...
+I (112132) wifi: Wi-Fi disconnected, trying to reconnect...
+W (112492) wifi: Failed to connect
+I (112492) wifi:flush txq
+I (112492) wifi:stop sw txq
+I (112492) wifi:lmac stop hw txq
+I (112492) wifi:Deinit lldesc rx mblock:10
+ESP_ERROR_CHECK_WITHOUT_ABORT failed: esp_err_t 0xffffffff (ESP_FAIL) at 0x403878f9
+file: "../main/wifi.c" line 222
+func: wifi_init
+expression: (ret = example_connect())
+W (112502) main: #TEST# WiFi FAIL
+I (112512) main: 5 Errors Detected
+W (112512) main: #TEST# Complete FAIL
+I (112522) main: Looping...
+    ```
+
+* Boot button: 
+
+    > Hold down while pressing the Reset button to put the ESP32C3 into bootloader mode. Can also be used without the Reset 
+    > button for other firmware purposes.
+
+    This should be in the Getting Started instructions, not in a "What's on the board" features list.
+
+    Also, what does "put the ESP32C3 into bootloader mode" mean? Do I need to do that when I'm running the
+    `send_c3usb.py` scripts?
+
 # Feature Discussion
 
 
@@ -125,3 +572,7 @@ Let's check out the different components:
 # References
 
 * [ICE-V Wireless Zephyr Support](https://docs.zephyrproject.org/latest/boards/riscv/icev_wireless/doc/index.html)
+
+# Footnotes
+
+[^1]: I can't stand directories with CamelCase naming convention...
