@@ -1,6 +1,6 @@
 ---
 layout: post
-title: A Quick Look at the ICE-V Wireless FPGA Development Board
+title: An In-Depth Look at the ICE-V Wireless FPGA Development Board
 date:  2022-11-11 00:00:00 -1000
 categories:
 ---
@@ -296,7 +296,7 @@ I (306) heap_init: At 50000020 len 00001FE0 (7 KiB): RTCRAM
 Once you start changing the ESP32C3 firmware for your own applications, this kind of
 UART console can be worth its weight in gold.
 
-# Getting Started with the ICE-V Wireless board for Real
+# Getting Started with the ICE-V Wireless Board for Real
 
 When you first plug in the ICE-V Wireless board, it should immediately come up with a bunch of LEDs doing their thing:
 
@@ -323,7 +323,7 @@ You always start with getting a copy of the main GitHub repo:
 git clone https://github.com/ICE-V-Wireless/ICE-V-Wireless.git
 ```
 
-Among others, the repo contains `Firmware`[^1], `Gateware`, `Hardware` and `python` directories. 
+Among others, the repo contains `Firmware`, `Gateware`, `Hardware` and `python` directories. 
 
 Initially, the `python` directory is the most important one: it contains the tools to estabilish 
 communication between the default ESP32C3 firmware and your PC, and allows you to perform
@@ -458,11 +458,175 @@ hostname, which is also the hostname that `send_c3sock.py` looks for. You'll pro
 to change this when you have multiple active ICE-V boards, but it just worked in
 my case.
 
+# Reinstalling or Modifying the ESP32C3 Firmware 
 
+If you want to flash the ICE-V board with new or the original ESP32C3 firmware,
+you'll need an Espressif design environment. Installation on my machine was surprisingly
+straight forward.
+
+* Download [release v4.4.2 of the Espressif IDF](https://github.com/espressif/esp-idf/releases/tag/v4.4.2)
+    
+    ```sh
+cd ~/tools
+git clone -b v4.4.2 --recursive https://github.com/espressif/esp-idf.git esp-idf-v4.4.2
+    ```
+
+    Keep an eye on the [ICE-V Firmware README](https://github.com/ICE-V-Wireless/ICE-V-Wireless/tree/main/Firmware)
+    if you want to do this yourself: it's always possible that they'll require a later version for
+    later firmware versions.
+
+* Install the ESP32C3 version
+
+    ```sh
+cd ~/tools/esp-idf-v4.4.2
+./install.sh esp32c3
+    ```
+
+    This will download and install a whole bunch of files in a `~/.espressif` directory.
+
+* Set up your `$PATH` to include the Espressif tools
+
+    ```sh
+cd ~/tools/esp-idf-v4.4.2
+. ./export.sh
+    ```
+
+    You might want to add that last line to your `~/.profile` file, but I prefer to just run it in that one
+    terminal window where I plan to do development.
+
+* Compile ICE-V Wireless firmware
+
+    ```
+cd ~/projects/ICE-V-Wireless/Firmware
+idf.py build
+    ```
+
+    This will kick off a bunch of compilations. If all goes well, you'll be greated by this meassage:
+
+    ```
+Project build complete. To flash, run this command:
+/home/tom/.espressif/python_env/idf4.4_py3.8_env/bin/python ../../../tools/esp-idf-v4.4.2/components/esptool_py/esptool/esptool.py -p (PORT) -b 460800 --before default_reset --after hard_reset --chip esp32c3 --no-stub write_flash --flash_mode dio --flash_size detect --flash_freq 80m 0x0 build/bootloader/bootloader.bin 0x8000 build/partition_table/partition-table.bin 0x10000 build/ICE-V_Wireless.bin 0x110000 build/storage.bin
+or run 'idf.py -p (PORT) flash'
+    ```
+
+* Flash the firmware
+
+    ```sh
+idf.py -p /dev/ttyACM0 flash
+    ```
+
+    That's really it!
+
+    I expected that I'd have to press the BOOT button and do a RST before I'd be able to flash the
+    firmware, but that was not needed.
+
+
+It would go too far to get into all the details of developing for the ESP32C3.
+Luckily, Espressif provides a ton of [development documentation](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html)
+about just that.
+
+# Creating Custom FPGA Bitstreams
+
+* Open FPGA toolchain installation
+
+    The Yosys Open Source CAD suite contains all the tools needed to build an FPGA bitstream.
+    It used to be a lengthly compipation process, but these days you can just download a release that
+    contains everything.
+
+    The commands below installs the tools exactly where the ICE-V Gateware development environment
+    expects it. If you want to install it somewhere else, you'll need to 
+    [modify the bitstream build Makefile to point to the right location](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/104818448c758a6e8a5270a8c9ae80c04ac047d2/Gateware/icestorm/Makefile#L26),
+    or set the way-to-generic `TOOLS` environment variable with the right value.
+
+    ```sh
+cd ~/Downloads
+wget https://github.com/YosysHQ/oss-cad-suite-build/releases/download/2022-12-26/oss-cad-suite-linux-x64-20221226.tgz
+sudo mkdir -p /opt/openfpga/
+cd /opt/openfpga
+sudo tar xfvz ~/Download/oss-cad-suite-linux-x64-20221226.tgz
+sudo mv oss-cad-suite/ fpga-toolchain
+    ```
+
+* Install a (another) RISC-V toolchain
+
+    The [ICE-V Gateware directory](https://github.com/ICE-V-Wireless/ICE-V-Wireless/tree/main/Gateware)
+    contains 2 designs: `riscv` and `spi_pass`.
+
+    The `spi_pass` design is the trivial SPI pass-through firmware that is loaded when the
+    ESP32C3 wants to preload the PSRAM. (See earlier.)
+
+    The `riscv` compiles into the default bitstream when you initially receive the board. It makes the LED cycle
+    through all the colors of the rainbow. This design is quite complex. It even includes a RISC-V soft CPU.
+    The build flow needs a RISC-V GCC compiler to generate the firmware for this example design.
+
+    In theory, you should be able to reuse the RISC-V compile that's used to compile the ESP32C3 firmware, but
+    that's not what's done here. The Gateware instructions suggest to use the 
+    [pre-compiled August 2019 RISC-V toolchain from SiFive](https://github.com/sifive/freedom-tools/releases/tag/v2019.08.0):
+
+    ```sh
+cd ~/Downloads
+wget https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-linux-ubuntu14.tar.gz
+sudo mkdir -p /opt/riscv-gcc
+cd /opt/riscv-gcc
+sudo tar xfvz ~/Downloads/riscv64-unknown-elf-gcc-8.3.0-2019.08.0-x86_64-linux-ubuntu14.tar.gz
+    ```
+
+* Build the RISC-V example
+
+    ```sh
+cd ~/projects/ICE-V-Wireless/Gateware/icestorm   
+make
+    ```
+
+    You should see this after a minute or so:
+
+    ```
+Info: Program finished normally.
+make -C ../riscv/c/ main.hex
+make[1]: Entering directory '/home/tom/projects/ICE-V-Wireless/Gateware/riscv/c'
+make[1]: 'main.hex' is up to date.
+make[1]: Leaving directory '/home/tom/projects/ICE-V-Wireless/Gateware/riscv/c'
+cp ../riscv/c/main.hex ./code.hex
+/opt/openfpga/fpga-toolchain/bin/icebram rom.hex code.hex < bitstream.asc > temp.asc
+/opt/openfpga/fpga-toolchain/bin/icepack temp.asc bitstream.bin
+    ```
+
+    A new `bitstream.bin` is waiting!
+
+* Program the new bitstream into the ESP32C3 embedded flash
+
+    ```sh
+cd ~/projects/ICE-V-Wireless/Gateware/icestorm   
+../../python/send_c3usb.py -f bitstream.bin
+    ```
+
+    Programming should only take a few seconds.
+
+* Reset the board
+
+    If all goes well, you should the newly flashed bitstream in action.
+
+    To revert back to the default bitstream, you can do this:
+
+    ```sh
+cd ~/projects/ICE-V-Wireless/Firmware/spiffs   
+../python/send_c3usb.py --flash bitstream.bin
+    ```
+
+# Conclusion
+
+TBD
+
+# References
+
+* [ICE-V Wireless Zephyr Support](https://docs.zephyrproject.org/latest/boards/riscv/icev_wireless/doc/index.html)
+
+# Footnotes
+
+# XXX Scraps that must be deleted or embedded somewhere in the text
 
 * All my instructions apply to an Ubuntu 20.04 installation.
 * `/dev/ttyACM0` shows up right after plugging in.
-* Directories are camel-case. Yuck.
 * From the documentation:
 
     > Clone this repository or download the scripts and follow the documentation to get your board running on 
@@ -486,73 +650,6 @@ Bus 001 Device 004: ID 0b05:1939 ASUSTek Computer, Inc. AURA LED Controller
     Isn't it possible to give this a name? 
 
 * Is it necessary to create a /etc/udev/rules.d file? Not clear...
-* `send_c3usb.py --battery` or `send_c3usb.py --info` don't work. Neither does running them with `sudo`.
-  (Using python3 version 3.8.10)
-* I tried with `cu -l /dev/ttyACM0 -s 115200`. It says 'Connected.', but it's not clear if I'm
-  using the right baud rate.
-* After a long time, I got this! So 115200 seems to be correct at least. 
-
-    ```
-tom@zen:~/projects/ICE-V-Wireless/python$ cu -l /dev/ttyACM0 -s 115200
-Connected.
-I (432) gpio: GPIO[1]| InputEn: 0| OutputEn: 0| OpenDrainW (101022) main: Timeout waiting for Boot Button Pressed.
-W (101022) main: #TEST# Boot Button Test FAIL
-I (101022) gpio: GPIO[3]| InputEn: 0| OutputEn: 0| OpenDrain: 0| Pullup: 0| Pulldown: 0| Intr:0 
-I (101022) main: ADC Initialized
-I (102312) main: #TEST# |Vbat| = 4080 mV, min = 4020 mV, max = 4152 mV INFO
-I (102312) main: #TEST# Period = 0.060000 sec (16.666668 Hz) INFO
-W (102312) main: #TEST# Charge Test FAIL
-I (102322) pp: pp rom version: 9387209
-I (102322) net80211: net80211 rom version: 9387209
-I (102332) wifi:wifi driver task: 3fca10ec, prio:23, stack:6656, core=0
-I (102332) system_api: Base MAC address is not set
-I (102332) system_api: read default base MAC address from EFUSE
-I (102342) wifi:wifi firmware version: 133d2ca
-I (102352) wifi:wifi certification version: v7.0
-I (102352) wifi:config NVS flash: enabled
-I (102352) wifi:config nano formating: disabled
-I (102362) wifi:Init data frame dynamic rx buffer num: 32
-I (102362) wifi:Init management frame dynamic rx buffer num: 32
-I (102372) wifi:Init management short buffer num: 32
-I (102372) wifi:Init dynamic tx buffer num: 32
-I (102382) wifi:Init static tx FG buffer num: 2
-I (102382) wifi:Init static rx buffer size: 1600
-I (102392) wifi:Init static rx buffer num: 10
-I (102392) wifi:Init dynamic rx buffer num: 32
-I (102392) wifi_init: rx ba win: 6
-I (102402) wifi_init: tcpip mbox: 32
-I (102402) wifi_init: udp mbox: 6
-I (102412) wifi_init: tcp mbox: 6
-I (102412) wifi_init: tcp tx win: 5744
-I (102422) wifi_init: tcp rx win: 5744
-I (102422) wifi_init: tcp mss: 1440
-I (102422) wifi_init: WiFi IRAM OP enabled
-I (102432) wifi_init: WiFi RX IRAM OP enabled
-I (102432) wifi: Attempting to re-enable USB
-I (102442) wifi: Connecting to SpectrumSetup-3A...
-I (102442) phy_init: phy_version 912,d001756,Jun  2 2022,16:28:07
-I (102492) wifi:mode : sta (68:b6:b3:61:d8:74)
-I (102492) wifi:enable tsf
-I (102492) wifi: Waiting for IP(s)
-I (104902) wifi: Wi-Fi disconnected, trying to reconnect...
-I (107312) wifi: Wi-Fi disconnected, trying to reconnect...
-I (109722) wifi: Wi-Fi disconnected, trying to reconnect...
-I (112132) wifi: Wi-Fi disconnected, trying to reconnect...
-W (112492) wifi: Failed to connect
-I (112492) wifi:flush txq
-I (112492) wifi:stop sw txq
-I (112492) wifi:lmac stop hw txq
-I (112492) wifi:Deinit lldesc rx mblock:10
-ESP_ERROR_CHECK_WITHOUT_ABORT failed: esp_err_t 0xffffffff (ESP_FAIL) at 0x403878f9
-file: "../main/wifi.c" line 222
-func: wifi_init
-expression: (ret = example_connect())
-W (112502) main: #TEST# WiFi FAIL
-I (112512) main: 5 Errors Detected
-W (112512) main: #TEST# Complete FAIL
-I (112522) main: Looping...
-    ```
-
 * Boot button: 
 
     > Hold down while pressing the Reset button to put the ESP32C3 into bootloader mode. Can also be used without the Reset 
@@ -562,17 +659,10 @@ I (112522) main: Looping...
 
     Also, what does "put the ESP32C3 into bootloader mode" mean? Do I need to do that when I'm running the
     `send_c3usb.py` scripts?
+* `--help` for `send_c3usb.py` says `--flash=<file>` but that doesn't work. It should be `--flash <file>` which
+  goes against the standard getopt conventions.
+* Directory structure inconsistent:  
 
-# Feature Discussion
+    ./Gateware has ./icestorm directory to build ./riscv. But to build ./spi_pass, you need to go
+      into ./spi_pass. Why is ./icestorm not under ./riscv?
 
-
-# Development Package
-
-
-# References
-
-* [ICE-V Wireless Zephyr Support](https://docs.zephyrproject.org/latest/boards/riscv/icev_wireless/doc/index.html)
-
-# Footnotes
-
-[^1]: I can't stand directories with CamelCase naming convention...
