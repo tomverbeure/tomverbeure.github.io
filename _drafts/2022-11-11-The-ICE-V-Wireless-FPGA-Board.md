@@ -525,17 +525,64 @@ It would go too far to get into all the details of developing for the ESP32C3.
 Luckily, Espressif provides a ton of [development documentation](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html)
 about just that.
 
-# Creating Custom FPGA Bitstreams
+# The Example FPGA Design
+
+The visual effect of the example bitstream is trivial, the LED just cycles through
+all colors, but the design behind it is elaborate. 
+
+It's a small SOC that contains:
+
+* a [picorv32](https://github.com/YosysHQ/picorv32) RISC-V soft-CPU
+* a UART
+* an SPI device that goes to a number of registers and a mailbox FIFO.
+
+    This allows the ESP32C3 to interact with the soft-CPU.
+
+* 2 SPI controllers
+
+    The UP5K FPGA has 2 hard-macro `SB_SPI` controllers. I don't think I've ever seen
+    them being used in the past, but this SOC 
+    [instantiates both of them](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/38e0798b7f3acd68918e2c34cd632a507d861276/Gateware/riscv/src/wb_bus.v#L54-L320), 
+    and even has [a SW driver](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/riscv/c/spi.c).
+
+    The PSRAM is connected to the one of these SPI controllers. There's [a driver](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/riscv/c/psram.c)
+    for that too.
+
+* an I2C controller
+
+    Like the SPI controllers, the UP5K also has a hard-macro `SB_I2C` controller.
+    It's [instaniated in the example design](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/38e0798b7f3acd68918e2c34cd632a507d861276/Gateware/riscv/src/wb_bus.v#L323-L406),
+    again with [a driver](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/riscv/c/i2c.c).
+
+* a PWM controller for the LEDs
+
+The directory structure is a bit confusing, but the toplevel file of the design is 
+[here](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/src/bitstream.v).
+
+While it's nice to have a relatively complex design example to show off the possibilities,
+I feel that's also a bit overwhelming, especially since nothing about the design is documented.
+It'd be easier for a new user to have multiple examples of increasing complexity.
+
+I think the following stand-alone examples would have been useful:
+
+* a simple LED blinky
+* a small design that demonstrates communication between the ESP32C3 and the FPGA
+* the FPGA reading some data from the PSRAM
+
+# Compiling the Example FPGA Design
+
+Since there aren't any basic examples, let's just go ahead and go through the motions to compile
+the whole thing.
 
 * Open FPGA toolchain installation
 
     The Yosys Open Source CAD suite contains all the tools needed to build an FPGA bitstream.
-    It used to be a lengthly compipation process, but these days you can just download a release that
+    It used to be a lengthly compilation process, but these days you can just download a release that
     contains everything.
 
-    The commands below installs the tools exactly where the ICE-V Gateware development environment
+    The commands below install the tools exactly where the ICE-V Gateware development environment
     expects it. If you want to install it somewhere else, you'll need to 
-    [modify the bitstream build Makefile to point to the right location](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/104818448c758a6e8a5270a8c9ae80c04ac047d2/Gateware/icestorm/Makefile#L26),
+    [modify the Makefile to point to the right location](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/104818448c758a6e8a5270a8c9ae80c04ac047d2/Gateware/icestorm/Makefile#L26),
     or set the way-to-generic `TOOLS` environment variable with the right value.
 
     ```sh
@@ -612,6 +659,8 @@ cd ~/projects/ICE-V-Wireless/Gateware/icestorm
 cd ~/projects/ICE-V-Wireless/Firmware/spiffs   
 ../python/send_c3usb.py --flash bitstream.bin
     ```
+
+
 
 # Conclusion
 
