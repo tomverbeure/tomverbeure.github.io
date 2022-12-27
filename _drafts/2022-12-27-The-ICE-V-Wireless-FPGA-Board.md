@@ -563,17 +563,17 @@ It's a small SOC that contains:
 * an I2C controller
 
     Like the SPI controllers, the UP5K also has a hard-macro `SB_I2C` controller.
-    It's [instaniated in the example design](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/38e0798b7f3acd68918e2c34cd632a507d861276/Gateware/riscv/src/wb_bus.v#L323-L406),
-    again with [a driver](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/riscv/c/i2c.c).
+    It's [instantiated in the example design](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/38e0798b7f3acd68918e2c34cd632a507d861276/Gateware/riscv/src/wb_bus.v#L323-L406)
+    as well, again with [a SW driver](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/riscv/c/i2c.c).
 
 * a PWM controller for the LEDs
 
 The directory structure is a bit confusing, but the toplevel file of the design is 
 [here](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/src/bitstream.v).
 
-While it's nice to have a relatively complex design example to show off the possibilities,
+While it's nice to have a complex design example to show off the possibilities,
 I feel that's also a bit overwhelming, especially since nothing about the design is documented.
-It'd be easier for a new user to have multiple examples of increasing complexity.
+It'd be easier for a new user to have multiple smaller examples of increasing complexity.
 
 I think the following stand-alone examples would have been useful:
 
@@ -612,7 +612,7 @@ sudo mv oss-cad-suite/ fpga-toolchain
     of the `picorv32` soft-CPU.
 
     In theory, you should be able to reuse the RISC-V compiler that's part of the ESP32C3 development environment, it uses
-    a RISC-V CPU as well, but that's not what's done here. The Gateware uses the 
+    a RISC-V CPU as well, but that's not what's done here. The Gateware build uses the 
     [pre-compiled August 2019 RISC-V toolchain from SiFive](https://github.com/sifive/freedom-tools/releases/tag/v2019.08.0):
 
     ```sh
