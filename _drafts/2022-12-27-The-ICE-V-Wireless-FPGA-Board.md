@@ -18,7 +18,7 @@ world of hobby electronics. While it had been possible to design for FPGAs befor
 it required multi-GB behemoth software installations, and there weren't many cheap development
 boards.
 
-Project IceStorm kicked off industry of small scale makers who created their own development boards, each
+Project IceStorm kicked off an industry of small-scale makers who created their own development boards, each
 with a distinct set of features. One crowd favorite has been the 
 [TinyFPGA BX](https://www.crowdsupply.com/tinyfpga/tinyfpga-ax-bx), which is still available for
 $38, one of the lowest prices to get your hands dirty with an FPGA that has a capacity that will
@@ -665,23 +665,23 @@ I have a stack of different FPGA boards, spanning the range from the extremely b
 [Cyclone II EP2C5](http://land-boards.com/blwiki/index.php?title=Cyclone_II_EP2C5_Mini_Dev_Board)
 to the seriously complicated [Kria KV260](https://xilinx.github.io/kria-apps-docs/kv260/2022.1/build/html/index.html).
 When developing new code, I choose the board that best fits the needs for a project.
-For a same sized design, smaller FPGAs will usually compile faster than larger ones. 
+The same design will compile faster on a smaller FPGA than on a larger one.
 
 Despite years for doing FPGA hobby projects, I've rarely exceeded the capacity of a UP5K FPGA.
 And when I got close, it was always because the design contained a soft-CPU, something that
-wouldn't be needed if there had been an ESP32C3 CPU.
+wouldn't be needed if there had been a CPU like the one in a ESP32C3.
 
 The ICE-V Wireless board is a great option for those who'd like to experiment with an
-embedded system like the ESP32C3 and combine with the lower level aspect of an FPGA. It's
+embedded system like the ESP32C3 and combine it with the lower level aspects of an FPGA. It's
 of course also perfectly usable for those who just want to play with FPGAs.
 
-The ICE-V Wireless board plays in the class of smaller FPGAs board, flanked at the lower end, both
+The ICE-V Wireless board plays in the class of smaller FPGA boards, flanked at the lower end, both
 in features and price, by the $50 TinyFPGA BX, the $70 iCEBreaker, and the $30 Upduino, and at the 
 upper end by the $135 ULX3S-ECP5-12F. 
 
 Due to presence of the ECP32C3 module and the PSRAM, it's fair for it to be priced
 higher than the lower end. Its biggest struggle might be the $35 price distance with the
-higher end: the ULX3S-ECP-12F not only has an FPGA that's more than double as large, its
+higher end: the ULX3S-ECP-12F not only has an FPGA with more than double the resources, its
 PCB also has a bunch peripherals and connectors that are lacking on the ICE-V Wireless.
 
 A constant thread through this review is the lackluster state of the documentation. While the tools,
@@ -694,4 +694,6 @@ blog post.)
 In short, if you're looking to buy one FPGA board and you have a budget of $100, 
 the ICE-V Wireless should be high on your list.
 
+**I have one ICE-V Wireless board to give away for free. Send an email to icev.wireless.giveaway@gmail.com
+to enter. On January 1, 2023, I'll draw a winner at random. Entrants must have a US post address.**
 
