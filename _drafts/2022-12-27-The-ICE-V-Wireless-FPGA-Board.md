@@ -1,7 +1,7 @@
 ---
 layout: post
 title: An In-Depth Look at the ICE-V Wireless FPGA Development Board
-date:  2022-11-11 00:00:00 -1000
+date:  2022-12-27 00:00:00 -1000
 categories:
 ---
 
