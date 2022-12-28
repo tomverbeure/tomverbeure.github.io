@@ -117,8 +117,8 @@ Let's check out the different components:
 
 * USB-C Device Port
 
-    The USD-C port can be used to power the whole board. It connects to the USB port of othe ESP32 module,
-    where it can either act as serial port or a JTAG controller.
+    The USD-C port can be used to power the whole board. It connects to the USB port of the ESP32 module,
+    where it can either act as serial port or a JTAG controller[^1].
 
 * Various smaller components 
 
@@ -696,4 +696,9 @@ the ICE-V Wireless should be high on your list.
 
 **I have one ICE-V Wireless board to give away for free. Send an email to icev.wireless.giveaway@gmail.com
 to enter. On January 1, 2023, I'll draw a winner at random. Entrants must have a US post address.**
+
+# Footnotes
+
+[^1]: It can act as a JTAG controller for the ESP32C3 JTAG port, for things like connecting to the 
+      CPU debug logic. There is no JTAG port on any iCE40 FPGA.
 
