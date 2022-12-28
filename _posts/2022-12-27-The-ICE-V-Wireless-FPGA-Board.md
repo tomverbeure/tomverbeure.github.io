@@ -184,7 +184,7 @@ with a multi-stage process:
    from the embedded flash and [loads it into the FPGA](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/104818448c758a6e8a5270a8c9ae80c04ac047d2/Firmware/main/main.c#L90).
 
     This bitstream is completely trivial (you can check the code 
-    [here](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/spi_pass/spi_pass.v)).
+    [here](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/spi_pass/src/spi_pass.v)).
     All it does is connect the ESP32C3 SPI interface to the PSRAM SPI interface.
 
 2. the ESP32C3 now fetches a binary file called 

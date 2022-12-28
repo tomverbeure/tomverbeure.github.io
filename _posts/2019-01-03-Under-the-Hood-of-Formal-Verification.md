@@ -119,7 +119,7 @@ Here is a real example not only of how the formal `cover` statement can be used 
 a test case with minimal effort, but also how SymbiYosys is currently limited in terms of 
 capabilities and how to work around it:
 
-I'm in the process of designing [`UlpiCtrl`](https://github.com/tomverbeure/panologic-g2/blob/ulpi/spinal/src/main/scala/pano/UlpiCtrl.scala), 
+I'm in the process of designing [`UlpiCtrl`](https://github.com/tomverbeure/panologic-g2/blob/ulpi/spinal/src/main/scala/periph/UlpiCtrl.scala),
 a block that converts CPU reads and writes on an APB bus into ULPI
 transactions. (ULPI is a standard interface to control USB PHY chips. It's similar in nature to MII
 interfaces for Ethernet PHYs.)

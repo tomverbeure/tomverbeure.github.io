@@ -16,7 +16,7 @@ input format (Verilog, blif, VHDL, SystemVerilog) to Yosys' internal RTLIL forma
 
 Most people think of Yosys as a tool to synthesize Verilog, and that's definitely the dominant use
 case. But in the past years, significant progress has been made in integrating open source VHDL
-compiler [gHDL](https://ghdl.readthedocs.io/en/latest/about.html) into Yosys as well. 
+compiler [gHDL](https://ghdl.github.io/ghdl/about.html) into Yosys as well. 
 
 The result of this effort is [ghdl-yosys-plugin](https://github.com/ghdl/ghdl-yosys-plugin). It's not
 part of the main Yosys GitHub repo due to differing open source licenses, but a stand-alone Yosys plugin

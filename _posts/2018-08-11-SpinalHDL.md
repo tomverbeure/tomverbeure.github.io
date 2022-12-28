@@ -82,7 +82,7 @@ obviously very subjective!)
 
 ## Verilog-mode
 
-One of the common recommendations is to use Emacs [verilog-mode](https://www.veripool.org/projects/verilog-mode/wiki/Examples). (You don't
+One of the common recommendations is to use Emacs [verilog-mode](https://www.veripool.org/verilog-mode/). (You don't
 need to use the Emacs *editor*. There are Vim macros to run verilog-mode in batch mode.)
 
 Verilog mode will analyze your code and expand some magic words in strategically placed comments into signal lists.
@@ -159,7 +159,7 @@ So Verilog and SystemVerilog with assorted hacks didn't work out. And since open
 I started to look at radical alternatives: completely different RTL languages.
 
 I experimented a bit with [MyHDL](http://myhdl.org/) and [migen](https://m-labs.hk/migen/manual/index.html#https://m-labs.hk/migen/manual/index.html#), but 
-eventually I settled on [SpinalHDL](https://spinalhdl.github.io/SpinalDoc/). 
+eventually I settled on [SpinalHDL](https://spinalhdl.github.io/SpinalDoc-RTD/master/index.html).
 
 That's what I'll be writing about for the rest of this article.
 
@@ -217,7 +217,7 @@ When you instantiate the timer block in your design, you pass along a concrete b
 The end result will be a timer that works with the bus that you desire, but the design of the Timer block itself is entirely generic 
 and interface agnostic.
 
-And that's one of the [examples](https://spinalhdl.github.io/SpinalDoc/spinal/examples/timer/) in the SpinalHDL manual.
+And that's one of the [examples](https://spinalhdl.github.io/SpinalDoc-RTD/master/SpinalHDL/Examples/Advanced%20ones/timer.html) in the SpinalHDL manual.
 
 The description below is for a slightly different example though, with reduce functionality. You can find the project 
 [here](https://github.com/tomverbeure/SpinalTimer) on GitHub.

@@ -11,7 +11,7 @@ categories: RISC-V
 
 # Introduction
 
-Earlier, I had a [quick look at SpinalHDL](2018-08-11-SpinalHDL.md) as a candidate to replace Verilog for my hobby projects.
+Earlier, I had a [quick look at SpinalHDL](/rtl/2018/08/12/SpinalHDL.html) as a candidate to replace Verilog for my hobby projects.
 
 But as much as one can read the documentation and checkout some trivial tutorials, you need a real project to see if a language
 fits your needs.
