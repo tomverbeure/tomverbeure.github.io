@@ -537,7 +537,7 @@ It would go too far to get into all the details of developing for the ESP32C3,
 but Espressif provides a ton of [development documentation](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/index.html)
 about just that.
 
-# The Example FPGA Design
+# The RISC-V Example FPGA Design
 
 The visual effect of the example bitstream is trivial, the LED just cycles through
 all colors, but the design behind it is elaborate. 
@@ -554,37 +554,33 @@ It's a small SOC that contains:
 
     The UP5K FPGA has 2 hard-macro `SB_SPI` controllers. I don't think I've ever seen
     them being used in the past, but this SOC 
-    [instantiates both of them](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/38e0798b7f3acd68918e2c34cd632a507d861276/Gateware/riscv/src/wb_bus.v#L54-L320), 
-    and even has [a SW driver](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/riscv/c/spi.c).
+    [instantiates both of them](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/ee804d22e8c2e3ac5cc0237bf4b2bf2d275ba3f5/Gateware/factory_bitstream/src/wb_bus.v#L47-L321)
+    and even has [a SW driver](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/factory_bitstream/c/spi.c).
 
-    The PSRAM is connected to the one of these SPI controllers. There's [a driver](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/riscv/c/psram.c)
+    The PSRAM is connected to the one of these SPI controllers. There's [a driver](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/factory_bitstream/c/psram.c)
     for that too.
 
 * an I2C controller
 
     Like the SPI controllers, the UP5K also has a hard-macro `SB_I2C` controller.
-    It's [instantiated in the example design](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/38e0798b7f3acd68918e2c34cd632a507d861276/Gateware/riscv/src/wb_bus.v#L323-L406)
-    as well, again with [a SW driver](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/riscv/c/i2c.c).
+    It's [instantiated in the example design](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/ee804d22e8c2e3ac5cc0237bf4b2bf2d275ba3f5/Gateware/factory_bitstream/src/wb_bus.v#L323-L407)
+    as well, again with [a SW driver](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/factory_bitstream/c/i2c.c).
 
 * a PWM controller for the LEDs
 
-The directory structure is a bit confusing, but the toplevel file of the design is 
-[here](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/src/bitstream.v).
+The toplevel file of the design can be found here: 
+[here](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/factory_bitstream/src/bitstream.v).
 
 While it's nice to have a complex design example to show off the possibilities,
-I feel that's also a bit overwhelming, especially since nothing about the design is documented.
+it can also a bit overwhelming, especially since nothing about the design is documented.
 It'd be easier for a new user to have multiple smaller examples of increasing complexity.
 
-I think the following stand-alone examples would have been useful:
+The ICE-V Wireless board authors have been adding new examples that can be found in the main
+[Gateware](https://github.com/ICE-V-Wireless/ICE-V-Wireless/tree/main/Gateware) directory.
 
-* a simple LED blinky
-* a small design that demonstrates communication between the ESP32C3 and the FPGA
-* the FPGA reading some data from the PSRAM
+# Compiling the RISC-V Example FPGA Design
 
-# Compiling the Example FPGA Design
-
-Since there aren't any basic examples, let's just go ahead and go through the motions to compile
-the whole thing.
+Let's go through the motions to compile the most complex example.
 
 * OpenFPGA toolchain installation
 
@@ -594,7 +590,7 @@ the whole thing.
 
     The commands below install the tools exactly where the ICE-V Gateware development environment
     expects it. If you want to install it somewhere else, you'll need to 
-    [modify the Makefile to point to the right location](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/104818448c758a6e8a5270a8c9ae80c04ac047d2/Gateware/icestorm/Makefile#L26),
+    [modify the Makefile to point to the right location](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/ee804d22e8c2e3ac5cc0237bf4b2bf2d275ba3f5/Gateware/factory_bitstream/icestorm/Makefile#L26),
     or set the way-to-generic `TOOLS` environment variable with the right value.
 
     ```sh
@@ -608,7 +604,7 @@ sudo mv oss-cad-suite/ fpga-toolchain
 
 * Install another RISC-V toolchain
 
-    A RISC-V C compiler is required to compile the [source code](https://github.com/ICE-V-Wireless/ICE-V-Wireless/tree/main/Gateware/riscv/c)
+    A RISC-V C compiler is required to compile the [source code](https://github.com/ICE-V-Wireless/ICE-V-Wireless/tree/main/Gateware/factory_bitstream/c)
     of the `picorv32` soft-CPU.
 
     In theory, you should be able to reuse the RISC-V compiler that's part of the ESP32C3 development environment, it uses
@@ -688,8 +684,8 @@ A constant thread through this review is the lackluster state of the documentati
 the firmware, and the example design bring out the best of the board, much of it is not 
 documented, and requires going through the source code to be discovered.
 
-Luckily, that's a problem that's easy to fix (and one that, I hope, is partially fixed by this
-blog post.)
+Luckily, that's a problem that's easy to fix and one that is being addressed by the ICE-V
+creators.
 
 In short, if you're looking to buy one FPGA board and you have a budget of $100, 
 the ICE-V Wireless should be high on your list.
