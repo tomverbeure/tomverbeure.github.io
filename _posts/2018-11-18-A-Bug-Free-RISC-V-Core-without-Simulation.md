@@ -32,7 +32,7 @@ So that was the plan.
 
 * Design my own minimal [RISC-V](https://riscv.org/specifications/) core
 
-* Get hands-on experience with [SpinalHDL](https://spinalhdl.github.io/SpinalDoc/)
+* Get hands-on experience with [SpinalHDL](https://spinalhdl.github.io/SpinalDoc-RTD/master/index.html)
 
 * Use formal verification to ensure correctness
 

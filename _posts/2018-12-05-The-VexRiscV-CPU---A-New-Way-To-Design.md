@@ -20,7 +20,7 @@ SpinalHDL.)
 At some point, I created the [rv32soc](https://github.com/tomverbeure/rv32soc) project,
 where I wanted to compare different RISC-V CPUs against eachother. I also used the
 VexRiscV as a point of comparison against my own RISC-V CPU, the
-[MR1](/risc-v/2018/11/18/A-Bug-Free-RISC-V-Core-without-Simulation.html). The MR1
+[MR1](/risc-v/2018/11/19/A-Bug-Free-RISC-V-Core-without-Simulation.html). The MR1
 was no match for the VexRiscV by any possible metric.
 
 In the process, I spent some time trying to understand the internals of the CPU, and
