@@ -992,7 +992,7 @@
                 <tr/>
 		<tr bgcolor=#ffffff><td colspan=8><b>DVI</b></td></tr>
                 <tr bgcolor=#ffffff>
-                    <td><label>DVI-DL (330 MHz)</label></td>
+                    <td><label>DVI-DL (dual link 165 MHz)</label></td>
                     <td><label id="cvt-dvi_dl"></label></td>
                     <td><label id="cvt_rb-dvi_dl"></label></td>
                     <td><label id="cvt_rb2-dvi_dl"></label></td>
@@ -1002,14 +1002,14 @@
                     <td><label>Max BW 7,920 Mbit/s</label></td>
                 </tr>
                 <tr bgcolor=#ffffff>
-                    <td><label>DVI-D</label></td>
+                    <td><label>DVI-D (single link 165 MHz)</label></td>
                     <td><label id="cvt-dvi_d"></label></td>
                     <td><label id="cvt_rb-dvi_d"></label></td>
                     <td><label id="cvt_rb2-dvi_d"></label></td>
                     <td><label id="cea-dvi_d"></label></td>
                     <td><label id="dmt-dvi_d"></label></td>
                     <td><label id="custom-dvi_d"></label></td>
-                    <td><label>Max BW 3960 Mbit/s</label></td>
+                    <td><label>Max BW 3,960 Mbit/s</label></td>
                 </tr>
                 <tr/>
         <tr bgcolor=#ffffff><td colspan=8><b>SDI</b></td></tr>
@@ -1497,7 +1497,7 @@
 
                     $("#max_rfc4175_eth100m").html("Max BW " + Math.round(rfc4175_eth100m_bw/1000000) + " Mbit/s");
                     $("#max_rfc4175_eth1g").html("Max BW " + Math.round(rfc4175_eth1g_bw/1000000) + " Mbit/s");
-                    $("#max_rfc4175_eth10g").html("Max BW " + Math.round(rfc4175_eth10g_bw/1000000) + " Mbit/s");
+                    $("#max_rfc4175_eth10g").html("Max BW " + Math.round(rfc4175_eth10g_bw/1000000).toLocaleString('en-US') + " Mbit/s");
 
                 }
 
