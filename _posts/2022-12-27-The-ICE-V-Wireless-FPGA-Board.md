@@ -168,14 +168,14 @@ FPGA can fetch user data! The ICE-V Wireless board solves this by adding a
 (Q)SPI Pseudo RAM to the system.
 
 This PSRAM can be used by the FPGA as a pure RAM, but if the PSRAM can be
-pre-loaded with user data, part of it can just as well be used a pseudo flash PROM.
+pre-loaded with user data, part of it can just as well be used as pseudo flash PROM.
 The pseudo SRAM is a pseudo SPI PROM if you will.
 
-All you need then is a mechanism to to get the user data into the PSRAM before the
+All you need then is a mechanism to get the user data into the PSRAM before the
 FPGA starts executing the main user bitstream. The ICE-V Wireless firmware does this
 with a multi-stage process:
 
-0. the ESP32C3 first checks if the PSRAM need to be preloaded with user data. It does this
+0. the ESP32C3 first checks if the PSRAM must be preloaded with user data. It does this
    by [checking if there exists a non-empty `psram.bin` file on its embedded flash file system](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/104818448c758a6e8a5270a8c9ae80c04ac047d2/Firmware/main/main.c#L85).
 
    If there isn't a `psram.bin` file, it jumps to step 4 and just loads the user FPGA bitstream.
@@ -187,15 +187,15 @@ with a multi-stage process:
     [here](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/spi_pass/src/spi_pass.v)).
     All it does is connect the ESP32C3 SPI interface to the PSRAM SPI interface.
 
-2. the ESP32C3 now fetches a binary file called 
+2. the ESP32C3 fetches a binary file called 
     [`psram.bin`](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/104818448c758a6e8a5270a8c9ae80c04ac047d2/Firmware/main/main.c#L24)
     from embedded flash and [programs it straight into the PSRAM](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/104818448c758a6e8a5270a8c9ae80c04ac047d2/Firmware/main/main.c#L114-L133), 
     with the FPGA as SPI signal conduit.
 
-3. the ESP32C3 now fetches the user bitstream called [`bitstream.bin`](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/104818448c758a6e8a5270a8c9ae80c04ac047d2/Firmware/main/main.c#L22)
+3. the ESP32C3 fetches the user bitstream called [`bitstream.bin`](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/104818448c758a6e8a5270a8c9ae80c04ac047d2/Firmware/main/main.c#L22)
    from the embedded flash and [loads it into the FPGA](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/104818448c758a6e8a5270a8c9ae80c04ac047d2/Firmware/main/main.c#L154).
 
-4. configured with the user bitstream, the ESP32C3 now lets the FPGA do whatever the user
+4. configured with the user bitstream, the ESP32C3 lets the FPGA do whatever the user
    has programmed it to do.
 
     If there is a need for communication between the ESP32C3 and the FPGA, it can do so through the
@@ -222,7 +222,7 @@ overall boot process:
     * When GPIO9 is low (BOOT button pressed while releasing reset), the ESP32C3 boots from a
       ROM inside the ESP32C3 chip that sets up a bootloader over the USB serial port. 
 
-      No matter how much you screw up your custom firmware, you will always be able to reflash new firmware,
+      No matter how much you screw up your custom ESP32C3 firmware, you will always be able to reflash new firmware,
       such as the default ICE-V firmware, by pressing the BOOT button and releasing RESET.
 
     * When GPIO9 is high (BOOT button not pressed), the ESP32C3 goes in *Normal execution mode*. 
@@ -241,8 +241,8 @@ shows how GPIO21 of the ESP32C3 has boot logging over
 
 ![ESP32C console UART](/assets/icev/ESP32C3_console_UART.png)
 
-This is a standard ESP32C3 feature. I wired up one of those cheap 
-[USB serial port dongles](https://www.amazon.com/IZOKEE-CP2102-Converter-Adapter-Downloader/dp/B07D6LLX19)
+This is a standard ESP32C3 feature. I wired up a cheap 
+[USB serial port dongle](https://www.amazon.com/IZOKEE-CP2102-Converter-Adapter-Downloader/dp/B07D6LLX19)
 to GPIO21 pin and connected to it with `picocom -b 115200 /dev/ttyUSB0`.
 
 In boot loader mode (BOOT button pressed when releasing RST), it shows the following:
@@ -313,7 +313,7 @@ When you first plug in the ICE-V Wireless board, it should immediately come up w
 * a red LED indicates that the board has power.
 * a yellow LED will be blinking at high frequency to indicate that a LiPo battery is not connected.
 * a slowly blinking green LED indicates that the ESP32C3 is not connected to a wireless network.
-* a big tri-color LED will be cycling smoothly through the colors of the rainbow.
+* a big tri-color LED, driven by the FPGA, will be cycling smoothly through the colors of the rainbow.
 
 At the time of writing this review, the GitHub repo has a 
 [Getting Started](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Getting-Started.md) 
@@ -356,7 +356,7 @@ bitstream bootup, the procedure that I describe earlier.
     * Read and write files with data to the PSRAM on the board.
     * Fetch information about battery status and IP address of the Wifi connection.
 
-When you want to run your own custom firwmare, you should try to jumpstart your development
+When you want to run your own custom firmware, you should try to jumpstart your development
 from the original firmware and keep some of the existing functionality. This will allow
 you to keep on using the provided tools to reflash the FPGA bitstream.
 
@@ -366,7 +366,7 @@ There are 3 tools in the `python` directory:
 
 * `send_c3usb.py`
 
-    Talks to the standard ESP32C3 firmware over USB. You'll be using this to check
+    Talks to the default ESP32C3 firmware over USB. You'll be using this to check
     the battery level, check firmware version, and write files to the SPIFFS
     file system that resides on the ESP32C32 4MB embedded SPI NOR flash.
 
