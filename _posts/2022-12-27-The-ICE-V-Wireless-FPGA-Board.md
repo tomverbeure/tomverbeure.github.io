@@ -117,7 +117,7 @@ Let's check out the different components:
 
 * USB-C Device Port
 
-    The USD-C port can be used to power the whole board. It connects to the USB port of the ESP32 module,
+    The USB-C port can be used to power the whole board. It connects to the USB port of the ESP32 module,
     where it can either act as serial port or a JTAG controller[^1].
 
 * Various smaller components 
@@ -128,8 +128,8 @@ Let's check out the different components:
 
     * RGB LED connected to the FPGA
 
-      The LED is not one of the ubiquitous WS2812 'neopixel' family. You'll need to implemented
-      your own PWM-based controller logic in the FPGA.
+      The LED is not one of the ubiquitous WS2812 'neopixel' family. You'll need to implement
+       your own PWM-based controller logic in the FPGA.
 
     * various status LEDs
     * 12MHz oscillator
@@ -138,11 +138,11 @@ Let's check out the different components:
 
 Development boards with just an FPGA are usually pretty simple affairs: there's a SPI flash PROM
 on the board from which the FPGA sucks in the bitstream automatically after power up. Sometimes,
-there's also JTAG interface to directly load a new bitstream into the FPGA, but that's not something
-a the Lattice ICE40 family supports.
+there's also a JTAG interface to directly load a new bitstream into the FPGA, but that's not something
+ the Lattice ICE40 family supports.
 
-In addition to storing the bitstream, the SPI flash PROM often also contains user data that can
-fetched by the FPGA as needed. A common use case is one where the FPGA has a soft-CPU core with the
+In addition to storing the bitstream, the SPI flash PROM often also contains user data that can be
+ fetched by the FPGA as needed. A common use case is one where the FPGA has a soft-CPU core with the
 firmware of the CPU residing in the SPI flash.
 
 During the bitstream loading process, the FPGA is configured in *active serial mode*: the FPGA
@@ -167,7 +167,7 @@ A negative of this approach is that there isn't a place anymore where the
 FPGA can fetch user data! The ICE-V Wireless board solves this by adding a
 (Q)SPI Pseudo RAM to the system.
 
-This PSRAM can be used by the FPGA as a pure RAM, but if the PSRAM can be
+This PSRAM can be used by the FPGA as pure RAM, but if the PSRAM can be
 pre-loaded with user data, part of it can just as well be used as pseudo flash PROM.
 The pseudo SRAM is a pseudo SPI PROM if you will.
 
@@ -206,7 +206,7 @@ with a multi-stage process:
 
 The default ICE-V Wireless ESP32C3 firmware has all of this implemented. The GitHub repo
 also has the necessary support tools to complete the flow. It's great! However, it's only after
-disecting the firmware source code that I was able to piece the puzzle together. 
+dissecting the firmware source code that I was able to piece the puzzle together. 
 
 # The Overall Boot Process
 
@@ -335,7 +335,7 @@ git clone https://github.com/ICE-V-Wireless/ICE-V-Wireless.git
 
 Among others, the repo contains `Firmware`, `Gateware`, `Hardware` and `python` directories. 
 
-The `python` directory contains the tools to estabilish communication between 
+The `python` directory contains the tools to establish communication between 
 the default ESP32C3 firmware and your PC, and allows you to perform a variety of 
 maintenance and configuration operations.
 
@@ -344,8 +344,8 @@ We'll do that first.
 **The Default ICE-V Wireless Firmware**
 
 The default ICE-V Wireless firmware is the one that can be found in the `./Firmware`
-directory. This firmware uses the ESP32C3 RISV-C CPU only as a support CPU for FPGA
-bitstream bootup, the procedure that I describe earlier.
+directory. This firmware uses the ESP32C3 RISC-V CPU only as a support CPU for FPGA
+bitstream bootup, the procedure that I described earlier.
 
 * It sets up a USB serial port (on `/dev/ttyACM0` on my Ubuntu 20.04 system) for
   PC to board communication.
@@ -368,7 +368,7 @@ There are 3 tools in the `python` directory:
 
     Talks to the default ESP32C3 firmware over USB. You'll be using this to check
     the battery level, check firmware version, and write files to the SPIFFS
-    file system that resides on the ESP32C32 4MB embedded SPI NOR flash.
+    file system that resides on the ESP32C3 4MB embedded SPI NOR flash.
 
     The SPIFFS file system contains, among other things, the bitstream that gets loaded
     into the FPGA at bootup.
@@ -378,12 +378,12 @@ There are 3 tools in the `python` directory:
 
 * `send_c3sock.py`
 
-    This tool has largely the same functionatily as `send_c3usb.py`, but it does its
+    This tool has largely the same functionality as `send_c3usb.py`, but it does its
     magic over a TCP/IP socket using Wifi. That's great, because it means that you can
     change the FPGA bitstream over Wifi, and thus while your ICE-V board is embedded deep
     into whichever application you want to use it for.
 
-    Of course, you can only start using this tool once you have the configured a Wifi
+    Of course, you can only start using this tool once you have configured a Wifi
     network to connect to with `send_c3usb.py`.
 
 * `icevwprog.py`
@@ -438,7 +438,7 @@ I tried to configure the Wifi connection as follows:
 
 **This didn't work!**
 
-It turns that the tool can process only one command line option at the time. The right 
+It turns that the tool can process only one command line option at a time. The right 
 procedure is as follows:
 
 ```sh
@@ -446,7 +446,7 @@ $ ./send_c3usb.py -s MyWifi
 $ ./send_c3usb.py -o VerySecretPassword
 ```
 
-After this, you need to reset the board with the RST botton. If all goes well, the green LED will
+After this, you need to reset the board with the RST button. If all goes well, the green LED will
 start blinking vigorously at 5Hz to indicate that the ESP32C3 has successfully made a connection 
 with your wifi network.
 
@@ -513,7 +513,7 @@ cd ~/projects/ICE-V-Wireless/Firmware
 idf.py build
     ```
 
-    This will kick off a bunch of compilations. If all goes well, you'll be greated by this message:
+    This will kick off a bunch of compilations. If all goes well, you'll be greeted by this message:
 
     ```
 Project build complete. To flash, run this command:
@@ -557,7 +557,7 @@ It's a small SOC that contains:
     [instantiates both of them](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/ee804d22e8c2e3ac5cc0237bf4b2bf2d275ba3f5/Gateware/factory_bitstream/src/wb_bus.v#L47-L321)
     and even has [a SW driver](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/factory_bitstream/c/spi.c).
 
-    The PSRAM is connected to the one of these SPI controllers. There's [a driver](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/factory_bitstream/c/psram.c)
+    The PSRAM is connected to one of these SPI controllers. There's [a driver](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/factory_bitstream/c/psram.c)
     for that too.
 
 * an I2C controller
@@ -572,7 +572,7 @@ The toplevel file of the design can be found here:
 [here](https://github.com/ICE-V-Wireless/ICE-V-Wireless/blob/main/Gateware/factory_bitstream/src/bitstream.v).
 
 While it's nice to have a complex design example to show off the possibilities,
-it can also a bit overwhelming, especially since nothing about the design is documented.
+it can also be a bit overwhelming, especially since nothing about the design is documented.
 It'd be easier for a new user to have multiple smaller examples of increasing complexity.
 
 The ICE-V Wireless board authors have been adding new examples that can be found in the main
@@ -646,7 +646,7 @@ cd ~/projects/ICE-V-Wireless/Gateware/icestorm
 
 * Reset the board
 
-    If all goes well, you should the newly flashed bitstream in action.
+    If all goes well, you should see the newly flashed bitstream in action.
 
     To revert back to the default bitstream, you can do this:
 
@@ -663,9 +663,9 @@ to the seriously complicated [Kria KV260](https://xilinx.github.io/kria-apps-doc
 When developing new code, I choose the board that best fits the needs for a project.
 The same design will compile faster on a smaller FPGA than on a larger one.
 
-Despite years for doing FPGA hobby projects, I've rarely exceeded the capacity of a UP5K FPGA.
+Despite years of doing FPGA hobby projects, I've rarely exceeded the capacity of a UP5K FPGA.
 And when I got close, it was always because the design contained a soft-CPU, something that
-wouldn't be needed if there had been a CPU like the one in a ESP32C3.
+wouldn't be needed if there had been a CPU like the one in an ESP32C3.
 
 The ICE-V Wireless board is a great option for those who'd like to experiment with an
 embedded system like the ESP32C3 and combine it with the lower level aspects of an FPGA. It's
@@ -678,7 +678,7 @@ upper end by the $135 ULX3S-ECP5-12F.
 Due to presence of the ECP32C3 module and the PSRAM, it's fair for it to be priced
 higher than the lower end. Its biggest struggle might be the $35 price distance with the
 higher end: the ULX3S-ECP-12F not only has an FPGA with more than double the resources, its
-PCB also has a bunch peripherals and connectors that are lacking on the ICE-V Wireless.
+PCB also has a bunch of peripherals and connectors that are lacking on the ICE-V Wireless.
 
 A constant thread through this review is the lackluster state of the documentation. While the tools,
 the firmware, and the example design bring out the best of the board, much of it is not 
