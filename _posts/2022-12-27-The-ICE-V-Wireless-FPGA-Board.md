@@ -690,8 +690,9 @@ creators.
 In short, if you're looking to buy one FPGA board and you have a budget of $100, 
 the ICE-V Wireless should be high on your list.
 
-**I have one ICE-V Wireless board to give away for free. Send an email to icev.wireless.giveaway@gmail.com
-to enter. On January 1, 2023, I'll draw a winner at random. Entrants must have a US post address.**
+~~**I have one ICE-V Wireless board to give away for free. Send an email to icev.wireless.giveaway@gmail.com
+to enter. On January 1, 2023, I'll draw a winner at random. Entrants must have a US post address.**~~ The
+giveway has concluded. Congratulations to Sean!
 
 # Footnotes
 
