@@ -323,7 +323,7 @@ component box.
 
 Here's the situation after the second drill: 
 
-![PCB after second drill](/assets/hp33120a/pcb_after_second_drill.jpg)
+![PCB after second drill](/assets/hp33120a/PCB_after_second_drill.jpg)
 
 The hole now almost touches the left pad of R708.
 
