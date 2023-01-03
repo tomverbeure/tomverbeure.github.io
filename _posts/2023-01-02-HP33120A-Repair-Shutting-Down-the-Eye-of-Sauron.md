@@ -16,7 +16,7 @@ generators.
 
 [![Keysight 33120A Datasheet Header](/assets/hp33120a/keysight_datasheet_header.jpg)](/assets/hp33120a/keysight_datasheet.pdf)
 
-They used to be pretty popular, and you can often find them second hand on
+They used to be pretty popular, and you can often find them secondhand on
 eBay or Craiglist for around $250. That doesn't mean that they're exceptional instruments.
 The [datasheet](/assets/hp33120a/keysight_datasheet.pdf) praises a straightforward and
 intuitive front-panel user interface that gets often ridiculed by actual users.
@@ -27,19 +27,19 @@ can be a limitation too.  But at least there's a GPIB and an RS-232 interface to
 
 A quick look at the Siglent website shows that a 2 channel 30MHz 
 [SDG1032X](https://siglentna.com/waveform-generators/sdg1000x-series-functionarbitrary-waveform-generators/)
-exceed the 33120A for every feature, for $359. So there's really not good reason to buy 
-a second hand 33120A, unless you have a legacy automated setup that requires one.
+exceeds the 33120A for every feature, for $359. So there's really no good reason to buy 
+a secondhand 33120A, unless you have a legacy automated setup that requires one.
 
-But enough about its relative deficiencies, they're still a nice piece of kit for a home
+But enough about relative deficiencies, it's still a nice piece of kit for a home
 lab, especially when acquired for free.
 
 One day while he was cleaning up his garage, I passed by and saw the two units sitting
-there on a shelve in the dust. I've never had a use for a signal generator (does
+there on a shelve gathering dust. I've never had a use for a signal generator (does
 anyone ever?), but I love to play with test equipment just for the fun of it, so I
 borrowed them and took them home. That was 2 years ago.
 
-After powering them up, it was quickly clear than only one of them was working correctly,
-sending out the default 1kHz 100Vpp sine wave.  The other one had a 1kHz square wave signal 
+After powering them up, it was quickly clear that only one of them was working correctly,
+sending out the default 1kHz 100mVpp sine wave.  The other one had a 1kHz square wave signal 
 on the SYNC output, but the main output was dead. 
 
 ![Oscilloscope and 2 33120A](/assets/hp33120a/oscilloscope_and_2_hp33120a.jpg)
@@ -48,7 +48,7 @@ It was time to open the, up and have a look inside!
 
 # Opening Up an HP 33120A
 
-I alomost feel embarassed to post instructions on how to open up a 33120A: it's just too
+I almost feel embarassed about posting how to open instructions for a 33120A: it's just too
 simple. But I've overdone it for other devices, so let's just get it over with...
 
 There's a grand total of 3 Torx T15 screws:
@@ -113,9 +113,9 @@ The different sections have the following functionatily:
     It also has support for AM, FM and FSK modulation. 
 
     This section contains an ASIC that generates that addresses that must be fetched
-    from the main waveform RAM, and also generates that signal that will be used
+    from the main waveform RAM. It also generates that signal that will be used
     for AM: you'd think that amplitude modulation is done in the digital domain, but
-    it's actually done with an analog multiplier.
+    it's actually use an analog multiplier.
 
 3. System DAC
 
@@ -137,7 +137,7 @@ The different sections have the following functionatily:
 5.  Filters
 
     Now fully in the analog domain, some serious amount of filtering is needed to get
-    rid of anti-aliasing effects. Sine and square waves are going through a steep 9th order
+    rid of aliasing effects. Sine and square waves are going through a steep 9th order
     filter, the rest goes through a 7th order filter.
 
 6. Sync, Square Wave and Attenuator
@@ -151,7 +151,7 @@ The different sections have the following functionatily:
 7. Output Amplifier
 
     The output amplifier amplifies the signal by a fixed factor of 10 and also adds
-    a fixed offset. It's designed to drive a 50Ohm load.
+    the fixed DC offset if requested. It's designed to drive a 50Ohm load.
 
 8. Output Attenuator
 
@@ -162,7 +162,7 @@ The different sections have the following functionatily:
 
 9. Earth Referenced Logic
 
-    This section contains the IO controller that takes care of the frontpanel user interface,
+    This section contains the IO controller that takes care of the front panel user interface,
     the RS232 serial port, the GPIB interface and a beeper.
 
 10. Power Supply
@@ -226,7 +226,7 @@ See that "0 In Stock"? At the time, LCSC was the only place where I was able to 
 such a Zener. DigiKey had, and still has, nothing available.
 
 *That was in April 2021. I lost interest in the repair and picked it back up 20
-months later in December 2022.*
+months later in December 2022 when I found the LCSC box... while cleaning up my garage.*
 
 Replacing the Zener was uneventful...
 
@@ -242,12 +242,12 @@ I once again started probing all around the PCB to check if anything else might 
 *Tip: if you're probing a live circuit with an oscilloscope and you set the impedance at
 50 Ohm, you'll get really weird results...*
 
-I did this for at least 15 uneventful minutes when sudden it was staring at the Eye
+I did this for at least 15 uneventful minutes when sudden I was staring at the Eye
 of Sauron:
 
 ![The Eye of Sauron](/assets/hp33120a/the_eye_of_sauron.gif)
 
-I've seen magic smoke in the past, but this things was glowing red hot! The smoke
+I've seen magic smoke in the past, but this thing was glowing red hot! The smoke
 of burnt FR4 material lingered in my lungs for the rest of the day. I had my
 priorities straight and took a picture first before shutting down power.
 
@@ -261,9 +261,9 @@ the short entirely, and then you try to reconstruct the collateral damage.
 
 But before you can do that, it's best if you have a good idea about the exact location
 of the defect, and whether or not you have actually fixed it. This is where IR imaging
-comes in really handly.
+comes in really handy.
 
-I have a friend who owns an FLIR IR camera module. It's not a full camera, but an
+I have a friend who owns a FLIR IR camera module. It's not a full camera, but an
 extension that can be plugged into the iPhone lightning connector:
 
 ![FLIR IR Camera](/assets/hp33120a/FLIR_camera.jpg)
@@ -285,8 +285,8 @@ the FLIR module lens are on the opposite side of the phone, and not aligned alon
 same axis. The FLIR software has an image shift function to correct for this, but only
 along 1 axis. 
 
-In the picture below, the green rectangle shows the Zener diode in non-IR. The
-corresponding IR image is in red. We can see the the Zener heats
+In the picture below, the green rectangle shows the Zener diode in non-IR while the
+corresponding IR image is in red. We can see that the Zener heats
 up to a temperature of roughly 52C, or a bit more because I didn't quite hit the
 warmest spot:
 
@@ -294,7 +294,7 @@ warmest spot:
 
 # To Destroy a PCB in Order to Save It
 
-It just feel wrong to use a Dremel tool to drill a hole in something
+It just feels wrong to use a Dremel tool to drill a hole in something
 you're supposed to repair, but here we are. There weren't really
 any other options.
 
@@ -402,7 +402,7 @@ the 2 units always performed the same.
 # Conclusion
 
 After this journey, I can officially retire the Broken label and replace
-with with Repaired.
+it with Repaired.
 
 ![Unit broken](/assets/hp33120a/unit_broken.jpg)
 
