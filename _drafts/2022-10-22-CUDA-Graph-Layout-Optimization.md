@@ -85,7 +85,7 @@ interconnected has changed. It's just that the hierarchical structure isn't expl
 
 The graph of a netlist of LUTs is necessarily sparse: in our case, the number of inputs is fixed
 at 4 inputs, so the number of nodes that can feed the next node is inherently limited to 4,
-limiting the total number of graph edges of 4 times the number of graph nodes.
+limiting the number of graph edges in the total network at 4 times the number of graph nodes.
 
 # Graphs Arranged in Memory as Arrays 
 
@@ -94,17 +94,19 @@ GPUs are exceptional at two things:
 * executing the same operation in parallel
 * having large amount of DRAM bandwidth
 
-Due to the nature of DRAM, the only way to extract its bandwidth is
-by presenting transactions in a DRAM friendly way. Internally, DRAM chip
+Due to the nature of DRAM, the only way to extract data at a peak bandwidth is
+by issuing transactions in a DRAM friendly way.  Internally, DRAM chip
 have a hierarchy of atoms (a set of bytes), rows, and banks. Contrary
 to SRAM, you can't just fetch bytes in a random order and expect maximum performance.
-If you need to fetch just 1 byte from DRAM, the GPU memory controller must first
-open a row in the bank in which it resides, and fetch a burst of 32 bytes. If
-a byte from a different row in the same bank is needed next, the memory controller
+If you need to fetch just 1 byte from DRAM, the memory controller must 
+open a row in the bank in which the byte resides, and then fetch a burst of 32 bytes. 
+
+If a byte from a different row in the same bank is needed next, the memory controller
 must then close ("precharge") the previous row, and start all over again.
+
 Opening and closing a row is overhead that can be hidden if the memory controller
 can schedule transactions to different banks, but it should be clear that optimal 
-effective memory bandwidth can be achieved if as many bytes as possible can be fetched 
+effective memory bandwidth can only be achieved if as many bytes as possible can be fetched 
 from the same row in one go.
 
 That's why GPU memory controllers have huge transaction sorters that queue up a whole
@@ -117,7 +119,7 @@ memory for each node individually and, for each input, have a pointer to the nod
 connected to it. However, this would make it very awkward to randomly select a particular
 node, and there'd be a lot of overhead just to manage the memory allocations for so many
 nodes. It's a bit like linked lists: they're a basic building block that's extensively
-covered in computer science, but hardly ever used in actual code. Similarly, graphs
+covered in computer science 101 classes, but hardly ever used in actual code. Similarly, graphs
 are usually stored as arrays, with an input of a node at a particular index pointing to
 a node with another index.
 
