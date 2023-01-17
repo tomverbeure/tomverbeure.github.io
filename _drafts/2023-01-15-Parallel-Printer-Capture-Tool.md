@@ -133,13 +133,31 @@ a protocol negotiation process.
 
 For our purposes, we can ignore all these advanced mode and stick with compatibility mode. 
 
-# Parallel Printer Cap
+# ParallelPrinterCap Design 
 
+As seen by the Rue's design, a device to capture parallel port traffic and send it to a PC can
+be very simple. You need to have:
 
+* an parallel interface that can deal with 5V signalling in transmit and receive direction
+* logic to reliably capture the 8-bit data and adhere to the parallel port protocol
+* a way to interface with the PC. USB is the obvious choice here.
 
+In this day and age, a microcontroller is the obvious choice for this. Rue had an Atmel in his
+component box, which is great because it has USB device interface and 5V capable IOs right out of the box.
 
+I choose a Raspberry Pico because:
 
+* I have a couple laying around
+* at around $7 a piece, they're cheap enough
+* they are staightforward to program
+* they are available everywhere in high volume: no issues with component shortage!
 
+Since a Raspberry Pico doesn't have 5V tolerant IOs, a buffer IC is required for level shifting.
+
+My initial design used 3 generic [SN74LVC8T245PW](https://www.ti.com/lit/ds/symlink/sn74lvc8t245.pdf) 8-bit
+transceivers that cost $1.65 a piece on Digikey. However, I switched to an 
+[74LVC161284](https://www.ti.com/lit/ds/symlink/sn74lvc161284.pdf) which a bus interface chip
+that's specifically designed for parallel printer ports!
 
 
 
