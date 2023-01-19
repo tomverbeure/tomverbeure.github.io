@@ -11,39 +11,52 @@ categories:
 # Introduction
 
 My [previous blog post](/2023/01/01/HP33120A-Repair-Shutting-Down-the-Eye-of-Sauron.html)
-contained a screenshot of my spectrum analyzer that I took by holding my iPhone
-in front of the screen:
+contained a screenshot of my Advantest R3273 spectrum analyzer that I took by holding 
+my iPhone in front of the screen:
 
 ![Screenshot of a spectrum analyzer](/assets/hp33120a/spectrum_comparison.jpg)
 
-I take screenshots quite often, such as this one from one of my 
+Using a camera works, of course, but it doesn't look very... professional? 
+
+Here's another one from my
 [TDS 420A blog posts](http://localhost:4000/2020/06/27/In-the-Lab-Tektronix-TDS420A.html):
 
 ![Screenshot of TDS 420A oscilloscope](/assets/tds420a/fft.jpg)
 
-Using a camera works, of course, but it doesn't look very... professional? What
-I sometimes want is a bit-for-bit hard-copy of what's shown on the screen, like this:
+This one looks even worse, because the CRT control voltages haven't been tuned quite right 
+and the image is rotated a little bit.
+
+What I usually want is a bit-for-bit hard-copy of what's shown on the screen, like this:
+
+![Bitmap of screenshot of an R3273 spectrum analyzer](/assets/parallelprintcap/sa_harmonics.png)
+
+or this:
 
 ![Bitmap screenshot of a TDS 420A oscilloscope](/assets/parallelprintcap/sa_waveform_on_tds420a.png)
+
+Much better!
 
 It's easy to save screenshots on modern equipment. On my daily driver Siglent oscilloscope, the easiest
 way is to just insert a USB stick and press "Print", but you can also do by scripting some
 [SCPI commands](/2020/06/07/Making-Sense-of-Test-and-Measurement-Protocols.html#scpi---the-universal-command-language)
-over a USB or Ethernet cable. 
+over a USB or Ethernet cable: 
 
-![Screenshot of a Siglent oscilloscope](/assets/smoke_detector/osc2-Vbst-Vled-Vdet.png)
+[![Screenshot of a Siglent oscilloscope](/assets/smoke_detector/osc2-Vbst-Vled-Vdet.png)](/assets/smoke_detector/osc2-Vbst-Vled-Vdet.png)
+*(Click to enlarge)*
 
-It's not so simple for old equipment. The TDS 420A and the spectrum analyzer have a GPIB interface 
-that can be used to download raw measurement data, but not the screenshot. They also have a floppy 
-drive to save image bitmaps, and there's an old school parallel port to send the image
-straight to printer.
+It's not so simple for old equipment. The TDS 420A and the R3273 have a GPIB interface 
+that can be used to download raw measurement data, but not a bitmap with a screenshot. They also have 
+a floppy drive to save image bitmaps, and there's an old school parallel port to send a screenshot
+straight to a printer.
 
 I bought a floppy drive on Amazon for $19 and a pack of 10 3 1/2 HD floppy disks for $18, only
-to find out that the floppy drives on both instruments were broken. Maybe that's just to
+to discover that the floppy drives on both instruments were broken. Maybe that's just to
 be expected from equipments that's 20 to 30 years old...
 
+![Floppy drive](/assets/parallelprintcap/floppy_drive.jpg)
+
 So the only option left is the parallel printer port. Which made me think: "What if I capture
-that printing data, and render it into a bitmap on my PC?" And thus a new project was born!
+the printing data and render it into a bitmap on my PC?" And thus a new project was born!
 
 # What Is Out There?
 
@@ -55,7 +68,7 @@ claims to do exactly what I want.
 
 It's a Raspberry Pi hat that plugs into, well, a Raspberry 
 Pi which is fine if you have one laying in a drawer somewhere, otherwise it's another $100+ 
-in today's crazy market. Retro-Printer has been in existence for a while and there's dedicated 
+in today's crazy market. Retro-Printer has been in existence for a while and they have dedicated 
 software to back it, some open source, some not. I didn't test it, but if you want something 
 that's a real product instead of a quick weekend hack, it's probably the option with the
 highest chance of success.
@@ -77,7 +90,7 @@ with the Atmega firmware.
 # The Parallel Printer Port
 
 The [parallel printer port](https://en.wikipedia.org/wiki/Parallel_port) and associated 
-protocol was originally defined by Centronics, way back in 1970 for their Model 101 printer.
+protocol was originally defined by Centronics way back in 1970 for their Model 101 printer.
 The [Vintage Technology Digital Archive](vtda.org) still has the 
 [specification and interface information](http://vtda.org/docs/computing/Centronics/101_101A_101AL_102A_306_SpecificationsInterfaceInformation.pdf)
 for it.
@@ -91,7 +104,7 @@ idea hasn't changed:
 | Name    | Direction  | Description                                                                                   |
 |---------|------------|-----------------------------------------------------------------------------------------------|
 | nSTROBE | To Printer | A low pulse indicates that there's valid data on D[7:0]. This pulse can be as short as 500ns. |
-| BUSY    | To Host    | Tell the host that the printer is busy and that host should wait with sending the next data.  |
+| BUSY    | To Host    | Tell the host that the printer is busy and that it should wait with sending the next data.    |
 | nACK    | To Host    | A low pulse tells the host that the current data has been processed.                          |
 | D[7:0]  | To Printer | The data that is transmitted to the printer.                                                  |
 
@@ -100,21 +113,18 @@ need to perform things like a line feed, a carriage return or other mechanical o
 longer than printing a single character.
 
 Here is parallel port traffic between the spectrum analyzer and the capturing tool, as captured
-from the TDS 420A using the tool, of course:
+from the TDS 420A using my tool, of course:
 
 ![Parallel Port Protocol on oscilloscope](/assets/parallelprintcap/sa_waveform_on_tds420a_annotated.png)
-
-In this case, the `nSTROBE` pulse is around 1uS, but as seen in that old Centronics diagram above, the
-pulse can be as short as 500ns. 
 
 In addition to the signals that are used for the actual data transfer, the parallel port has a bunch of
 mostly static sideband signals:
 
 | Name    | Direction  | Value | Description                                                                                           |
 |---------|------------|:-----:|-------------------------------------------------------------------------------------------------------|
-| nINIT   | To Printer |   1   | A negative pulse resets the printer in its default state.                                             |
+| nINIT   | To Printer |   1   | A negative pulse resets the printer to its default state.                                             |
 | nSELINT | To Printer |   0   | A low value tells the printer that a host is present and powered on.                                  |
-| nAUTOF  | To Printer |   1   | No strict definition. A low value is used to from things like printer auto-feed or some other action. |
+| nAUTOF  | To Printer |   1   | No strict definition. A low value is used to perfrom things like printer auto-feed or some other action. |
 | SEL     | To Host    |   1   | A high value indicates that a printer is present.                                                     |
 | PE      | To Host    |   0   | Short for Paper Error. A high value indicates that the printer can't print at this time.              |
 | nERROR  | To Host    |   1   | A low value indicates that the printer has encountered some kind of error.                            |
@@ -133,31 +143,56 @@ a protocol negotiation process.
 
 For our purposes, we can ignore all these advanced mode and stick with compatibility mode. 
 
-# ParallelPrinterCap Design 
+The host almost always uses a DB-36 connector:
 
-As seen by the Rue's design, a device to capture parallel port traffic and send it to a PC can
+![DB-36 pinout](/assets/parallelprintcap/parallel_port_pinout.jpg)
+
+The printer side has a 36-pin Centronics connector:
+
+![Centronics connector](/assets/parallelprintcap/centronics_connector.jpg)
+*Source: [Wikipedia](https://commons.wikimedia.org/wiki/File:Centronics.jpg), (c) Michael Krahe*
+
+
+# ParallelPrinterCap Design Decisions
+
+You can see by looking at Rue's design that a device to capture parallel port traffic and send it to a PC can
 be very simple. You need to have:
 
 * an parallel interface that can deal with 5V signalling in transmit and receive direction
 * logic to reliably capture the 8-bit data and adhere to the parallel port protocol
 * a way to interface with the PC. USB is the obvious choice here.
 
-In this day and age, a microcontroller is the obvious choice for this. Rue had an Atmel in his
-component box, which is great because it has USB device interface and 5V capable IOs right out of the box.
+In this day and age, you use a microcontroller for stuff like this. Rue had an Atmel in his component box, 
+which is great because it has USB device interface and 5V capable IOs right out of the box.
 
 I choose a Raspberry Pico because:
 
-* I have a couple laying around
-* at around $7 a piece, they're cheap enough
-* they are staightforward to program
+* I had a couple laying around
+* at around $5 a piece, they're cheap enough
+* they are staightforward to program and to program for
 * they are available everywhere in high volume: no issues with component shortage!
 
-Since a Raspberry Pico doesn't have 5V tolerant IOs, a buffer IC is required for level shifting.
+Instead of a Pico, you could also use a Pico W. The boards are pin compatible after all. A wireless interface
+can definitely be useful when the back side of your oscilloscope is hard to reach, but you'd still need 
+a USB cable to power the board because there is no +5V pin on the parallel port itself.
+
+Since a Raspberry Pico doesn't have 5V tolerant IOs, one or more buffer ICs are required for level shifting.
 
 My initial design used 3 generic [SN74LVC8T245PW](https://www.ti.com/lit/ds/symlink/sn74lvc8t245.pdf) 8-bit
-transceivers that cost $1.65 a piece on Digikey. However, I switched to an 
-[74LVC161284](https://www.ti.com/lit/ds/symlink/sn74lvc161284.pdf) which a bus interface chip
+transceivers that cost $1.65 a piece on Digikey. However, I reworked it to use a
+[74LVC161284](https://www.ti.com/lit/ds/symlink/sn74lvc161284.pdf) which is a bus interface chip
 that's specifically designed for parallel printer ports!
+
+
+
+
+If you had been keeping track, there were a total of 17 parallel port signal listed in the previous section.
+In the logic diagram of the 74LVC161284, there are 17 signals as well, going in the right direction. Since the
+chip can support the later IEEE 1284 protocols, the IOs for the databus are bidirectional.
+
+![74LVC161284 logic diagram](/assets/parallelprintcap/74lvc161284_logic_diagram.png)
+
+You can ignore the `PERI_LOGIC` and `HOST_LOGIC` feed-through signals: they are not used.
 
 
 
