@@ -1,6 +1,6 @@
 ---
 layout: post
-title: A Cheap Parallel Printer Capture Tool
+title: Fake Printer - A Parallel Port Capturing Tool
 date:   2023-01-15 00:00:00 -0700
 categories:
 ---
