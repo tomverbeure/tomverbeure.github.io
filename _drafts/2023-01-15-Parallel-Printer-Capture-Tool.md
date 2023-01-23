@@ -189,7 +189,7 @@ You can see by looking at Rue's design that a device to capture parallel port tr
 be very simple. You need to have:
 
 * an parallel interface that can deal with 5V signalling in transmit and receive direction
-* logic to reliably capture the 8-bit data and adhere to the parallel port protocol
+* logic to reliably capture the 8-bit data and adhere to the parallel port protocol 
 * a way to interface with the PC. USB is the obvious choice here.
 
 In this day and age, you use a microcontroller for stuff like this. Rue had an Atmel in his component box, 
@@ -211,25 +211,287 @@ Instead of a Pico, you can also use a Pico W. The boards are pin compatible afte
 can be useful when the back side of your oscilloscope is hard to reach, but you'd still need 
 a USB cable to power the board because there is no +5V pin on the parallel port itself.
 
-# Fake Printer Implementation 
+# Fake Printer HW Details 
+
+**Level Shifter**
 
 Since a Raspberry Pico doesn't have 5V tolerant IOs, one or more buffer ICs are required for level shifting.
 
 My initial design used 3 generic [SN74LVC8T245PW](https://www.ti.com/lit/ds/symlink/sn74lvc8t245.pdf) 8-bit
-transceivers that cost $1.65 a piece on Digikey. However, I reworked it to use a
-[74LVC161284](https://www.ti.com/lit/ds/symlink/sn74lvc161284.pdf) which is a bus interface chip
-that's specifically designed for parallel printer ports!
-
-
-
-
-If you had been keeping track, there were a total of 17 parallel port signal listed in the previous section.
-In the logic diagram of the 74LVC161284, there are 17 signals as well, going in the right direction. Since the
-chip can support the later IEEE 1284 protocols, the IOs for the databus are bidirectional.
+transceivers that cost $1.65 a piece on Digikey. Only once that PCB layout was completed, did I check if
+by any chance there is a buffer IC that is specifically designed for the parallel port. There is, of course:
+the [74LVC161284](https://www.ti.com/lit/ds/symlink/sn74lvc161284.pdf) is that chip, and it's
+yours for only $2.08.
 
 ![74LVC161284 logic diagram](/assets/parallelprintcap/74lvc161284_logic_diagram.png)
 
+If you have been keeping track, there are a total of 17 parallel port signal listed in the previous section.
+Consequently, the 74LVC161284 has 17 main signals as well, going in the right direction. Since the
+chip can support the later IEEE 1284 protocols, the IOs for the databus are bidirectional.
+
 You can ignore the `PERI_LOGIC` and `HOST_LOGIC` feed-through signals: they are not used.
 
+**Resistors and Caps**
+
+The [service manual of a Sharp AR-PK11 laser copier/printer](/assets/parallelprintcap/ARP11SEC_service_manual.pdf)
+contains the full schematics and uses an 74LVC161284. Useful to check what kind of surrounding
+components are used in a real implementation:
+
+[![Sharp AR-PK11 schematic with 74LVC161284](/assets/parallelprintcap/laser_printer_schematic.png)](/assets/parallelprintcap/laser_printer_schematic.png)
+*(Click to enlarge)*
+
+The schematic has 22 Ohm resistors on each of the 17 signals to dampen reflections on the cable.
+These are probably overkill on a design that doesn't have a cable, but I added them anyway. Same
+things for 17 100pF capacitors, which I added to the design and the PCB, but didn't solder on the
+actual board...
+
+**Ready for Full IEEE-1284 Support**
+
+For a minimal parallel printer emulation, you can safely ignore the nINIT, nAUTOF, and nSELIN signals
+that are coming from the host, and the nERROR, PE, and SEL signals that from the printer back
+to the host can be strapped to a fixed value.
+
+But by connecting all of these signals to the Raspberry Pico, you retain the option to support
+IEE-1284 mode that are more than just compatibility mode.
+
+**Test Pins**
+
+While designing the PCB, I wasn't 100% sure how different instruments would behave, and I wanted
+to make sure that it'd be easy to capture the bus signals with a logic analyzer. I'm happy that
+I did, it's one of those things that makes your life a lot easier!
+
+# PCB Revision 1
+
+The first version of the PCB was designed with KiCAD 6. You can find the full design database
+in the [fake_parallel_printer repo on GitHub](https://github.com/tomverbeure/fake_parallel_printer/blob/main/parallel2usb_v1).
+
+The schematic is about as straightforward as you can imagine.
+
+[![Fake Printer Schematic v1](/assets/parallelprintcap/parallel2pcb_schematic_v1.png)](/assets/parallelprintcap/parallel2pcb_schematic_v1.png)
+*(Click to enlarge)*
+
+And here's the PCB:
+
+![Fake Printer v1 PCB](/assets/parallelprintcap/parallel2usb_v1_3d.png)
+
+For once I didn't make any mistakes: the board worked fine.
+
+However, once everything was complete, there were 2 things that bugged me:
+
+* the form factor isn't practical
+
+    It's way too long, especialy if you factor in the USB cable that's sticking out in the back. 
+
+* the PCB uses 4 layers for no good reason whatsoever.
+
+# PCB Revision 2
+
+I created a second PCB version that fixes the 2 issues of the first one.
+
+![Fake Printer v2 PCB](/assets/parallelprintcap/parallel2usb_v2_3d.png)
+
+In this version, the Raspberry Pico is mounted at the bottom of the PCB, on the
+other side of the rest of the components.
+
+The [schematic](https://github.com/tomverbeure/fake_parallel_printer/blob/main/parallel2usb_v2/parallel2usb_v2_schematic.pdf)
+of revision 2 has a different Pico pin assigment, and it has 1 additional decoupling cap, 
+but it otherwise identical.  The firmware 
+[automatically detects the PCB version](https://github.com/tomverbeure/fake_parallel_printer/blob/81edfde9b26d85c3728c972cc4f7719ea6c1c354/c/parallel2usb/main.cc#L120-L129)
+and adjust the pin locations accordingly.
+
+**I haven't sent out revision 2 for production!**
+
+# Firmware
+
+The [firmware](https://github.com/tomverbeure/fake_parallel_printer/blob/main/c/parallel2usb/main.cc)
+is extremely basic:
+
+* Pin configuration
+* Interrupt to detect falling edge of nSTOBE
+* Interrupt routine that: 
+    * asserts BUSY,  
+    * read the data pins
+    * send the byte to the USB serial port
+    * deassert BUSY
+    * pulse nACK
+
+That's really about it.
+
+There's also a debug function that prints out the number of
+bytes received on the printer port, and a checksum. You trigger
+this functionatily by putting a jumper (or a button) between
+GND and the JUMPER_PIN (see schematic) of the Raspberry Pico, but
+you won't need to do this if all goes well.
+
+# Building a Fake Printer Tool Yourself 
+
+**Disclaimer: build at your own risk! This is a hobby project. It worked for
+me, but there are no guarantees that it won't set the parallel port of your
+equipment on fire!**
+
+You can build a fake printer tool for around $25.
+
+Here's the cost breakdown of the fake printer tool:
+
+| 5 revision 2 PCBs at JLCPBC                                         | $2         |
+| JLCPCB Global Direct Line Saver shipping                            | $7.25      |
+| All components at DigiKey ([cart](https://www.digikey.com/short/mcb8vf27)) | $11.17     |
+| DigiKey USPS Priority Mail shipping                                 | $5         |
+|                                                           **Total** | **$25.42** |
+
+Shipping cost account for 50% of the total, so you can cut down on that significantly
+by organizing some kind of group buy.
+
+I think it's best to solder the components in the following order:
+
+1. 74LVC161284
+2. SMD Resistors and capacitors **but not necessarily all of them!**
+3. DB-25 connector
+4. Raspberry Pico with optional pin-headers
+
+**74LVC161284**
+
+If you don't have experience with precision soldering, the hardest part by far
+is soldering the 74LVC161284 with pins that have a 0.5mm pitch. I did the traditional way 
+with a fine-tipped soldering iron, applying solder to each pin one-by-one, while using a 
+microscope.
+
+I've been told though that drag soldering is really the way to go. Here's an excellent
+demonstration of that:
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/wUyetZ5RtPs" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+
+I'll try it on the next revision.
+
+**Resistors and Capacitors**
+
+All resistors and caps are using a 0603 handsolder footprint. I find this size the smallest
+that I can solder confidently without a microscope.
+
+You don't have to solder all the resistors: if you're really in a hurry, you can drop
+R14, R15 and R16 (for SELIN, nINIT, nAUTOF). The current Raspberry Pico firmware doesn't use 
+these signals.
+
+You can save yourself more work by not soldering any of the 17 100pF capacitors. I didn't
+and everything worked just fine. The signals looked clean on the oscilloscope as well.
+
+**Raspberry Pico**
+
+You can solder Raspberry Pico straight onto the PCB, but I always
+use a pin header as spacer between the main PCB and the Pico. This makes
+it so much easier to connect an oscilloscope probe on the Pico pins in case
+something doesn't work quite right. If you don't plan to do any firmware
+changes, there's no need to use them.
+
+*The 2 20-pin pin headers are not included in the [DigiKey component cart](https://www.digikey.com/short/mcb8vf27)!*
+
+**Connector Debug Pin Header**
+
+J2 is another 20-pin pin header that I added to be able to probe the signals are
+they are present on the DB-25 connector. Same thing as before: no need to add this
+if you don't plan to do firmware changes, and this one can always be added later.
+
+*This pin header is also not part of the DigiKey cart.*
+
+My revision 1 PCB looks like this after assembly:
+
+![XXXXXX](....)
+
+# Programming the Raspberry Pico
+
+Programming the Raspberry Pico with the fake printer firmware is super simple:
+
+* Unplug the USB cable
+* Press the BOOTSEL button
+* Plug in the USB cable
+* Release the BOOTSEL button
+* Wait until a USB drive with the name RPi-RP2 shows up on your PC
+* Drag the [`parallel2usb_hd_on.uf2`](https://github.com/tomverbeure/fake_parallel_printer/blob/main/parallel2usb_hd_on.uf2)
+  file onto the RPi-RP2 USB drive.
+
+After one second, you'll see the green LED on the Raspberry Pico blink twice. Done!
+
+# Capturing Printing Data on Linux
+
+After plugging in the USB cable into your PC, there should be a new serial USB device as
+`/dev/ttyACMx`. The value of x will depend on who many serial devices there are active on
+your PC. If it's the only one, it will be `/dev/ttyACM0`.
+
+If you're not sure, you can unplug the USB cable, run `dmesg -w`, and plug it back in:
+
+You'll see something like this:
+
+```
+[1041048.447119] usb 1-7.1: new full-speed USB device number 26 using xhci_hcd
+[1041048.783246] usb 1-7.1: New USB device found, idVendor=2e8a, idProduct=000a, bcdDevice= 1.00
+[1041048.783254] usb 1-7.1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
+[1041048.783257] usb 1-7.1: Product: Pico
+[1041048.783260] usb 1-7.1: Manufacturer: Raspberry Pi
+[1041048.783262] usb 1-7.1: SerialNumber: E66038B713624535
+[1041048.809753] cdc_acm 1-7.1:1.0: ttyACM0: USB ACM device
+```
+
+The last line shows the device name.
+
+You can now capture all the traffic on the parallel printer of your instrument with this command:
+
+```sh
+(stty -echo raw; cat > screenshot_0.eps) < /dev/ttyACM0
+```
+
+The captured data will end up in `screenshot_0.eps`. If you need to capture multiple screenshots,
+you'll need to abort the command above after each screenshot, increase the number of the filename,
+and start it again.
+
+A print operation often happens in the background on your instrument, and there's no clear indication
+when it has completed. I simply check the size of the `screenshot_0.eps` file with `ll -r screenshot*`
+and abort the capture the file size stays constant.
+
+# Converting a Printer Capture to a Bitmap
+
+The effort of converting a captured printer trace ranges from entirely painless to
+very painful. It depends on which printer formats are supported by your instrument, and
+the desired quality.
+
+My TDs 420A and Advantest R3273, the only instruments on which I tried it, have each a ton
+of different screenshot format options.
+
+Let's start with painless, the TDS 420A. Here's a slightly edited screenshot of the
+Harcopy Format menu option:
+
+[![Windows Device Manager - USB serial device](/assets/parallelprintcap/tds42a_print_options.png)](/assets/parallelprintcap/tds42a_print_options.png)
+*(Click to enlarge)*
+
+The TDS 420A supports:
+
+* The Thinkjet, Deskjet, and Laserjet. 
+
+    These are all very old HP printers that use HP's PCL format.
+
+* Epson 9 & 24 pin dot matrix
+
+    Another company specific format, but it was very popular back in the day
+    and a de-facto standard.
+
+* DFU 411/11 and 412 thermal printers
+
+    No clue about the format!
+
+* PCX, TIFF, BMP, and Interleaf IMG file formats
+
+    These aren't printer but file formats for bitmap images that are supposed
+    to be saved to the floppy drive of the oscilloscope. But's here the 
+    cool part: when you select the printer as output for a Hardcopy (=screenshot),
+    the TDS 420A sends the contents of the bitmap file to the printer!
+
+* Encapsulated Postscript Mono Img, EPS Mono Plt, EPS Color Plt
+   
+
+
+# Capturing Printing Data on Windows
+
+![Windows Device Manager - USB serial device](/assets/parallelprintcap/windows_USB_serial_device.png)
+
+# References
 
 
