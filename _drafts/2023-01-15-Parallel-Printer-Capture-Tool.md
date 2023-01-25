@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Fake Printer - A Parallel Port Capturing Tool
+title: Fake Parallel Printer - A Parallel Port Traffic Capturing Tool
 date:   2023-01-15 00:00:00 -0700
 categories:
 ---
@@ -11,7 +11,7 @@ categories:
 # Introduction
 
 My [previous blog post](/2023/01/01/HP33120A-Repair-Shutting-Down-the-Eye-of-Sauron.html)
-contained a screenshot of my Advantest R3273 spectrum analyzer that I took by holding 
+contained a screenshot of an Advantest R3273 spectrum analyzer that I took by holding 
 my iPhone in front of the screen:
 
 ![Screenshot of a spectrum analyzer](/assets/hp33120a/spectrum_comparison.jpg)
@@ -39,24 +39,24 @@ Much better!
 It's easy to save screenshots on modern equipment. On my daily driver Siglent oscilloscope, the easiest
 way is to just insert a USB stick and press "Print", but you can also do by scripting some
 [SCPI commands](/2020/06/07/Making-Sense-of-Test-and-Measurement-Protocols.html#scpi---the-universal-command-language)
-over a USB or Ethernet cable: 
+over a USB or Ethernet connection: 
 
 [![Screenshot of a Siglent oscilloscope](/assets/smoke_detector/osc2-Vbst-Vled-Vdet.png)](/assets/smoke_detector/osc2-Vbst-Vled-Vdet.png)
 *(Click to enlarge)*
 
 It's not so simple for old equipment. The TDS 420A and the R3273 have a GPIB interface 
-that can be used to download raw measurement data, but not the screenshot. However, they do have 
-a floppy drive to save screenshots, and there's an old school parallel port to send a screenshot
-straight to a printer.
+that can be used to download raw measurement data, but not the screen, menus and all included. 
+However, they do have a floppy drive to save screenshots, and there's an old school parallel port 
+to send a screenshot straight to a printer.
 
-I bought a floppy drive on Amazon for $19 and a pack of 10 3 1/2 HD floppy disks for $18, only
-to discover that the floppy drives on both instruments were broken. Maybe that's just to
-be expected from equipments that's 20 to 30 years old...
+I bought a floppy drive on Amazon for $19 and a pack of 10 3 1/2 HD floppy disks for an additional $18, 
+only to discover that the floppy drives on both instruments were broken. Maybe that's just to
+be expected from equipment that's 20 to 30 years old...
 
 ![Floppy drive](/assets/parallelprintcap/floppy_drive.jpg)
 
 So the only interface left is the parallel printer port. Which made me think: "What if I capture
-the printing data and convert it into a bitmap on my PC?" And thus a new project was born!
+the printier data and convert it into a bitmap on my PC?" And thus a new project was born!
 
 # What Is Out There?
 
@@ -69,9 +69,9 @@ claims to do exactly what I want.
 It's a Raspberry Pi hat that plugs into, well, a Raspberry 
 Pi which is fine if you have one laying in a drawer somewhere, otherwise it's another $100+ 
 in today's crazy market. Retro-Printer has been in existence for a while and they have dedicated 
-software to back it, some open source, some not. I didn't test it, but if you want something 
-that's a real product instead of a quick weekend hack, it's probably the option with the
-highest chance of success.
+software to back it, [some open source](https://github.com/RWAP/PrinterToPDF), some not. 
+I didn't test it, but if you want something that's a real product instead of a quick weekend hack, 
+it's probably the option with the highest chance of success.
 
 Still, it's a little too much for what is, in my case, a non-essential gadget that I'll use only 
 a few times per year.
@@ -92,16 +92,19 @@ they drown in a sea of "USB to parallel port" results!
 
 # The Parallel Printer Port
 
+**Protocol**
+
 The [parallel printer port](https://en.wikipedia.org/wiki/Parallel_port) and associated 
-protocol was originally defined by Centronics way back in 1970 for their Model 101 printer.
+protocol was originally defined by [Centronics](https://en.wikipedia.org/wiki/Centronics) way back 
+in 1970 for their Model 101 printer.
 The [Vintage Technology Digital Archive](vtda.org) still has the 
 [specification and interface information](http://vtda.org/docs/computing/Centronics/101_101A_101AL_102A_306_SpecificationsInterfaceInformation.pdf)
 for it.
 
 ![Centronics Protocol](/assets/parallelprintcap/centronics_protocol.jpg)
 
-The diaram shows how a BUSY signal gets asserted by the printer when it's doing certain long
-duration activities such a line or paper feeds, but the signal is frankly a bit redundant, as
+The diagram shows how a BUSY signal gets asserted by the printer when it's doing certain long
+duration activities such a line or a paper feed, but the signal is frankly a bit redundant, as
 we shall soon see.
 
 Either way, these are the signals that actively participate in data transactions:
@@ -109,26 +112,26 @@ Either way, these are the signals that actively participate in data transactions
 | Name    | Direction  | Description                                                                                   |
 |---------|------------|-----------------------------------------------------------------------------------------------|
 | nSTROBE | To Printer | A low pulse indicates that there's valid data on D[7:0]. This pulse can be as short as 500ns. |
+| D[7:0]  | To Printer | The data that is transmitted to the printer. The data is valid when nSTROBE is low.           |
 | BUSY    | To Host    | Tell the host that the printer is busy and that it should wait with sending the next data.    |
 | nACK    | To Host    | A low pulse tells the host that the current data has been processed.                          |
-| D[7:0]  | To Printer | The data that is transmitted to the printer.                                                  |
 
-Here is parallel port traffic between the spectrum analyzer and my capturing tool:
+Here is parallel port traffic between the spectrum analyzer and the fake printer:
 
 ![Parallel port transactions on a R3273](/assets/parallelprintcap/scope_shots/5_r3273_full_transaction_cycle_busy.png)
 *nSTROBE: yellow, BUSY: purple, nACK: cyan*
 
 There's 22uS between each transaction, good for a data rate of around 350kbits/s.
 
-I created a test version of the capturing tool that never asserts BUSY. It works just the same, showing
-that the R3272 probably just ignores BUSY and waits for an end-of-tranaction nACK pulse instead:
+I created a test firmware for fake printer that never asserts BUSY. It works just the same, showing
+that the R3272 probably ignores BUSY and simply waits for an end-of-transaction nACK pulse:
 
 ![Parallel port transactions on a R3273 without using BUSY](/assets/parallelprintcap/scope_shots/6_r3273_full_transaction_cycle_no_busy.png)
 
 
 
 In addition to the signals that are used for the actual data transfer, the parallel port has a bunch of
-mostly static sideband signals:
+mostly static control and status signals:
 
 | Name    | Direction  | Value | Description                                                                                           |
 |---------|------------|:-----:|-------------------------------------------------------------------------------------------------------|
@@ -151,7 +154,9 @@ protocol.
 After powering up, all printers start out in compatibility mode. They switch to a different mode through
 a protocol negotiation process.
 
-For our purposes, we can ignore all these advanced mode and stick with compatibility mode. 
+For our purposes, we can ignore all these advanced modes and stick with compatibility mode. 
+
+**Connectors**
 
 The host almost always uses a DB-25 connector:
 
@@ -168,10 +173,10 @@ The printer side has a 36-pin Centronics connector:
 
 # Fake Printer Top Level Design Choices
 
-Here's a summary of the fake printer features and design decisions:
+Here's a executive summary of the fake printer features and design decisions:
 
-* DB-25 connector + PCB that plug in straight into the instrument
-* USB acting as serial port to transmit data to PC
+* DB-25 connector on a PCB that plugs straight into the instrument
+* USB acting as serial port to transmit captured data to the PC
 * Raspberry Pico as microcontroller
 
 **DB-25 instead of Centronics Connector**
@@ -180,15 +185,15 @@ The Retro-Printer solution has a Centronics port, just like a real printer. I'm 
 DB-25 connector instead. The reason is cost and, IMO, convenience. On Digikey, 
 the DB-25 connector is $1.60 versus $7.10 for the Centronics one. And if you
 use the Centronics connector, you need a bulky DB-25 to Centronics cable too, 
-good for an additional $12! And now you have 2 cables: the printer cable and
-the USB cable from the fake printer back to your PC. 
+good for an additional $12! And now you have 2 cables to deal with: the printer cable 
+and the USB cable from the fake printer back to your PC. 
 
 **Raspberry Pico**
 
-You can see by looking at Rue's design that a device to capture parallel port traffic and send it to a PC can
-be very simple. You need to have:
+You can see by looking at Rue's design that a fake parallel printer can be very simple. 
+You need to have:
 
-* an parallel interface that can deal with 5V signalling in transmit and receive direction
+* a parallel interface that can deal with 5V signalling in transmit and receive direction
 * logic to reliably capture the 8-bit data and adhere to the parallel port protocol 
 * a way to interface with the PC. USB is the obvious choice here.
 
@@ -202,9 +207,9 @@ I choose a Raspberry Pico because:
 * they are staightforward to program and to program for
 * they are available everywhere in high volume: no issues with component shortage!
 
-The Raspberry Pico is bulkier than smaller alternatives with the same RP2040 microcontroller
-chip, such as the [Seeed Studio XIAO RP2040](https://www.seeedstudio.com/XIAO-RP2040-v1-0-p-5026.html),
-but in my final PCB design, that doesn't make a practical difference. And the Pico is the
+The Raspberry Pico is bulkier than smaller alternatives with the same RP2040 silicon, 
+such as the [Seeed Studio XIAO RP2040](https://www.seeedstudio.com/XIAO-RP2040-v1-0-p-5026.html),
+but in my final PCB design that doesn't make a practical difference. And the Pico is the
 reference implementation which should be available for as long as the RP2040 exists.
 
 Instead of a Pico, you can also use a Pico W. The boards are pin compatible after all. A wireless interface
@@ -218,8 +223,8 @@ a USB cable to power the board because there is no +5V pin on the parallel port 
 Since a Raspberry Pico doesn't have 5V tolerant IOs, one or more buffer ICs are required for level shifting.
 
 My initial design used 3 generic [SN74LVC8T245PW](https://www.ti.com/lit/ds/symlink/sn74lvc8t245.pdf) 8-bit
-transceivers that cost $1.65 a piece on Digikey. Only once that PCB layout was completed, did I check if
-by any chance there is a buffer IC that is specifically designed for the parallel port. There is, of course:
+transceivers that cost $1.65 a piece on Digikey. Only once that PCB layout was completed did I check if
+by any chance there was a buffer IC that is specifically designed for the parallel port. There was, of course:
 the [74LVC161284](https://www.ti.com/lit/ds/symlink/sn74lvc161284.pdf) is that chip, and it's
 yours for only $2.08.
 
@@ -242,8 +247,8 @@ components are used in a real implementation:
 
 The schematic has 22 Ohm resistors on each of the 17 signals to dampen reflections on the cable.
 These are probably overkill on a design that doesn't have a cable, but I added them anyway. Same
-things for 17 100pF capacitors, which I added to the design and the PCB, but didn't solder on the
-actual board...
+thing for 17 100pF capacitors, which I added to the design and the PCB but didn't solder on the
+actual board.
 
 **Ready for Full IEEE-1284 Support**
 
@@ -276,17 +281,18 @@ And here's the PCB:
 
 For once I didn't make any mistakes: the board worked fine.
 
-However, once everything was complete, there were 2 things that bugged me:
+However, after everything was complete, there were 2 things that bugged me:
 
 * the form factor isn't practical
 
     It's way too long, especialy if you factor in the USB cable that's sticking out in the back. 
+    Space on the lab bench is often at a premium and shouldn't be wasted.
 
 * the PCB uses 4 layers for no good reason whatsoever.
 
 # PCB Revision 2
 
-I created a second PCB version that fixes the 2 issues of the first one.
+I created a second PCB version that fixes these 2 issues:
 
 ![Fake Printer v2 PCB](/assets/parallelprintcap/parallel2usb_v2_3d.png)
 
@@ -294,10 +300,10 @@ In this version, the Raspberry Pico is mounted at the bottom of the PCB, on the
 other side of the rest of the components.
 
 The [schematic](https://github.com/tomverbeure/fake_parallel_printer/blob/main/parallel2usb_v2/parallel2usb_v2_schematic.pdf)
-of revision 2 has a different Pico pin assigment, and it has 1 additional decoupling cap, 
+of revision 2 has different pin assigments, and it has 1 additional decoupling cap, 
 but it otherwise identical.  The firmware 
 [automatically detects the PCB version](https://github.com/tomverbeure/fake_parallel_printer/blob/81edfde9b26d85c3728c972cc4f7719ea6c1c354/c/parallel2usb/main.cc#L120-L129)
-and adjust the pin locations accordingly.
+and adjusts the pin locations accordingly.
 
 **I haven't sent out revision 2 for production!**
 
@@ -306,7 +312,7 @@ and adjust the pin locations accordingly.
 The [firmware](https://github.com/tomverbeure/fake_parallel_printer/blob/main/c/parallel2usb/main.cc)
 is extremely basic:
 
-* Pin configuration
+* GPIO pin configuration
 * Interrupt to detect falling edge of nSTOBE
 * Interrupt routine that: 
     * asserts BUSY,  
@@ -327,19 +333,19 @@ you won't need to do this if all goes well.
 
 **Disclaimer: build at your own risk! This is a hobby project. It worked for
 me, but there are no guarantees that it won't set the parallel port of your
-equipment on fire!**
+expensive equipment on fire!**
 
 You can build a fake printer tool for around $25.
 
 Here's the cost breakdown of the fake printer tool:
 
-| 5 revision 2 PCBs at JLCPBC                                         | $2         |
+| 5 revision 2 PCBs at [JLCPBC](https://jlcpcb.com)                   | $2         |
 | JLCPCB Global Direct Line Saver shipping                            | $7.25      |
 | All components at DigiKey ([cart](https://www.digikey.com/short/mcb8vf27)) | $11.17     |
 | DigiKey USPS Priority Mail shipping                                 | $5         |
 |                                                           **Total** | **$25.42** |
 
-Shipping cost account for 50% of the total, so you can cut down on that significantly
+Shipping cost accounts for ~50% of the total, so you can cut down on that significantly
 by organizing some kind of group buy.
 
 I think it's best to solder the components in the following order:
@@ -352,7 +358,7 @@ I think it's best to solder the components in the following order:
 **74LVC161284**
 
 If you don't have experience with precision soldering, the hardest part by far
-is soldering the 74LVC161284 with pins that have a 0.5mm pitch. I did the traditional way 
+is soldering the 74LVC161284 with pins that have a 0.5mm pitch. I did things the traditional way 
 with a fine-tipped soldering iron, applying solder to each pin one-by-one, while using a 
 microscope.
 
@@ -365,7 +371,7 @@ I'll try it on the next revision.
 
 **Resistors and Capacitors**
 
-All resistors and caps are using a 0603 handsolder footprint. I find this size the smallest
+All resistors and caps are using a 0603 HandSolder footprint. I find this size the smallest
 that I can solder confidently without a microscope.
 
 You don't have to solder all the resistors: if you're really in a hurry, you can drop
@@ -387,9 +393,9 @@ changes, there's no need to use them.
 
 **Connector Debug Pin Header**
 
-J2 is another 20-pin pin header that I added to be able to probe the signals are
+J2 is another 20-pin pin header that I added to be able to probe the signals as
 they are present on the DB-25 connector. Same thing as before: no need to add this
-if you don't plan to do firmware changes, and this one can always be added later.
+if you don't plan on making firmware changes, and this one can always be added later.
 
 *This pin header is also not part of the DigiKey cart.*
 
@@ -411,13 +417,17 @@ Programming the Raspberry Pico with the fake printer firmware is super simple:
 
 After one second, you'll see the green LED on the Raspberry Pico blink twice. Done!
 
-# Capturing Printing Data on Linux
+# Fake Printer as a USB Serial Device on your PC
 
-After plugging in the USB cable into your PC, there should be a new serial USB device as
-`/dev/ttyACMx`. The value of x will depend on who many serial devices there are active on
-your PC. If it's the only one, it will be `/dev/ttyACM0`.
+After plugging in the USB cable into your PC, there should be a new serial USB device.
 
-If you're not sure, you can unplug the USB cable, run `dmesg -w`, and plug it back in:
+**Linux**
+
+On Linux, this device will show up as `/dev/ttyACMx` or `/dev/ttyUSBx`. The value of x will 
+depend on who many serial devices there are active on your PC. If there's the only one, then
+x will be 0.
+
+If you're not sure, run `dmesg -w` in a terminal window, and plug in the USB cable.
 
 You'll see something like this:
 
@@ -428,15 +438,31 @@ You'll see something like this:
 [1041048.783257] usb 1-7.1: Product: Pico
 [1041048.783260] usb 1-7.1: Manufacturer: Raspberry Pi
 [1041048.783262] usb 1-7.1: SerialNumber: E66038B713624535
-[1041048.809753] cdc_acm 1-7.1:1.0: ttyACM0: USB ACM device
+[1041048.809753] cdc_acm 1-7.1:1.0: ttyACM0: USB ACM device     <<<<<<<
 ```
 
 The last line shows the device name.
 
 You can now capture all the traffic on the parallel printer of your instrument with this command:
 
+**Windows**
+
+After plugging in the USB cable, the device should pop up in the Windows Device Manager:
+
+![Windows Device Manager - USB serial device](/assets/parallelprintcap/windows_USB_serial_device.png)
+
+The device name in this case is COM4.
+
+# Capturing Parallel Printer Data with fake_printer.py
+
+All that's left now is storing the captured data on your PC.
+
+**Barebones capture on Linux**
+
+On Linux, it can be as simple as using the following command line:
+
 ```sh
-(stty -echo raw; cat > screenshot_0.eps) < /dev/ttyACM0
+(stty -echo raw; cat > screenshot_0.prtcap) < /dev/ttyACM0
 ```
 
 The captured data will end up in `screenshot_0.eps`. If you need to capture multiple screenshots,
@@ -446,6 +472,47 @@ and start it again.
 A print operation often happens in the background on your instrument, and there's no clear indication
 when it has completed. I simply check the size of the `screenshot_0.eps` file with `ll -r screenshot*`
 and abort the capture the file size stays constant.
+
+**fake_printer.py**
+
+There's a more user friendly way with [`fake_printer.py`](https://github.com/tomverbeure/fake_parallel_printer/blob/main/fake_printer.py),
+which is part of the [fake_parallel_printer repo on  GitHub](https://github.com/tomverbeure/fake_parallel_printer).
+
+It's a Python script automatically splits print captures into different files when it sees the parallel
+port going idle for a couple of seconds. It also provides feedback about printer data being received.
+
+To use it, first make install the Python `pyserial` module:
+
+```pip3 install pyserial```
+
+After that, you can run `fake_printer.py`. At the very minimum, you need to provide the USB serial drive
+name:
+
+On Linux:
+
+```./fake_printer.py --port=/dev/ttyACM0```
+
+or one Windows:
+
+```./fake_printer.py --port=COM4```
+
+Here's the output on my screen when capturing a TDS 420A screenshot:
+
+```
+tom@zen:~/projects/parallel2usb$ ./fake_printer.py -v -p /dev/ttyACM0
+fake printer:
+    verbose = True
+    port    = /dev/ttyACM0
+    timeout = 2
+    prefix  = printer_capture_
+    suffix  = prtcap
+    page nr = 0
+Printer data received. Creating printer capture file printer_capture_0.prtcap.
+...............................................
+48485 bytes received in 18s. (2634 bytes/s)
+No printer data received for 2 seconds. Closing printer capture file.
+```
+
 
 # Converting a Printer Capture to a Bitmap
 
@@ -459,8 +526,6 @@ of different screenshot format options.
 Let's start with painless, the TDS 420A. Here's a slightly edited screenshot of the
 Harcopy Format menu option:
 
-[![Windows Device Manager - USB serial device](/assets/parallelprintcap/tds42a_print_options.png)](/assets/parallelprintcap/tds42a_print_options.png)
-*(Click to enlarge)*
 
 The TDS 420A supports:
 
@@ -490,7 +555,9 @@ The TDS 420A supports:
 
 # Capturing Printing Data on Windows
 
-![Windows Device Manager - USB serial device](/assets/parallelprintcap/windows_USB_serial_device.png)
+
+[![TDS420 print options](/assets/parallelprintcap/tds420a_print_options.png)](/assets/parallelprintcap/tds420a_print_options.png)
+*(Click to enlarge)*
 
 # References
 
