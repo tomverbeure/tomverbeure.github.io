@@ -288,6 +288,8 @@ However, after everything was complete, there were 2 things that bugged me:
     It's way too long, especialy if you factor in the USB cable that's sticking out in the back. 
     Space on the lab bench is often at a premium and shouldn't be wasted.
 
+    ![Fake Printer sticking out](/assets/parallelprintcap/fake_printer_sticking_out.jpg)
+
 * the PCB uses 4 layers for no good reason whatsoever.
 
 # PCB Revision 2
@@ -393,6 +395,8 @@ changes, there's no need to use them.
 
 **Connector Debug Pin Header**
 
+![Fake Printer with logic analyzer](/assets/parallelprintcap/fake_printer_with_logic_analyzer.jpg)
+
 J2 is another 20-pin pin header that I added to be able to probe the signals as
 they are present on the DB-25 connector. Same thing as before: no need to add this
 if you don't plan on making firmware changes, and this one can always be added later.
@@ -401,7 +405,7 @@ if you don't plan on making firmware changes, and this one can always be added l
 
 My revision 1 PCB looks like this after assembly:
 
-![XXXXXX](....)
+[![Fake Printer v1 assembled](/assets/parallelprintcap/fake_printer_v1_assembled.jpg)](/assets/parallelprintcap/fake_printer_v1_assembled.jpg)
 
 # Programming the Raspberry Pico
 
@@ -483,18 +487,18 @@ port going idle for a couple of seconds. It also provides feedback about printer
 
 To use it, first make install the Python `pyserial` module:
 
-```pip3 install pyserial```
+`pip3 install pyserial`
 
 After that, you can run `fake_printer.py`. At the very minimum, you need to provide the USB serial drive
 name:
 
 On Linux:
 
-```./fake_printer.py --port=/dev/ttyACM0```
+`./fake_printer.py --port=/dev/ttyACM0`
 
 or one Windows:
 
-```./fake_printer.py --port=COM4```
+`./fake_printer.py --port=COM4`
 
 Here's the output on my screen when capturing a TDS 420A screenshot:
 
