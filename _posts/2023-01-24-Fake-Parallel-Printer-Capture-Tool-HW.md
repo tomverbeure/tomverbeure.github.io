@@ -37,7 +37,7 @@ or this:
 Much better!
 
 It's easy to save screenshots on modern equipment. On my daily driver Siglent oscilloscope, the easiest
-way is to just insert a USB stick and press "Print", but you can also do by scripting some
+way is to just insert a USB stick and press "Print", but you can also do it by scripting some
 [SCPI commands](/2020/06/07/Making-Sense-of-Test-and-Measurement-Protocols.html#scpi---the-universal-command-language)
 over a USB or Ethernet connection: 
 
@@ -45,18 +45,18 @@ over a USB or Ethernet connection:
 *(Click to enlarge)*
 
 It's not so simple for old equipment. The TDS 420A and the R3273 have a GPIB interface 
-that can be used to download raw measurement data, but not the screen, menus and all included. 
+that can be used to download raw measurement data, but not the screen contents, menus and all included. 
 However, they do have a floppy drive to save screenshots, and there's an old school parallel port 
 to send a screenshot straight to a printer.
 
-I bought a floppy drive on Amazon for $19 and a pack of 10 3 1/2 HD floppy disks for an additional $18, 
+I bought a floppy drive on Amazon for $19 and spent an additional $18 for a pack of 10 3 1/2 HD floppy disks, 
 only to discover that the floppy drives on both instruments were broken. Maybe that's just to
 be expected from equipment that's 20 to 30 years old...
 
 ![Floppy drive](/assets/parallelprintcap/floppy_drive.jpg)
 
 So the only interface left is the parallel printer port. Which made me think: "What if I capture
-the printier data and convert it into a bitmap on my PC?" And thus a new project was born!
+the printer data and convert it into a bitmap on my PC?" And thus a new project was born!
 
 # What Is Out There?
 
@@ -113,7 +113,7 @@ Either way, these are the signals that actively participate in data transactions
 |---------|------------|-----------------------------------------------------------------------------------------------|
 | nSTROBE | To Printer | A low pulse indicates that there's valid data on D[7:0]. This pulse can be as short as 500ns. |
 | D[7:0]  | To Printer | The data that is transmitted to the printer. The data is valid when nSTROBE is low.           |
-| BUSY    | To Host    | Tell the host that the printer is busy and that it should wait with sending the next data.    |
+| BUSY    | To Host    | Inform the host that the printer is busy and that it should wait with sending the next data.  |
 | nACK    | To Host    | A low pulse tells the host that the current data has been processed.                          |
 
 Here is parallel port traffic between the spectrum analyzer and the fake printer:
@@ -121,7 +121,8 @@ Here is parallel port traffic between the spectrum analyzer and the fake printer
 ![Parallel port transactions on a R3273](/assets/parallelprintcap/scope_shots/5_r3273_full_transaction_cycle_busy.png)
 *nSTROBE: yellow, BUSY: purple, nACK: cyan*
 
-There's 22uS between each transaction, good for a data rate of around 350kbits/s.
+There's 22uS between each transaction, good for a data rate of around 350kbits/s, but most instruments
+don't come close to that.
 
 I created a test firmware for fake printer that never asserts BUSY. It works just the same, showing
 that the R3272 probably ignores BUSY and simply waits for an end-of-transaction nACK pulse:
@@ -145,7 +146,7 @@ mostly static control and status signals:
 For a simple traffic capturing tool, you can ignore the the 3 signals that are going to the printer and
 you can tie the signals that go back to the host to the listed static values.
 
-The printer port was originally only used for low speed printer communication, but it was later upgraded to
+The parallel printer port was originally only used for low speed printer communication, but it was later upgraded to
 support higher transfer speeds and even bidirectional data communication. These extensions are described
 in the IEEE 1284 specification which defines different modes: compatibility mode, nibble mode, byte mode,
 enhanced parallel port (EPP), and extended capability port (ECP), where compatibility mode is the original
