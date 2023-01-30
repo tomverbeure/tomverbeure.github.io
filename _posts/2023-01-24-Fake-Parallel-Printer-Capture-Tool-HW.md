@@ -280,6 +280,9 @@ And here's the PCB:
 
 ![Fake Printer v1 PCB](/assets/parallelprintcap/parallel2usb_v1_3d.png)
 
+A [zip archive with the Gerber files](https://github.com/tomverbeure/fake_parallel_printer/blob/main/parallel2usb_v1/gerbers/v1/parallel2usb_1284-v1.zip)
+can be uploaded straight to JLCPCB.
+
 For once I didn't make any mistakes: the board worked fine.
 
 However, after everything was complete, there were 2 things that bugged me:
@@ -307,6 +310,8 @@ of revision 2 has different pin assigments, and it has 1 additional decoupling c
 but it otherwise identical.  The firmware 
 [automatically detects the PCB version](https://github.com/tomverbeure/fake_parallel_printer/blob/81edfde9b26d85c3728c972cc4f7719ea6c1c354/c/parallel2usb/main.cc#L120-L129)
 and adjusts the pin locations accordingly.
+
+Here's the [zip archive for the rev 2 Gerber files](https://github.com/tomverbeure/fake_parallel_printer/blob/main/parallel2usb_v2/gerbers/v2/parallel2usb_1284-v2.zip).
 
 **I haven't sent out revision 2 for production!**
 
@@ -347,6 +352,8 @@ Here's the cost breakdown of the fake printer tool:
 | All components at DigiKey ([cart](https://www.digikey.com/short/mcb8vf27)) | $11.17     |
 | DigiKey USPS Priority Mail shipping                                 | $5         |
 |                                                           **Total** | **$25.42** |
+
+*JLCPCB prices are variable and subject to frequent special promotional offers.*
 
 Shipping cost accounts for ~50% of the total, so you can cut down on that significantly
 by organizing some kind of group buy.
