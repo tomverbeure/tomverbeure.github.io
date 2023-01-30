@@ -538,3 +538,11 @@ If you can't wait, you can find the key points in
 # References
 
 * [fake_parallel_printer repo on GitHub](https://github.com/tomverbeure/fake_parallel_printer/).
+* [LPT_Capture](https://github.com/bkw777/LPT_Capture)
+
+    I found out about this project after initially publishing this blog post. It is very
+    similar in scope to my design, but uses an FTDI FT245RL parallel to USB serial converter
+    instead of a microcontroller. Unlike my design, the PCB is designed to fit in DB-25 enclosure:
+
+    ![LPT Capture](/assets/parallelprintcap/LPT_Capture.jpg)
+
