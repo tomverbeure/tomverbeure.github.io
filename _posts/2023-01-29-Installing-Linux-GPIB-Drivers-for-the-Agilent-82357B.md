@@ -265,3 +265,9 @@ Linking the USB device to /dev/gpib0
 * Use `ibtest` to verify that you can successfully talk to that instrument
 
 That's it!
+
+
+# References
+
+* [Tektronix TDS 420A Remote Control over GPIB](/2020/06/27/Tektronix-TDS420A-Remote-Control-over-GPIB.html)
+

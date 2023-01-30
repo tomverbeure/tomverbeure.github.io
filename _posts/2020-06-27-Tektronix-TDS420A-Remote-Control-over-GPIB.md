@@ -448,3 +448,7 @@ has a TCP/IP socket based transport driver, so by using such a server, no additi
 would need to be written.
 
 
+# References
+
+* [Installing Linux GPIB Drivers for the Agilent 82357B](/2023/01/29/Installing-Linux-GPIB-Drivers-for-the-Agilent-82357B.html)
+
