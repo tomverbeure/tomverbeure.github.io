@@ -3,33 +3,45 @@
     <head>
         <title>Video Timings Calculator</title>
         <script src="assets/javascript/jquery-3.4.1.min.js" type="text/javascript"></script>
+        <script src="assets/video_timings/dmt_timings.js" type="text/javascript"></script>
+        <script src="assets/video_timings/vic_timings.js" type="text/javascript"></script>
     </head>
-    <body>
+    <body style="margin:2%">
         <script>
 
             var predefined_modes = [
+                    { name: "8K / 144"              , horiz_pixels : 7680, vert_pixels : 4320, refresh_rate: 144 },
                     { name: "8K / 120"              , horiz_pixels : 7680, vert_pixels : 4320, refresh_rate: 120 },
                     { name: "8K / 60"               , horiz_pixels : 7680, vert_pixels : 4320, refresh_rate:  60 },
+                    { name: "6K / 60"               , horiz_pixels : 6016, vert_pixels : 3384, refresh_rate:  60 },
+                    { name: "6K / 48"               , horiz_pixels : 6016, vert_pixels : 3384, refresh_rate:  48 },
                     { name: "5K / 144"              , horiz_pixels : 5120, vert_pixels : 2880, refresh_rate: 144 },
                     { name: "5K / 120"              , horiz_pixels : 5120, vert_pixels : 2880, refresh_rate: 120 },
                     { name: "5K / 60"               , horiz_pixels : 5120, vert_pixels : 2880, refresh_rate:  60 },
+                    { name: "4K / 165"              , horiz_pixels : 3840, vert_pixels : 2160, refresh_rate: 165 },
                     { name: "4K / 144"              , horiz_pixels : 3840, vert_pixels : 2160, refresh_rate: 144 },
                     { name: "4K / 120"              , horiz_pixels : 3840, vert_pixels : 2160, refresh_rate: 120 },
                     { name: "4K / 60"               , horiz_pixels : 3840, vert_pixels : 2160, refresh_rate:  60 },
+                    { name: "3440x1440 / 240"       , horiz_pixels : 3440, vert_pixels : 1440, refresh_rate: 240 },
                     { name: "3440x1440 / 200"       , horiz_pixels : 3440, vert_pixels : 1440, refresh_rate: 200 },
                     { name: "3440x1440 / 165"       , horiz_pixels : 3440, vert_pixels : 1440, refresh_rate: 165 },
                     { name: "3440x1440 / 120"       , horiz_pixels : 3440, vert_pixels : 1440, refresh_rate: 120 },
                     { name: "3440x1440 / 60"        , horiz_pixels : 3440, vert_pixels : 1440, refresh_rate:  60 },
+                    { name: "1440p / 240"           , horiz_pixels : 2560, vert_pixels : 1440, refresh_rate: 240 },
                     { name: "1440p / 165"           , horiz_pixels : 2560, vert_pixels : 1440, refresh_rate: 165 },
                     { name: "1440p / 120"           , horiz_pixels : 2560, vert_pixels : 1440, refresh_rate: 120 },
                     { name: "1440p / 60"            , horiz_pixels : 2560, vert_pixels : 1440, refresh_rate:  60 },
                     { name: "1920x1200 / 60"        , horiz_pixels : 1920, vert_pixels : 1200, refresh_rate:  60 },
+                    { name: "1080p / 360"           , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate: 360 },
                     { name: "1080p / 240"           , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate: 240 },
                     { name: "1080p / 144"           , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate: 144 },
                     { name: "1080p / 120"           , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate: 120 },
                     { name: "1080p / 60"            , horiz_pixels : 1920, vert_pixels : 1080, refresh_rate:  60 },
                     { name: "720p / 60"             , horiz_pixels : 1280, vert_pixels :  720, refresh_rate:  60 },
+                    { name: "1024x768 / 60"         , horiz_pixels : 1024, vert_pixels :  768, refresh_rate:  60 },
+                    { name: "800x600 / 60"          , horiz_pixels :  800, vert_pixels :  600, refresh_rate:  60 },
                     { name: "640x480 / 60"          , horiz_pixels :  640, vert_pixels :  480, refresh_rate:  60 },
+                    { name: "640x480 / 50"          , horiz_pixels :  640, vert_pixels :  480, refresh_rate:  50 },
                     { name: "320x200 / 60"          , horiz_pixels :  320, vert_pixels :  200, refresh_rate:  60 },
                     { name: "160x100 / 60"          , horiz_pixels :  160, vert_pixels :  100, refresh_rate:  60 },
                 ];
@@ -94,7 +106,18 @@
             var ACT_FRAME_RATE;
             var V_BLANK;
 
+            var DMT_ID;
+            var DMT_TYPE;
+            var DMT_2BYTE_CODE;
+            var DMT_3BYTE_CODE;
+
+            var VIC;
+
             function calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, reduced_blanking, video_optimized){
+
+                H_POL       = "?";
+                V_POL       = "?";
+                INTERLACED  = interlaced;
 
                 if (reduced_blanking == "cvt"){
                     CLOCK_STEP          = 0.25;
@@ -104,6 +127,8 @@
                     RB_MIN_V_BLANK      = 460;
                     RB_V_FPORCH         = 3;
                     REFRESH_MULTIPLIER  = 1;
+                    H_POL               = "-";
+                    V_POL               = "+";
                 }
                 else if (reduced_blanking == "cvt_rb"){
                     CLOCK_STEP          = 0.25;
@@ -113,6 +138,8 @@
                     RB_MIN_V_BLANK      = 460;
                     RB_V_FPORCH         = 3;
                     REFRESH_MULTIPLIER  = 1;
+                    H_POL               = "+";
+                    V_POL               = "-";
                 }
                 else if (reduced_blanking == "cvt_rb2"){
                     CLOCK_STEP          = 0.001;
@@ -122,6 +149,8 @@
                     RB_MIN_V_BLANK      = 460;
                     RB_V_FPORCH         = 1;
                     REFRESH_MULTIPLIER  = video_optimized ? 1000/1001 : 1;
+                    H_POL               = "+";
+                    V_POL               = "-";
                 }
 
                 // Input parameters
@@ -252,6 +281,126 @@
                 ACT_FRAME_RATE = INT_RQD ? ACT_FIELD_RATE / 2 : ACT_FIELD_RATE;
             }
 
+            function lookup_dmt(horiz_pixels, vert_pixels, refresh_rate, interlaced)
+            {
+                var found = false;
+
+                H_POL       = "?";
+                V_POL       = "?";
+                INTERLACED  = interlaced;
+
+                dmt_timings.forEach(function(dmt_timing, index){
+                    if (   dmt_timing['h_active'] == horiz_pixels 
+                        && dmt_timing['v_active'] == vert_pixels 
+                        && dmt_timing['v_freq'].toFixed()   == refresh_rate.toFixed() 
+                        && dmt_timing['interlaced'] == interlaced
+                    ){
+                        TOTAL_ACTIVE_PIXELS     = horiz_pixels;
+                        H_BLANK                 = dmt_timing['h_blank'];
+                        TOTAL_PIXELS            = dmt_timing['h_total'];
+
+                        V_LINES_RND             = vert_pixels;
+                        V_BLANK                 = dmt_timing['v_blank'];
+                        TOTAL_V_LINES           = dmt_timing['v_total'];
+
+                        ACT_PIXEL_FREQ          = dmt_timing['pix_clock'];
+
+                        H_FRONT_PORCH           = dmt_timing['h_front'];
+                        H_SYNC                  = dmt_timing['h_sync'];
+                        H_BACK_PORCH            = dmt_timing['h_back'];
+                        H_POL                   = dmt_timing['hsync_pol'] == 'Neg' ? "-" : "+";
+
+                        V_FRONT_PORCH           = dmt_timing['v_front'];
+                        V_SYNC_RND              = dmt_timing['v_sync'];
+                        V_BACK_PORCH            = dmt_timing['v_back'];
+                        V_POL                   = dmt_timing['vsync_pol'] == 'Neg' ? "-" : "+";
+
+                        DMT_ID                  = dmt_timing['dmt_id'];
+                        DMT_TYPE                = dmt_timing['type'];
+                        DMT_2BYTE_CODE          = dmt_timing['2_byte_code'] ? (dmt_timing['2_byte_code'].map(function (x) {return "0x" + x.toString(16);})).toString() : "";
+                        DMT_3BYTE_CODE          = dmt_timing['3_byte_code'] ? (dmt_timing['3_byte_code'].map(function (x) {return "0x" + x.toString(16);})).toString() : "";
+
+                        //window.alert("Hello");
+
+                        found = true;
+                    }
+                });
+
+                return found;
+            }
+
+            function lookup_vic(horiz_pixels, vert_pixels, refresh_rate, interlaced)
+            {
+                var found = false;
+
+                INTERLACED  = interlaced;
+
+                vic_timings.forEach(function(vic_timing, index){
+                    if (   vic_timing['h_active'] == horiz_pixels 
+                        && vic_timing['v_active'] == vert_pixels 
+                        && (vic_timing['v_freq']).toFixed()   == refresh_rate.toFixed()
+                        && ((interlaced && vic_timing['scan'] == "Int") || (!interlaced && vic_timing['scan'] == "Prog"))
+                    ){
+                        TOTAL_ACTIVE_PIXELS     = horiz_pixels;
+                        H_BLANK                 = vic_timing['h_blank'];
+                        TOTAL_PIXELS            = vic_timing['h_total'];
+
+                        V_LINES_RND             = vert_pixels;
+                        V_BLANK                 = vic_timing['v_blank'];
+                        TOTAL_V_LINES           = vic_timing['v_total'];
+
+                        ACT_PIXEL_FREQ          = vic_timing['pix_clock'];
+
+                        H_FRONT_PORCH           = vic_timing['h_front'];
+                        H_SYNC                  = vic_timing['h_sync'];
+                        H_BACK_PORCH            = vic_timing['h_back'];
+                        H_POL                   = vic_timing['h_pol'] == 'n' ? "-" : "+";
+
+                        V_FRONT_PORCH           = vic_timing['v_front'];
+                        V_SYNC_RND              = vic_timing['v_sync'];
+                        V_BACK_PORCH            = vic_timing['v_back'];
+                        V_POL                   = vic_timing['v_pol'] == 'n' ? "-" : "+";
+
+                        VIC                     = vic_timing['vic'];
+
+                        found = true;
+                    }
+                });
+
+                return found;
+            }
+
+            function modeline()
+            {
+                str = 'Modeline \"' 
+                            + TOTAL_ACTIVE_PIXELS + 'x'
+                            + V_LINES_RND + '_'
+                            + vfreq_round100;
+                if (INTERLACED)
+                    str += "i";
+                str += '\"';
+
+                str += " " + Math.round(pclock/1000)/1000;
+
+                str += " " + TOTAL_ACTIVE_PIXELS;
+                str += " " + (TOTAL_ACTIVE_PIXELS + H_FRONT_PORCH);
+                str += " " + (TOTAL_ACTIVE_PIXELS + H_FRONT_PORCH + H_SYNC);
+                str += " " + TOTAL_PIXELS;
+
+                str += " " + V_LINES_RND;
+                str += " " + (V_LINES_RND + V_FRONT_PORCH);
+                str += " " + (V_LINES_RND + V_FRONT_PORCH + V_SYNC_RND);
+                str += " " + TOTAL_V_LINES;
+
+                str += H_POL == "+" ? " +HSync" : " -HSync";
+                str += V_POL == "+" ? " +VSync" : " -VSync";
+
+                if (INTERLACED)
+                    str += " Interlace";
+
+                return str;
+            }
+
 
         </script>
         <h1>Video Timings Calculator</h1>
@@ -291,6 +440,8 @@
                     <tr>
                         <td><label>Bits per Component</label></td>
                         <td><select id="bpc" name="bpc">
+                                <option value="5">5</option>
+                                <option value="6">6</option>
                                 <option value="8" selected>8</option>
                                 <option value="10">10</option>
                                 <option value="12">12</option>
@@ -311,7 +462,7 @@
                 $('#predefined_mode').change( function(){ fill_predefined_parameters($('#predefined_mode').val());   update_status(); })
                 $('#horiz_pixels').change( function(){ check_integer($('#horiz_pixels').val(), '#horiz_valid');   update_status(); })
                 $('#vert_pixels') .change( function(){ check_integer($('#vert_pixels') .val(), '#vert_valid');    update_status(); })
-                $('#refresh_rate').change( function(){ check_integer($('#refresh_rate').val(), '#refresh_valid'); update_status(); })
+                $('#refresh_rate').change( function(){ update_status(); })
                 $('#margins')     .change( function(){ update_status(); })
                 $('#interlaced')  .change( function(){ update_status(); })
                 $('#bpc')         .change( function(){ update_status(); })
@@ -320,289 +471,651 @@
         <h2>Timings</h2>
 
             <form id="timings">
-            <table>
-                <tr>
+            <table cellspacing="1" bgcolor="#202020">
+                <tr bgcolor=#ffffff>
                     <th></th>
                     <th>CVT</th>
                     <th>CVT-RB</th>
                     <th>CVT-RBv2</th>
+                    <th>CEA-861</th>
+                    <th>DMT</th>
                     <th>Custom</th>
                     <th></th>
                 </tr>
-                <tr>
+                <tr bgcolor=#ffffff>
                     <td><label>Aspect Ratio</label></td>
                     <td><label id="cvt-aspect_ratio"></label></td>
                     <td><label id="cvt_rb-aspect_ratio"></label></td>
                     <td><label id="cvt_rb2-aspect_ratio"></label></td>
+                    <td><label id="cea-aspect_ratio"></label></td>
+                    <td><label id="dmt-aspect_ratio"></label></td>
                     <td><label id="custom-aspect_ratio"></label></td>
+                    <td></td>
                 </tr>
-                <tr>
+                <tr bgcolor=#ffffff>
                     <td><label>Pixel Clock</label></td>
                     <td><label id="cvt-pclock"></label></td>
                     <td><label id="cvt_rb-pclock"></label></td>
                     <td><label id="cvt_rb2-pclock"></label></td>
+                    <td><label id="cea-pclock"></label></td>
+                    <td><label id="dmt-pclock"></label></td>
                     <td><label id="custom-pclock"></label></td>
                     <td><label>MHz</label></td>
                 </tr>
-                <tr>
+                <tr bgcolor=#ffffff>
                     <td><label>H Total</label></td>
                     <td><label id="cvt-htotal"></label></td>
                     <td><label id="cvt_rb-htotal"></label></td>
                     <td><label id="cvt_rb2-htotal"></label></td>
+                    <td><label id="cea-htotal"></label></td>
+                    <td><label id="dmt-htotal"></label></td>
                     <td><label id="custom-htotal"></label></td>
                     <td><label>Pixels</label></td>
                 </tr>
-                <tr>
-                    <td><label>H Pixels</label></td>
+                <tr bgcolor=#ffffff>
+                    <td><label>H Active</label></td>
                     <td><label id="cvt-hpixels"></label></td>
                     <td><label id="cvt_rb-hpixels"></label></td>
                     <td><label id="cvt_rb2-hpixels"></label></td>
+                    <td><label id="cea-hpixels"></label></td>
+                    <td><label id="dmt-hpixels"></label></td>
                     <td><label id="custom-hpixels"></label></td>
                     <td><label>Pixels</label></td>
                 </tr>
-                <tr>
+                <tr bgcolor=#ffffff>
                     <td><label>H Blank</label></td>
                     <td><label id="cvt-hblank"></label></td>
                     <td><label id="cvt_rb-hblank"></label></td>
                     <td><label id="cvt_rb2-hblank"></label></td>
+                    <td><label id="cea-hblank"></label></td>
+                    <td><label id="dmt-hblank"></label></td>
                     <td><input id="custom-hblank" type="text" value="80" /></td>
                     <td><label>Pixels</label></td>
                 </tr>
-                <tr>
+                <tr bgcolor=#ffffff>
                     <td><label>H Front Porch</label></td>
                     <td><label id="cvt-hfront"></label></td>
                     <td><label id="cvt_rb-hfront"></label></td>
                     <td><label id="cvt_rb2-hfront"></label></td>
+                    <td><label id="cea-hfront"></label></td>
+                    <td><label id="dmt-hfront"></label></td>
                     <td></td>
                     <td><label>Pixels</label></td>
                 </tr>
-                <tr>
+                <tr bgcolor=#ffffff>
                     <td><label>H Sync</label></td>
                     <td><label id="cvt-hsync"></label></td>
                     <td><label id="cvt_rb-hsync"></label></td>
                     <td><label id="cvt_rb2-hsync"></label></td>
+                    <td><label id="cea-hsync"></label></td>
+                    <td><label id="dmt-hsync"></label></td>
                     <td></td>
                     <td><label>Pixels</label></td>
                 </tr>
-                <tr>
+                <tr bgcolor=#ffffff>
                     <td><label>H Back Porch</label></td>
                     <td><label id="cvt-hback"></label></td>
                     <td><label id="cvt_rb-hback"></label></td>
                     <td><label id="cvt_rb2-hback"></label></td>
+                    <td><label id="cea-hback"></label></td>
+                    <td><label id="dmt-hback"></label></td>
                     <td></td>
                     <td><label>Pixels</label></td>
                 </tr>
-                <tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>H Sync Polarity</label></td>
+                    <td><label id="cvt-hpol"></label></td>
+                    <td><label id="cvt_rb-hpol"></label></td>
+                    <td><label id="cvt_rb2-hpol"></label></td>
+                    <td><label id="cea-hpol"></label></td>
+                    <td><label id="dmt-hpol"></label></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr bgcolor=#ffffff>
                     <td><label>H Freq</label></td>
                     <td><label id="cvt-hfreq"></label></td>
                     <td><label id="cvt_rb-hfreq"></label></td>
                     <td><label id="cvt_rb2-hfreq"></label></td>
+                    <td><label id="cea-hfreq"></label></td>
+                    <td><label id="dmt-hfreq"></label></td>
                     <td><label id="custom-hfreq"></label></td>
                     <td><label>kHz</label></td>
                 </tr>
-                <tr>
+                <tr bgcolor=#ffffff>
                     <td><label>H Period</label></td>
                     <td><label id="cvt-hperiod"></label></td>
                     <td><label id="cvt_rb-hperiod"></label></td>
                     <td><label id="cvt_rb2-hperiod"></label></td>
+                    <td><label id="cea-hperiod"></label></td>
+                    <td><label id="dmt-hperiod"></label></td>
                     <td><label id="custom-hperiod"></label></td>
                     <td><label>us</label></td>
                 </tr>
 
-                <tr>
+                <tr bgcolor=#ffffff>
                     <td><label>V Total</label></td>
                     <td><label id="cvt-vtotal"></label></td>
                     <td><label id="cvt_rb-vtotal"></label></td>
                     <td><label id="cvt_rb2-vtotal"></label></td>
+                    <td><label id="cea-vtotal"></label></td>
+                    <td><label id="dmt-vtotal"></label></td>
                     <td><label id="custom-vtotal"></label></td>
-                    <td><label>Pixels</label></td>
+                    <td><label>Lines</label></td>
                 </tr>
-                <tr>
-                    <td><label>V Pixels</label></td>
+                <tr bgcolor=#ffffff>
+                    <td><label>V Active</label></td>
                     <td><label id="cvt-vpixels"></label></td>
                     <td><label id="cvt_rb-vpixels"></label></td>
                     <td><label id="cvt_rb2-vpixels"></label></td>
+                    <td><label id="cea-vpixels"></label></td>
+                    <td><label id="dmt-vpixels"></label></td>
                     <td><label id="custom-vpixels"></label></td>
-                    <td><label>Pixels</label></td>
+                    <td><label>Lines</label></td>
                 </tr>
-                <tr>
+                <tr bgcolor=#ffffff>
                     <td><label>V Blank</label></td>
                     <td><label id="cvt-vblank"></label></td>
                     <td><label id="cvt_rb-vblank"></label></td>
                     <td><label id="cvt_rb2-vblank"></label></td>
+                    <td><label id="cea-vblank"></label></td>
+                    <td><label id="dmt-vblank"></label></td>
                     <td><input id="custom-vblank" type="text" value="6" /></td>
-                    <td><label>Pixels</label></td>
+                    <td><label>Lines</label></td>
                 </tr>
-                <tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>V Blank Duration</label></td>
+                    <td><label id="cvt-vblank_duration"></label></td>
+                    <td><label id="cvt_rb-vblank_duration"></label></td>
+                    <td><label id="cvt_rb2-vblank_duration"></label></td>
+                    <td><label id="cea-vblank_duration"></label></td>
+                    <td><label id="dmt-vblank_duration"></label></td>
+		    <td><label id="custom-vblank_duration"></label></td>
+                    <td><label>us</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
                     <td><label>V Front Porch</label></td>
                     <td><label id="cvt-vfront"></label></td>
                     <td><label id="cvt_rb-vfront"></label></td>
                     <td><label id="cvt_rb2-vfront"></label></td>
+                    <td><label id="cea-vfront"></label></td>
+                    <td><label id="dmt-vfront"></label></td>
                     <td></td>
-                    <td><label>Pixels</label></td>
+                    <td><label>Lines</label></td>
                 </tr>
-                <tr>
+                <tr bgcolor=#ffffff>
                     <td><label>V Sync</label></td>
                     <td><label id="cvt-vsync"></label></td>
                     <td><label id="cvt_rb-vsync"></label></td>
                     <td><label id="cvt_rb2-vsync"></label></td>
+                    <td><label id="cea-vsync"></label></td>
+                    <td><label id="dmt-vsync"></label></td>
                     <td></td>
-                    <td><label>Pixels</label></td>
+                    <td><label>Lines</label></td>
                 </tr>
-                <tr>
+                <tr bgcolor=#ffffff>
                     <td><label>V Back Porch</label></td>
                     <td><label id="cvt-vback"></label></td>
                     <td><label id="cvt_rb-vback"></label></td>
                     <td><label id="cvt_rb2-vback"></label></td>
+                    <td><label id="cea-vback"></label></td>
+                    <td><label id="dmt-vback"></label></td>
                     <td></td>
-                    <td><label>Pixels</label></td>
+                    <td><label>Lines</label></td>
                 </tr>
-                <tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>V Sync Polarity</label></td>
+                    <td><label id="cvt-vpol"></label></td>
+                    <td><label id="cvt_rb-vpol"></label></td>
+                    <td><label id="cvt_rb2-vpol"></label></td>
+                    <td><label id="cea-vpol"></label></td>
+                    <td><label id="dmt-vpol"></label></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr bgcolor=#ffffff>
                     <td><label>V Freq</label></td>
                     <td><label id="cvt-vfreq"></label></td>
                     <td><label id="cvt_rb-vfreq"></label></td>
                     <td><label id="cvt_rb2-vfreq"></label></td>
+                    <td><label id="cea-vfreq"></label></td>
+                    <td><label id="dmt-vfreq"></label></td>
                     <td><label id="custom-vfreq"></label></td>
                     <td><label>Hz</label></td>
                 </tr>
-                <tr>
+                <tr bgcolor=#ffffff>
                     <td><label>V Period</label></td>
                     <td><label id="cvt-vperiod"></label></td>
                     <td><label id="cvt_rb-vperiod"></label></td>
                     <td><label id="cvt_rb2-vperiod"></label></td>
+                    <td><label id="cea-vperiod"></label></td>
+                    <td><label id="dmt-vperiod"></label></td>
                     <td><label id="custom-vperiod"></label></td>
                     <td><label>ms</label></td>
                 </tr>
-                <tr>
-                    <td><label>Total BW</label></td>
-                    <td><label id="cvt-total_bw"></label></td>
-                    <td><label id="cvt_rb-total_bw"></label></td>
-                    <td><label id="cvt_rb2-total_bw"></label></td>
-                    <td><label id="custom-total_bw"></label></td>
+                <tr bgcolor=#ffffff>
+                    <td><label>Peak BW</label></td>
+                    <td><label id="cvt-peak_bw"></label></td>
+                    <td><label id="cvt_rb-peak_bw"></label></td>
+                    <td><label id="cvt_rb2-peak_bw"></label></td>
+                    <td><label id="cea-peak_bw"></label></td>
+                    <td><label id="dmt-peak_bw"></label></td>
+                    <td><label id="custom-peak_bw"></label></td>
                     <td><label>Mbit/s</label></td>
                 </tr>
-                <tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>Line BW</label></td>
+                    <td><label id="cvt-line_bw"></label></td>
+                    <td><label id="cvt_rb-line_bw"></label></td>
+                    <td><label id="cvt_rb2-line_bw"></label></td>
+                    <td><label id="cea-line_bw"></label></td>
+                    <td><label id="dmt-line_bw"></label></td>
+                    <td><label id="custom-line_bw"></label></td>
+                    <td><label>Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
                     <td><label>Active BW</label></td>
                     <td><label id="cvt-active_bw"></label></td>
                     <td><label id="cvt_rb-active_bw"></label></td>
                     <td><label id="cvt_rb2-active_bw"></label></td>
+                    <td><label id="cea-active_bw"></label></td>
+                    <td><label id="dmt-active_bw"></label></td>
                     <td><label id="custom-active_bw"></label></td>
                     <td><label>Mbit/s</label></td>
                 </tr>
-                <tr>
-                    <td><label>DisplayPort 2.0</label></td>
-                    <td><label id="cvt-dp_2"></label></td>
-                    <td><label id="cvt_rb-dp_2"></label></td>
-                    <td><label id="cvt_rb2-dp_2"></label></td>
-                    <td><label id="custom-dp_2"></label></td>
+                <tr bgcolor=#ffffff>
+                    <td><label>DMT ID</label></td>
+                    <td/>
+                    <td/>
+                    <td/>
+                    <td/>
+                    <td><label id="dmt-dmt_id"></label></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>DMT timing standard</label></td>
+                    <td/>
+                    <td/>
+                    <td/>
+                    <td/>
+                    <td><label id="dmt-dmt_type"></label></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>DMT 2-byte code</label></td>
+                    <td/>
+                    <td/>
+                    <td/>
+                    <td/>
+                    <td><label id="dmt-dmt_2byte_code"></label></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>DMT 3-byte code</label></td>
+                    <td/>
+                    <td/>
+                    <td/>
+                    <td/>
+                    <td><label id="dmt-dmt_3byte_code"></label></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>VIC</label></td>
+                    <td/>
+                    <td/>
+                    <td/>
+                    <td><label id="cea-vic"></label></td>
+                    <td/>
+                    <td></td>
+                    <td></td>
+                </tr>
+		<tr bgcolor=#ffffff><td colspan=8><b>Modelines</b></td></tr>
+		<tr bgcolor=#ffffff>
+                    <td>CVT Modeline</td>
+                    <td colspan=7><code><label id="cvt-modeline"></label></code></td>
+                </tr>
+		<tr bgcolor=#ffffff>
+                    <td>CVT-RB Modeline</td>
+                    <td colspan=7><code><label id="cvt_rb-modeline"></label></code></td>
+                </tr>
+		<tr bgcolor=#ffffff>
+                    <td>CVT-RBv2 Modeline</td>
+                    <td colspan=7><code><label id="cvt_rb2-modeline"></label></code></td>
+                </tr>
+		<tr bgcolor=#ffffff>
+                    <td>CEA-861 Modeline</td>
+                    <td colspan=7><code><label id="cea-modeline"></label></code></td>
+                </tr>
+		<tr bgcolor=#ffffff>
+                    <td>DMT Modeline</td>
+                    <td colspan=7><code><label id="dmt-modeline"></label></code></td>
+                </tr>
+		<tr bgcolor=#ffffff><td colspan=8><b>DisplayPort</b></td></tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>DisplayPort UBR20 (20 GHz)</label></td>
+                    <td><label id="cvt-dp_ubr20"></label></td>
+                    <td><label id="cvt_rb-dp_ubr20"></label></td>
+                    <td><label id="cvt_rb2-dp_ubr20"></label></td>
+                    <td><label id="cea-dp_ubr20"></label></td>
+                    <td><label id="dmt-dp_ubr20"></label></td>
+                    <td><label id="custom-dp_ubr20"></label></td>
                     <td><label>Max BW 77,575 Mbit/s</label></td>
                 </tr>
-                <tr>
-                    <td><label>DisplayPort HBR3</label></td>
+                <tr bgcolor=#ffffff>
+                    <td><label>DisplayPort UBR13.5 (13.5 GHz)</label></td>
+                    <td><label id="cvt-dp_ubr13"></label></td>
+                    <td><label id="cvt_rb-dp_ubr13"></label></td>
+                    <td><label id="cvt_rb2-dp_ubr13"></label></td>
+                    <td><label id="cea-dp_ubr13"></label></td>
+                    <td><label id="dmt-dp_ubr13"></label></td>
+                    <td><label id="custom-dp_ubr13"></label></td>
+                    <td><label>Max BW 52,364 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>DisplayPort UBR10 (10 GHz)</label></td>
+                    <td><label id="cvt-dp_ubr10"></label></td>
+                    <td><label id="cvt_rb-dp_ubr10"></label></td>
+                    <td><label id="cvt_rb2-dp_ubr10"></label></td>
+                    <td><label id="cea-dp_ubr10"></label></td>
+                    <td><label id="dmt-dp_ubr10"></label></td>
+                    <td><label id="custom-dp_ubr10"></label></td>
+                    <td><label>Max BW 38,788 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>DisplayPort HBR3 (8.1 GHz)</label></td>
                     <td><label id="cvt-dp_hbr3"></label></td>
                     <td><label id="cvt_rb-dp_hbr3"></label></td>
                     <td><label id="cvt_rb2-dp_hbr3"></label></td>
+                    <td><label id="cea-dp_hbr3"></label></td>
+                    <td><label id="dmt-dp_hbr3"></label></td>
                     <td><label id="custom-dp_hbr3"></label></td>
                     <td><label>Max BW 25,920 Mbit/s</label></td>
                 </tr>
-                <tr>
-                    <td><label>DisplayPort HBR2</label></td>
+                <tr bgcolor=#ffffff>
+                    <td><label>DisplayPort HBR2 (5.4 GHz)</label></td>
                     <td><label id="cvt-dp_hbr2"></label></td>
                     <td><label id="cvt_rb-dp_hbr2"></label></td>
                     <td><label id="cvt_rb2-dp_hbr2"></label></td>
+                    <td><label id="cea-dp_hbr2"></label></td>
+                    <td><label id="dmt-dp_hbr2"></label></td>
                     <td><label id="custom-dp_hbr2"></label></td>
                     <td><label>Max BW 17,280 Mbit/s</label></td>
                 </tr>
-                <tr>
-                    <td><label>DisplayPort HBR</label></td>
+                <tr bgcolor=#ffffff>
+                    <td><label>DisplayPort HBR (2.7 GHz)</label></td>
                     <td><label id="cvt-dp_hbr"></label></td>
                     <td><label id="cvt_rb-dp_hbr"></label></td>
                     <td><label id="cvt_rb2-dp_hbr"></label></td>
+                    <td><label id="cea-dp_hbr"></label></td>
+                    <td><label id="dmt-dp_hbr"></label></td>
                     <td><label id="custom-dp_hbr"></label></td>
                     <td><label>Max BW 8,640 Mbit/s</label></td>
                 </tr>
-                <tr>
-                    <td><label>DisplayPort RBR</label></td>
+                <tr bgcolor=#ffffff>
+                    <td><label>DisplayPort RBR (1.64 GHz)</label></td>
                     <td><label id="cvt-dp_rbr"></label></td>
                     <td><label id="cvt_rb-dp_rbr"></label></td>
                     <td><label id="cvt_rb2-dp_rbr"></label></td>
+                    <td><label id="cea-dp_rbr"></label></td>
+                    <td><label id="dmt-dp_rbr"></label></td>
                     <td><label id="custom-dp_rbr"></label></td>
                     <td><label>Max BW 5,240 Mbit/s</label></td>
                 </tr>
-                <tr>
-                    <td><label>HDMI 2.1</label></td>
-                    <td><label id="cvt-hdmi2_1"></label></td>
-                    <td><label id="cvt_rb-hdmi2_1"></label></td>
-                    <td><label id="cvt_rb2-hdmi2_1"></label></td>
-                    <td><label id="custom-hdmi2_1"></label></td>
+		<tr bgcolor=#ffffff><td colspan=8><b>DisplayPort Type-C Alt Mode</b></td></tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>DP 2.0 Type-C Alt Mode (20 GHz)</label></td>
+                    <td><label id="cvt-dpam_2"></label></td>
+                    <td><label id="cvt_rb-dpam_2"></label></td>
+                    <td><label id="cvt_rb2-dpam_2"></label></td>
+                    <td><label id="cea-dpam_2"></label></td>
+                    <td><label id="dmt-dpam_2"></label></td>
+                    <td><label id="custom-dpam_2"></label></td>
+                    <td><label>Max BW 38,787 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>DP HBR3 Type-C Alt Mode (8.1 GHz)</label></td>
+                    <td><label id="cvt-dpam_hbr3"></label></td>
+                    <td><label id="cvt_rb-dpam_hbr3"></label></td>
+                    <td><label id="cvt_rb2-dpam_hbr3"></label></td>
+                    <td><label id="cea-dpam_hbr3"></label></td>
+                    <td><label id="dmt-dpam_hbr3"></label></td>
+                    <td><label id="custom-dpam_hbr3"></label></td>
+                    <td><label>Max BW 12,960 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>DP HBR2 Type-C Alt Mode (5.4 GHz)</label></td>
+                    <td><label id="cvt-dpam_hbr2"></label></td>
+                    <td><label id="cvt_rb-dpam_hbr2"></label></td>
+                    <td><label id="cvt_rb2-dpam_hbr2"></label></td>
+                    <td><label id="cea-dpam_hbr2"></label></td>
+                    <td><label id="dmt-dpam_hbr2"></label></td>
+                    <td><label id="custom-dpam_hbr2"></label></td>
+                    <td><label>Max BW 8,640 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>DP HBR Type-C Alt Mode (2.7 GHz)</label></td>
+                    <td><label id="cvt-dpam_hbr"></label></td>
+                    <td><label id="cvt_rb-dpam_hbr"></label></td>
+                    <td><label id="cvt_rb2-dpam_hbr"></label></td>
+                    <td><label id="cea-dpam_hbr"></label></td>
+                    <td><label id="dmt-dpam_hbr"></label></td>
+                    <td><label id="custom-dpam_hbr"></label></td>
+                    <td><label>Max BW 4,320 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>DP RBR Type-C Alt Mode (1.64 GHz)</label></td>
+                    <td><label id="cvt-dpam_rbr"></label></td>
+                    <td><label id="cvt_rb-dpam_rbr"></label></td>
+                    <td><label id="cvt_rb2-dpam_rbr"></label></td>
+                    <td><label id="cea-dpam_rbr"></label></td>
+                    <td><label id="dmt-dpam_rbr"></label></td>
+                    <td><label id="custom-dpam_rbr"></label></td>
+                    <td><label>Max BW 2,620 Mbit/s</label></td>
+                </tr>
+		<tr bgcolor=#ffffff><td colspan=8><b>HDMI FRL</b></td></tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>HDMI 2.1 FRL (12 GHz)</label></td>
+                    <td><label id="cvt-hdmi2_1_12g"></label></td>
+                    <td><label id="cvt_rb-hdmi2_1_12g"></label></td>
+                    <td><label id="cvt_rb2-hdmi2_1_12g"></label></td>
+                    <td><label id="cea-hdmi2_1_12g"></label></td>
+                    <td><label id="dmt-hdmi2_1_12g"></label></td>
+                    <td><label id="custom-hdmi2_1_12g"></label></td>
                     <td><label>Max BW 42,667 Mbit/s</label></td>
                 </tr>
-                <tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>HDMI 2.1 FRL (10 GHz)</label></td>
+                    <td><label id="cvt-hdmi2_1_10g"></label></td>
+                    <td><label id="cvt_rb-hdmi2_1_10g"></label></td>
+                    <td><label id="cvt_rb2-hdmi2_1_10g"></label></td>
+                    <td><label id="cea-hdmi2_1_10g"></label></td>
+                    <td><label id="dmt-hdmi2_1_10g"></label></td>
+                    <td><label id="custom-hdmi2_1_10g"></label></td>
+                    <td><label>Max BW 35,556 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>HDMI 2.1 FRL (8 GHz)</label></td>
+                    <td><label id="cvt-hdmi2_1_8g"></label></td>
+                    <td><label id="cvt_rb-hdmi2_1_8g"></label></td>
+                    <td><label id="cvt_rb2-hdmi2_1_8g"></label></td>
+                    <td><label id="cea-hdmi2_1_8g"></label></td>
+                    <td><label id="dmt-hdmi2_1_8g"></label></td>
+                    <td><label id="custom-hdmi2_1_8g"></label></td>
+                    <td><label>Max BW 28,444 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>HDMI 2.1 FRL (6 GHz)</label></td>
+                    <td><label id="cvt-hdmi2_1_6g"></label></td>
+                    <td><label id="cvt_rb-hdmi2_1_6g"></label></td>
+                    <td><label id="cvt_rb2-hdmi2_1_6g"></label></td>
+                    <td><label id="cea-hdmi2_1_6g"></label></td>
+                    <td><label id="dmt-hdmi2_1_6g"></label></td>
+                    <td><label id="custom-hdmi2_1_6g"></label></td>
+                    <td><label>Max BW 21,333 Mbit/s</label></td>
+                </tr>
+                <tr/>
+		<tr bgcolor=#ffffff><td colspan=8><b>HDMI TMDS</b></td></tr>
+                <tr bgcolor=#ffffff>
                     <td><label>HDMI 2.0 (600 MHz)</label></td>
                     <td><label id="cvt-hdmi2_0"></label></td>
                     <td><label id="cvt_rb-hdmi2_0"></label></td>
                     <td><label id="cvt_rb2-hdmi2_0"></label></td>
+                    <td><label id="cea-hdmi2_0"></label></td>
+                    <td><label id="dmt-hdmi2_0"></label></td>
                     <td><label id="custom-hdmi2_0"></label></td>
                     <td><label>Max BW 14,400 Mbit/s</label></td>
                 </tr>
-                <tr>
+                <tr bgcolor=#ffffff>
                     <td><label>HDMI 1.3/1.4 (340 MHz)</label></td>
                     <td><label id="cvt-hdmi1_3"></label></td>
                     <td><label id="cvt_rb-hdmi1_3"></label></td>
                     <td><label id="cvt_rb2-hdmi1_3"></label></td>
+                    <td><label id="cea-hdmi1_3"></label></td>
+                    <td><label id="dmt-hdmi1_3"></label></td>
                     <td><label id="custom-hdmi1_3"></label></td>
                     <td><label>Max BW 8,160 Mbit/s</label></td>
                 </tr>
-                <tr>
+                <tr bgcolor=#ffffff>
                     <td><label>HDMI 1.0/1.1/1.2 (165 MHz)</label></td>
                     <td><label id="cvt-hdmi1_0"></label></td>
                     <td><label id="cvt_rb-hdmi1_0"></label></td>
                     <td><label id="cvt_rb2-hdmi1_0"></label></td>
+                    <td><label id="cea-hdmi1_0"></label></td>
+                    <td><label id="dmt-hdmi1_0"></label></td>
                     <td><label id="custom-hdmi1_0"></label></td>
                     <td><label>Max BW 3,960 Mbit/s</label></td>
                 </tr>
-                <tr>
-                    <td><label>DVI-DL (330 MHz)</label></td>
+                <tr/>
+		<tr bgcolor=#ffffff><td colspan=8><b>DVI</b></td></tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>DVI-DL (dual link 165 MHz)</label></td>
                     <td><label id="cvt-dvi_dl"></label></td>
                     <td><label id="cvt_rb-dvi_dl"></label></td>
                     <td><label id="cvt_rb2-dvi_dl"></label></td>
+                    <td><label id="cea-dvi_dl"></label></td>
+                    <td><label id="dmt-dvi_dl"></label></td>
                     <td><label id="custom-dvi_dl"></label></td>
                     <td><label>Max BW 7,920 Mbit/s</label></td>
                 </tr>
-                <tr>
-                    <td><label>DVI-D</label></td>
+                <tr bgcolor=#ffffff>
+                    <td><label>DVI-D (single link 165 MHz)</label></td>
                     <td><label id="cvt-dvi_d"></label></td>
                     <td><label id="cvt_rb-dvi_d"></label></td>
                     <td><label id="cvt_rb2-dvi_d"></label></td>
+                    <td><label id="cea-dvi_d"></label></td>
+                    <td><label id="dmt-dvi_d"></label></td>
                     <td><label id="custom-dvi_d"></label></td>
-                    <td><label>Max BW 3960 Mbit/s</label></td>
+                    <td><label>Max BW 3,960 Mbit/s</label></td>
                 </tr>
-                <tr>
+                <tr/>
+        <tr bgcolor=#ffffff><td colspan=8><b>SDI</b></td></tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>12G-SDI</label></td>
+                    <td><label id="cvt-sdi_12g"></label></td>
+                    <td><label id="cvt_rb-sdi_12g"></label></td>
+                    <td><label id="cvt_rb2-sdi_12g"></label></td>
+                    <td><label id="cea-sdi_12g"></label></td>
+                    <td><label id="dmt-sdi_12g"></label></td>
+                    <td><label id="custom-sdi_12g"></label></td>
+                    <td><label>Max BW 11,880 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>6G-SDI</label></td>
+                    <td><label id="cvt-sdi_6g"></label></td>
+                    <td><label id="cvt_rb-sdi_6g"></label></td>
+                    <td><label id="cvt_rb2-sdi_6g"></label></td>
+                    <td><label id="cea-sdi_6g"></label></td>
+                    <td><label id="dmt-sdi_6g"></label></td>
+                    <td><label id="custom-sdi_6g"></label></td>
+                    <td><label>Max BW 5,940 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>3G-SDI</label></td>
+                    <td><label id="cvt-sdi_3g"></label></td>
+                    <td><label id="cvt_rb-sdi_3g"></label></td>
+                    <td><label id="cvt_rb2-sdi_3g"></label></td>
+                    <td><label id="cea-sdi_3g"></label></td>
+                    <td><label id="dmt-sdi_3g"></label></td>
+                    <td><label id="custom-sdi_3g"></label></td>
+                    <td><label>Max BW 2,970 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>HD-SDI</label></td>
+                    <td><label id="cvt-sdi_hd"></label></td>
+                    <td><label id="cvt_rb-sdi_hd"></label></td>
+                    <td><label id="cvt_rb2-sdi_hd"></label></td>
+                    <td><label id="cea-sdi_hd"></label></td>
+                    <td><label id="dmt-sdi_hd"></label></td>
+                    <td><label id="custom-sdi_hd"></label></td>
+                    <td><label>Max BW 1,485 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>SD-SDI</label></td>
+                    <td><label id="cvt-sdi_sd"></label></td>
+                    <td><label id="cvt_rb-sdi_sd"></label></td>
+                    <td><label id="cvt_rb2-sdi_sd"></label></td>
+                    <td><label id="cea-sdi_sd"></label></td>
+                    <td><label id="dmt-sdi_sd"></label></td>
+                    <td><label id="custom-sdi_sd"></label></td>
+                    <td><label>Max BW 270 Mbit/s</label></td>
+                </tr>
+            <tr bgcolor=#ffffff><td colspan=8><b>RFC4175</b></td></tr>
+                <tr bgcolor=#ffffff>
                     <td><label>RFC4175/100M Ethernet</label></td>
                     <td><label id="cvt-rfc4175_eth100m"></label></td>
                     <td><label id="cvt_rb-rfc4175_eth100m"></label></td>
                     <td><label id="cvt_rb2-rfc4175_eth100m"></label></td>
+                    <td><label id="cea-rfc4175_eth100m"></label></td>
+                    <td><label id="dmt-rfc4175_eth100m"></label></td>
                     <td><label id="custom-rfc4175_eth100m"></label></td>
                     <td><label id="max_rfc4175_eth100m"></label></td>
                 </tr>
-                <tr>
+                <tr bgcolor=#ffffff>
                     <td><label>RFC4175/1 GigE</label></td>
                     <td><label id="cvt-rfc4175_eth1g"></label></td>
                     <td><label id="cvt_rb-rfc4175_eth1g"></label></td>
                     <td><label id="cvt_rb2-rfc4175_eth1g"></label></td>
+                    <td><label id="cea-rfc4175_eth1g"></label></td>
+                    <td><label id="dmt-rfc4175_eth1g"></label></td>
                     <td><label id="custom-rfc4175_eth1g"></label></td>
                     <td><label id="max_rfc4175_eth1g"></label></td>
                 </tr>
-                <tr>
+                <tr bgcolor=#ffffff>
                     <td><label>RFC4175/10 GigE</label></td>
                     <td><label id="cvt-rfc4175_eth10g"></label></td>
                     <td><label id="cvt_rb-rfc4175_eth10g"></label></td>
                     <td><label id="cvt_rb2-rfc4175_eth10g"></label></td>
+                    <td><label id="cea-rfc4175_eth10g"></label></td>
+                    <td><label id="dmt-rfc4175_eth10g"></label></td>
                     <td><label id="custom-rfc4175_eth10g"></label></td>
                     <td><label id="max_rfc4175_eth10g"></label></td>
                 </tr>
             </table>
             </form>
+
+            <ul>
+                <li>When looking up a DMT or CEA-861 resolution for a particular refresh rate, the tool
+                    rounds the specified refresh rate to the closest integer and then matches against rounded 
+                    DMT and CEA refresh rates. For example, if you specify a refresh rate of 60.1Hz, the tool will show DMT and CEA refresh
+                    rates of 59.94Hz.</li>
+                <li>DP Type-C Alt Mode is for USB Type-C connections using VESA DisplayPort Alternative Mode which 
+                    provides two DisplayPort lanes (pin assignments B, D, and F).  For connections providing four 
+                    DisplayPort lanes (pin assignments A, C, and E) use the primary DisplayPort rows in the table.</li>
+                <li>Thunderbolt 3 has Max BW of 40,000 Mbit/s and Thunderbolt 2 has Max BW of 20,000 MBit/s, however 
+                    a single display cannot exceed the bandwidth listed above for DisplayPort. Known implementations 
+                    support either one or two DisplayPort displays. Intel Thunderbolt 2 controllers (code name "Falcon 
+                    Ridge") and the first Intel Thunderbolt 3 controller (code name "Alpine Ridge") only support 
+                    DisplayPort HBR2, while newer Intel controllers support DisplayPort HBR3.</li>
+                <li>There are some CEA VIC numbers with multiple timings that differ slightly in their Vtotal, and
+                    thus in their refresh rates. For example, VIC timings 23 and 24 have a resolution of 
+                    1440x288 can have a refresh rate of 50.080Hz, 49.920Hz, and 49.761Hz. When you search for one of
+                    those exostic timings, the tool will choose one of the options, but not the other. The exact
+                    behavior is undefined.</li>
+            </ul>
 
             <script type="text/javascript">
 
@@ -633,10 +1146,61 @@
                                                (color_fmt == "yuv422") ? 2   :
                                                (color_fmt == "yuv420") ? 1.5 : 0;
 
-                    var standards = [ "cvt", "cvt_rb", "cvt_rb2", "custom" ];
+                    var standards = [ "cvt", "cvt_rb", "cvt_rb2", "custom", "dmt", "cea" ];
                     standards.forEach(function(standard, index){
 
-                        if (standard != "custom"){
+                        var result = true;
+
+                        if (standard == "custom") {
+                            hactive         = horiz_pixels;
+                            hblank          = Number($('#custom-hblank').val());
+                            htotal          = horiz_pixels + hblank;
+
+                            vactive         = vert_pixels;
+                            vblank          = Number($('#custom-vblank').val());
+                            vtotal          = vert_pixels + vblank;
+
+                            pclock          = htotal * vtotal * refresh_rate;
+                        }
+                        else if (standard == "dmt"){
+                            result = lookup_dmt(horiz_pixels, vert_pixels, refresh_rate, interlaced);
+
+                            if (result){
+                                if (DMT_TYPE == "cvt"){
+                                    calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, false, interlaced, "cvt", false);
+                                }
+                                else if (DMT_TYPE == "cvt-rb"){
+                                    calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, false, interlaced, "cvt_rb", false);
+                                }
+                                else if (DMT_TYPE == "CEA-861"){
+                                    result = lookup_vic(horiz_pixels, vert_pixels, refresh_rate, interlaced);
+                                }
+                            }
+
+                            hactive         = TOTAL_ACTIVE_PIXELS;
+                            hblank          = H_BLANK;
+                            htotal          = TOTAL_PIXELS;
+    
+                            vactive         = V_LINES_RND;
+                            vblank          = V_BLANK;
+                            vtotal          = TOTAL_V_LINES;
+    
+                            pclock          = ACT_PIXEL_FREQ * 1000000;
+                        }
+                        else if (standard == "cea"){
+                            result = lookup_vic(horiz_pixels, vert_pixels, refresh_rate, interlaced);
+
+                            hactive         = TOTAL_ACTIVE_PIXELS;
+                            hblank          = H_BLANK;
+                            htotal          = TOTAL_PIXELS;
+    
+                            vactive         = V_LINES_RND;
+                            vblank          = V_BLANK;
+                            vtotal          = TOTAL_V_LINES;
+    
+                            pclock          = ACT_PIXEL_FREQ * 1000000;
+                        }
+                        else {
                             calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, standard, false);
 
                             hactive         = TOTAL_ACTIVE_PIXELS;
@@ -649,40 +1213,45 @@
 
                             pclock          = ACT_PIXEL_FREQ * 1000000;
                         }
-                        else {
-                            hactive         = horiz_pixels;
-                            hblank          = Number($('#custom-hblank').val());
-                            htotal          = horiz_pixels + hblank;
-
-                            vactive         = vert_pixels;
-                            vblank          = Number($('#custom-vblank').val());
-                            vtotal          = vert_pixels + vblank;
-
-                            pclock          = htotal * vtotal * refresh_rate;
-                        }
 
                         hfreq           = pclock / htotal;
                         vfreq           = pclock / (vtotal * htotal);
+                        vfreq_round100  = Math.round(vfreq*100)/100;
 
                         hperiod         = 1/hfreq;
                         vperiod         = 1/vfreq;
 
-                        total_bw        = pclock * bpc * color_fmt_multiplier;
+                        peak_bw         = pclock * bpc * color_fmt_multiplier;
+                        line_bw         = peak_bw * hactive / htotal;
                         active_bw       = vfreq * bpc * vactive * hactive * color_fmt_multiplier;
+                        vblank_duration = vblank * hperiod;
 
-                        dp_2_bw         =  20000000000*4/132*128;
+                        dp_ubr20_bw     =  20000000000*4/132*128;
+                        dp_ubr13_bw     =  13500000000*4/132*128;
+                        dp_ubr10_bw     =  10000000000*4/132*128;
                         dp_hbr3_bw      =   8100000000*4/10*8;
                         dp_hbr2_bw      =   5400000000*4/10*8;
                         dp_hbr_bw       =   2700000000*4/10*8;
                         dp_rbr_bw       =   1640000000*4/10*8;
 
+                        dpam_2_bw       =  20000000000*2/132*128;
+                        dpam_hbr3_bw    =   8100000000*2/10*8;
+                        dpam_hbr2_bw    =   5400000000*2/10*8;
+                        dpam_hbr_bw     =   2700000000*2/10*8;
+                        dpam_rbr_bw     =   1640000000*2/10*8;
+
                         dvi_d_bw        =    165000000*24;
+                                             165000000
                         dvi_dl_bw       =    330000000*24;
 
                         hdmi_1_0_bw     =    165000000*24;
                         hdmi_1_3_bw     =    340000000*24;
                         hdmi_2_0_bw     =    600000000*24;
-                        hdmi_2_1_bw     =  12000000000*4*16/18;
+                        hdmi_2_1_6g_bw  =   6000000000*4*16/18;
+                        hdmi_2_1_8g_bw  =   8000000000*4*16/18;
+                        hdmi_2_1_10g_bw =  10000000000*4*16/18;
+                        hdmi_2_1_12g_bw =  12000000000*4*16/18;
+
 
                         ethernet_mtu1500 = 1500/1542;   // includes inter-packet gap
 
@@ -691,94 +1260,244 @@
                                            12 +         // Minimal RTP header
                                            13;          // RFC 4175 additional header
 
+                        sdi_sd_bw = 270000000;
+                        sdi_hd_bw = 1485000000;
+                        sdi_3g_bw = 2970000000;
+                        sdi_6g_bw = 5940000000;
+                        sdi_12g_bw = 11880000000;
+
                         rfc4175_eth100m_bw  = 100000000   * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500;
                         rfc4175_eth1g_bw    = 1000000000  * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500;
                         rfc4175_eth10g_bw   = 10000000000 * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500;
 
-                        dp_2_ok         = (total_bw < dp_2_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        dp_hbr3_ok      = (total_bw < dp_hbr3_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        dp_hbr2_ok      = (total_bw < dp_hbr2_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        dp_hbr_ok       = (total_bw < dp_hbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        dp_rbr_ok       = (total_bw < dp_rbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+
+                        dp_ubr20_ok     = (peak_bw < dp_ubr20_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_ubr13_ok     = (peak_bw < dp_ubr13_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_ubr10_ok     = (peak_bw < dp_ubr10_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_hbr3_ok      = (peak_bw < dp_hbr3_bw)     ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_hbr2_ok      = (peak_bw < dp_hbr2_bw)     ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_hbr_ok       = (peak_bw < dp_hbr_bw)      ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dp_rbr_ok       = (peak_bw < dp_rbr_bw)      ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+
+                        dpam_2_ok         = (peak_bw < dpam_2_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dpam_hbr3_ok      = (peak_bw < dpam_hbr3_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dpam_hbr2_ok      = (peak_bw < dpam_hbr2_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dpam_hbr_ok       = (peak_bw < dpam_hbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        dpam_rbr_ok       = (peak_bw < dpam_rbr_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
 
                         dvi_d_ok        = bpc != 8 ?               "<font color=\"red\">8 bpc only</font>" :
-                                          (total_bw < dvi_d_bw)   ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                                          (peak_bw < dvi_d_bw)   ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                         dvi_dl_ok       = bpc != 8 ?               "<font color=\"red\">8 bpc only</font>" :
-                                          (total_bw < dvi_dl_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                                          (peak_bw < dvi_dl_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
 
-                        hdmi_1_0_ok     = (total_bw < hdmi_1_0_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        hdmi_1_3_ok     = (total_bw < hdmi_1_3_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        hdmi_2_0_ok     = (total_bw < hdmi_2_0_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                        hdmi_2_1_ok     = (total_bw < hdmi_2_1_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_1_0_ok     = (peak_bw < hdmi_1_0_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_1_3_ok     = (peak_bw < hdmi_1_3_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_2_0_ok     = (peak_bw < hdmi_2_0_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_2_1_6g_ok  = (peak_bw < hdmi_2_1_6g_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_2_1_8g_ok  = (peak_bw < hdmi_2_1_8g_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_2_1_10g_ok = (peak_bw < hdmi_2_1_10g_bw)? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        hdmi_2_1_12g_ok = (peak_bw < hdmi_2_1_12g_bw)? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+
+                        sdi_sd_ok       = (peak_bw < sdi_sd_bw)      ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        sdi_hd_ok       = (peak_bw < sdi_hd_bw)      ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        sdi_3g_ok       = (peak_bw < sdi_3g_bw)      ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        sdi_6g_ok       = (peak_bw < sdi_6g_bw)      ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
+                        sdi_12g_ok      = (peak_bw < sdi_12g_bw)     ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
 
                         rfc4175_eth100m_ok = (active_bw < rfc4175_eth100m_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                         rfc4175_eth1g_ok   = (active_bw < rfc4175_eth1g_bw)   ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                         rfc4175_eth10g_ok  = (active_bw < rfc4175_eth10g_bw)  ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
 
-                        dp_2_ok         = dp_2_ok    + " (" + Math.round(total_bw/dp_2_bw*100) + "%)"
-                        dp_hbr3_ok      = dp_hbr3_ok + " (" + Math.round(total_bw/dp_hbr3_bw*100) + "%)"
-                        dp_hbr2_ok      = dp_hbr2_ok + " (" + Math.round(total_bw/dp_hbr2_bw*100) + "%)"
-                        dp_hbr_ok       = dp_hbr_ok  + " (" + Math.round(total_bw/dp_hbr_bw*100) + "%)"
-                        dp_rbr_ok       = dp_rbr_ok  + " (" + Math.round(total_bw/dp_rbr_bw*100) + "%)"
-                        dvi_d_ok        = bpc == 8 ? dvi_d_ok   + " (" + Math.round(total_bw/dvi_d_bw*100) + "%)" : dvi_d_ok
-                        dvi_dl_ok       = bpc == 8 ? dvi_dl_ok  + " (" + Math.round(total_bw/dvi_dl_bw*100) + "%)" : dvi_dl_ok
-                        hdmi_1_0_ok     = hdmi_1_0_ok    + " (" + Math.round(total_bw/hdmi_1_0_bw*100) + "%)"
-                        hdmi_1_3_ok     = hdmi_1_3_ok    + " (" + Math.round(total_bw/hdmi_1_3_bw*100) + "%)"
-                        hdmi_2_0_ok     = hdmi_2_0_ok    + " (" + Math.round(total_bw/hdmi_2_0_bw*100) + "%)"
-                        hdmi_2_1_ok     = hdmi_2_1_ok    + " (" + Math.round(total_bw/hdmi_2_1_bw*100) + "%)"
+                        dp_ubr20_ok     = dp_ubr20_ok  + " (" + Math.round(peak_bw/dp_ubr20_bw*100) + "%)"
+                        dp_ubr13_ok     = dp_ubr13_ok  + " (" + Math.round(peak_bw/dp_ubr13_bw*100) + "%)"
+                        dp_ubr10_ok     = dp_ubr10_ok  + " (" + Math.round(peak_bw/dp_ubr10_bw*100) + "%)"
+                        dp_hbr3_ok      = dp_hbr3_ok   + " (" + Math.round(peak_bw/dp_hbr3_bw*100) + "%)"
+                        dp_hbr2_ok      = dp_hbr2_ok   + " (" + Math.round(peak_bw/dp_hbr2_bw*100) + "%)"
+                        dp_hbr_ok       = dp_hbr_ok    + " (" + Math.round(peak_bw/dp_hbr_bw*100) + "%)"
+                        dp_rbr_ok       = dp_rbr_ok    + " (" + Math.round(peak_bw/dp_rbr_bw*100) + "%)"
+                        dpam_2_ok       = dpam_2_ok    + " (" + Math.round(peak_bw/dpam_2_bw*100) + "%)"
+                        dpam_hbr3_ok    = dpam_hbr3_ok + " (" + Math.round(peak_bw/dpam_hbr3_bw*100) + "%)"
+                        dpam_hbr2_ok    = dpam_hbr2_ok + " (" + Math.round(peak_bw/dpam_hbr2_bw*100) + "%)"
+                        dpam_hbr_ok     = dpam_hbr_ok  + " (" + Math.round(peak_bw/dpam_hbr_bw*100) + "%)"
+                        dpam_rbr_ok     = dpam_rbr_ok  + " (" + Math.round(peak_bw/dpam_rbr_bw*100) + "%)"
+                        dvi_d_ok        = bpc == 8 ? dvi_d_ok   + " (" + Math.round(peak_bw/dvi_d_bw*100) + "%)" : dvi_d_ok
+                        dvi_dl_ok       = bpc == 8 ? dvi_dl_ok  + " (" + Math.round(peak_bw/dvi_dl_bw*100) + "%)" : dvi_dl_ok
+                        hdmi_1_0_ok     = hdmi_1_0_ok     + " (" + Math.round(peak_bw/hdmi_1_0_bw*100) + "%)"
+                        hdmi_1_3_ok     = hdmi_1_3_ok     + " (" + Math.round(peak_bw/hdmi_1_3_bw*100) + "%)"
+                        hdmi_2_0_ok     = hdmi_2_0_ok     + " (" + Math.round(peak_bw/hdmi_2_0_bw*100) + "%)"
+                        hdmi_2_1_6g_ok  = hdmi_2_1_6g_ok  + " (" + Math.round(peak_bw/hdmi_2_1_6g_bw*100) + "%)"
+                        hdmi_2_1_8g_ok  = hdmi_2_1_8g_ok  + " (" + Math.round(peak_bw/hdmi_2_1_8g_bw*100) + "%)"
+                        hdmi_2_1_10g_ok = hdmi_2_1_10g_ok + " (" + Math.round(peak_bw/hdmi_2_1_10g_bw*100) + "%)"
+                        hdmi_2_1_12g_ok = hdmi_2_1_12g_ok + " (" + Math.round(peak_bw/hdmi_2_1_12g_bw*100) + "%)"
+
+                        sdi_sd_ok       = sdi_sd_ok       + " (" + Math.round(peak_bw/sdi_sd_bw*100) + "%)"
+                        sdi_hd_ok       = sdi_hd_ok       + " (" + Math.round(peak_bw/sdi_hd_bw*100) + "%)"
+                        sdi_3g_ok       = sdi_3g_ok       + " (" + Math.round(peak_bw/sdi_3g_bw*100) + "%)"
+                        sdi_6g_ok       = sdi_6g_ok       + " (" + Math.round(peak_bw/sdi_6g_bw*100) + "%)"
+                        sdi_12g_ok       = sdi_12g_ok       + " (" + Math.round(peak_bw/sdi_12g_bw*100) + "%)"
 
                         rfc4175_eth100m_ok = rfc4175_eth100m_ok + " (" + Math.round(active_bw/rfc4175_eth100m_bw*100) + "%)"
                         rfc4175_eth1g_ok   = rfc4175_eth1g_ok   + " (" + Math.round(active_bw/rfc4175_eth1g_bw*100) + "%)"
                         rfc4175_eth10g_ok  = rfc4175_eth10g_ok   + " (" + Math.round(active_bw/rfc4175_eth10g_bw*100) + "%)"
 
                         prefix = "#" + standard;
-                        $(prefix + "-aspect_ratio").text(ASPECT_RATIO);
 
-                        $(prefix + "-pclock").text(Math.round(pclock/1000)/1000);
+                        if (result){
+                            $(prefix + "-aspect_ratio").text(ASPECT_RATIO);
+    
+                            $(prefix + "-pclock").text(Math.round(pclock/1000)/1000);
+    
+                            $(prefix + "-htotal").text(htotal);
+                            $(prefix + "-hpixels").text(hactive);
+                            $(prefix + "-hblank").text(hblank);
+                            $(prefix + "-hfront").text(H_FRONT_PORCH);
+                            $(prefix + "-hsync").text(H_SYNC);
+                            $(prefix + "-hback").text(H_BACK_PORCH);
+                            $(prefix + "-hpol").text(H_POL);
+                            $(prefix + "-hfreq").text(Math.round(hfreq)/1000);
+                            $(prefix + "-hperiod").text(Math.round(hperiod*1000000000)/1000);
+    
+                            $(prefix + "-vtotal").text(vtotal);
+                            $(prefix + "-vpixels").text(vactive);
+                            $(prefix + "-vblank").text(vblank);
+                            $(prefix + "-vblank_duration").text(Math.round(vblank_duration*1000000));
+                            $(prefix + "-vfront").text(V_FRONT_PORCH);
+                            $(prefix + "-vsync").text(V_SYNC_RND);
+                            $(prefix + "-vback").text(V_BACK_PORCH);
+                            $(prefix + "-vpol").text(V_POL);
+                            $(prefix + "-vfreq").text(Math.round(vfreq*1000)/1000);
+                            $(prefix + "-vperiod").text(Math.round(vperiod*1000000)/1000);
+    
+                            $(prefix + "-peak_bw").text(Math.round(peak_bw/1000000));
+                            $(prefix + "-line_bw").text(Math.round(line_bw/1000000));
+                            $(prefix + "-active_bw").text(Math.round(active_bw/1000000));
 
-                        $(prefix + "-htotal").text(htotal);
-                        $(prefix + "-hpixels").text(hactive);
-                        $(prefix + "-hblank").text(hblank);
-                        $(prefix + "-hfront").text(H_FRONT_PORCH);
-                        $(prefix + "-hsync").text(H_SYNC);
-                        $(prefix + "-hback").text(H_BACK_PORCH);
-                        $(prefix + "-hfreq").text(Math.round(hfreq)/1000);
-                        $(prefix + "-hperiod").text(Math.round(hperiod*1000000000)/1000);
+                            if (DMT_ID) $(prefix + "-dmt_id").text("0x" + DMT_ID.toString(16) );
+                            if (DMT_ID) $(prefix + "-dmt_type").text(DMT_TYPE.toUpperCase() );
+                            if (DMT_ID) $(prefix + "-dmt_2byte_code").text(DMT_2BYTE_CODE.toString(16) );
+                            if (DMT_ID) $(prefix + "-dmt_3byte_code").text(DMT_3BYTE_CODE.toString(16) );
 
-                        $(prefix + "-vtotal").text(vtotal);
-                        $(prefix + "-vpixels").text(vactive);
-                        $(prefix + "-vblank").text(vblank);
-                        $(prefix + "-vfront").text(V_FRONT_PORCH);
-                        $(prefix + "-vsync").text(V_SYNC_RND);
-                        $(prefix + "-vback").text(V_BACK_PORCH);
-                        $(prefix + "-vfreq").text(Math.round(vfreq*1000)/1000);
-                        $(prefix + "-vperiod").text(Math.round(vperiod*1000000)/1000);
+                            if (VIC) $(prefix + "-vic").text(VIC);
+    
+                            $(prefix + "-dp_ubr20").html(dp_ubr20_ok);
+                            $(prefix + "-dp_ubr13").html(dp_ubr13_ok);
+                            $(prefix + "-dp_ubr10").html(dp_ubr10_ok);
+                            $(prefix + "-dp_hbr3").html(dp_hbr3_ok);
+                            $(prefix + "-dp_hbr2").html(dp_hbr2_ok);
+                            $(prefix + "-dp_hbr").html(dp_hbr_ok);
+                            $(prefix + "-dp_rbr").html(dp_rbr_ok);
 
-                        $(prefix + "-total_bw").text(Math.round(total_bw/1000000));
-                        $(prefix + "-active_bw").text(Math.round(active_bw/1000000));
+                            $(prefix + "-dpam_2").html(dpam_2_ok);
+                            $(prefix + "-dpam_hbr3").html(dpam_hbr3_ok);
+                            $(prefix + "-dpam_hbr2").html(dpam_hbr2_ok);
+                            $(prefix + "-dpam_hbr").html(dpam_hbr_ok);
+                            $(prefix + "-dpam_rbr").html(dpam_rbr_ok);
+    
+                            $(prefix + "-dvi_d").html(dvi_d_ok);
+                            $(prefix + "-dvi_dl").html(dvi_dl_ok);
+    
+                            $(prefix + "-hdmi1_0").html(hdmi_1_0_ok);
+                            $(prefix + "-hdmi1_3").html(hdmi_1_3_ok);
+                            $(prefix + "-hdmi2_0").html(hdmi_2_0_ok);
+                            $(prefix + "-hdmi2_1_6g").html(hdmi_2_1_6g_ok);
+                            $(prefix + "-hdmi2_1_8g").html(hdmi_2_1_8g_ok);
+                            $(prefix + "-hdmi2_1_10g").html(hdmi_2_1_10g_ok);
+                            $(prefix + "-hdmi2_1_12g").html(hdmi_2_1_12g_ok);
 
-                        $(prefix + "-dp_2").html(dp_2_ok);
-                        $(prefix + "-dp_hbr3").html(dp_hbr3_ok);
-                        $(prefix + "-dp_hbr2").html(dp_hbr2_ok);
-                        $(prefix + "-dp_hbr").html(dp_hbr_ok);
-                        $(prefix + "-dp_rbr").html(dp_rbr_ok);
+                            $(prefix + "-sdi_sd").html(sdi_sd_ok);
+                            $(prefix + "-sdi_hd").html(sdi_hd_ok);
+                            $(prefix + "-sdi_3g").html(sdi_3g_ok);
+                            $(prefix + "-sdi_6g").html(sdi_6g_ok);
+                            $(prefix + "-sdi_12g").html(sdi_12g_ok);
+    
+                            $(prefix + "-rfc4175_eth100m").html(rfc4175_eth100m_ok);
+                            $(prefix + "-rfc4175_eth1g").html(rfc4175_eth1g_ok);
+                            $(prefix + "-rfc4175_eth10g").html(rfc4175_eth10g_ok);
 
-                        $(prefix + "-dvi_d").html(dvi_d_ok);
-                        $(prefix + "-dvi_dl").html(dvi_dl_ok);
+                            $(prefix + "-modeline").html(modeline());
+                        }
+                        else{
+                            $(prefix + "-aspect_ratio").text("");
+    
+                            $(prefix + "-pclock").text("");
+    
+                            $(prefix + "-htotal").text("");
+                            $(prefix + "-hpixels").text("");
+                            $(prefix + "-hblank").text("");
+                            $(prefix + "-hfront").text("");
+                            $(prefix + "-hsync").text("");
+                            $(prefix + "-hback").text("");
+                            $(prefix + "-hpol").text("");
+                            $(prefix + "-hfreq").text("");
+                            $(prefix + "-hperiod").text("");
+    
+                            $(prefix + "-vtotal").text("");
+                            $(prefix + "-vpixels").text("");
+                            $(prefix + "-vblank").text("");
+                            $(prefix + "-vblank_duration").text("");
+                            $(prefix + "-vfront").text("");
+                            $(prefix + "-vsync").text("");
+                            $(prefix + "-vback").text("");
+                            $(prefix + "-vpol").text("");
+                            $(prefix + "-vfreq").text("");
+                            $(prefix + "-vperiod").text("");
+    
+                            $(prefix + "-peak_bw").text("");
+                            $(prefix + "-line_bw").text("");
+                            $(prefix + "-active_bw").text("");
 
-                        $(prefix + "-hdmi1_0").html(hdmi_1_0_ok);
-                        $(prefix + "-hdmi1_3").html(hdmi_1_3_ok);
-                        $(prefix + "-hdmi2_0").html(hdmi_2_0_ok);
-                        $(prefix + "-hdmi2_1").html(hdmi_2_1_ok);
+                            $(prefix + "-dmt_id").text("");
+                            $(prefix + "-dmt_type").text("");
+                            $(prefix + "-dmt_2byte_code").text("");
+                            $(prefix + "-dmt_3byte_code").text("");
 
-                        $(prefix + "-rfc4175_eth100m").html(rfc4175_eth100m_ok);
-                        $(prefix + "-rfc4175_eth1g").html(rfc4175_eth1g_ok);
-                        $(prefix + "-rfc4175_eth10g").html(rfc4175_eth10g_ok);
+                            $(prefix + "-vic").text("");
+    
+                            $(prefix + "-dp_ubr20").html("");
+                            $(prefix + "-dp_ubr13").html("");
+                            $(prefix + "-dp_ubr10").html("");
+                            $(prefix + "-dp_hbr3").html("");
+                            $(prefix + "-dp_hbr2").html("");
+                            $(prefix + "-dp_hbr").html("");
+                            $(prefix + "-dp_rbr").html("");
+
+                            $(prefix + "-dpam_2").html("");
+                            $(prefix + "-dpam_hbr3").html("");
+                            $(prefix + "-dpam_hbr2").html("");
+                            $(prefix + "-dpam_hbr").html("");
+                            $(prefix + "-dpam_rbr").html("");
+    
+                            $(prefix + "-dvi_d").html("");
+                            $(prefix + "-dvi_dl").html("");
+    
+                            $(prefix + "-hdmi1_0").html("");
+                            $(prefix + "-hdmi1_3").html("");
+                            $(prefix + "-hdmi2_0").html("");
+                            $(prefix + "-hdmi2_1_6g").html("");
+                            $(prefix + "-hdmi2_1_8g").html("");
+                            $(prefix + "-hdmi2_1_10g").html("");
+                            $(prefix + "-hdmi2_1_12g").html("");
+
+                            $(prefix + "-sdi_sd").html("");
+                            $(prefix + "-sdi_hd").html("");
+                            $(prefix + "-sdi_3g").html("");
+                            $(prefix + "-sdi_6g").html("");
+                            $(prefix + "-sdi_12g").html("");
+    
+                            $(prefix + "-rfc4175_eth100m").html("");
+                            $(prefix + "-rfc4175_eth1g").html("");
+                            $(prefix + "-rfc4175_eth10g").html("");   
+
+                            $(prefix + "-modeline").html("");
+
+                            
+                        }
+
                     });
 
                     $("#max_rfc4175_eth100m").html("Max BW " + Math.round(rfc4175_eth100m_bw/1000000) + " Mbit/s");
                     $("#max_rfc4175_eth1g").html("Max BW " + Math.round(rfc4175_eth1g_bw/1000000) + " Mbit/s");
-                    $("#max_rfc4175_eth10g").html("Max BW " + Math.round(rfc4175_eth10g_bw/1000000) + " Mbit/s");
+                    $("#max_rfc4175_eth10g").html("Max BW " + Math.round(rfc4175_eth10g_bw/1000000).toLocaleString('en-US') + " Mbit/s");
 
                 }
 

@@ -12,7 +12,7 @@ categories: RTL
 
 # Introduction
 
-In an earlier [blog post](/rtl/2018/08/11/SpinalHDL.html), I made a few references
+In an earlier [blog post](/rtl/2018/08/12/SpinalHDL.html), I made a few references
 to the [VexRiscV](https://github.com/SpinalHDL/VexRiscv), a RISC-V CPU that has been
 implemented completely in SpinalHDL by Charles Papon (who's also the creator of
 SpinalHDL.)
@@ -20,7 +20,7 @@ SpinalHDL.)
 At some point, I created the [rv32soc](https://github.com/tomverbeure/rv32soc) project,
 where I wanted to compare different RISC-V CPUs against eachother. I also used the
 VexRiscV as a point of comparison against my own RISC-V CPU, the
-[MR1](/risc-v/2018/11/18/A-Bug-Free-RISC-V-Core-without-Simulation.html). The MR1
+[MR1](/risc-v/2018/11/19/A-Bug-Free-RISC-V-Core-without-Simulation.html). The MR1
 was no match for the VexRiscV by any possible metric.
 
 In the process, I spent some time trying to understand the internals of the CPU, and
@@ -118,7 +118,7 @@ cycles, we need to do something like this:
 ![Complex Multiplier 1 Traditional]({{ "/assets/vexriscv/VexRiscV-drawings-mul_complex_1_traditional.svg" | absolute_url }})
 
 Furthermore, these multipliers are usuall restricted to 18x18 bits. If you need a 32x32 multiplier,
-as is the case for most 32-bit CPUs, you need to construct them with [multiple 18x18 multiplier blocks](/rtl/2018/08/11/Multipliers.html).
+as is the case for most 32-bit CPUs, you need to construct them with [multiple 18x18 multiplier blocks](/rtl/2018/08/12/Multipliers.html).
 
 To reach the desired clock speeds, that often means even more register stages. For example, like this:
 

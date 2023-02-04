@@ -28,9 +28,9 @@ as well share my experience with those little probes.
 If you want to go the high end route, you go to [Pomona Electronics](https://www.pomonaelectronics.com/products/test-clips/grabber-test-clips) 
 or [ProbeMaster.com](http://probemaster.com/smd-grippers-test-clips/) where you'll find a number of options.
 
-A good example are these [SMD grippers](http://probemaster.com/8172-smd-gripper-0-8mm-to-0-5mm-long-tip/).
+A good example are these [SMD grippers](https://probemaster.com/8174-smd-gripper/).
 I've used them at work. They are spec'ed to grip pins that are 0.5mm away from each other. They also
-cost $39 per gripper. Ouch.
+cost $17 per gripper. Ouch.
 
 There are two cheaper options, such as another pair of SMD grippers (at $9 each) and a set of 10 (at $12 each). 
 
