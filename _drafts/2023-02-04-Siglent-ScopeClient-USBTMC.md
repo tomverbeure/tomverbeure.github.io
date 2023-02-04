@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Siglent SDS2304X Remote Control and USBTMC
-date:  2020-06-06 00:00:00 -1000
+date:  2023-02-04 00:00:00 -1000
 categories:
 ---
 

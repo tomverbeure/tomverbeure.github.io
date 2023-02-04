@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Remote Control and Acquisition of Siglent Oscilloscopes
-date:  2020-05-18 00:00:00 -1000
+date:  2023-02-03 00:00:00 -1000
 categories:
 ---
 
