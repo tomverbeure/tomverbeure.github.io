@@ -143,7 +143,7 @@ mostly static control and status signals:
 | PE      | To Host    |   0   | Short for Paper Error. A high value indicates that the printer can't print at this time.              |
 | nERROR  | To Host    |   1   | A low value indicates that the printer has encountered some kind of error.                            |
 
-For a simple traffic capturing tool, you can ignore the the 3 signals that are going to the printer and
+For a simple traffic capturing tool, you can ignore the 3 signals that are going to the printer and
 you can tie the signals that go back to the host to the listed static values.
 
 The parallel printer port was originally only used for low speed printer communication, but it was later upgraded to
@@ -258,7 +258,7 @@ that are coming from the host, and the nERROR, PE, and SEL signals that from the
 to the host can be strapped to a fixed value.
 
 But by connecting all of these signals to the Raspberry Pico, you retain the option to support
-IEE-1284 mode that are more than just compatibility mode.
+IEEE-1284 mode that are more than just compatibility mode.
 
 **Test Pins**
 
@@ -307,9 +307,9 @@ other side of the rest of the components.
 
 The [schematic](https://github.com/tomverbeure/fake_parallel_printer/blob/main/parallel2usb_v2/parallel2usb_v2_schematic.pdf)
 of revision 2 has different pin assigments, and it has 1 additional decoupling cap, 
-but it otherwise identical.  The firmware 
+but it is otherwise identical.  The firmware 
 [automatically detects the PCB version](https://github.com/tomverbeure/fake_parallel_printer/blob/81edfde9b26d85c3728c972cc4f7719ea6c1c354/c/parallel2usb/main.cc#L120-L129)
-and adjusts the pin locations accordingly.
+and assigns the pin locations accordingly.
 
 Here's the [zip archive for the rev 2 Gerber files](https://github.com/tomverbeure/fake_parallel_printer/blob/main/parallel2usb_v2/gerbers/v2/parallel2usb_1284-v2.zip).
 
@@ -333,7 +333,7 @@ That's really about it.
 
 There's also a debug function that prints out the number of
 bytes received on the printer port, and a checksum. You trigger
-this functionatily by putting a jumper (or a button) between
+this functionality by putting a jumper (or a button) between
 GND and the JUMPER_PIN (see schematic) of the Raspberry Pico, but
 you won't need to do this if all goes well.
 
@@ -381,19 +381,19 @@ I'll try it on the next revision.
 
 **Resistors and Capacitors**
 
-All resistors and caps are using a 0603 HandSolder footprint. I find this size the smallest
+All resistors and caps are using a 0603 HandSolder footprint. It's the smallest size
 that I can solder confidently without a microscope.
 
 You don't have to solder all the resistors: if you're really in a hurry, you can drop
 R14, R15 and R16 (for SELIN, nINIT, nAUTOF). The current Raspberry Pico firmware doesn't use 
-these signals.
+these signals, but you'll need them if you ever want to implement other IEEE-1284 protocols.
 
 You can save yourself more work by not soldering any of the 17 100pF capacitors. I didn't
 and everything worked just fine. The signals looked clean on the oscilloscope as well.
 
 **Raspberry Pico**
 
-You can solder Raspberry Pico straight onto the PCB, but I always
+You can solder the Raspberry Pico straight onto the PCB, but I always
 use a pin header as spacer between the main PCB and the Pico. This makes
 it so much easier to connect an oscilloscope probe on the Pico pins in case
 something doesn't work quite right. If you don't plan to do any firmware
@@ -455,8 +455,6 @@ You'll see something like this:
 
 The last line shows the device name.
 
-You can now capture all the traffic on the parallel printer of your instrument with this command:
-
 **Windows**
 
 After plugging in the USB cable, the device should pop up in the Windows Device Manager:
@@ -490,7 +488,7 @@ and abort the capture the file size stays constant.
 There's a more user friendly way with [`fake_printer.py`](https://github.com/tomverbeure/fake_parallel_printer/blob/main/fake_printer.py),
 which is part of the [fake_parallel_printer repo on  GitHub](https://github.com/tomverbeure/fake_parallel_printer).
 
-It's a Python script automatically splits print captures into different files when it sees the parallel
+It's a Python script that automatically splits print captures into different files when it sees the parallel
 port going idle for a couple of seconds. It also provides feedback about printer data being received.
 
 To use it, first make install the Python `pyserial` module:
@@ -504,7 +502,7 @@ On Linux:
 
 `./fake_printer.py --port=/dev/ttyACM0`
 
-or one Windows:
+or on Windows:
 
 `./fake_printer.py --port=COM4`
 
@@ -540,7 +538,7 @@ If you can't wait, you can find the key points in
 * [fake_parallel_printer repo on GitHub](https://github.com/tomverbeure/fake_parallel_printer/).
 * [LPT_Capture](https://github.com/bkw777/LPT_Capture)
 
-    I found out about this project after initially publishing this blog post. It is very
+    I only found out about this project after initially publishing this blog post. It is very
     similar in scope to my design, but uses an FTDI FT245RL parallel to USB serial converter
     instead of a microcontroller. Unlike my design, the PCB is designed to fit in DB-25 enclosure:
 
