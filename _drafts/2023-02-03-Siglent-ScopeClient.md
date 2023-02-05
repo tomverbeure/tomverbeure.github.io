@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Remote Control and Acquisition of Siglent Oscilloscopes
+title: LAN/Ethernet Remote Control of Siglent Oscilloscopes
 date:  2023-02-03 00:00:00 -1000
 categories:
 ---
@@ -10,44 +10,66 @@ categories:
 
 # Introduction
 
-In [my earlier post](/2020/06/07/Making-Sense-of-Test-and-Measurement-Protocols.html), 
-I gave a general overview about the different protocols that exist to remote
-control instrumentation equipment.
+A few years ago, I wrote about the [protocols](/2020/06/07/Making-Sense-of-Test-and-Measurement-Protocols.html)
+that are used to remote control test and measurement equipment.
 
-My initial goal was to figure out how to download screenshots of my Siglent SDS2304X straight
-from the scope to my PC, thus avoiding juggling around a USB stick and having to deal with
-non-descriptive screenshot names.
+The blog post started out as a quest to figure out how to download screenshots of my 
+Siglent SDS2304X oscilloscope to my PC, thus avoiding juggling around a USB stick and having to deal with
+non-descriptive screenshot names, but things got a bit out of control... 
 
-However, after reading up on all of this, I became a bit more ambitious: why download
-a screenshot when could just as well download the actualy data for further processing?
+![Siglent SDS2304X oscilloscope](/assets/siglent/SDS2000Xa.png)
 
-# Transport Protocol Support of Siglent Oscilloscopes 
+In this blog post, I'm first returning back to the original goal, downloading 
+screenshots, after which I'll expand to extracting actual measurement data for further processing.
+
+# Transport Protocols Supported by Siglent Oscilloscopes 
 
 One of the first hurdles in getting to talk to my scope was figuring out which protocol to use.
+Siglent offers up to 5 different ways to remote control their scope through either USB
+or Ethernet.
 
-Siglent scopes support up to 5 different protocols: USBTMC, VXI-11, TCP/IP raw sockets,
-TCP/IP telnet, and a web server with HTML-based GUI.
+USB:
 
-If Siglent has an overview table that clearly lists which transport is supported by which product, I
-couldn't find it. But after going through all the specification sheets of each series, I came
-up with the following table:
+* USBTMC over USB
 
+Ethernet:
+
+* [VXI-11](/2020/06/07/Making-Sense-of-Test-and-Measurement-Protocols.html)
+* [TCP/IP raw sockets](/2020/06/07/Making-Sense-of-Test-and-Measurement-Protocols.html)
+* [TCP/IP telnet](/2020/06/07/Making-Sense-of-Test-and-Measurement-Protocols.html)
+* web server with HTML-based GUI.
+
+However, not all scopes support this full set, and if Siglent has an overview table that 
+clearly lists which transport is supported by which product line, I wasn't able to find it. 
+After going through the specification sheets of each series, I came up with the 
+following table:
 
 | Series        | USBTMC | VXI-11 | Raw Sockets | Telnet | HTTP |
 |---------------|:------:|:------:|:-----------:|:------:|:----:|
-| SDS5000X      |    X   |    X   |      X      |    X   |   X  |
-| SDS2000X Plus |    X   |    X   |      X      |    X   |      |
-| SDS2000X      |    X   |    X   |             |        |      |
-| SDS1000X      |    X   |    X   |             |        |      |
-| SDS1000X+     |    X   |    X   |             |        |      |
-| SDS1000X-E    |    X   |    X   |      X      |    X   |      |
-| SDS1000CFL    |    X   |    X   |      ?      |    ?   |      |
-| SDS1000DL+    |    X   |    X   |             |        |      |
-| SDS1000CML+   |    X   |    X   |             |        |      |
+| [SDS6000A](https://siglentna.com/digital-oscilloscopes/sds6000a-digital-storage-oscilloscope/)                  |    X   |    X   |      X      |    X   |   X  |
+| [SDS6000L](https://siglentna.com/digital-oscilloscopes/sds6000l-low-profile-digital-storage-oscilloscope/)      |    X   |    X   |      X      |    X   |   X  |
+| [SDS5000X](https://siglentna.com/digital-oscilloscopes/sds5000x/)                                               |    X   |    X   |      X      |    X   |   X  |
+| [SDS2000X HD](https://siglentna.com/digital-oscilloscopes/sds2000x-hd-digital-storage-oscilloscope/)            |    X   |    X   |      X      |    X   |   X  |
+| [SDS2000X Plus](https://siglentna.com/digital-oscilloscopes/sds2000xp/)                                         |    X   |    X   |      X      |    X   |   X  |
+| [SDS2000X-E](https://siglentna.com/digital-oscilloscopes/sds2000x-e/)                                           |    X   |    X   |      X      |    X   |   X  |
+| [SDS2000X](https://siglentna.com/digital-oscilloscopes/sds2000x/)                                               |    X   |    X   |             |        |      |
+| [SDS1000X/X+](https://siglentna.com/digital-oscilloscopes/sds1000xx-series-super-phosphor-oscilloscopes/)       |    X   |    X   |             |        |      |
+| [SDS1000X-E](https://siglentna.com/digital-oscilloscopes/sds1000x-e-series-super-phosphor-oscilloscopes/)       |    X   |    X   |      X      |    X   |   X[^1]  |
+| [SDS1000X-U](https://siglentna.com/digital-oscilloscopes/sds1000x-u/)                                           |    X   |    X   |             |        |      |
+| [SDS1000CFL](https://siglentna.com/digital-oscilloscopes/sds1000cfl-series-digital-storage-oscilloscopes/)      |    X   |    X   |      ?      |    ?   |      |
+| [SDS1000CML+](https://siglentna.com/digital-oscilloscopes/sds1000cml-series-digital-storage-oscilloscopes/)     |    X   |    X   |             |        |      |
+| [SDS1000DL+](https://siglentna.com/digital-oscilloscopes/sds1000dl-series-digital-storage-oscilloscopes/)       |    X   |    X   |             |        |      |
 
-I think the general rule is: newer models support more protocols. Mine only supports USBTMC and VXI-11.
+[^1]:Only models with 4 channels
+
+The general rule is: newer models support more protocols. Mine only supports USBTMC and VXI-11.
 
 *There is also the Siglent SDS3000X, which is a rebranded version of the LeCroy WaveSurfer 3000.*
+
+The common denominator over Ethernet is support for VXI-11. It's also the only
+LAN mode that's supported by my SDS2304X, so everything going forward will deal with that. But
+keep in mind that VXI-11 is a synchronous protocol that doesn't allow queuing up multiple requests 
+and thus the slowest one.
 
 # Remote Control Information on the Siglent Website
 
@@ -56,57 +78,86 @@ everything together.
 
 Here's a non-exhaustive list of useful information:
 
-* [Digital Oscilloscopes Programming Guide](https://siglentna.com/wp-content/uploads/2020/04/ProgrammingGuide_PG01-E02C.pdf)
+**Manuals**
 
-    This document can be found in the 
-    [Siglent Digital Oscilloscopes Document Downloads](https://siglentna.com/resources/documents/digital-oscilloscopes)
-    section.
+* [Siglent Digital Oscilloscopes Document Downloads](https://siglentna.com/resources/documents/digital-oscilloscopes)
 
-    It describes how to connect to your scope, provides a list of all the SCPI commands, 
-    and gives a number of programming example. 
-    
-    All examples are based for Windows and the commercial NI-VISA driver, but the PyVISA examples
-    can be used straight on Linux as well.
+    This section is your best bet if you're looking for a variety of documents, or if some of the links in this blog
+    post have gone stale: Siglent has the annoying behavior of deleting the older version of documents that have been
+    updated.
+
+* [SDS Series Digital Oscilloscope Programming Guide](https://siglentna.com/wp-content/uploads/dlm_uploads/2022/07/SDS_ProgrammingGuide_EN11C-2.pdf)
+
+    This link is to one of the latest versions, and it covers most of their latest product lines.
+    The programming guide for my SDS2304X is [here](https://siglentna.com/wp-content/uploads/dlm_uploads/2021/01/SDS1000-SeriesSDS2000XSDS2000X-E_ProgrammingGuide_PG01-E02D.pdf).
+
+    The programming guides describes how to connect to your scope, provides a list of all the 
+    [SCPI commands](/2020/06/07/Making-Sense-of-Test-and-Measurement-Protocols.html#scpi---the-universal-command-language) 
+    and gives a number of programming example. All examples are based for Windows and the 
+    commercial NI-VISA driver, but the PyVISA examples can be used straight on Linux as well.
 
     The PyVISA examples show you how to download a waveform and plot it on a graph, and
     how to download a screendump.
 
-    The programming guide is not scope specific: it simply assumes that all scopes have support for
-    all protocols.
+
+**Articles and Application Notes**
 
 The following articles are all published on the 
 [Siglent Application Notes for Digital Oscilloscopes](https://siglentna.com/application-notes/digital-oscilloscopes/):
 
 * [Programming Example: SDS Oscilloscope save a copy of a screen image via Python/PyVISA](https://siglentna.com/application-note/programming-example-sds-oscilloscope-save-a-copy-of-a-screen-image-via-python-pyvisa/)
 
+    An example that should work for most Siglent oscilloscope (and other devices too.) It connects
+    to the scope with VISA, sends the `SCDP` command, reads the data and stores it to a `.bmp` image
+    file.
+
 * [Programming Example: SDS Oscilloscope screen image capture using Python over LAN](https://siglentna.com/application-note/programming-example-sds-oscilloscope-screen-capture-python/)
 
-    Uses straight TCP/IP sockets.
+    This example uses uses straight TCP/IP sockets and will *not* work on oscilloscopes that only
+    have VXI-11 support.
 
-* [Programming Example: Using VXI11 (LXI) and Python for LAN control without sockets](https://siglentna.com/application-note/programming-example-vxi11-python-lan/)
+* [Programming Example: Using VXI-11 (LXI) and Python for LAN control without sockets](https://siglentna.com/application-note/programming-example-vxi11-python-lan/)
 
-    Uses Python VXI-11 library instead of PyVISA.
+    An example on how to use talk to the oscillscope without PyVISA, but using a straight VXI-11 Python
+    library instead. I have a similar example further down.
 
 * [Programming Example: List connected VISA compatible resources using PyVISA](https://siglentna.com/application-note/programming-example-list-connected-visa-compatible-resources-using-pyvisa/)
 
+    Trivial example to shows how to enumerate all the connected instruments using PyVisa. It fails
+    to list my oscilloscope when connected through Ethernet though. See below...
+
 * [Programming Example: Retrieve data from an XE series Oscilloscope using Kotlin](https://siglentna.com/application-note/x-e-kotlin-example/)
+
+    This Kotlin example uses raw sockets instead of VXI-11.
 
 * [Quick remote computer control using LXI Tools](https://siglentna.com/application-note/lxi-tools/)
 
+    A pretty extensive overview of what you can do with LXI tools. I cover some of the same
+    material furhter down.
+
 * [Verification of a LAN connection using Telnet](https://siglentna.com/application-note/verification-lan-connection-using-telnet/)
 
+    Shows how you can send commands to the scope using telnet. This only works on later Siglent
+    oscilloscopes.
+
 * [Verification of a working remote communications connection using NI – MAX](https://siglentna.com/application-note/verification-working-remote-communications-connection-using-ni-max/)
+
+    Only useful if you're on Windows and using National Instruments NI-MAX tool.
 
 # LXI-Tools
 
 One of the easiest ways to get started with remote controlling VXI-11 compatible equipment is
 through [LXI-tools](https://lxi-tools.github.io/).
 
-On my Ubuntu 18.04 system, installing it was as simple as doing:
+Installing lxi-tools is as simple as doing:
 
 ```
 sudo apt install lxi-tools
 ```
+
+lxi-tools comes with `lxi` and `lxi-gui`, a command line and a GUI utility that can send commands to 
+and grab screenshots from your instrument. It also has a LUA scripting option that I haven't
+explored.
 
 # VXI-11 Device Discovery
 
@@ -117,24 +168,26 @@ Ethernet network. With lxi-tools, that goes as follows:
 lxi discover
 ```
 
-If all goes well, this will result in a list of all network connected VXI-11 devices with the IP address,
-their name, serial number etc. You can see how that's supposed to go in 
+If all goes well, this will result in a list of all network-connected VXI-11 devices with the IP address,
+their name, serial number etc. You can see how that's supposed to work in 
 [this video](https://www.youtube.com/watch?v=--gfZcrQ0N8&feature=youtu.be&t=64).
 
 Unfortunately, I never got this to work with my scope: everything is on the same ethernet switch,
 the IP subnets between my PC and the scope are the same as well, but no luck.
 
-This is not necessarily a blocking issue when it comes to remote controlling your scope: you just need to
-figure out the IP address yourself. But some tools, like `lxi-gui`, the GUI that comes with lxi-tools, 
-*only* supports discovery, and no way to specify the IP address manually.
+This is not a blocking issue when it comes to remote controlling your scope: you just need to
+figure out the IP address yourself. But `lxi-gui` *only* supports discovery with no way to specify the 
+IP address manually.
 
 # Setting Up the IP Address of a Siglent Scope
 
 Since I wasn't able to get the VXI-11 discovery to work, I had to set/figure out the IP address of the scope
 manually, as follows:
 
-* Connect the scope to your Ethernet network
+* Connect the scope to your LAN with an Ethernet cable
 * Press [Utility] -> [I/O] *(Page 2/3)* -> [LAN]
+
+![LAN setup](/assets/siglent/lan_setup.png)
 
 When using DHCP:
 * Set DHCP to Enable
@@ -152,82 +205,137 @@ Otherwise:
 
     *The IP address of my scope is set to 192.168.1.177. I will use that number in the examples below.*
 
+# Grabbing Screenshots with lxi-tools
+
+If all you ever need are screenshots, then `lxi screenshot -a <IP address>` is
+the way to go:
+
+```sh
+tom@zen$ lxi screenshot -a 192.168.1.177
+Loaded siglent-sds screenshot plugin
+Saved screenshot image to screenshot_192.168.1.177_2023-02-04_15:36:43.bmp
+```
+![Screenshot with 1kHz waveform](/assets/siglent/screenshot_1kHz.png)
+
+Note the `Loaded siglent-sds screenshot plugin` message: lxi-tools supports
+only a [limited number of instruments](https://github.com/lxi-tools/lxi-tools#5-tested-instruments). 
+Since Siglent oscilloscopes share the same core SCPI commands across the full
+product line, you'd think that screenshots would be supported for all, but
+a quick look at the 
+[source code](https://github.com/lxi-tools/lxi-tools/blob/37eda6c12f00e94582f4a9271d93f5372ca2c7f3/src/plugins/screenshot_siglent-sds.c#L94)
+shows that the tool only supports scopes with an ID that match the following regular expression: 
+
+```c
+// Screenshot plugin configuration
+struct screenshot_plugin siglent_sds =
+{
+    .name = "siglent-sds",
+    .description = "Siglent SDS 1000X/2000X series oscilloscope",
+    .regex = "SIGLENT TECHNOLOGIES Siglent Technologies SDS[12]...",    <<<<
+    .screenshot = siglent_sds_screenshot
+};
+```
+
+# Sending SCPI Commands with lxi-tools
+
+The same `lxi` command can be used to send commands to the scope:
+
+```sh
+$ lxi scpi -a 192.168.1.177 "*IDN?"
+*IDN SIGLENT,SDS2304X,SDS2XJBD1R2754,1.2.2.2 R19
+```
+
+`*IDN?` is *the* standard command to request identification data from an instrument. It predates
+the SCPI standard by a decade or two and will work on pretty much all remote controllable instruments
+in existence.
+
+With the Siglent programming manual in hand, you can now set or get configuration
+parameters, kick off a single measurement and so forth. 
+
+For example, `ASET` is the same pressing the Auto Setup button:
+
+```sh
+$ lxi scpi -a 192.168.1.177 "ASET"
+```
+
+And `BWL?` will tell you wether or not BW Limit option has been enabled for each of the
+4 channels:
+
+```sh
+$ lxi scpi -a 192.168.1.177 "BWL?"
+BWL C1,OFF,C2,OFF,C3,ON,C4,ON
+```
+
+# Controlling the Oscilloscope with Code
+
+Using lxi-tools is good enough when you want to throw together a bunch of commands in a bash script, 
+but you may want to integrate scope commands in a larger script or program that sets up a
+configuration, triggers a data acquistions, and fetches the data for post processing.
+
+
+
 # VXI-11 and PyVISA
 
 [PyVISA](https://pyvisa.readthedocs.io/en/latest/) is probably the easiest way to programmatically remote
 control a measurement device, and it has the major benefit that the same code will work with all transport
-protocols that are supported by your scope.
+protocols that are supported by your scope. I already wrote who to install and use
+it [here](http://localhost:4000/2020/06/07/Making-Sense-of-Test-and-Measurement-Protocols.html#visa---one-api-that-rules-them-all).
 
-* Install the `pyvisa` library
+The following program, `visa_ident.py`, prints out the identification
+number of the scope:
 
-   ```
-pip3 install pyvisa pyvisa-py
-   ```
-
-* Write the following program: `visa_ident.py`
-
-    ```python
+```python
 #! /usr/bin/env python3
+import sys
 import pyvisa
+
 rm = pyvisa.ResourceManager()
-siglent = rm.open_resource("TCPIP::192.168.1.177::INSTR")
+siglent = rm.open_resource(f"TCPIP::{sys.argv[1]}")
 print(siglent.query('*IDN?'))
-    ```
- 
-    `*IDN?` is the standard SCPI identification command.
+```
 
-    `192.168.1.177` is the IP address that has been assigned to the scope in the previous section.
-
-* Result
-
-    ```
+```sh
+./visa_ident.py 192.168.1.177
 *IDN SIGLENT,SDS2304X,xxxxxxxxxxxxxx,1.2.2.2 R19
-    ```
-
-There you have it! The scope returned the brand name, model name, serial number, and the installed firmware version.
+```
 
 # VXI-11 and python-vxi11
 
 PyVISA is easy to use and supports pretty much all interfaces that matter, but it's on the heavy
 side in terms of code size. If you're sure that VXI-11 is sufficient for your needs, you can
-use the lightweigh [`python-vxi11`](http://alexforencich.com/wiki/en/python-vxi11/start) library.
+use the lightweight [`python-vxi11`](http://alexforencich.com/wiki/en/python-vxi11/start) library.
 
-* Install the `python-vxi11` library
+Install the `python-vxi11` library:
 
-    ```sh
+```sh
 pip3 install python-vxi11
-    ```
+```
 
-* Write the following program: `vxi11_ident.py`
+Write the following program: `vxi11_ident.py`
 
-    ```python
+```python
 #! /usr/bin/env python3
+import sys
 import vxi11
-instr = vxi11.Instrument("192.168.1.177")
+
+instr = vxi11.Instrument(sys.argv[1])
 print(instr.ask("*IDN?"))
-    ```
+```
 
-* Result
-
-    ```sh
-> ./vxi11_ident.py 
+```sh
+$ ./vxi11_ident.py 192.168.1.177
 *IDN SIGLENT,SDS2304X,SDS2XJBD1R2754,1.2.2.2 R19
-    ```
+```
 
-
-# VXI-11 and liblxi
+# VXI-11 and C code with liblxi
 
 If you want to talk to the scope from within a C or C++ program, there's
 a library called `liblxi`, the library part of [lxi-tools](https://lxi-tools.github.io/).
 
 I installed `liblxi` from source code to get the latest version, but most distributions have it as a precompiled
-package as well: `sudo apt install liblxi-dev`.
+package as well: 
 
-Let's first try the `lxi` utility from lxi-tools:
-```sh
-> lxi scpi -a 192.168.1.177 "*IDN?"
-*IDN SIGLENT,SDS2304X,SDS2XJBD1R2754,1.2.2.2 R19
-```
+`sudo apt install liblxi-dev`.
 
 Using the library in a C program is straightforward as well:
 
@@ -236,14 +344,14 @@ Using the library in a C program is straightforward as well:
 #include <string.h>
 #include <lxi.h>
 
-int main()
+int main(int argc, char **argv)
 {
      char response[65536];
      int device, length, timeout = 1000;
      char *command = "*IDN?";
 
      lxi_init();
-     device = lxi_connect("192.168.1.177", 0, "inst0", timeout, VXI11);
+     device = lxi_connect(argv[1], 0, "inst0", timeout, VXI11);
      lxi_send(device, command, strlen(command), timeout);
      lxi_receive(device, response, sizeof(response), timeout);
      printf("%s\n", response);
@@ -252,21 +360,9 @@ int main()
 ```
 
 ```sh
-> gcc -o lxi_test lxi_test.c -llxi
-> ./lxi_test 
+$ gcc -o lxi_idn lxi_idn.c -llxi
+$ ./lxi_idn 192.168.1.177 
 *IDN SIGLENT,SDS2304X,SDS2XJBD1R2754,1.2.2.2 R19
-```
-
-# Fetching a Screenshot using VXI-11
-
-Let's now do what I wanted to do all along: fetch a screenshot from the scope to the PC.
-
-The easiest way is to just use `lxi-tools`:
-
-```
-> lxi screenshot -a 192.168.1.177
-Loaded siglent-sds screenshot plugin
-Saved screenshot image to screenshot_192.168.1.177_2020-06-06_21:57:53.bmp
 ```
 
 # Fetching and Decoding Waveforms
@@ -275,7 +371,7 @@ Here's the general procedure to fetch raw waveform data from a Siglent oscillosc
 
 * `C1:WF? DESC` / `C1:WAVEFORM? DESC`  
 
-    This query returns the waveform descripter,  a binary data structure of 346 bytes 
+    This query returns the waveform descriptor,  a binary data structure of 346 bytes 
     that contains all the parameters that were used to record and encode the data for 
     the latest captured waveform, in this case for channel 1.
 
@@ -374,4 +470,4 @@ https://github.com/tomverbeure/siglent_remote
 * [PyVisa](https://pyvisa.readthedocs.io/en/1.8/index.html)
 
 
-
+# Footnotes
