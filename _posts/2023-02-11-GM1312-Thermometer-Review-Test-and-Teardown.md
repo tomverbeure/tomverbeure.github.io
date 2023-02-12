@@ -32,9 +32,10 @@ between the hot side and the cold side.
 You can buy thermocouples in all kinds of forms on Amazon. The simplest ones look like
 this:
 
+![bag with thermocouples](/assets/gm1312/bag_with_thermocouples.jpg)
 
-It's exactly as described: 2 wires, a blob of solder on one side, and 2 contacts on the
-other.
+They are exactly as described: 2 wires, a blob of solder on one side (see further below), 
+and 2 contacts on the other.
 
 ![mini K-type connector internals](/assets/gm1312/mini-K-type_connector.jpg)
 
@@ -62,9 +63,9 @@ And since a thermocouple can only measure a temperature difference, you also nee
 another way to measure the temperature at the cold side, usually inside the measurement
 instrument, to calculate the absolute temperature. 
 
-# The GM1213
+# The GM1213 Thermometer
 
-My BM235 multimeter already had support for a thermocouple, but it has a non-standard
+My BM235 multimeter already has support for a thermocouple, but it uses a non-standard
 connector and you can only measure one temperature at a time. I wanted to something
 that could at least measure two temperatures, but for an acceptable price. AliExpress
 to the rescue, where I bought a GM1312 for $17 including shipping.
