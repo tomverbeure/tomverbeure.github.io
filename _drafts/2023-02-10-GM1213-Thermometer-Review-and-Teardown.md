@@ -1,6 +1,6 @@
 ---
 layout: post
-title: GM1213 Thermometer Review and Teardown
+title: GM1213 Thermometer Review, Test, and Teardown
 date:   2023-02-10 00:00:00 -0700
 categories:
 ---
@@ -13,6 +13,8 @@ categories:
 I've been doing a bunch of measurements on oven-controlled oscillators lately, 
 including their temperature. There are multiple ways to measure temperature
 electronically, but the most popular one is to use a thermocouple.
+
+# What is a thermocouple
 
 Simplified to its most basic form, a thermocouple is a device that converts the 
 temperature *difference* between the end points of a wire into a voltage.
@@ -53,10 +55,120 @@ and a formula or table lookup to correct for the coefficient not being constant.
 
 And since a thermocouple can only measure a temperature difference, you also need
 another way to measure the ambient temperature inside the voltmeter to calculate
-the absolute temperature.
+the absolute temperature. 
+
+# The GM1213
+
+My BM235 multimeter already had support for a thermocouple, but it has a non-standard
+connector and you can only measure one temperature at a time. I wanted to something
+that could at least measure two temperatures, but for an acceptable price. AliExpress
+to the rescue, where I bought an GM1312 for $17 including shipping.
+
+![GM1312](/assets/gm1312/gm1312.jpg)
+
+In addition to the device itself, the GM1312 comes with 2 thermocouples that have a
+mini K-type plug and a one page manual that is not really needed.
+
+The GM1312 has the following feature set:
+
+* concurrent measurement of 2 thermocouples with mini plug
+* supports for J,K,E,N, and R type thermocouples
+
+    If you plug in two thermocouple, they both need to be of the same type.
+
+* displays current, min, max or average temperature
+* display temperature T1 and T1 or T1-T2 and T2
+* powered by 3 AAA batteries
+
+Unfortunately, there is no USB or serial port that can be used for data logging.
+
+# A few tests
+
+I did a few tests to see if everything was working as expected.
+
+When plugging in the two thermocouples that came with the device, you'd expect them
+to read out the same value. That said, K-type thermocouples only have an accuracy
+of around +-2C%. A difference of 0.2C is totally find:
+
+![Two default thermocouples](/assets/gm1312/two_default_couples.jpg)
+
+Earlier, I bought a bag of 5 K-type thermocouples. They should measure the same
+value as the ones that come with the device:
+
+![Two different thermocouples](/assets/gm1312/two_different_couples.jpg)
+
+Note that it can take quite a while for the temperature to settle: thermocouples
+will react pretty much instanteously to a changing temperature, but that doesn't
+mean that temperature itself will change right away.
+
+In this case, there are 2 main factor that impact the settling time:
+
+* the thermocouples are floating in the air, which isn't as efficient at heat transfer.
+* the welded point of thermocouples have a significantly different size, and thus
+  thermal mass.
+
+![Two different thermocouples, zoomed in on the welded point](/assets/gm1312/two_different_couples_zoomed_in.jpg)
+
+The joint of the ones that I bought separately is much smaller than the one that comes
+with the GM1312, and consequencyly, it reacts much faster to a changing temperature. The
+issue is less pronounces when you're putting the joints in water, which is much better
+at transferring heat.
+
+To verify the accuracy, I compared the GM1312 against the BM235. The result is within
+the expected margin of error:
+
+![GM1312 and BM235](/assets/gm1312/gm1312_and_bm235.jpg)
+
+In short: the GM1312 does it was it's supposed to do.
+
+# Internals
+
+Not that I expected anything earth schocking, but it's impossible to resist the urge 
+to have a look inside.
+
+First the LCD. When you power up the device, all the display features light up.
+That doesn't mean all these features are support though... far from it.
+
+![LCD showing all the display items](/assets/gm1312/lcd_items.jpg)
+
+The front of the PCB has just the 6 buttons and the LCD module:
+
+![Front of PCB showing just buttons](/assets/gm1312/PCB_front.jpg)
+
+The back of the PCB is only a bit more interesting:
+
+![Back of PCB](/assets/gm1312/PCB_back.jpg)
+
+The main component uses [chip-on-board](https://en.wikipedia.org/wiki/Chip_on_board) 
+technology to reduce cost of packaging and assembly. 
+
+On the right, there's a 
+[24C02 I2C EEPROM ](http://ww1.microchip.com/downloads/en/DeviceDoc/21202j.pdf)
+with a capacity of 2K (256x8) bits that probably contains the firmware of some 
+lightweigh 8-bit microcontroller on the main die.
+
+3 wires, ground and 2 voltage sense wires go to the mini K-type connectors.
+
+R13 is a bit more interesting. Let's zoom in on that:
+
+![R13 temperature sensor](/assets/gm1312/R13_temperature_sensor.jpg)
+
+This is a thermistor that is used to measure the absolute temperature. It's
+not a coincidence that it's placed close the location of the thermocouple
+wires.
+
+I didn't verify the details of the thermistor: the resistance and whether or
+not it's one with a positive (PTC) or negative (NTC) temperature coefficient.
+You can find similarly looking componets on Digikey, like 
+[this one](https://www.digikey.com/en/products/detail/cantherm/STS110003CHIP/6201878):
+
+![PTC thermistor](/assets/gm1312/STS110003CHIP.jpg)
 
 
 
 
-* [Type K Thermocouple (Chromel / Alumel)200°C to +1260°C / -328°F to +2300°F](https://www.thermometricscorp.com/thertypk.html)
+
+# References
+
+* [Type K Thermocouple (Chromel / Alumel) 200°C to +1260°C / -328°F to +2300°F](https://www.thermometricscorp.com/thertypk.html)
 * [Thermocouples: Function, Types, Selection and Application](https://blog.endaq.com/thermocouples-function-types-selection-and-application)
