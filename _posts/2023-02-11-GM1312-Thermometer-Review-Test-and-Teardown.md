@@ -1,7 +1,7 @@
 ---
 layout: post
-title: $17 GM1213 Thermometer Review, Test, and Teardown
-date:   2023-02-10 00:00:00 -0700
+title: $17 GM1312 Thermometer Review, Test, and Teardown
+date:   2023-02-11 00:00:00 -0700
 categories:
 ---
 
