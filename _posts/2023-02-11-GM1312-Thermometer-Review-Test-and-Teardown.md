@@ -160,9 +160,9 @@ R13 is a bit more interesting. Let's zoom in on that:
 
 ![R13 temperature sensor](/assets/gm1312/R13_temperature_sensor.jpg)
 
-This is a thermistor that is used to measure the absolute temperature. It's
-not a coincidence that it's placed close the location of the thermocouple
-wires.
+This is a [thermistor](https://en.wikipedia.org/wiki/Thermistor) 
+that is used to measure the absolute temperature. It's not a coincidence that 
+it's placed close the location of the thermocouple wires.
 
 I didn't verify the details of the thermistor, the resistance and whether or
 not it's one with a positive (PTC) or negative (NTC) temperature coefficient.
