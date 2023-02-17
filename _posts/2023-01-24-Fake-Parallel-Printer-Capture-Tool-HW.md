@@ -19,7 +19,7 @@ my iPhone in front of the screen:
 Using a camera works, of course, but it doesn't look very... professional? 
 
 Here's another one from my
-[TDS 420A blog posts](http://localhost:4000/2020/06/27/In-the-Lab-Tektronix-TDS420A.html):
+[TDS 420A blog posts](/2020/06/27/In-the-Lab-Tektronix-TDS420A.html):
 
 ![Screenshot of TDS 420A oscilloscope](/assets/tds420a/fft.jpg)
 
