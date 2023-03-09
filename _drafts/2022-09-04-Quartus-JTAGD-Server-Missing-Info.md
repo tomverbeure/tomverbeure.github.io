@@ -1,6 +1,6 @@
 ---
 layout: post
-title: The Quartus JTAGD Server Missing Info Blog Post
+title: The Quartus JTAGD Missing Manual
 date:  2022-09-04 00:00:00 -1000
 categories:
 ---
@@ -17,17 +17,20 @@ bitstreams to an FPGA with the *Quartus Programmer* tool.
 
 Behind this GUI, a number of steps and processes are working under the hood to make all of this happen:
 
-Quartus Programmer -> [socket interface] -> jtagd ->  USB device driver -> JTAG dongle -> JTAG signals
+![Simplified JTAG System Overview](/assets/jtagd/simplified_JTAG_system_overview.svg)
 
-This blog posts talks about jtagd, a server daemon that is used by Quartus to execute all JTAG related 
-operations.
+This blog posts talks about jtagd, the server daemon that is used by Quartus to execute all JTAG related 
+operations.[^1]
 
-Quartus Progammer talks to jtagd over a standard socket interface. It can connect to a local jtagd server
-using kernel sockets, or to a remote one over TCP/IP. In the latter configuration, this allows you to run Quartus
-on one machine, say the development machine on your desk, while controlling a PC in the lab that's connected
+[^1]: I'm using Linux (Ubuntu) to run Quartus. Anything that's written here might or might not apply to Windows...
+
+Quartus Progammer talks to jtagd over a standard socket interface. For most users, this happens transparently, 
+with Quartus Programming automatically starting a local jtagd server and connecting to it 
+using kernel sockets. But you can also do it over TCP/IP. In the latter configuration, this allows you to run 
+Quartus on one machine, say the development machine on your desk, while controlling a PC in the lab that's connected
 to your develoment board and FPGA.
 
-The standard way to load a bitstream to your FPGA is very straightforward:
+The standard way to load a bitstream to your FPGA is straightforward:
 
 * Compile a design that creates a bitstream
 * Launch Quartus Programmer
@@ -39,13 +42,15 @@ That's all there is to it... if things go well.
 But things don't go always go well. And when that's the case, there are number of issues:
 
 * the GUI tools don't provide a lot of feedback about what's going wrong
-* the system can go into a state that can only be resolved by quitting and restarting Quartus. Not just
-  Quartus Programmer but the main tool as well.
+* the system can go into a state that can only be resolved by quitting and restarting Quartus. 
+
+    Not just Quartus Programmer but the main tool as well!
+
 * in some cases, you need to manually kill the JTAG daemon to make things work again.
 
 It can be extremely frustrating...
 
-At some point, I had the plan of writing a jtagd shim that would allow Quartus Programmer to talk to OpenOCD, and
+At some point, I had the plan of writing a fake jtagd shim that would allow Quartus Programmer to talk to OpenOCD, and
 thus any JTAG dongle in existence instead of just one that's officially supported by Intel or an Intel clone.
 The way I approached this was to inflict Ghidra on jtagd and reverse engineer the whole program execution flow
 when programming a bitstream.
@@ -66,14 +71,14 @@ of choice, here's how I typically run `jtagd`:
 
 ```sh
 LD_LIBRARY_PATH=$QUARTUS_ROOTDIR/linux64:$LD_LIBRARY_PATH \ 
-$QUARTUS_ROOTDIR/linux64/jtagd <command line options>
+    $QUARTUS_ROOTDIR/linux64/jtagd <command line options>
 ```
 
 Notice how I make sure that both the executable and a whole bunch of shared libraries have
-their path explicitly set. I have a multiple Quartus installations on my PC. I don't there
-to be any issues with mixing code from different locations. 
+their path explicitly set. I have a multiple Quartus installations on my PC. I don't want there
+to be any issues with mixing files from different installations. 
 
-I have an alias the following alias for this:
+I have the following alias for this:
 
 ```sh
 alias jtagd="LD_LIBRARY_PATH=$QUARTUS_ROOTDIR/linux64:$LD_LIBRARY_PATH $QUARTUS_ROOTDIR/linux64/jtagd"
@@ -128,7 +133,7 @@ tom@thinkcenter:~/projects/jtagd$ ps -ef | grep jtagd
 tom  22198  1  0 22:14 ?  00:00:00 jtagd --user-start --config /home/tom/.jtagd.conf
     ```
 
-    Instead of using `/etc/jtagd/jtagd.conf`, Programmer makes jtagd look at `~/.jtagd.conf`. That's a file will
+    Instead of using `/etc/jtagd/jtagd.conf`, Quartus Programmer makes jtagd look at `~/.jtagd.conf`. That's a file will
     normally also not exist. 
 
     We'll come back to this later.
@@ -138,11 +143,11 @@ mentioned in blog posts or on [StackOverflow](https://stackoverflow.com/question
 
 * `--foreground`
 
-    This will run jtagd as a regular server process instead of daemon. If you want to stop the process, you can
-    just CTRL-C yourself out of it. This is incredibly useful because status messages will be sent to the terminal
-    instead of being forwarded to `/dev/null`.
+    This will run jtagd as a foreground server process instead of as a daemon. If you want to stop the process, you can
+    just CTRL-C yourself out of it. **This is incredibly useful because status messages will be sent to the terminal
+    instead of being forwarded to `/dev/null`**.
 
-    You should start jtagd like this before you start Quartus Programmer, otherwise the jtagd daemon that's started
+    You should start jtagd with this option before you start Quartus Programmer, otherwise the jtagd daemon that's started
     by Programmer will prevent your foreground jtagd from starting, and you'll get the following message:
 
     ```sh
@@ -181,7 +186,7 @@ function routine with [Ghidra](https://ghidra-sre.org/):
 
 * `--no-config`
 
-    Tells jtagd to not use the default `/etc/jtagd/jtagd.conf` configuration file.
+    Tells jtagd not to use the default `/etc/jtagd/jtagd.conf` configuration file.
 
 * `--version`
 
@@ -198,7 +203,7 @@ Copyright (C) 2020  Intel Corporation. All rights reserved.
 
     Without this option, jtagd scans your system for supported attached JTAG dongles.
 
-    On my system, jtagd automatically conenects to my USB-Blaster clone:
+    On my system, jtagd automatically connects to my USB-Blaster clone:
     ```sh
 USB-Blaster added "USB-Blaster [1-7]"
     ```
@@ -232,7 +237,7 @@ No USB device change detection because libudev.so.0 not found
 Cable with serial number "91d28408" ignored due to filter   <<<<<<<<<<<
     ```
 
-    Surprisingly, I don't have device with 12345 as serial number, but now I do know the serial number
+    I don't have device with 12345 as serial number, but now I do know the serial number
     of my USB Blaster, and I can use that number to only allows jtagd to that one:
 
     ```sh
@@ -300,7 +305,11 @@ tom@thinkcenter:~$ cat port.info
 1309
     ```
 
+    This might be useful if you're starting and stopping jtagd with some scripts.
+
 * `--idle-stop`
+
+    It's currently not clear what `--idle-stop` is supposed to do...
 
     When you start jtagd with `--idle-stop` in combination with `--foreground`, you get this:
 
@@ -314,7 +323,6 @@ No USB device change detection because libudev.so.0 not found
     You get the same message with `--user-start`. However, when using `--idle-stop`, Quartus
     Programmer can't connect to jtagd.
 
-    It's currently not clear what `--idle-stop` is supposed to do...
 
 * `--multi-thread`
 
@@ -342,9 +350,34 @@ Start thread for port 46231             <<<<<<
     I think this option makes it possible to specify configuration options that are normally
     defined in jtagd.conf, but jtagd always returns `Unknown argument '--set-config'`. 
 
+# JTAG-related configuration files
+
+So far we've seen the following files:
+
+* `/etc/jtagd/jtagd.conf`
+
+    The default jtagd configuration file when you start jtagd from the command line and don't
+    explicitly specify a configuration file.
+
+* `~/.jtagd.conf`
+
+    The jtagd configuration file that Quartus Programmer will automatically create when you're
+    using a JTAG dongle on the same PC as the one on which you're running Quartus.
+
+There's a third file:
+
+* `~/.jtag.conf`
+
+    Notice the missing `d`!
+
+    This is another configuration file that's created by Quartus Programmer. It contains the
+    client settings that are used to communicate with jtagd.
+
+
 # Using jtagconfig to set configuration options
 
-We saw earlier that jtagd picks up configuration options from a `jtagd.conf` file. But how do set theses options?
+We saw earlier that jtagd picks up configuration options from a `jtagd.conf` file. But how do 
+you set theses options?
 
 There are 3 ways to do that:
 
@@ -462,3 +495,5 @@ drwxrwxrwx 2 root root 4096 Sep  5 16:47 /etc/jtagd//
 
     * [AN 972: JTAG Remote Debugging Over a PCIe Interface Example Design](https://www.intel.com/content/www/us/en/docs/programmable/728675/21-3/running-the-remote-debugging-over-a.html)
 * [Remote FPGA Debug at RocketBoards](https://www.rocketboards.org/foswiki/Documentation/RemoteDebug)
+
+# Footnotes
