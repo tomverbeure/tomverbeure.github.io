@@ -129,7 +129,17 @@ that the R3272 probably ignores BUSY and simply waits for an end-of-transaction 
 
 ![Parallel port transactions on a R3273 without using BUSY](/assets/parallelprintcap/scope_shots/6_r3273_full_transaction_cycle_no_busy.png)
 
+Unfortunately, things are not that easy in the real world. After publishing this blog post, I found out that the
+parallel port on an HP Infinium oscilloscope behave in unexpected ways:
 
+* when the printer doesn't assert BUSY in time, it will simply continue pulsing nSTROBE without even checking for
+  nACK! 
+* when you do assert BUSY and the deassert it, it doesn't check nACK either.
+
+I think that the oscilloscope switches to a more advanced parallel port mode without first going through the negotiation
+step to switch out of compatibility mode. Either way, the firmware currently makes sure that BUSY gets asserted as soon
+as possible after asserting of nSTROBE. It also asserts nACK immediately after BUSY, without inserting a waiting time. This 
+seems to make thing work for the 3 devices that I have.
 
 In addition to the signals that are used for the actual data transfer, the parallel port has a bunch of
 mostly static control and status signals:
