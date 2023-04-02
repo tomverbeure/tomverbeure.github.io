@@ -164,7 +164,6 @@ splurge on a high quality scanned copy at [ArtekManuals](https://artekmanuals.co
 [^2]: ArtekManuals is allowed to distribute these manuals under license from Keysight. Purchased copies
       can not be shared with others.
 
-
 Here are some of the key features of the 8007A:
 
 * 10Hz to 100MHz
@@ -199,6 +198,30 @@ sure that we're nowhere near to being limited by the bandwidth of the 500MHz osc
 I'm using a coax cable here instead of a probe, so there's no need to worry about bandwith limitations 
 of a probe either. In other words, we can be reasonably sure that the measured 2.1ns is accurate. 
 
+# A Quick Look Inside
+
+I haven't done an in-depth teardown of the 8007B yet, but here's a quick look inside.
+
+
+The top:
+[![HP 8007B inside - top](/assets/hp8007b/8007b_inside_top.jpg)](/assets/hp8007b/8007b_inside_top.jpg)
+*Click to enlarge*
+
+One thing that I find really cool in the picture above is the ring. Marked "DL2", it's a delay
+line. There's a second one on the other side of the same PCB, but it's hidden behind a different
+PCB.
+
+The design is almost entirely built out of discrete components with a few custom ICs. I've yet to find
+the 2 delay lines in the schematic. 
+
+The bottom:
+[![HP 8007B inside - bottom](/assets/hp8007b/8007b_inside_bottom.jpg)](/assets/hp8007b/8007b_inside_bottom.jpg)
+*Click to enlarge*
+
+
+You should check out [this amazing 8007B repair](http://www.dasarodesigns.com/projects/reverse-engineering-an-ic-to-fix-an-hp-8007a-pulse-generator/),
+where the author recreates one of the custom ICs from scratch.
+
 # The Most Basic Time Domain Reflectometry Experiment
 
 I'm not very good with analog electronics and RF, so I decided to use the pulse generator
@@ -212,7 +235,6 @@ My setup was really simple:
 * a probe that records the signals at the pulse generator source
 * a coax cable that connects the other side of the BNC splitter to channel 2 of the
   oscilloscope
-
 
 That's really all there is to it! 
 
