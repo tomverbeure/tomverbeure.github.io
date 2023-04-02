@@ -263,8 +263,8 @@ to calculate the length of the cable with the following formula:
 
 $$length=\frac{speed\ of\ light \cdot measured\ time}{2}$$
 
-The speed of light in a coax cable is around 0.65. And we're dividing by 2 because the 
-signal needed to travel both ways.
+The speed of light in a coax cable is around 0.65 of the one in a vacuum. And we're dividing 
+by 2 because the signal needed to travel both ways.
 
 $$\frac{0.65 \cdot 300 \times 10^6 \cdot 27.8 \times 10^{-9}}{2} \rightarrow 2.7m$$
 
@@ -272,26 +272,24 @@ Which is indeed the length of the cable.
 
 # The Same Measurement on a lowly TDS420A
 
-That Infiniium scope is a 'permanent' loaner from a friend, but a pretty high-end
-oscilloscope by hobbyist standards. I repeated the measurments with my 
+That Infiniium scope is a 'permanent' loaner from a friend, and a pretty high-end
+oscilloscope by today's hobbyist standards. I repeated the measurments with my 
 lowly [TDS420A oscillscope](/2020/06/27/In-the-Lab-Tektronix-TDS420A.html).
 It's rated at 200MHz and just 100MS/s. How can one possibly measure events that happen 
 in the nanosecond range on a scope like this?
 
-The trick is that a TDS420A supports [equivalent time samples](https://www.tek.com/en/documents/application-note/real-time-versus-equivalent-time-sampling).
+The trick is that a TDS420A supports [equivalent time sampling](https://www.tek.com/en/documents/application-note/real-time-versus-equivalent-time-sampling).
 
-For repetitive signals it keeps on sampling the signal at random. Over time, the signal
-gets reconstructed with a much higher resolution. In the case of a TDS420A, that higher
-resolution is equivalent to 5GS/s!
+For *repetitive signals* it keeps on sampling the signal at random so that, over time, 
+the signal gets reconstructed with a much higher resolution. In the case of a TDS420A, 
+that higher resolution is equivalent of sampling at 5GS/s!
 
-Here's that same a single pulse. After 15 acquisitions, the TDS420A shows the following
-image:
+Here's that same pulse as before. After 15 acquisitions, you start to see the outline
+of the pulse:
 
 ![Short pulse after 15 acquisitions](/assets/tdr/tds420_short_pulse_equivalent_time_samples.png)
 
-You start to see the outline of the pulse...
-
-After a few hundred acquisitions, you end up with this:
+And after a few hundred acquisitions, you end up with this:
 
 ![Short pulse](/assets/tdr/tds420_short_pulse_no_cable.png)
 
