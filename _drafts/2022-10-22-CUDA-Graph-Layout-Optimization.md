@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Optimzing CUDA Graph Processing Performance by Modifying Memory Layout
+title: Optimizing CUDA Graph Processing Performance by Modifying Memory Layout
 date:  2022-10-22 00:00:00 -1000
 categories:
 ---
@@ -12,7 +12,7 @@ categories:
 
 Ever since the introduction of the 8800 GTX in 2006, I've been fascinated by the
 amount of raw compute power that resides inside GPUs, and I've always wanted to
-do something 'real' with it: some kind of processing that would accelerate somebody's 
+do something 'real' with it: some kind of processing that would accelerate one's 
 day-to-day job.
 
 I work for Nvidia, so learning and using CUDA for this is an obvious choice. 
@@ -26,17 +26,26 @@ But I never got any farther than running some of the CUDA SDK examples...
 
 Learning is easier when you have an actual project. Digital logic simulation is a topic that 
 closely matches my general hobby and work interests, so creating a GPU based logic simulator has
-always been one of the things I've wanted to try. I've already played with the 
+been one of the things I've wanted to try. I've already played with the 
 [Yosys CXXRTL backend](/2020/08/08/CXXRTL-the-New-Yosys-Simulation-Backend.html)
 that converts a Verilog RTL design into a simulatable C++ model. Surely, this can be
 converted over to a GPU?
 
-Fast forward to a couple of months ago when Sylvain Lefebvre created a 
+Fast forward to a couple of months ago when [Sylvain Lefebvre](https://twitter.com/sylefeb) created a 
 [Silixel](https://github.com/sylefeb/Silixel): 
 a crude but functional GPU-based logic simulator. He had the same idea of leveraging Yosys, but
 took a different route of compiling the design into a sea of only low-level 4-input LUTs 
-and FFs. Silixel has a number of limitations that make it unqualified to use for anything 
-practical, but it's still an awesome base on which to build various GPU compute experiments.
+and FFs. 
+
+Here's an example of Silixel simulating the rendering of pixels for a video output:
+
+![Silixel simulation](/assets/cuda_sim/silice_vga_test.gif)
+
+The background shows the image being rendered during simulatio. The flickering black and white dots 
+are the state of the logic that's been simulated, cycle-by-cycle.
+
+Silixel has a number of limitations that make it unqualified for practical use, 
+but it's still an awesome base on which to build various GPU compute experiments.
 
 So rather than a grand goal of building a best-in-class RTL simulator, I decided to start
 with Silixel, make incremental improvements and see where that got me:
@@ -57,19 +66,66 @@ You should check out the [Silixel README](https://github.com/sylefeb/Silixel) fo
 of how it does gate-level simulation, but here's a summary:
 
 * Silixel first uses Yosys to convert Verilog design into a network of flip-flops (FFs) and 
-  4-input lookup tables (LUTs). u
+  4-input lookup tables (LUTs).
 
     This conversion is a real synthesis step. Yosys writes out the synthesized netlist to a BLIF file, 
     after which Silixel take over.
 
 * it reads the BLIF file into lists of LUTs and FFs.
 * it merges LUTs and FFs into one single cell type that consists of a LUT and a FF. 
+  Let's call that a LUT/FF cell.
+
+    ![LUT + FF cell](/assets/cuda_sim/LUT_FF_cell.svg)
 
     The result is a directed graph where each node is a LUT/FF cell, and the edges of the graph
     are connections from a LUT/FF cell output to one of the 4 inputs of the next LUT/FF cell.
 
-* it does a topological sort to determine the order in which cells must be evaluated so that
+    [![Network of LUT/FFs cells](/assets/cuda_sim/Network_of_LUTFF_cells.png)](/assets/cuda_sim/Network_of_LUTFF_cells.png)
+    *Click to enlarge*
+
+    In this graph, not all input and not all outputs of a LUT/FF cell are connected: if the initial
+    Yosys synthesis had a LUT output only go to a FF and not directly to any other LUT, then the 
+    merged logic won't have anything connected to the D output of the LUT/FF cell.
+
+    The graph has feedback loops, but only Q outputs of a LUT/FF cells are allowed to point
+    backwards, otherwise you get a combinational loop which is something that should be
+    avoided when doing digital design.
+
+    The benefit of having only a single primitive cell is that a GPU simulation kernel only has to 
+    simulate 1 kind of cell: they all behave the same way. This makes execution on a SIMD machine
+    more regular and, hopefully, more efficient.
+
+* Silixel then does a topological sort to determine the order in which cells must be evaluated so that
   each cell needs to be evaluated just once.
+
+    For the graph above, there are 9 cell, each with a number from 0 to 8 that has been randomly
+    assigned.
+
+    If you'd evaluate the cells in numbered order, you'd have to do execute multiple
+    evaluation loops before the result converges. In the example, you can see how 
+    cell 1 is dependent combinatorially on the outputs of cells 0 and cell 5. If you'd evaluate
+    cell 1 and cell 2before cell 5, and the output of cell 5 changes, then you'd have to evaluate
+    cell 1 again... which in turn may require to evaluate cell 2 again!
+
+    Topological sorting avoids that.
+
+    In the graph below, the cell numbers have been reassigned in topological order. In a real
+    implementation though, you wouldn't reorder, but keep a data structure with the correct order.
+
+    [![Sorted network of LUT/FFs cells](/assets/cuda_sim/Sorted_Network_of_LUTFF_cells.png)](/assets/cuda_sim/Sorted_Network_of_LUTFF_cells.png)
+    *Click to enlarge*
+
+    Pay attention to cells 7 and 6, marked in red. Cell 6 depends on the Q output of cell 7.
+    Does this mean that the topological sort is in correct? Not if the simulation has
+    2 main steps: evaluation, where the simulator looks at the inputs to the LUTs to determine the
+    next values of D. And copy, where the simulator copies the new D value into the Q element.
+
+    There isn't just one unique topologically sorted order. Cells can be swapped as long
+    as the evaluation order is maintained. Cell 0, for example, is similar to cell 7 in that
+    only its Q output is connected to anything. We could move cell 0 to the back to the line,
+    and move all other cells up one position and we'd still have a topologically sorted
+    graph.  
+    
 
 * it separates the graph into layers so that all LUT/FFs cell within the same layer can be
   calcaluted in parallel without dependencies between them.
