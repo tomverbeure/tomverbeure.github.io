@@ -83,7 +83,7 @@ of how it does gate-level simulation, but here's a summary:
     [![Network of LUT/FFs cells](/assets/cuda_sim/Network_of_LUTFF_cells.png)](/assets/cuda_sim/Network_of_LUTFF_cells.png)
     *Click to enlarge*
 
-    In this graph, not all input and not all outputs of a LUT/FF cell are connected: if the initial
+    In this graph, not all inputs and not all outputs of a LUT/FF cell are connected: if the initial
     Yosys synthesis had a LUT output only go to a FF and not directly to any other LUT, then the 
     merged logic won't have anything connected to the D output of the LUT/FF cell.
 
@@ -120,24 +120,68 @@ of how it does gate-level simulation, but here's a summary:
     2 main steps: evaluation, where the simulator looks at the inputs to the LUTs to determine the
     next values of D. And copy, where the simulator copies the new D value into the Q element.
 
+    From an evaluation point of view, a cell with only the Q output is considered no different
+    than a cell that only drives the outputs of the circuit. It has no topologically dependent
+    cells.
+
     There isn't just one unique topologically sorted order. Cells can be swapped as long
     as the evaluation order is maintained. Cell 0, for example, is similar to cell 7 in that
     only its Q output is connected to anything. We could move cell 0 to the back to the line,
     and move all other cells up one position and we'd still have a topologically sorted
     graph.  
+
+    Once we can ignore the topological dependency on Q, we can flatten the graph:
+    
+    [![Flattened network of LUT/FF cells](/assets/cuda_sim/Flattened_Network_of_LUTFF_cells.png)](/assets/cuda_sim/Flattened_Network_of_LUTFF_cells.png)
+    *Click to enlarge*
+
+    The graph above is identical to the one before in terms of dependency. The signals that are 
+    sourced by a Q output are dashed now to indicate that they don't need to be considered
+    for sorting.
+
+* Silixel separates the graph into layers so that all LUT/FFs cells with the same depth below to
+  the same layer.  
+
+    From the previous graph, it should be clear now that this circuit has an evaluation
+    depth of 3. Cells 0, 1, 2, 5, 6, and 7 have a depth of 1. Cells 3 and 8 have depth of 2,
+    and cell 4 has a depth of 3.
+
+    All cells with the same depth are independent of each other, and can be evaluated in
+    parallel!
+
+    There are 6 cells in layer 0, 2 cells in layer 1, and 1 cell in layer 2. 
+
+    It's not a strict requirement that a cell with a given depth gets assigned to the lowest
+    possible layer. In the diagram below, the some cells have been shuffled to a higher layer 
+    to make the layers more balanced:
+
+    [![Alternate flattened network of LUT/FF cells](/assets/cuda_sim/Flattened_Network_of_LUTFF_cells_alt.png)](/assets/cuda_sim/Flattened_Network_of_LUTFF_cells_alt.png)
+    *Click to enlarge*
+
+    Same network, but now the each layer has 3 LUT/FF cells! 
+
+    In general, the number of cells of a given depth will go down with increasing depth. There may
+    be 10,000 cells of depth 1, 3000 of depth 2, and, say, only 18 cells of depth 10. For
+    a massively parallel machine like a GPU that has thousands of SIMD lanes ('threads' in CUDA
+    parlance), launching a thread group with just 18 threads will keep most of the machine sit
+    idle. So there can be performance benefit to balancing the cells in different layers.
+
+    *Silixel does not do such balancing, and assigns each cell the lowest possible depth.*
     
 
-* it separates the graph into layers so that all LUT/FFs cell within the same layer can be
-  calcaluted in parallel without dependencies between them.
 * finally, it asks the GPU to calculate the output of each LUT/FF one graph layer at a time, until
   all layers have been updated. 
 
     Such a sequence corresponds to simulating one clock cycle.
 
 During the digital design phase, digital logic is always structured hierarchically, with modules that
-are interconnected by interfaces that have a limited amount of signals. The netlist that comes out of 
+are interconnected by interfaces that have a limited amount of signals. A netlist that comes out of 
 Yosys is flat, with all hierarchy removed, but that doesn't mean that the nature by which cells are 
 interconnected has changed. It's just that the hierarchical structure isn't explicit anymore.
+
+# A Graph as a Matrix
+
+
 
 The graph of a netlist of LUTs is necessarily sparse: in our case, the number of inputs is fixed
 at 4 inputs, so the number of nodes that can feed the next node is inherently limited to 4,
