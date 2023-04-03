@@ -210,7 +210,7 @@ $$\left[\begin{array}{ccc:cccccccc}
  0 & 0 & 0 & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\  % I1
  0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\  % I2
 \hdashline
- 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\  % C0
+ 0 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 1 & 0 \\  % C0
  0 & 0 & 0 & 0 & 0 & 1 & 1 & 0 & 0 & 0 & 0 & 0 \\  % C1
  0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 \\  % C2
  0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 \\  % C3
@@ -253,8 +253,8 @@ the maximum number of ones in a column of the matrix is 4 as well. And while it'
 for a cell output go to more than 4 LUT inputs, when it does so, it will reduce
 the number of input slots for those LUTs by one as well.
 
-In our example, no cell has more than 2 inputs, and there are only 14 ones
-out of 144 matrix elements.
+In our example, no cell has more than 2 inputs, and there are only 15 ones
+out of 144 matrix elements. For large designs, the sparsity will only increase.
 
 # Graphs Arranged in Memory as Arrays 
 
