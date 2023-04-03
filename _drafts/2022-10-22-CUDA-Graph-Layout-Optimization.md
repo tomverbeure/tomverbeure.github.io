@@ -5,6 +5,22 @@ date:  2022-10-22 00:00:00 -1000
 categories:
 ---
 
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ["\\(", "\\)"] ],
+      displayMath: [ ['$$', '$$'], ["\\[", "\\]"] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+    //,
+    //displayAlign: "left",
+    //displayIndent: "2em"
+  });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
 * TOC
 {:toc}
 
@@ -181,11 +197,64 @@ interconnected has changed. It's just that the hierarchical structure isn't expl
 
 # A Graph as a Matrix
 
+It's common to represent the topology of a graph in an [adjacency matrix](https://en.wikipedia.org/wiki/Adjacency_matrix),
+a square matrix with a row and a colomn for each graph node. Rows are the source of
+an edge, columns a destination.
 
+Using the cell numbers after topologic sorting, here's the adjacency graph of our
+example circuit:
 
-The graph of a netlist of LUTs is necessarily sparse: in our case, the number of inputs is fixed
-at 4 inputs, so the number of nodes that can feed the next node is inherently limited to 4,
-limiting the total number of graph edges of 4 times the number of graph nodes.
+$$\left[\begin{array}{ccc:cccccccc}
+%0   1   2   0   1   2   3   4   5   6   7   8
+ 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 1 & 0 \\  % I0
+ 0 & 0 & 0 & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\  % I1
+ 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\  % I2
+\hdashline
+ 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 \\  % C0
+ 0 & 0 & 0 & 0 & 0 & 1 & 1 & 0 & 0 & 0 & 0 & 0 \\  % C1
+ 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 \\  % C2
+ 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 \\  % C3
+ 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\  % C4
+ 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 1 \\  % C5
+ 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\  % C6
+ 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\  % C7
+ 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\  % C8
+\end{array}\right]
+$$
+
+Let's digest this!
+
+There's a row and a column for each input and each cell, but
+not for any of the outputs, because the value of an output
+is also the D or Q value of a cell.
+
+The first 3 rows and columns are for inputs 0 to 2. The next
+8 rows and columns are for the cells. 
+
+The first row, assigned to input 0, looks like this:
+
+$$\left[\begin{array}{ccc:cccccccc}
+ I0 & I1 & I2 & C0 & C1 & C2 & C3 & C4 & C5 & C6 & C7 & C8 \\
+ 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 1 & 0 & \\  % I0
+\end{array}\right]
+$$
+
+Input 0 only goes to cells 5 and 7, so the columns for C5 and C7 have a one. Repeat
+this process for all inputs, cells, and outputs, and you get the 12x12 adjacency
+matrix.
+
+To construct the matrix, I made a minor simplification by pretending that
+D and Q are the same. I could make the LUT and FF separate nodes in the graph
+to distinguish between them, but that would make the graph a bit too unwieldy.
+
+One very important characteristic is that **the adjacency matrix is extremely sparse**. It has
+to be like this because the number of inputs for a cell is fixed to 4. As a result,
+the maximum number of ones in a column of the matrix is 4 as well. And while it's possible
+for a cell output go to more than 4 LUT inputs, when it does so, it will reduce
+the number of input slots for those LUTs by one as well.
+
+In our example, no cell has more than 2 inputs, and there are only 14 ones
+out of 144 matrix elements.
 
 # Graphs Arranged in Memory as Arrays 
 
