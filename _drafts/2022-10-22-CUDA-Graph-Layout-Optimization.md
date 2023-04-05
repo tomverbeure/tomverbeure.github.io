@@ -201,35 +201,43 @@ It's common to represent the topology of a graph in an [adjacency matrix](https:
 a square matrix with a row and a colomn for each graph node. Rows are the source of
 an edge, columns a destination.
 
-Using the cell numbers after topologic sorting, here's the adjacency graph of our
-example circuit:
+But before we do that, let's first simplify our circuit a little bit, for adjacency matrix
+reasons only, by treating a graph node as something where you store the simulation values of
+both D and Q, and by merging D and Q output edges.
 
-$$\left[\begin{array}{ccc:cccccccc}
+Our circuit converts into the following graph of nodes and edges:
+
+[![Simplified graph with nodes and edges](/assets/cuda_sim/Flattened_Network_as_Graph.png)](/assets/cuda_sim/Flattened_Network_as_Graph.png)
+
+Note that there are nodes for inputs and cells but not for outputs. That's because the value 
+of an outputs will always be the same as the value D or Q value of a cell.
+
+Here's the adjacency matrix of the graph:
+
+$$
+A = 
+\left[\begin{array}{ccc:cccccccc}
 %0   1   2   0   1   2   3   4   5   6   7   8
- 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 1 & 0 \\  % I0
- 0 & 0 & 0 & 1 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\  % I1
- 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\  % I2
+ 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & \textbf{1} & 0 & \textbf{1} & 0 \\  % I0
+ 0 & 0 & 0 & \textbf{1} & \textbf{1} & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\  % I1
+ 0 & 0 & 0 & 0 & \textbf{1} & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\  % I2
 \hdashline
- 0 & 0 & 0 & 1 & 0 & 0 & 1 & 0 & 0 & 0 & 1 & 0 \\  % C0
- 0 & 0 & 0 & 0 & 0 & 1 & 1 & 0 & 0 & 0 & 0 & 0 \\  % C1
- 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 \\  % C2
- 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 & 0 \\  % C3
+ 0 & 0 & 0 & \textbf{1} & 0 & 0 & \textbf{1} & 0 & 0 & 0 & \textbf{1} & 0 \\  % C0
+ 0 & 0 & 0 & 0 & 0 & \textbf{1} & \textbf{1} & 0 & 0 & 0 & 0 & 0 \\  % C1
+ 0 & 0 & 0 & 0 & 0 & 0 & 0 & \textbf{1} & 0 & 0 & 0 & 0 \\  % C2
+ 0 & 0 & 0 & 0 & 0 & 0 & 0 & \textbf{1} & 0 & 0 & 0 & 0 \\  % C3
  0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\  % C4
- 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 1 \\  % C5
+ 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & \textbf{1} & 0 & \textbf{1} \\  % C5
  0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 \\  % C6
- 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 \\  % C7
- 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\  % C8
+ 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & \textbf{1} & 0 & 0 \\  % C7
+ 0 & 0 & 0 & 0 & 0 & 0 & 0 & 0 & \textbf{1} & 0 & 0 & 0 \\  % C8
 \end{array}\right]
 $$
 
 Let's digest this!
 
-There's a row and a column for each input and each cell, but
-not for any of the outputs, because the value of an output
-is also the D or Q value of a cell.
-
-The first 3 rows and columns are for inputs 0 to 2. The next
-8 rows and columns are for the cells. 
+There are 3 rows and columns for inputs 0 to 2, and 9 rows and columns 
+for cells C0 to C8. 
 
 The first row, assigned to input 0, looks like this:
 
@@ -240,46 +248,52 @@ $$\left[\begin{array}{ccc:cccccccc}
 $$
 
 Input 0 only goes to cells 5 and 7, so the columns for C5 and C7 have a one. Repeat
-this process for all inputs, cells, and outputs, and you get the 12x12 adjacency
+this process for all inputs and cells, and you get the 12x12 adjacency
 matrix.
 
-To construct the matrix, I made a minor simplification by pretending that
-D and Q are the same. I could make the LUT and FF separate nodes in the graph
-to distinguish between them, but that would make the graph a bit too unwieldy.
-
 One very important characteristic is that **the adjacency matrix is extremely sparse**. It has
-to be like this because the number of inputs for a cell is fixed to 4. As a result,
-the maximum number of ones in a column of the matrix is 4 as well. And while it's possible
-for a cell output go to more than 4 LUT inputs, when it does so, it will reduce
-the number of input slots for those LUTs by one as well.
+to be like this because the number of inputs for a cell is limited to 4. Because of this
+the maximum number of ones in a column of the matrix is limited to 4 as well. 
+And while it's possible for a cell output go to more than 4 LUT inputs, when it does so, 
+it will reduce the number of input slots for those LUTs by one.
 
-In our example, no cell has more than 2 inputs, and there are only 15 ones
+In our example, no cell has more than 2 inputs, and there are only 16 ones
 out of 144 matrix elements. For large designs, the sparsity will only increase.
 
-# Graphs Arranged in Memory as Arrays 
+We'll get back to this matrix soon.
+
+# Arranging the Circuit Graphs in Memory 
 
 GPUs are exceptional at two things:
 
-* executing the same operation in parallel
+* executing the same instruction in parallel on multiple pieces of data
 * having large amount of DRAM bandwidth
 
-Due to the nature of DRAM, the only way to extract its bandwidth is
-by presenting transactions in a DRAM friendly way. Internally, DRAM chip
-have a hierarchy of atoms (a set of bytes), rows, and banks. Contrary
-to SRAM, you can't just fetch bytes in a random order and expect maximum performance.
-If you need to fetch just 1 byte from DRAM, the GPU memory controller must first
-open a row in the bank in which it resides, and fetch a burst of 32 bytes. If
+The only way to achieve peak bandwidth from a DRAM is by generating transactions in a DRAM 
+friendly way. Internally, a DRAM chip has a hierarchy of atoms, a set of bytes (usually 32), 
+rows, and banks. 
+
+[![GPU DRAM Hierarchy](/assets/cuda_sim/GPU_DRAM_Hierarchy.png)](/assets/cuda_sim/GPU_DRAM_Hierarchy.png)
+*Click to enlarge*
+
+Contrary to SRAM, you can't just fetch bytes in a random order and expect maximum performance.
+If you need to fetch just 1 byte from DRAM, its memory controller must first
+open the row in the bank in which the atom resides, and then fetch a burst of 32 bytes. If
 a byte from a different row in the same bank is needed next, the memory controller
 must then close ("precharge") the previous row, and start all over again.
-Opening and closing a row is overhead that can be hidden if the memory controller
-can schedule transactions to different banks, but it should be clear that optimal 
-effective memory bandwidth can be achieved if as many bytes as possible can be fetched 
-from the same row in one go.
 
-That's why GPU memory controllers have huge transaction sorters that queue up a whole
+The overhead of Opening and closing a row can be hidden when the memory controller
+can schedule transactions to different banks, but peak effective memory bandwidth 
+can only be achieved when as many bytes as possible can be fetched from the same row 
+in one go.
+
+That's why GPU memory controllers have huge transaction sorters that queue up a
 bunch memory requests and group together request from the same row so that they can be
 executed on the DRAM together, requiring opening and closing the row only once for the
 whole group.
+
+[![DRAM Transaction Reordering](/assets/cuda_sim/Transaction_Reordering.png)](/assets/cuda_sim/Transaction_Reordering.png)
+*Click to enlarge*
 
 There are multiple ways to store graphs in memory. A very naive way would be to allocated
 memory for each node individually and, for each input, have a pointer to the node that's
