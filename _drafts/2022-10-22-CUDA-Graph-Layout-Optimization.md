@@ -97,7 +97,7 @@ of how it does gate-level simulation, but here's a summary:
     are connections from a LUT/FF cell output to one of the 4 inputs of the next LUT/FF cell.
 
     [![Network of LUT/FFs cells](/assets/cuda_sim/Network_of_LUTFF_cells.png)](/assets/cuda_sim/Network_of_LUTFF_cells.png)
-    *Click to enlarge*
+    *(Click to enlarge)*
 
     In this graph, not all inputs and not all outputs of a LUT/FF cell are connected: if the initial
     Yosys synthesis had a LUT output only go to a FF and not directly to any other LUT, then the 
@@ -129,7 +129,7 @@ of how it does gate-level simulation, but here's a summary:
     implementation though, you wouldn't reorder, but keep a data structure with the correct order.
 
     [![Sorted network of LUT/FFs cells](/assets/cuda_sim/Sorted_Network_of_LUTFF_cells.png)](/assets/cuda_sim/Sorted_Network_of_LUTFF_cells.png)
-    *Click to enlarge*
+    *(Click to enlarge)*
 
     Pay attention to cells 7 and 6, marked in red. Cell 6 depends on the Q output of cell 7.
     Does this mean that the topological sort is in correct? Not if the simulation has
@@ -149,7 +149,7 @@ of how it does gate-level simulation, but here's a summary:
     Once we can ignore the topological dependency on Q, we can flatten the graph:
     
     [![Flattened network of LUT/FF cells](/assets/cuda_sim/Flattened_Network_of_LUTFF_cells.png)](/assets/cuda_sim/Flattened_Network_of_LUTFF_cells.png)
-    *Click to enlarge*
+    *(Click to enlarge)*
 
     The graph above is identical to the one before in terms of dependency. The signals that are 
     sourced by a Q output are dashed now to indicate that they don't need to be considered
@@ -172,7 +172,7 @@ of how it does gate-level simulation, but here's a summary:
     to make the layers more balanced:
 
     [![Alternate flattened network of LUT/FF cells](/assets/cuda_sim/Flattened_Network_of_LUTFF_cells_alt.png)](/assets/cuda_sim/Flattened_Network_of_LUTFF_cells_alt.png)
-    *Click to enlarge*
+    *(Click to enlarge)*
 
     Same network, but now the each layer has 3 LUT/FF cells! 
 
@@ -274,7 +274,7 @@ friendly way. Internally, a DRAM chip has a hierarchy of atoms, a set of bytes (
 rows, and banks. 
 
 [![GPU DRAM Hierarchy](/assets/cuda_sim/GPU_DRAM_Hierarchy.png)](/assets/cuda_sim/GPU_DRAM_Hierarchy.png)
-*Click to enlarge*
+*(Click to enlarge)*
 
 Contrary to SRAM, you can't just fetch bytes in a random order and expect maximum performance.
 If you need to fetch just 1 byte from DRAM, its memory controller must first
@@ -293,7 +293,7 @@ executed on the DRAM together, requiring opening and closing the row only once f
 whole group.
 
 [![DRAM Transaction Reordering](/assets/cuda_sim/Transaction_Reordering.png)](/assets/cuda_sim/Transaction_Reordering.png)
-*Click to enlarge*
+*(Click to enlarge)*
 
 There are multiple ways to store graphs in memory. A very naive way would be to allocated
 memory for each node individually and, for each input, have a pointer to the node that's
@@ -310,44 +310,177 @@ interfering with eachother, this makes it extremely easy to pass along the nodes
 you just indicate the start and the end index of the array to the GPU, and the GPU can
 just process all the nodes that lay in between.
 
-# The Basic Graph Update Algorithm
+# The Basic Graph Update Algorithm and a Naive Memory Organization
 
-The most straightforward way to store the graph could be something like this:
+When all LUT/FF cells have been assigned their proper layer so that each LUT only needs to
+be evaluated once, the overall simulation algorithm can be reduced to this:
 
 ```c
-struct graph_node {
-    int 	input_idx[4];
-    bool 	comb_or_ff[4];
-    uint16_t 	lut_config;
-    bool 	comb_value;
-    bool 	ff_value;
-};
+    init_q_values();
+    while(!end_of_simulation){
+        for(l in layers){
+            evaluate_layer(l);
+        copy_d_to_q();
+    }
+```
 
-struct graph_node graph[number_of_nodes_in_graph];
+In its most straightforward form, each cell has the following data associated with it:
+
+```c
+struct graph_node_s {
+    uint32_t    input_indices[4];
+    bool        d_or_q[4];
+    uint16_t    lut_config;
+    bool        d;
+    bool        q;
+};
+```
+
+All the cells are stored in a simple array:
+
+```c
+struct graph_node_s graph_nodes[number_of_nodes_in_graph];
 ```
 
 And you'd simulate a single clock cycle with the following pseudo code:
 
 First recalculate the combinatorial values for all layers:
 ```c
-for(l=start_layer; l<=end_layer; ++l){
-    for(node_idx=layer[l].start; node_idx<layer[l].end;++node_idx){
-        node = graph[node_idx];
-	lut_sel = 0;
-	for(i=0; i<4; ++i){
-	    input_node = graph[node.input_idx[i]];
-            lut_sel |= (node.comb_or_ff[i] ? input_node.comb_value : input_node.ff_value) << i
-	}
-	graph.comb_value = node.lut_config >> lut_val;
+evaluate_layer(layer){
+    for(node in layer){
+
+        lut_sel = 0;
+        for(i=0; i<4; ++i){
+            input_node = graph_nodes[node.input_indices[i]];
+
+            lut_sel |= (node.d_or_q[i] ? input_node.d : input_node.q) << i
+        }
+
+        node.d = node.lut_config >> lut_val;
     }
 }
 ```
 
-Then ripple copy over the combinatorial values to the flip-flop values:
+When all layers have been processed, the d values are copied over into the q values:
 
 ```c
-for(node_idx=0;node_idx<number_of_nodes_in_graph;++node_idx){
-    graph[node_idx].ff_value = graph[node_idx].comb_value;
+copy_d_to_q(){
+    for(node in graph_nodes){
+        node.q = node.d
+    }
 }
 ```
+
+One thing is clear: the actual calculation effort to evaluate the value of a cell is very low and little
+more than a few shift operations. The heavy lifting consist of hauling data in an out of memory!  
+Each cell has 24 byte of data. All this data must be read at least ones, and some of it, d and q,
+must be written back as well.
+
+What's worse is that the data isn't laid out in an access smart way. 
+
+Fetching the information of graph nodes that are being evaluated is extremely efficient, because all the nodes
+of a layer are processed in sequence. 
+
+[![Naive graph memory allocation](/assets/cuda_sim/naive_graph_node_allocation.png)](/assets/cuda_sim/naive_graph_node_allocation.png)
+*(Click to enlarge)*
+
+But fetching the D and Q data from the input nodes is terrible even if the node under evaluation request 4
+nodes that are located right next to each other. Remember that DRAM data must be accessed in atoms which are
+at least 32 bytes in size. When fetching, the 4 D and Q values are needed to evaluate a single cell,
+the CPU or GPU will need to fetch 96 bytes!
+
+The issue here is a classic computer science issue: the memory access inefficiency of an *array of structs*.
+
+Let's do something about it.
+
+# A Struct of Arrays
+
+We can easily modify the data structures so that memory gets accessed with better efficiency by organizing
+things as a struct of arrays.
+
+```c
+struct graph_s {
+    struct graph_node_static_s {
+        uint32_t    input_indices[4];
+        bool        d_or_q[4];
+        uint16_t    lut_config;
+    } static_info[number_of_nodes_in_graph];
+
+    struct graph_node_dynamic_s {
+        bool        d;
+        bool        q;
+    } dynamic_info[number_of_nodes_in_graph];
+};
+```
+
+There are now 2 arrays: one has a struct with static information about the network: the inputs of a node,
+whether to use the D or Q output of such an input cell, and the configuration of the LUT. And the other
+array contains the D and Q values of each cell.
+
+In memory, it looks like this:
+
+[![Smarter graph memory allocation](/assets/cuda_sim/smarter_graph_node_allocation.png)](/assets/cuda_sim/smarter_graph_node_allocation.png)
+*(Click to enlarge)*
+
+Due to padding reasons, there are still 24 bytes allocated per cell for static information.
+
+With the new organization, if the 4 input nodes are located right next to eachother, the processor can fetch 4 input values by fetching
+just 1 instead of 3 32-byte atoms.
+
+It gets better: the input nodes don't even have to right next to each other, as long as they're located in the same atom, they can
+all be fetched together:
+
+[![D and Q values in the same atom](/assets/cuda_sim/d_and_q_values_in_the_same_atom.png)](/assets/cuda_sim/d_and_q_values_in_the_same_atom.png)
+
+*(Click to enlarge)*
+
+Right now, we're still quite wasteful with memory.
+
+* We're using a 32-bit integer for each input index. 
+
+    That allows for 4 billion LUTFF cells, but at 24 bytes per node, we'd need a GPU with 96GB.
+    As a first optimization, we can use 1 of those 32 bits as d_or_q indicator. This immediately
+    saves 4 bytes.
+
+* We are using one byte to store D and one to store Q.
+
+    We can store both values in 1 byte.
+
+The data structure now looks like this:
+
+```c
+struct graph_s {
+    struct graph_node_static_s {
+        uint32_t    input_indices[4];
+        uint16_t    lut_config;
+    } static_info[number_of_nodes_in_graph];
+
+    struct graph_node_dynamic_s {
+        uint8_t        d_and_q;
+    } dynamic_info[number_of_nodes_in_graph];
+};
+```
+
+That's 18 bytes, expanded to 20 bytes, per node of static and 1 byte for dynamic information.
+
+[![Smart graph memory allocation](/assets/cuda_sim/smart_graph_node_allocation.png)](/assets/cuda_sim/smart_graph_node_allocation.png)
+*(Click to enlarge)*
+
+It's tempting to store 4 d/q pairs in a single byte, this would introduce synchronization issues when multiple
+GPU threads are read and writing the same value.
+
+A fetch of a single 32-byte atom will now grab 32 d/q pairs. This relaxes the data allocation requirements once
+more when shooting for optimal bandwidth efficiency. But it gets better once again: on a GPU, on a single streaming
+multiprocessor, 32 threads are fetching data at the same time. And data that's being fetched by one thread can be 
+accessed without penalty by another in the same thread group.
+
+[![Thread group DQ fetch](/assets/cuda_sim/thread_group_dq_fetch.png)](/assets/cuda_sim/thread_group_dq_fetch.png)
+
+*(Click to enlarge)*
+
+In the example above, 12 threads, each with its own color, are fetching data from inputs that all happen to fall 
+within the same 128 bytes. With a 32-byte atom, the GPU only needs to fetch 4 atoms to acquire all the d/q values.
+
+And then there's the GPU cache hierarchy: modern GPUs have very large L2 caches, 4GB on
+my RTX 3070, and an astonishing 72MB on an RTX 4090, and L1 caches with 
 
