@@ -436,11 +436,7 @@ all be fetched together:
 
 Right now, we're still quite wasteful with memory.
 
-* We're using a 32-bit integer for each input index. 
-
-    That allows for 4 billion LUTFF cells, but at 24 bytes per node, we'd need a GPU with 96GB.
-    As a first optimization, we can use 1 of those 32 bits as d_or_q indicator. This immediately
-    saves 4 bytes.
+* We only need 1 bit to select the D or the Q value of an input
 
 * We are using one byte to store D and one to store Q.
 
@@ -453,23 +449,24 @@ struct graph_s {
     struct graph_node_static_s {
         uint32_t    input_indices[4];
         uint16_t    lut_config;
+        uint8_t     d_or_q;
     } static_info[number_of_nodes_in_graph];
 
     struct graph_node_dynamic_s {
-        uint8_t        d_and_q;
+        uint8_t     d_and_q;
     } dynamic_info[number_of_nodes_in_graph];
 };
 ```
 
-That's 18 bytes, expanded to 20 bytes, per node of static and 1 byte for dynamic information.
+That's 19 bytes, padded to 20 bytes, per node of static and 1 byte for dynamic information. 
 
 [![Smart graph memory allocation](/assets/cuda_sim/smart_graph_node_allocation.png)](/assets/cuda_sim/smart_graph_node_allocation.png)
 *(Click to enlarge)*
 
-It's tempting to store 4 d/q pairs in a single byte, this would introduce synchronization issues when multiple
-GPU threads are read and writing the same value.
+It's tempting to store 4 d/q pairs in a single byte, but this would introduce synchronization issues when multiple
+GPU threads try to read and write the different bits within the same byte.
 
-A fetch of a single 32-byte atom will now grab 32 d/q pairs. This relaxes the data allocation requirements once
+A DRAM fetch of a single 32-byte atom will now grab 32 d/q pairs. This relaxes the data allocation requirements once
 more when shooting for optimal bandwidth efficiency. But it gets better once again: on a GPU, on a single streaming
 multiprocessor, 32 threads are fetching data at the same time. And data that's being fetched by one thread can be 
 accessed without penalty by another in the same thread group.
@@ -481,6 +478,7 @@ accessed without penalty by another in the same thread group.
 In the example above, 12 threads, each with its own color, are fetching data from inputs that all happen to fall 
 within the same 128 bytes. With a 32-byte atom, the GPU only needs to fetch 4 atoms to acquire all the d/q values.
 
-And then there's the GPU cache hierarchy: modern GPUs have very large L2 caches, 4GB on
-my RTX 3070, and an astonishing 72MB on an RTX 4090, and L1 caches with 
+And then there's the GPU cache hierarchy: modern GPUs have large L2 caches, 4GB on my RTX 3070, and an astonishing 
+72MB on an RTX 4090, and pretty large L1 caches per SM as well. Even when LUT/FF cells have input nodes that are
+directly adjacent, it's sufficient that they are located close enough to get decent performance.
 
