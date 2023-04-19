@@ -122,6 +122,12 @@ the process why which an Agilent 82357B must be initialized.
 
 (The initial steps are shamelessly self-plagiarized from my earlier blog post.)
 
+
+**Linux Kernel Headers**
+
+This is the only step you will need to redo whenever you (or the automated updating system of your
+distribution!) upgrade your kernel to a later version. It's really annoying...
+
 * Install Linux Kernel Headers
 
     ```
@@ -131,8 +137,6 @@ sudo apt-get install linux-headers-$(uname -r)
     `uname -r` returns the directory name for the Linux kernel that you're running.
     In my case, it's `5.3.0-53-generic`.
 
-    You will need to redo this step whenever you (or the automated updating system of your
-    distribution!) upgrade your kernel to a later version. It's really annoying...
 
 * Download the latest version of the Linux-GPIB package
 
@@ -153,6 +157,8 @@ sudo make install
     ```
 
     This will install the gpib drivers in `/lib/modules/<kernel version>/gpib`:
+
+**Linux User Drivers**
 
 * Compile and install the Linux user drivers
 
