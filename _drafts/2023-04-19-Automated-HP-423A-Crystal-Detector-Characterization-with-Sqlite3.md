@@ -394,5 +394,7 @@ basics.
 * [Diode Detector](https://analog.intgckts.com/rf-power-detector/diode-detector-2/)
 * [Design and development of RF power detector for microwave application](https://www.semanticscholar.org/paper/Design-and-development-of-RF-power-detector-for-Ali-Ibrahim/fed809b8f38fe7d0ebc0ffdc9fd1a7da3ac93037)
 
+* [6 Lines of Python to Plot SQLite Data](https://funprojects.blog/2021/12/27/6-lines-of-python-to-plot-sqlite-data/)
+
 
 # Footnotes
