@@ -294,6 +294,7 @@ it's doing what I want, I embed it into my Python post-processing script.
 Here I'm fetching all the data of a single session:
 
 ```sql
+tom@zen:~/projects/hp423a$ sqlite measurements.db
 sqlite> .headers on
 sqlite> select * from measurements where session_id=1 order by created limit 10;
 id|session_id|created|freq|power_dbm|v
@@ -341,61 +342,40 @@ tom@zen:~/projects/hp423a$ ./423a_process.py | head -10
 ```
 
 Notice how there's a bit of manual effort involved to assign the right column to the
-right Python variable.
+right Python variable. This is something the Pandas library automatically do for you, but
+that's for a different blog post.
 
-This can be avoided by using the Pandas library, which designed for this kind of
-tasks, and much more:
-
-```python3
-import sqlite3
-import pandas as pd
-
-conn = sqlite3.connect("measurements.db")
-df = pd.read_sql_query("select * from measurements where session_id=1 order by created", conn)
-print(df)
-```
-
-```sh
-tom@zen:~/projects/hp423a$ ./423a_process.py
-        id  session_id              created    freq  power_dbm         v
-0        1           1  2023-04-22 04:20:09    10.0     -115.0 -0.000008
-1        2           1  2023-04-22 04:20:10    10.0     -115.0 -0.000007
-2        3           1  2023-04-22 04:20:11    10.0     -115.0 -0.000006
-3        4           1  2023-04-22 04:20:12    10.0     -115.0 -0.000006
-4        5           1  2023-04-22 04:20:13    10.0     -115.0 -0.000005
-...    ...         ...                  ...     ...        ...       ...
-3214  3215           1  2023-04-22 05:07:47  4000.0      -10.0 -0.053945
-3215  3216           1  2023-04-22 05:07:48  4000.0      -10.0 -0.053962
-3216  3217           1  2023-04-22 05:07:49  4000.0      -10.0 -0.053944
-3217  3218           1  2023-04-22 05:07:50  4000.0      -10.0 -0.053948
-3218  3219           1  2023-04-22 05:07:51  4000.0      -10.0 -0.053952
-
-[3219 rows x 6 columns]
-```
-
-Pandas is smart enough to fetch the SQL result headers and assign them to the right
-data column. 
-
-
-
-But SQLite has a lot of tools to do things for you so that you don't even need to use
+SQLite has a lot of data processing tools so that you don't even need to use
 Python to further filter the data.
 
-If I want all the measurement points for a single frequency, I can do that like this:
+With this query, I only want power levels that are higher than -50dBm, I group all
+measurements with the same frequency and power values, and average the voltages:
 
 ```python
+sqlite> .mode column
+sqlite> select freq,power_dbm,avg(v) as v_avg from measurements
+   ...>     where session_id=1 and power_dbm>=-50
+   ...>     group by freq,power_dbm order by created limit 10;
+freq        power_dbm   v_avg     
+----------  ----------  ----------
+10.0        -50.0       -1.118e-05
+10.0        -47.0       -1.89e-05 
+10.0        -43.0       -3.636e-05
+10.0        -40.0       -7.97e-05 
+10.0        -37.0       -0.0001547
+10.0        -33.0       -0.0003309
+10.0        -30.0       -0.0007762
+10.0        -27.0       -0.0015307
+10.0        -23.0       -0.0032825
+10.0        -20.0       -0.0073059
 ```
 
-I can ask SQLite to average all the measurement points for me:
+Instead of averaging all the voltages, you could remove outliers first by filtering out 
+those measurements that fall outside a certain standard deviation. 
 
-```python
-```
-
-And here I'm still averaging, but after removing outliers that fall outside 3 standard deviations
-of the data set:
-
-```python
-```
+SQL is a powerful language. Advanced SQL users can come up with queries that are literally
+a page long. If you haven't written any SQL queries before, it's well worth learning the
+basics.
 
 # HP 423A characterization results
 
