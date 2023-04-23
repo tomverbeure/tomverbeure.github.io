@@ -377,6 +377,96 @@ SQL is a powerful language. Advanced SQL users can come up with queries that are
 a page long. If you haven't written any SQL queries before, it's well worth learning the
 basics.
 
+# Some Measurements on a Power Reference
+
+Before going through a sweep with a signal generator, let's first check the results of a power 
+reference. 
+
+When I bought the Wiltron sweep generator, John gave me an HP 438A power meter in pristine
+condition... for free.  It came without a power sensor, the most expensive part by far, but
+stand-alone, working units go for $100+ on eBay.
+
+The HP 438A has a 1.00mW 50MHz power reference output that's used to calibrate power sensors
+before doing actual measurements. Remember that the diodes in a crystal detector are temperature
+sensitive, this kind of calibration is something you're supposed to do before starting a bunch
+of measurements.
+
+XXX
+
+![HP 438A front image](/assets/hp423a/...)
+
+None of my instruments are properly calibrated: the procedure would cost much more than their
+cost, but something that's supposed to be a reference is better than nothing. 
+
+Here's what the signal looks like on my scope, with the necessary 50&#937; termination.
+
+![HP 438A power meter reference signal on the oscilloscope](/assets/hp423a/hp438a_power_ref_signal_50.png)
+
+We're seeing a 607mV peak-to-peak signal. On a spectrum analyzer, the second and
+third harmonics are 54db and 55db lower, so this is a clean enough sine wave. For those,
+$$V_{rms} = V_{pp}/2\sqrt{2}$$, or 214mV. $$P=V_{rms}/50$$ which gives a power of 0.92mW.
+The conversion from mW to dBm goes as follows: $$P_{(dBm)} = 10 \cdot log_{10}(P_{(mW)}/1mW)$$.
+0.92mW corresponds to -0.36dBm. 
+
+Meanwhile, my spectrum analyzer, another John special, sees a power level of -0.63dBm, but 
+spectrum analyzers aren't usually not good at measuring power with great accuracy. (The number 
+becomes -0.55dB which I increase the resolution BW one step.)
+
+![HP 438A power meter reference signal on the spectrum analyzer](/assets/hp423a/hp438a_power_ref_r3273.png)
+
+The [HP 438A Operating & Service Manual](https://xdevs.com/doc/HP_Agilent_Keysight/HP%20438A%20Operating%20&%20Service.pdf)
+says that "the power reference oscillator is factory-adjusted to 1.0mW &#177;0.7%. There are
+different parts that can create a wrong result: just swapping out 50&#937; BNC terminations
+changed the measured voltage by 4mV. Being off by 8% is definitely too much. Chances are that
+the power reference itself needs to be recalibrated.
+
+Still, things are close enough for hobbyist power measurements.
+
+Time to take a look at the output of the crystal detector when connected to the power reference.
+
+Without any other devices connected, one first needs to decide the termination of the oscilloscope.
+This will effectively be the load resistance that determines the extent by which the capacitor
+behind the detection diode will be discharge after the input sine wave reaches its peak.
+
+The coax cable behind the detector has a characteristic impedance of 50&#937;. When connecting
+this cable to an oscilloscope, it's best to use a 50&#937; termination as well to avoid
+reflections when the amplitude of the incoming RF signal changes rapidly. 
+
+Here's what the manual says:
+
+> When using the crystal detector with an oscilloscope, and the waveshapes to be observed
+> have rise times of less than 5us, the coaxial cable connecting the oscilloscope and detector
+> should be as short as possible and shunted with a resistor. Ideally, this resistor
+> should be 50&#937; to terminate the coaxial cable properly. However, with 50&#937;
+> resistance, the output video pulse may be too small to drive some oscilloscopes. Therefore,
+> the cable should be shunted with the smallest value of resistance that will obtain suitable
+> deflection on the oscilloscope; typically the value will lie between 50&#937; and
+> 2k&#937;.
+
+Keep in mind that the detector was released in 1963. Modern oscilloscope have no issue
+whatsoever detecting a pulse 5us pulse with a 50&#937; termination!
+
+Speaking of capacitor: the detector itself has a 10pF capacitor. The one at the oscilloscope
+receiving end is 8pF. And the rest is the coax cable. When I use 9ft traditional coax cable
+with a capacitance of ~30pF/ft, the capacitive load due to the coax is around 270: it dwarfs
+everything else!
+
+Here's what the signal looks like at the scope when using a 9ft coax cable and the 50&#937;
+termination:
+
+![HP 438A power reference measured by HP 423A on scope with 50Ohm termination](/assets/hp423a/hp438a_power_ref_ripple_50.png)
+
+We're seeing the bottom half of the 50MHz sine wave. The capacitance at the detector side is too low
+to filter output of a slow moving 50MHz input signal to a constant value that measures amplitude of the incoming signal.
+
+Let's see what happen when we generate a 300MHz/0dBm signal with the sweep generator:
+
+![Wiltron 300MHz/0dBm output measured by HP 423A on scope with 50Ohm termination](/assets/hp423a/wiltron_300MHz_0dBM_50.png)
+
+I added the second, horizontal, line to show ground. We still have a huge 27mV ripple,
+but at least the signal doesn't go all the way back to ground anymore.
+
+
 # HP 423A characterization results
 
 # Reference
@@ -389,10 +479,11 @@ basics.
 * [Infineon - RF and microwave power detection with Schottky diodes](https://www.infineon.com/dgdl/Infineon-AN_1807_PL32_1808_132434_RF%20and%20microwave%20power%20detection%20-AN-v01_00-EN.pdf?fileId=5546d46265f064ff0166440727be1055)
 * [Agilent AN980 - Square Law and Linear Detection](/assets/hp423a/an986-square_law_and_linear_detection.pdf)
 * [Square Law Detectors](https://www.nitehawk.com/rasmit/ras_appl6.pdf)
-* [Operator's and Unit Maintenance Manualfor SG-1206/U](https://radionerds.com/images/2/20/TM_11-6625-3231-12.PDF)
+* [Wiltron - Operator's and Unit Maintenance Manual for SG-1206/U](https://radionerds.com/images/2/20/TM_11-6625-3231-12.PDF)
 * [Analog Devices - Understanding, Operating, and Interfacing to Integrated Diode-Based RF Detectors](https://www.analog.com/en/technical-articles/integrated-diode-based-rf-detectors.html)
 * [Diode Detector](https://analog.intgckts.com/rf-power-detector/diode-detector-2/)
 * [Design and development of RF power detector for microwave application](https://www.semanticscholar.org/paper/Design-and-development-of-RF-power-detector-for-Ali-Ibrahim/fed809b8f38fe7d0ebc0ffdc9fd1a7da3ac93037)
+* [HP AN 64-1A - Fundamentals of RF and Microwave Power Measurements](https://www.hpmemoryproject.org/an/pdf/an_64-1a.pdf)
 
 * [6 Lines of Python to Plot SQLite Data](https://funprojects.blog/2021/12/27/6-lines-of-python-to-plot-sqlite-data/)
 
