@@ -45,32 +45,61 @@ It's an HP 423A crystal detector. According to the
 > instrument converts RF power levels applied to the 50&#937; input connector into proportional values
 > of DC voltage. ... The frequency range of the 423A is 10MHz to 12.4GHz.
 
-In my introduction of previous blog post, I wrote about John, my local RF equipment dealer. 
-A while ago, he sold me a bargain Wiltron SG-1206/U programmable sweep generator that can send 
-out a signal from 10MHz all the way to 20GHz at power levels between -115dBm to 15dBm. I hadn't
-found a good use for it, so now was a good time to give it a little workout.
+In the  introduction of [a previous blog post](/2023/04/01/Cable-Length-Measurement-with-an-HP-8007B-Pulse-Generator.html), 
+I wrote about John, my local RF equipment dealer. A while ago, he sold me a bargain Wiltron SG-1206/U 
+programmable sweep generator that can send out a signal from 10MHz all the way to 20GHz at power levels 
+between -115dBm to 15dBm. I also picked up a dirt cheap (and smelly) HP 8656A 1GHz signal generator at 
+a previous flea market. I hadn't found a good use for either, so now was a good time to give them a little workout.
+
+XXXX
+
+![Wiltron SG-1206/U and HP 8656A signal generators](/assets/hp423a/...)
+
+
+In the process, I discovered the warts of both signal generators, picked up an RF power meter
+on Craigslist, learned a truckload about RF power measurements and the general behavior of diodes,
+and figured out a misunderstanding about standing-wave ratio and their relationship with crystal
+detectors.
+
+I'm writing things down here to have a reference if I need the info back, but expect
+the contents to be meandering between a bunch of topics.
 
 # What is a Crystal Detector?
 
-According to [Wikipedia](https://en.wikipedia.org/wiki/Crystal_detector), a crystal detector is an 
-obsolete electronic component used in some early 20th century radio receivers that consists of a piece 
-of crystalline mineral which rectifies the alternating current radio signal.
+So what exactly is a crystal detector?  [Wikipedia](https://en.wikipedia.org/wiki/Crystal_detector),
+the holder of all human knowledge claim that 
 
-As noted in the article, those crystalline minerals were first type of semiconductor diode.
+> a crystal detector is an obsolete electronic component used in some early 20th century radio 
+> receivers that consists of a piece of crystalline mineral which rectifies the alternating current 
+> radio signal.
 
-RF crystal detectors are no different.
-[This Infineon application note](https://www.infineon.com/dgdl/Infineon-AN_1807_PL32_1808_132434_RF%20and%20microwave%20power%20detection%20-AN-v01_00-EN.pdf?fileId=5546d46265f064ff0166440727be1055) describes how RF microwave power detectors are built with low barrier Schottky diodes,
-with the following diagram:
+If they are obsolete, then why are plenty of companies still selling them? It's because 
+Wikipedia is refering to the crystal detectors that started it all: diodes that were 
+built out of crystalline minerals, instead of contemporary diodes built out of silicon, germanium,
+etc. Those early crystalline mineral diodes were one of the first semiconductor devices.
+
+Today's RF crystal detectors are not fundamentally different.
+[This Infineon application note](https://www.infineon.com/dgdl/Infineon-AN_1807_PL32_1808_132434_RF%20and%20microwave%20power%20detection%20-AN-v01_00-EN.pdf?fileId=5546d46265f064ff0166440727be1055) 
+describes how RF and microwave detectors are still built with a diode, a capacitor and a
+load resistor. They now use low barrier Schottky diodes, but the name
+*crystal* detector stuck.
 
 ![RF power detector with diode](/assets/hp423a/infineon_rf_power_detector.png)
 
 The functionality is straightforward: the diode makes only the positive side of an RF signal pass 
 through, the capacitor gets charged up to the peak level of the signal but discharges (slowly) due
-to the load resistor. The output voltage of the detector is nothing but the envelope of the RF signal.
+to the load resistor. If all went well, the output voltage of the detector is the envelope of the 
+RF signal. 
 
 ![Amplitude modulation detection](/assets/hp423a/Amplitude_modulation_detection.png)
 
-One could use an RF crystal detector to build an AM receiver.
+This envelope output signal is called the *video signal*. It's a bit of a confusing name:
+the output signal may not have anything to do with video at all, but you better get used to it
+because it's a standard term in the world of RF: even cheap spectrum analyzers,
+such a [TinyVNA Ultra](https://tinysa.org/wiki/pmwiki.php?n=TinySA4.MenuTree) have a
+menu to change VBW, the video bandwidth.
+
+One could use an RF crystal detector to build an AM radio receiver
 
 # The HP 423A Crystal Detector
 
@@ -469,6 +498,20 @@ but at least the signal doesn't go all the way back to ground anymore.
 
 # HP 423A characterization results
 
+# HP 432A Craigslist Ad
+
+ The HP 432A microwave power meter was first sold in the 1960's and lives on today as the N432A from Keysight. (The two products have nothing in common, other than they both use thermistor mount power sensors, such as the 478A). Keysight continues to make a thermistor compatible meter and 478A thermistor mount because it has become a transfer standard for calibrating other power meters. The combination of the over $13K meter and the $15K thermistor mount means this 432A is less than 2% of the new price!
+
+The power measurement range of the 432A, using an HP 478A thermistor mount, is -20dBm to +10dBm and the frequency range is 10MHz to 10GHz.
+
+Included with this 432A power meter is one 478A thermistor mount (shown) and one 5-foot cable that connects the meter to the 478A.
+
+I bought this instrument about 25 years ago for a consulting project. I have used it very infrequently since that project was completed. The meter itself is in good condition but shows signs of age and usage. There is a small chip out of the meter bezel. The included 478A thermistor mount appears to have been frequently used. There seem to be two deficits: the remaining label has been "reduced in size" for some reason, and the calibration label is missing.
+
+I recently spent a few days checking operation of the meter system. I don't have a power calibrator, but I do have an HP8663A frequency synthesizer and used its output as a standard. Before use, the 432A system must be "zeroed", which is a two-step process. The power range switch is set to the "Coarse Zero" position and a screwdriver is used to adjust the meter reading to zero. Next, the switch is set to the -20dBm range and the "Fine Zero" front panel switch is toggled for a few seconds. The meter will then show a zero reading. For the most stable "zero" adjustment the process should be performed only after the meter and thermistor mount have reached a stable temperature. However, the fine zero doesn't create a lot of error on higher power measurements.
+
+Using a 100MHz output frequency, I measured the meter readings at about +10dBm, 0dBM, -10dBm and -20dBm. The sensor was attached directly to the 8663A output N connector to eliminate cable effects. All of the readings were approximately 0.5 dBm high. I swapped the thermistor mount for another one and got approximately the same results (correlation to less than 0.1dBm). To me, the data indicates the "error" is likely due to the 8663A source amplitude calibration.
+
 # Reference
 
 * [HP Journal Nov, 1963 - A New Coaxial Crystal Detector with Extremely Flat Frequency Response](https://www.hpl.hp.com/hpjournal/pdfs/IssuePDFs/1963-11.pdf)
@@ -487,5 +530,11 @@ but at least the signal doesn't go all the way back to ground anymore.
 
 * [6 Lines of Python to Plot SQLite Data](https://funprojects.blog/2021/12/27/6-lines-of-python-to-plot-sqlite-data/)
 
+* [RF Diode Detector Measurement](https://twiki.ph.rhul.ac.uk/twiki/pub/PP/Public/JackTowlerLog1/diode.pdf)
+
+* [Diode detectors for RF measurement Part 1: Rectifier circuits, theory and calculation procedures.](https://g3ynh.info/circuits/Diode_det.pdf)
+
+    116 pages with everything you ever wanted to know about diode rectifiers.
+    
 
 # Footnotes
