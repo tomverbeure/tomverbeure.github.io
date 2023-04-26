@@ -125,6 +125,174 @@ In their words:
 > used with common oscilloscopes, thus their simplicity of operation and excellent
 > broadband performance make them useful measurement accessories.
 
+# The Crystal Detector in Action
+
+Let's just cut to the chase and show a concrete use case. The setup below has
+the 8656A RF signal generator configured as follows:
+
+* 100MHz carrier
+* -10dBm power level
+* AM mode with external input
+
+A [33120A signal generator ](/2023/01/01/HP33120A-Repair-Shutting-Down-the-Eye-of-Sauron.html)
+is sending out 1 kHz 1Vpp sine wave to the modulation input.
+
+The scope is configured in peak detect mode and indeed shows the
+outline of a high-frequency signal with 1kHz envelope. 
+
+[![AM signal on scope](/assets/hp423a/am_waveform.png)](/assets/hp423a/am_waveform.png)
+*Click to enlarge*
+
+Instead of connecting the signal generator straight to the scope, let's connect 
+the crystal detector and see what happens. The crystal detector has a
+50&#937; input impedance, so we need to set the input impedance of channel 2 of the scope 
+to 1M to avoid having two 50&#937; loads on the RF source. The HP 423A operating manual also 
+lists an output impedance of <15k&#937;, shunted by 10pF.
+Channel 1 of the scope is connected to the output of the detector. It's also set to 
+1M&#937; to avoid loading the output too much.  We'll get back to that later.
+
+The diode is in 'opposite' direction. This doesn't fundamentally change the operation, it's
+just that it will pass through the negative part of the incoming signal. For some reason,
+that's the default configuration of these detectors. HP (and currently Keysight) also
+offers this detectors with the diode oriented in the other direction.
+
+[![Measurement Setup 1](/assets/hp423a/measurement_setup1.png)](/assets/hp423a/measurement_setup1.png)
+
+In this setup, the purple waveform is now the direct output of the signal generator, and
+the yellow one is the one from the crystal detector. 
+
+[![-20dBm AM signal and detector output on scope](/assets/hp423a/am_waveform_and_detector_-20dBm.png)](/assets/hp423a/am_waveform_and_detector_-20dBm.png)
+*Click to enlarge*
+
+There are a few observations:
+
+* the output of the detector is negative. 
+
+    This is of course a consequence of the diode pointing in the opposite direction.
+
+* the detected signal looks a bit like but is not quite a sine wave. 
+
+  The smaller the envelope of the original signal, the less the detector output seems
+  to follow the envelope. 
+
+This is also expected! Notice that the RF peak of the signal is &plusmn;53mV. The diode of the 
+detector is operating in the square law region: the output of the detector shows quadratic behavior!
+
+This becomes even clearer when we modulate the RF signal with a triangle waveform:
+
+[![-20dBm AM triangle waveform and detector output on scope](/assets/hp423a/triangle_waveform_-20dBm.png)](/assets/hp423a/triangle_waveform_-20dBm.png)
+
+In the current setup, the only resistor at the output of the detector is the 1M&#937; 
+load of the oscilloscope. For low power Schottky diodes, the square wave region
+of a detector in such a configuration runs roughly until -20dBm, which is how I
+have configured output level of the signal generator.
+
+If I configure the signal generator to output -10dBm, the output still looks curved close for
+the small signals, but it definitely looks more linear for higher values.
+
+[![-10dBm AM triangle waveform and detector output on scope](/assets/hp423a/triangle_waveform_-10dBm.png)](/assets/hp423a/triangle_waveform_-10dBm.png)
+
+Raising the output by 10dBm once more to 0dBm, and there's very little left of quadratic behavior.
+
+[![0dBm AM triangle waveform and detector output on scope](/assets/hp423a/triangle_waveform_0dBm.png)](/assets/hp423a/triangle_waveform_0dBm.png)
+
+# Playing with the Detector Load 
+
+Without a load resistor (or better: with a very weak load resistor of 1M&#937;), the square law
+region of the detector goes from around -50dBm to around -20dBm. There's nothing much we can do about
+the -50dBm: below that you're essentially measuring noise. But it is possible to increase the region
+upwards to -10dBm, but adding a load resistors at the output of the detector.
+
+[![Measurement Setup 2](/assets/hp423a/measurement_setup2.png)](/assets/hp423a/measurement_setup2.png)
+
+HP 11523A is exactly that: "a matched load resistor for optimimum square characteristics". I've
+measured the resistance to be 562&#937;.
+
+XXXX Picture of detector with load resistor
+
+Here's what happens with our signal for the -10dBm case:
+
+[![-10dBm AM with load resistor triangle waveform and detector output on scope](/assets/hp423a/triangle_waveform_-10dBm_RL.png)](/assets/hp423a/triangle_waveform_-10dBm_RL.png)
+
+The yellow detector output is definitely quadratic again, but that's not the only thing.
+
+The amplitude of the detector output is much smaller. And the yellow line also has a weird
+kind of fuzziness.
+
+**Smaller Output Voltage**
+
+The reason for the smaller detector output is simple: the diode may not be a resistor, but
+for a given junction voltage, it will have a corresponding current. The ratio of that voltage
+and current is an equivalent resistance. That resistance is not constant, it changes whenever
+the junction voltage changes, but it's there. In the square law region, this resistance is
+on the order of 10k&#937;, with a very large variation around it!
+
+In combination with a load resistor, these resistance forms a voltage divider. When the only
+load is the 1M&#937; of the oscilloscope, 99% of the voltage of the detector is measured
+by the oscilloscope. The addition of the 562&#937; load resistor shifts the voltage divider
+in the other direction, with the voltage across the divider primarily going to the diode.
+
+**Output Signal Fuziness**
+
+If we change the vertical scale of the scope, we can have a better look at the output signal:
+
+[![-10dBm AM with load resistor triangle waveform and detector output on scope - zoomed](/assets/hp423a/triangle_waveform_-10dBm_RL_zoom.png)](/assets/hp423a/triangle_waveform_-10dBm_RL_zoom.png)
+
+The scope is in peak detect mode, and it's clear that the output isn't very clean.
+
+We can see what happen when we change the timebase of the scope from 200us, perfect to
+observe the 1kHz amplitude modulated envelope, to 5ns, which is needed to observe the
+100MHz RF carrier:
+
+[![-10dBm AM with load resistor triangle waveform and detector output on scope - small timebase](/assets/hp423a/triangle_waveform_small_timebase.png)](/assets/hp423a/triangle_waveform_small_timebase.png)
+
+By reducing the load from 1M&#937; to 562&#937;, we have dramatically changes the
+time constant of the RC circuit that is formed by the capacitor inside the detector,
+only 30pF, the capacitance of the coax cable that is connected to the detector, ~210pF,
+and the load.
+
+With the 1M&#937; load, the time constant is around $$240\times10^{-12} \cdot 10^{6} = 240us$$,
+miles above the 10ns clock period of the 100MHz signal.  With the 562&#937; load, that number
+reduces to $$240\times10^{-12} \cdot 562 = 134ns$$. That's still well above 10ns, but
+keep in mind that the time constant is the time needed to discharge a capacitor by 63%.
+
+In the waveform above, we're nowhere close to that, and the capacitance is a rough guess
+as well.
+
+There are tradeoffs to be made when choosing a detector configuration:
+
+* where do you want the square law region to end?
+* what's the frequency of the AM modulated signal? 
+* what's the frequency of the RF signal
+* how much ripple on the detected signal is acceptable?
+
+# Why Do We Want Square Law Behavior Anyway?
+
+Square law behavior makes the detector react quadratically to the amplitude of
+an RF signal. In most signal processing systems, non-linear behavior is something you want
+to avoid at all cost, because it distorts the signal.
+
+Yet it's clear from the operating manual, and most other crystal detector literature, that
+square law behavior is often a feature.
+
+That's because crystal detector are often used to measure the power of an RF signal, and
+$$P \sim V^2$$. In other words, if we operate the detector in the square law region and
+measure its output, the voltage that we get is proportional to the power of the signal.
+
+Note that I wrote 'proportional', not 'equal'. That's because the behavior of a diode
+in the square law region is not only heavily temperature dependent, it also differs
+from one diode to the next.
+
+There are different ways to deal with this. The most common option is to calibrate 
+a square law power sensor before making a measurement. I have an HP 438A power meter,
+another John freebie, without power sensor. 
+
+In the center of the front panel, it prominently features a 1mW power reference. There
+are also "ZERO", "CAL ADJ", and "CAL FACTOR" buttons. Before making a set of measurements,
+you first have to calibrate the power sensor before, otherwise the results can be
+all over the place.
+
+
 # Characterizing the Detector
 
 To get a better feel of how the detector behaves, I decided to
@@ -514,7 +682,9 @@ Using a 100MHz output frequency, I measured the meter readings at about +10dBm, 
 
 # Reference
 
+* [HP 423A and 8470A Crystal Detector - OPerating and Service Manual](/assets/hp423a/HP_423A,8470A_Operating_&_Service.pdf)
 * [HP Journal Nov, 1963 - A New Coaxial Crystal Detector with Extremely Flat Frequency Response](https://www.hpl.hp.com/hpjournal/pdfs/IssuePDFs/1963-11.pdf)
+
 * [DIY Power Sensor for HP 436A and 438A](https://twitter.com/DanielTufvesson/status/1647545015764230144)
 
     * [Chopper And Chopper-Stabilised Amplifiers, What Are They All About Then?](https://hackaday.com/2018/02/27/chopper-and-chopper-stabilised-amplifiers-what-are-they-all-about-then/)
