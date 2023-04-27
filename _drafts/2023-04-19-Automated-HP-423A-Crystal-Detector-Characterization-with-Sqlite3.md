@@ -26,11 +26,12 @@ categories:
 
 # Introduction
 
-I picked up some random RF gizmos at the [Silicon Valley Electronics Flea Market](https://www.electronicsfleamarket.com/).
+I picked up some random RF gizmos at the 
+[Silicon Valley Electronics Flea Market](https://www.electronicsfleamarket.com/).
 It's part of the grand plan to elevate my RF knowledge from near zero to beginner level: buy
-stuff, read about it, play with it, hope to learn useful things. I've found the
-playing part to be a crucial step of the whole process. Things seem to stick much
-better in my brain when all is said and done.[^1] 
+stuff, read about it, play with it, ~~spend more money~~~, hope to learn useful things. 
+I've found the playing part to be a crucial step of the whole process. Things seem to stick 
+much better in my brain when all is said and done.[^1] 
 
 [^1]: Writing blog posts about it is equally helpful too!
 
@@ -45,36 +46,37 @@ It's an HP 423A crystal detector. According to the
 > instrument converts RF power levels applied to the 50&#937; input connector into proportional values
 > of DC voltage. ... The frequency range of the 423A is 10MHz to 12.4GHz.
 
-In the  introduction of [a previous blog post](/2023/04/01/Cable-Length-Measurement-with-an-HP-8007B-Pulse-Generator.html), 
+In the introduction of 
+[a previous blog post](/2023/04/01/Cable-Length-Measurement-with-an-HP-8007B-Pulse-Generator.html), 
 I wrote about John, my local RF equipment dealer. A while ago, he sold me a bargain Wiltron SG-1206/U 
 programmable sweep generator that can send out a signal from 10MHz all the way to 20GHz at power levels 
 between -115dBm to 15dBm. I also picked up a dirt cheap (and smelly) HP 8656A 1GHz signal generator at 
-a previous flea market. I hadn't found a good use for either, so now was a good time to give them a little workout.
+a previous flea market. I hadn't found a good use for either, so now was a good time to give them a 
+little workout.
 
 XXXX
 
 ![Wiltron SG-1206/U and HP 8656A signal generators](/assets/hp423a/...)
 
-
-In the process, I discovered the warts of both signal generators, picked up an RF power meter
-on Craigslist, learned a truckload about RF power measurements and the general behavior of diodes,
-and figured out a misunderstanding about standing-wave ratio and their relationship with crystal
-detectors.
+In the process of playing with the detector, I discovered the warts of both signal generators, 
+I picked up an RF power meter on Craigslist, learned a truckload about RF power measurements and 
+the general behavior of diodes and the math behind it, and figured out a misunderstanding about 
+standing-wave ratio (SWR) and their relationship with crystal detectors.
 
 I'm writing things down here to have a reference if I need the info back, but expect
 the contents to be meandering between a bunch of topics.
 
 # What is a Crystal Detector?
 
-So what exactly is a crystal detector?  [Wikipedia](https://en.wikipedia.org/wiki/Crystal_detector),
-the holder of all human knowledge claim that 
+So what exactly is a crystal detector? [Wikipedia](https://en.wikipedia.org/wiki/Crystal_detector),
+the caretaker of all human knowledge claims that 
 
 > a crystal detector is an obsolete electronic component used in some early 20th century radio 
 > receivers that consists of a piece of crystalline mineral which rectifies the alternating current 
 > radio signal.
 
 If they are obsolete, then why are plenty of companies still selling them? It's because 
-Wikipedia is refering to the crystal detectors that started it all: diodes that were 
+Wikipedia is refering to the original crystal detectors that started it all: diodes that were 
 built out of crystalline minerals, instead of contemporary diodes built out of silicon, germanium,
 etc. Those early crystalline mineral diodes were one of the first semiconductor devices.
 
@@ -86,36 +88,129 @@ load resistor. They now use low barrier Schottky diodes, but the name
 
 ![RF power detector with diode](/assets/hp423a/infineon_rf_power_detector.png)
 
-The functionality is straightforward: the diode makes only the positive side of an RF signal pass 
-through, the capacitor gets charged up to the peak level of the signal but discharges (slowly) due
-to the load resistor. If all went well, the output voltage of the detector is the envelope of the 
-RF signal. 
+Their functionality is straightforward: the diode passes only one side, positive or positive, 
+of an RF signal though to the other side, a capacitor gets charged up to the peak level of the 
+signal but discharges, slowly, due to a load resistor. If all went well, the output voltage of 
+the detector is the envelope of the RF signal. 
 
 ![Amplitude modulation detection](/assets/hp423a/Amplitude_modulation_detection.png)
 
-This envelope output signal is called the *video signal*. It's a bit of a confusing name:
+This envelope output signal is called the *video signal*, a bit of a confusing name:
 the output signal may not have anything to do with video at all, but you better get used to it
-because it's a standard term in the world of RF: even cheap spectrum analyzers,
-such a [TinyVNA Ultra](https://tinysa.org/wiki/pmwiki.php?n=TinySA4.MenuTree) have a
-menu to change VBW, the video bandwidth.
+because it's a standard term in the world of RF. Even cheap spectrum analyzers, such a 
+[TinyVNA Ultra](https://tinysa.org/wiki/pmwiki.php?n=TinySA4.MenuTree) have a menu to change 
+VBW, the video bandwidth.
 
-One could use an RF crystal detector to build an AM radio receiver
+In the early years, crystal detectors where used to build AM radio receivers. As a kid, 
+I used to own this RadioShack 150-in-1 kit, and one of the projects was exactly that:
+an AM radio crystal radio.
+
+Link to 150-in-1 radio shack kit: https://commons.wikimedia.org/wiki/File:Science_Fair_150in1_Electronic_Project_Kit.jpg
+
+The schematic is very simple: 
+
+XXXX Page 53 contains the schematic: https://www.zpag.net/Electroniques/Kit/200_manual.pdf
+
+On the left, a transformer and a variable capacitor create an LC tuning network to select
+the radio station. A germanium diode does the detection, with a 22K&#937; load resistor.
+There is no capacitor accross the load resistor. I think that the components downstream
+filter out the RF carrier...
+
+AM radios have long ago moved on from crystal detectors to better things. Modern demodulators 
+mix (multiply) the incoming signal with a locally generated RF sine wave which makes the original 
+LF signal emerge. 
+
+It's not 100% clear to me if crystal detectors are currently still being
+used to demodulate other types of AM content. When you google for crystal detectors
+today, most hits will talk about using them for power measurement.
+
+# Diode Square Law Behavior
+
+A little bit of theory about diodes now will go a long way in understand what comes next.
+
+A diode is often simplified to a device that blocks current when the voltage
+across its junction is less than a certain threshold level, and that passes current
+otherwise. Such an ideal device has the following voltage to current graph:
+
+XXXXX
+
+In this ideal case, an infinite current for any voltage above the threshold would
+destroy the diode, but in practice, there's always some kind of series resistance to
+limit the current. Together, the diode and this resistance form a voltage divider.
+
+When the diode is ideal, the infinite current characterstic simply means that the 
+voltage across the diode will always be limited to the threshold voltage, and that
+the remainder of the diode/resistance combo will fall over the resistance.
+
+In other words, when place in series with a fixed value resistor, the current
+through the diode and the resistor will be:
+
+$$I_{R} = (V_{in}-V_{th})/R$$
+
+And the voltage across the resistor will be:
+
+$$V_{R} = I_{R} \cdot R = V_{in}-V_{th}$$
+
+In reality, voltage/current curve can be described with the following formula:
+
+$$I = I_0(e^\frac{qV}{nkT}-1)$$
+
+*The formula above does not model diode breakdown: the often destructive behavior that
+happens when the junction voltage exceeds a certain negative value.*
+
+There are a bunch of factors in there
+
+* $$I_0$$ is the diode leakage current density in the absence of light. 
+* $$T$$ is the absolute temperature.
+* $$V$$ is the junction voltage, the voltage across the diode terminals.
+* $$k$ is Boltzmann's constant
+* $$q$$ is the charge of an electron
+* $$n$$ is an ideality factor between 1 and 2 that typically increases when the current decreases.
+
+Note that $$I_0$$ itself is temperature dependent as well!
+
+The [Diode Equation](https://www.pveducation.org/pvcdrom/pn-junctions/diode-equation)
+goes into more detail about diode behavior. It even has some interactive graphs to
+play with.
+
+
+Here's what such a graph typically looks like:
+
+https://www.desmos.com/calculator/n9uo7irghk
+
+There's a characteristic knee in the graph above which the current starts going up 
+rapidly. In the graph above, the knee is somewhere around a value of $$x=0.7V$$.
+
+Below the knee, when $$x>0$$, it's possible to approximate the curve with a
+quadratic polynomial:
+
+https://www.desmos.com/calculator/8jyd1jaqmr
+
+That's the square law region of the diode.
+
+When places in series with a resistors, the 
 
 # The HP 423A Crystal Detector
 
-Born in 1976, the [Keysight product page](https://www.keysight.com/us/en/product/423A/coaxial-crystal-detector.html)
-predictably lists the 423A as obsolete, but it sells a [423B](https://www.keysight.com/us/en/support/423B/low-barrier-schottky-diode-detector-10-mhz-to-12-4-ghz.html).
-Going through the specs, there are a couple of differences: the 423A only sustains an input power of 100mW vs 200mW for the B version.
-There are are also differences in output impedance, frequency response flatness, sensitivity
-levels, noise levels and so forth. For my use, the input power limits are important, because exceeding
-them would damage the device, but the other values don't matter a whole lot since I
-barely know what they mean to begin with. 
+First mentioned in a November 1963 edition of HP Journal, the HP 423A is old. The 
+[Keysight product page](https://www.keysight.com/us/en/product/423A/coaxial-crystal-detector.html)
+predictably lists it as obsolete, but Keysight sells a 
+[423B](https://www.keysight.com/us/en/support/423B/low-barrier-schottky-diode-detector-10-mhz-to-12-4-ghz.html).
 
-100mW of power is pretty high for test and measurement equipment. It corresponds to 20dBm, well
-above the maximum 15dBm output of the sweep generator.
+Going through the specs, there are a couple of differences: the 423A only sustains an input power of 
+100mW (20dBm) vs 200mW (23dBm) for the B version. There are are also differences in output impedance, 
+frequency response flatness, sensitivity levels, noise levels and so forth. But the supported
+frequency range is the same, from 10MHz to 12GHz.
 
-What's nice about the 423B is that its [datasheet](https://www.keysight.com/us/en/assets/7018-06773/data-sheets/5952-8299.pdf)
-explains the basics about how they work and some of its applications.
+For my basic use, the input power limits are important, exceeding them of a prolonged time will 
+damage the device, but the other characteristics don't matter a whole lot since I barely know what 
+they mean to begin with. 
+
+100mW/20dBm of power is pretty high for test and measurement equipment, and well above the 
+the maximum 15dBm output of the sweep and signal generator.
+
+Despite the differences, the [423B datasheet](https://www.keysight.com/us/en/assets/7018-06773/data-sheets/5952-8299.pdf)
+and other documentation that explains the basics about how they work and some of its applications.
 
 In their words:
 
@@ -125,58 +220,70 @@ In their words:
 > used with common oscilloscopes, thus their simplicity of operation and excellent
 > broadband performance make them useful measurement accessories.
 
+If they're so useful for measurements, then let's just get on with ti and do exactly that.
+
 # The Crystal Detector in Action
 
-Let's just cut to the chase and show a concrete use case. The setup below has
-the 8656A RF signal generator configured as follows:
-
-* 100MHz carrier
-* -10dBm power level
-* AM mode with external input
+The setup below has the 8656A RF signal generator configured to generate a 100MHz
+carrier waveform at a -10dBm power level. It's set to AM mode, expecting an external
+signal as modulation signal.
 
 A [33120A signal generator ](/2023/01/01/HP33120A-Repair-Shutting-Down-the-Eye-of-Sauron.html)
-is sending out 1 kHz 1Vpp sine wave to the modulation input.
+is sending out 1 kHz 1Vpp sine wave that is sent to the modulation input.
 
 The scope is configured in peak detect mode and indeed shows the
-outline of a high-frequency signal with 1kHz envelope. 
+outline of a high-frequency signal with 1kHz envelope: 
 
 [![AM signal on scope](/assets/hp423a/am_waveform.png)](/assets/hp423a/am_waveform.png)
 *Click to enlarge*
 
-Instead of connecting the signal generator straight to the scope, let's connect 
-the crystal detector and see what happens. The crystal detector has a
-50&#937; input impedance, so we need to set the input impedance of channel 2 of the scope 
-to 1M to avoid having two 50&#937; loads on the RF source. The HP 423A operating manual also 
-lists an output impedance of <15k&#937;, shunted by 10pF.
-Channel 1 of the scope is connected to the output of the detector. It's also set to 
-1M&#937; to avoid loading the output too much.  We'll get back to that later.
-
-The diode is in 'opposite' direction. This doesn't fundamentally change the operation, it's
-just that it will pass through the negative part of the incoming signal. For some reason,
-that's the default configuration of these detectors. HP (and currently Keysight) also
-offers this detectors with the diode oriented in the other direction.
+When we now connect the crystal detector to the output of the RF output, we get a setup with
+the following equivalent schematic:
 
 [![Measurement Setup 1](/assets/hp423a/measurement_setup1.png)](/assets/hp423a/measurement_setup1.png)
 
-In this setup, the purple waveform is now the direct output of the signal generator, and
-the yellow one is the one from the crystal detector. 
+The crystal detector has a 50&#937; input impedance, so we need to set the input impedance of channel 2 
+of the scope to 1M to avoid having two 50&#937; loads on the RF source. The HP 423A operating manual 
+lists an output impedance of <15k&#937;, shunted by 10pF. We'll get back to that 15k&#937; later, but
+the capacitor in the schematic above is the one of 30pF.
+
+In addition to the capacitor inside the detector itself, there's also the capacitance of the coax cable
+between the detector and the scope. The one that I'm using is 7ft long. At ~30pF/ft, the cable alone
+add another 210pF, which dwarfs the detector capacitance. Not for nothing, the operation manual has
+following: 
+
+> when using the crystal detector with an oscilloscope, and the waveshapes to be observed have rise
+> times of less than 5us, the coaxial cable connecting to the oscilloscope and detector should be as
+> short as possible and shunted with a resistor.
+
+The reason they're bringing up the rise time is that cable capacitance will be part of an RC 
+low-pass filter that will dull the edges on an RF pulse at the input.
+
+For now, channel 1 of the scope, connected to the output of the detector, is also set to 
+1M&#937; to avoid loading the output too much.  
+
+The diode of the detector is in 'opposite' direction. This doesn't fundamentally change the operation, 
+it's just that it will pass through the negative part of the incoming signal. For some reason,
+that's the default configuration for many of these kind of dectectors. HP, and currently Keysight,
+also sell an option with the diode oriented the other way around.
+
+Let's now see the result on the scope:
+
+The purple waveform is now the direct output of the signal generator, and
+the yellow is the one from the crystal detector. 
 
 [![-20dBm AM signal and detector output on scope](/assets/hp423a/am_waveform_and_detector_-20dBm.png)](/assets/hp423a/am_waveform_and_detector_-20dBm.png)
 *Click to enlarge*
 
-There are a few observations:
+As expected, the output of the detector is negative, a consequence of the diode pointing
+to the left. 
 
-* the output of the detector is negative. 
+The detected signal looks a bit like but is not quite a sine wave, and the smaller the envelope of the 
+original signal, the less the detector output seems to follow the envelope. 
 
-    This is of course a consequence of the diode pointing in the opposite direction.
-
-* the detected signal looks a bit like but is not quite a sine wave. 
-
-  The smaller the envelope of the original signal, the less the detector output seems
-  to follow the envelope. 
-
-This is also expected! Notice that the RF peak of the signal is &plusmn;53mV. The diode of the 
-detector is operating in the square law region: the output of the detector shows quadratic behavior!
+This is also expected. Notice that the RF peak of the signal is &plusmn;53mV. The diode of the 
+detector is operating in the so-called square law region, where detector has a quadratic I/V response
+curve!
 
 This becomes even clearer when we modulate the RF signal with a triangle waveform:
 
@@ -706,5 +813,6 @@ Using a 100MHz output frequency, I measured the meter readings at about +10dBm, 
 
     116 pages with everything you ever wanted to know about diode rectifiers.
     
+* [RF Diode detector / AM demodulator](http://www.crystal-radio.eu/diodedetector/endiodedetector.htm)
 
 # Footnotes
