@@ -797,13 +797,23 @@ Using a 100MHz output frequency, I measured the meter readings at about +10dBm, 
     * [Chopper And Chopper-Stabilised Amplifiers, What Are They All About Then?](https://hackaday.com/2018/02/27/chopper-and-chopper-stabilised-amplifiers-what-are-they-all-about-then/)
 
 * [Infineon - RF and microwave power detection with Schottky diodes](https://www.infineon.com/dgdl/Infineon-AN_1807_PL32_1808_132434_RF%20and%20microwave%20power%20detection%20-AN-v01_00-EN.pdf?fileId=5546d46265f064ff0166440727be1055)
+
 * [Agilent AN980 - Square Law and Linear Detection](/assets/hp423a/an986-square_law_and_linear_detection.pdf)
+
+    Interesting sections about diode equivalent resistance.
+
 * [Square Law Detectors](https://www.nitehawk.com/rasmit/ras_appl6.pdf)
 * [Wiltron - Operator's and Unit Maintenance Manual for SG-1206/U](https://radionerds.com/images/2/20/TM_11-6625-3231-12.PDF)
 * [Analog Devices - Understanding, Operating, and Interfacing to Integrated Diode-Based RF Detectors](https://www.analog.com/en/technical-articles/integrated-diode-based-rf-detectors.html)
 * [Diode Detector](https://analog.intgckts.com/rf-power-detector/diode-detector-2/)
 * [Design and development of RF power detector for microwave application](https://www.semanticscholar.org/paper/Design-and-development-of-RF-power-detector-for-Ali-Ibrahim/fed809b8f38fe7d0ebc0ffdc9fd1a7da3ac93037)
+
 * [HP AN 64-1A - Fundamentals of RF and Microwave Power Measurements](https://www.hpmemoryproject.org/an/pdf/an_64-1a.pdf)
+
+    83 pages about RF power measurements. Goes over all the different techniques, benefits, 
+    disadvantages, etc.
+
+    Required reading to get up to speed.
 
 * [6 Lines of Python to Plot SQLite Data](https://funprojects.blog/2021/12/27/6-lines-of-python-to-plot-sqlite-data/)
 
@@ -814,5 +824,21 @@ Using a 100MHz output frequency, I measured the meter readings at about +10dBm, 
     116 pages with everything you ever wanted to know about diode rectifiers.
     
 * [RF Diode detector / AM demodulator](http://www.crystal-radio.eu/diodedetector/endiodedetector.htm)
+
+* [HP RF & Microwave Measurement Symposium and Exhibition - Characteristics and Applications of Diode Detectors](https://xdevs.com/doc/HP/pub/Pratt_Diode_detectors.pdf)
+
+    Excellent presentation that derives the math and talks about applications.
+
+* [Aertech Industries - Crystal Detectors](https://www.prc68.com/I/Aertech.shtml#Crystal_Detector)
+
+    Links to various detector patents.
+
+* [Crystal Detector Calibration Program and Procedure](https://apps.dtic.mil/sti/pdfs/ADA523931.pdf)
+
+* [Agilent 8473B/C Crystal Detector - Operating and Service Manual](https://xdevs.com/doc/HP_Agilent_Keysight/HP%208473%20Operating%20and%20Service.pdf)
+
+    Interesting information about frequency response, SWR etc. 
+    
+* [Keysight - 415E SWR Meter](https://www.keysight.com/us/en/product/415E/swr-meter.html#resources)
 
 # Footnotes
