@@ -190,6 +190,29 @@ That's the square law region of the diode.
 
 When places in series with a resistors, the 
 
+
+Vin = Vdiode + VR
+
+
+VR = f(Vdiode)R
+Vdiode = Vin - f(Vdiode)R
+
+x = Vin - f(x)R
+
+
+Vin = Vd + I*R
+
+I = I0(e^aVd-1)
+
+Vin = Vd + I0(E^aVd-1)R
+
+Vin = x + f(x).R
+
+Vin = Vd + aVd^2R
+
+aRVd^2 +Vd -Vin = 0
+
+
 # The HP 423A Crystal Detector
 
 First mentioned in a November 1963 edition of HP Journal, the HP 423A is old. The 
