@@ -10,10 +10,9 @@ categories:
 sudo apt update
 sudo apt upgrade
 
-sudo apt install curl git g++ flex bison clang gperf htop feh pinta vim-gtk3 autoconf libtool libusb-dev libzip-dev doxygen libpython3-all-dev
-cmake gettext python3-numpy python3-setuptools libboost-dev \
-
-sudo apt install build-essential \
+sudo apt install curl git g++ flex bison clang gperf htop feh pinta vim-gtk3 autoconf libtool \
+libusb-dev libzip-dev doxygen libpython3-all-dev \
+cmake gettext python3-numpy python3-setuptools libboost-dev build-essential \
 libreadline-dev gawk tcl-dev libffi-dev git \
 graphviz xdot pkg-config python3 libboost-system-dev \
 libboost-python-dev libboost-filesystem-dev zlib1g-dev
