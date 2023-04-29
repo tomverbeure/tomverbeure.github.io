@@ -102,14 +102,17 @@ because it's a standard term in the world of RF. Even cheap spectrum analyzers, 
 VBW, the video bandwidth.
 
 In the early years, crystal detectors where used to build AM radio receivers. As a kid, 
-I used to own this RadioShack 150-in-1 kit, and one of the projects was exactly that:
-an AM radio crystal radio.
+I played with a
+[RadioShack 150-in-1 kit](https://en.wikipedia.org/wiki/Electronic_kit), 
+and one of the projects was exactly that, an AM radio crystal radio.
 
-Link to 150-in-1 radio shack kit: https://commons.wikimedia.org/wiki/File:Science_Fair_150in1_Electronic_Project_Kit.jpg
+[![150-in-1 Radio Shack kit](/assets/hp423a/150in1_kit.jpg)](/assets/hp423a/150in1_kit.jpg)
+*(&copy; CC BY 2.0 [Caroline](https://commons.wikimedia.org/wiki/File:Science_Fair_150in1_Electronic_Project_Kit.jpg))*
 
-The schematic is very simple: 
+The <a href="https://www.zpag.net/Electroniques/Kit/200_manual.pdf#page=52" target="_blank">schematic</a>
+is very simple. 
 
-XXXX Page 53 contains the schematic: https://www.zpag.net/Electroniques/Kit/200_manual.pdf
+![Crystal set radio schematic](/assets/hp423a/crystal_set_radio.jpg)
 
 On the left, a transformer and a variable capacitor create an LC tuning network to select
 the radio station. A germanium diode does the detection, with a 22K&#937; load resistor.
