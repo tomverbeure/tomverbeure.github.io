@@ -29,7 +29,7 @@ categories:
 I picked up some random RF gizmos at the 
 [Silicon Valley Electronics Flea Market](https://www.electronicsfleamarket.com/).
 It's part of the grand plan to elevate my RF knowledge from near zero to beginner level: buy
-stuff, read about it, play with it, ~~spend more money~~~, hope to learn useful things. 
+stuff, read about it, play with it, ~~spend more money~~, hope to learn useful things. 
 I've found the playing part to be a crucial step of the whole process. Things seem to stick 
 much better in my brain when all is said and done.[^1] 
 
@@ -47,7 +47,7 @@ It's an HP 423A crystal detector. According to the
 > of DC voltage. ... The frequency range of the 423A is 10MHz to 12.4GHz.
 
 In the introduction of 
-[a previous blog post](/2023/04/01/Cable-Length-Measurement-with-an-HP-8007B-Pulse-Generator.html), 
+[an earlier blog post](/2023/04/01/Cable-Length-Measurement-with-an-HP-8007B-Pulse-Generator.html), 
 I wrote about John, my local RF equipment dealer. A while ago, he sold me a bargain Wiltron SG-1206/U 
 programmable sweep generator that can send out a signal from 10MHz all the way to 20GHz at power levels 
 between -115dBm to 15dBm. I also picked up a dirt cheap (and smelly) HP 8656A 1GHz signal generator at 
@@ -88,20 +88,20 @@ load resistor. They now use low barrier Schottky diodes, but the name
 
 ![RF power detector with diode](/assets/hp423a/infineon_rf_power_detector.png)
 
-Their functionality is straightforward: the diode passes only one side, positive or positive, 
-of an RF signal though to the other side, a capacitor gets charged up to the peak level of the 
-signal but discharges, slowly, due to a load resistor. If all went well, the output voltage of 
+Their functionality is straightforward: the diode passes only the positive voltage of an RF 
+signal though to the other side, a capacitor gets charged up to the peak level of the 
+signal but discharges, slowly, due to a load resistor. If all goes well, the output voltage of 
 the detector is the envelope of the RF signal. 
 
 ![Amplitude modulation detection](/assets/hp423a/Amplitude_modulation_detection.png)
 
-This envelope output signal is called the *video signal*, a bit of a confusing name:
+This envelope output signal is called the *video signal*, a bit of a confusing name because
 the output signal may not have anything to do with video at all, but you better get used to it
 because it's a standard term in the world of RF. Even cheap spectrum analyzers, such a 
 [TinyVNA Ultra](https://tinysa.org/wiki/pmwiki.php?n=TinySA4.MenuTree) have a menu to change 
 VBW, the video bandwidth.
 
-In the early years, crystal detectors where used to build AM radio receivers. As a kid, 
+In the early years, crystal detectors were used to build AM radio receivers. As a kid, 
 I played with a
 [RadioShack 150-in-1 kit](https://en.wikipedia.org/wiki/Electronic_kit), 
 and one of the projects was exactly that, an AM radio crystal radio.
@@ -114,12 +114,13 @@ is very simple.
 
 ![Crystal set radio schematic](/assets/hp423a/crystal_set_radio.jpg)
 
-On the left, a transformer and a variable capacitor create an LC tuning network to select
-the radio station. A germanium diode does the detection, with a 22K&#937; load resistor.
-There is no capacitor accross the load resistor. I think that the components downstream
-filter out the RF carrier...
+On the left, a ferrite rod antenna and a variable capacitor create an LC tuning network to select
+the radio station. A germanium diode does the detection with a 470K&#937; load resistor.
+The schematic doesn't have a capacitor: the output is a 
+[piezoelectric earpiece](https://en.wikipedia.org/wiki/Crystal_earpiece) 
+has the required capacitance.
 
-AM radios have long ago moved on from crystal detectors to better things. Modern demodulators 
+AM radios have long ago moved on from crystal detectors to better solutions. Modern demodulators 
 mix (multiply) the incoming signal with a locally generated RF sine wave which makes the original 
 LF signal emerge. 
 
@@ -166,7 +167,7 @@ There are a bunch of factors in there
 * $$I_0$$ is the diode leakage current density in the absence of light. 
 * $$T$$ is the absolute temperature.
 * $$V$$ is the junction voltage, the voltage across the diode terminals.
-* $$k$ is Boltzmann's constant
+* $$k$$ is Boltzmann's constant
 * $$q$$ is the charge of an electron
 * $$n$$ is an ideality factor between 1 and 2 that typically increases when the current decreases.
 
@@ -215,6 +216,7 @@ Vin = Vd + aVd^2R
 
 aRVd^2 +Vd -Vin = 0
 
+[![Spice simulation: AM wave with triangle envelope with detector output](/assets/hp423a/spice_detector_triangle.png)](/assets/hp423a/spice_detector_triangle.png)
 
 # The HP 423A Crystal Detector
 
