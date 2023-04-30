@@ -54,9 +54,7 @@ between -115dBm to 15dBm. I also picked up a dirt cheap (and smelly) HP 8656A 1G
 a previous flea market. I hadn't found a good use for either, so now was a good time to give them a 
 little workout.
 
-XXXX
-
-![Wiltron SG-1206/U and HP 8656A signal generators](/assets/hp423a/...)
+![Wiltron SG-1206/U and HP 8656A signal generators](/assets/hp423a/hp8656a_wiltron_sg1206u.jpg)
 
 In the process of playing with the detector, I discovered the warts of both signal generators, 
 I picked up an RF power meter on Craigslist, learned a truckload about RF power measurements and 
@@ -341,7 +339,7 @@ upwards to -10dBm, but adding a load resistors at the output of the detector.
 HP 11523A is exactly that: "a matched load resistor for optimimum square characteristics". I've
 measured the resistance to be 562&#937;.
 
-XXXX Picture of detector with load resistor
+![HP 423A detector with HP 11523A load resistor](/assets/hp423a/hp423a_hp11523a.jpg)
 
 Here's what happens with our signal for the -10dBm case:
 
@@ -721,9 +719,7 @@ before doing actual measurements. Remember that the diodes in a crystal detector
 sensitive, this kind of calibration is something you're supposed to do before starting a bunch
 of measurements.
 
-XXX
-
-![HP 438A front image](/assets/hp423a/...)
+![HP 438A front image](/assets/hp423a/hp438a_front.jpg)
 
 None of my instruments are properly calibrated: the procedure would cost much more than their
 cost, but something that's supposed to be a reference is better than nothing. 
