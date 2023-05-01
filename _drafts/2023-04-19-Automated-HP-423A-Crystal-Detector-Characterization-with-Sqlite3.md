@@ -335,23 +335,27 @@ the small signals, but it definitely looks more linear for higher values.
 
 [![-10dBm AM triangle waveform and detector output on scope](/assets/hp423a/triangle_waveform_-10dBm.png)](/assets/hp423a/triangle_waveform_-10dBm.png)
 
-**XXXXX Are all these graphs wrong? Vpp in the graph is double of what is should be?**
-
 Raising the output by 10dBm once more to 0dBm/0.63Vpp, and there's very little left of quadratic behavior.
 
 [![0dBm AM triangle waveform and detector output on scope](/assets/hp423a/triangle_waveform_0dBm.png)](/assets/hp423a/triangle_waveform_0dBm.png)
+
+*If -20dBm corresponds to 63mVpp, and -10dBm to 0.2Vpp, then why does the cursor on the scope
+shots show a &#916;V? of shots show 104mV and 330mV? It's because the dBm to Vpp forumula assumes
+a fixed amplitude sinewave. In our case, the signal is amplitude modulated, so the peak signal
+excursion is larger to compensate for times where the amplidute is lower.*
 
 # Playing with the Detector Load 
 
 Without a load resistor, or better: with a very weak load resistor of 1M&#937;, the square law
 region of the detector goes from around -50dBm to around -20dBm. There's nothing much we can do about
-the -50dBm: below that you're essentially measuring noise. But it is possible to increase the region
-upwards to -10dBm, by adding a load resistor at the output of the detector.
+the -50dBm: below that you're essentially measuring noise. But it is possible to increase the 
+square law region upwards to -10dBm, by adding a load resistor at the output of the detector.
 
 [![Measurement Setup 2](/assets/hp423a/measurement_setup2.png)](/assets/hp423a/measurement_setup2.png)
 
 HP 11523A is exactly that: "a matched load resistor for optimimum square characteristics". I've
-measured the resistance to be 562&#937;.
+measured the resistance to be 562&#937;. *I don't know which criterium is used to determine
+value of the matched resistor.*
 
 ![HP 423A detector with HP 11523A load resistor](/assets/hp423a/hp423a_hp11523a.jpg)
 
@@ -359,29 +363,22 @@ Here's what happens with our signal for the -10dBm case:
 
 [![-10dBm AM with load resistor triangle waveform and detector output on scope](/assets/hp423a/triangle_waveform_-10dBm_RL.png)](/assets/hp423a/triangle_waveform_-10dBm_RL.png)
 
-The yellow detector output is definitely quadratic again, but the amplitude of the detector 
+The detector output (yellow) is definitely quadratic again, but the amplitude of the detector 
 output is much smaller as well. And the yellow line also has a weird kind of fuzziness.
 
 **Smaller Output Voltage**
 
-The reason for the smaller detector output is simple: the diode may not be a resistor, but
-for a given junction voltage, it will have a corresponding current. The ratio of that voltage
-and current is an equivalent resistance. That resistance is not constant, it changes whenever
-the junction voltage changes, but it's there. In the square law region, this resistance is
-on the order of 10k&#937;, with a very large variation around it!
-
-In combination with a load resistor, these resistance forms a voltage divider. When the only
-load is the 1M&#937; of the oscilloscope, 99% of the voltage of the detector is measured
-by the oscilloscope. The addition of the 562&#937; load resistor shifts the voltage divider
-in the other direction, with the voltage across the divider primarily going to the diode.
+The reason for the smaller detector output is simple: reducing the value of load resistor has
+shifted the voltage divider so that the diode has a larger share of the total input voltage.
 
 **Output Signal Fuziness**
 
-If we change the vertical scale of the scope, we can have a better look at the output signal:
+If we change the vertical scale of the scope and switch the scope to peak detect mode, 
+we can have a better look at the output signal:
 
 [![-10dBm AM with load resistor triangle waveform and detector output on scope - zoomed](/assets/hp423a/triangle_waveform_-10dBm_RL_zoom.png)](/assets/hp423a/triangle_waveform_-10dBm_RL_zoom.png)
 
-The scope is in peak detect mode, and it's clear that the output isn't very clean.
+It's clear that there's a lot of variation on the detector signal output.
 
 We can see what happen when we change the timebase of the scope from 200us, perfect to
 observe the 1kHz amplitude modulated envelope, to 5ns, which is needed to observe the
@@ -389,14 +386,14 @@ observe the 1kHz amplitude modulated envelope, to 5ns, which is needed to observ
 
 [![-10dBm AM with load resistor triangle waveform and detector output on scope - small timebase](/assets/hp423a/triangle_waveform_small_timebase.png)](/assets/hp423a/triangle_waveform_small_timebase.png)
 
-By reducing the load from 1M&#937; to 562&#937;, we have dramatically changes the
+By reducing the load from 1M&#937; to 562&#937;, we have dramatically changed the
 time constant of the RC circuit that is formed by the capacitor inside the detector,
-only 30pF, the capacitance of the coax cable that is connected to the detector, ~210pF,
+only 10pF, the capacitance of the coax cable that is connected to the detector, ~210pF,
 and the load.
 
-With the 1M&#937; load, the time constant is around $$240\times10^{-12} \cdot 10^{6} = 240us$$,
-miles above the 10ns clock period of the 100MHz signal.  With the 562&#937; load, that number
-reduces to $$240\times10^{-12} \cdot 562 = 134ns$$. That's still well above 10ns, but
+With the 1M&#937; load, the time constant is around $$220\times10^{-12} \cdot 10^{6} = 220us$$,
+way above the 10ns clock period of the 100MHz signal.  With the 562&#937; load, that number
+reduces to $$220\times10^{-12} \cdot 562 = 123ns$$. That's still well above 10ns, but
 keep in mind that the time constant is the time needed to discharge a capacitor by 63%.
 
 In the waveform above, we're nowhere close to that, and the capacitance is a rough guess
@@ -418,23 +415,62 @@ to avoid at all cost, because it distorts the signal.
 Yet it's clear from the operating manual, and most other crystal detector literature, that
 square law behavior is often a feature.
 
-That's because crystal detector are often used to measure the power of an RF signal, and
+That's because crystal detectors are often used to measure the power of an RF signal, and
 $$P \sim V^2$$. In other words, if we operate the detector in the square law region and
 measure its output, the voltage that we get is proportional to the power of the signal.
 
-Note that I wrote 'proportional', not 'equal'. That's because the behavior of a diode
+Note that I wrote 'proportional', not 'equal', s because the behavior of a diode
 in the square law region is not only heavily temperature dependent, it also differs
 from one diode to the next.
 
-There are different ways to deal with this. The most common option is to calibrate 
-a square law power sensor before making a measurement. I have an HP 438A power meter,
-another John freebie, without power sensor. 
+# Power Measurement with Crystal Detectors
 
-In the center of the front panel, it prominently features a 1mW power reference. There
+Now that we know that crystal detectors are the key sensor for a class of RF power meter,
+it's time to have a look at one of them: the HP 8484A. Another oldie that's now
+obsolete, but its specifications are close to the 
+[HP 8481D](https://www.keysight.com/us/en/product/8481D/diode-power-sensor-10-mhz-18-ghz.html), 
+which is still for sale, for a whopping $2724. 
+
+![HP 8481D diode power sensor](/assets/hp423a/hp8481d.jpg)
+
+Here's the schematic of the 8484A:
+
+[![HP 8484A schematic](/assets/hp423a/hp8484a_schematic.jpg)](/assets/hp423a/hp8484a_schematic.jpg)
+*(Click to enlarge)*
+
+Except for a DC-blocking capactor at the entrance, the schematic is exactly as one could expect:
+a 53&#937; termination resistor, the detection diode, and a capactor. The output of the detector
+goes to chopper circuit that samples the detector value at a rate of 220Hz.
+
+[![HP 8484A schematic frontend](/assets/hp423a/hp8484a_schematic_frontend.jpg)](/assets/hp423a/hp8484a_schematic_frontend.jpg)
+
+So how does one deal with the temperature and silicon dependency of the detector diode? 
+
+The obvious option is to calibrate the sensor before making a measurement. 
+
+HP 8484A and 8481D sensors plug into an HP 438A power meter, another John freebie, though
+it came without sensors, which are much more expensive that the meter itself!
+
+![HP 438A front image](/assets/hp423a/hp438a_front.jpg)
+
+In the center of the front panel, a 1mW/0dBm power reference is prominently featured, and there 
 are also "ZERO", "CAL ADJ", and "CAL FACTOR" buttons. Before making a set of measurements,
-you first have to calibrate the power sensor before, otherwise the results can be
+you first have to calibrate the power sensor before, otherwise the results will be
 all over the place.
 
+But even calibration against the power reference is not enough. The reference output
+frequency is fixed at 50MHz.
+
+![HP 8484A frequency calibration table](/assets/hp423a/hp8484a_calibration_table.jpg)
+
+Keysight has a large arsenal of RF power sensors with different frequency and
+power ranges. The HP 8484A and 8481D sensors shall only be used for RF sources
+with a maximum power level  of -20dBm. To calibrate those against a device like
+the HP 438A, you always need to use an HP provided reference attenuator.
+
+I don't a power sensor yet for my HP 438A, but 
+[Daniel Tufvesson](https://twitter.com/DanielTufvesson/status/1647545015764230144) 
+has been hard at work at building one himself.
 
 # Characterizing the Detector
 
