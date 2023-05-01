@@ -54,12 +54,14 @@ between -115dBm to 15dBm. I also picked up a dirt cheap (and smelly) HP 8656A 1G
 a previous flea market. I hadn't found a good use for either, so now was a good time to give them a 
 little workout.
 
-![Wiltron SG-1206/U and HP 8656A signal generators](/assets/hp423a/hp8656a_wiltron_sg1206u.jpg)
+[![Wiltron SG-1206/U and HP 8656A signal generators](/assets/hp423a/hp8656a_wiltron_sg1206u.jpg)](/assets/hp423a/hp8656a_wiltron_sg1206u.jpg)
 
 In the process of playing with the detector, I discovered the warts of both signal generators, 
 I picked up an RF power meter on Craigslist, learned a truckload about RF power measurements and 
-the general behavior of diodes and the math behind it, and figured out a misunderstanding about 
-standing-wave ratio (SWR) and their relationship with crystal detectors.
+the general behavior of diodes and the math behind it, I *finally* installed 
+[ngspice](https://ngspice.sourceforge.io/) and ran a bunch of simulations, 
+and figured out a misunderstanding about standing-wave ratio (SWR) and their relationship with 
+crystal detectors. *(Phew)*
 
 I'm writing things down here to have a reference if I need the info back, but expect
 the contents to be meandering between a bunch of topics.
@@ -134,97 +136,108 @@ A diode is often simplified to a device that blocks current when the voltage
 across its junction is less than a certain threshold level, and that passes current
 otherwise. Such an ideal device has the following voltage to current graph:
 
-XXXXX
+![Behavior of ideal diode with and without threshold](/assets/hp423a/ideal_diode.png)
 
-In this ideal case, an infinite current for any voltage above the threshold would
-destroy the diode, but in practice, there's always some kind of series resistance to
-limit the current. Together, the diode and this resistance form a voltage divider.
+In this ideal case, the resistance of the diode is zero above the threshold and
+infinite below. In practice, a diode is always used in a circuit that has some kind
+of some kind of series resistance (not necessarily resistor!) to limit the current. 
+Together, the diode and this resistance form a voltage divider.
 
-When the diode is ideal, the infinite current characterstic simply means that the 
+![Diode - Resistor schematic](/assets/hp423a/diode_r_schematic.png) 
+
+When the diode is ideal, the infinite current characteristic simply means that the 
 voltage across the diode will always be limited to the threshold voltage, and that
 the remainder of the diode/resistance combo will fall over the resistance.
 
-In other words, when place in series with a fixed value resistor, the current
-through the diode and the resistor will be:
+In reality, a diode doesn't behave like a clean on/off device depending on the voltage
+across the device. Instead, the current/voltage curve can be described with the following 
+formula:
 
-$$I_{R} = (V_{in}-V_{th})/R$$
+$$
+I(Vd) = \begin{cases}
+I_S(e^\frac{qV_d}{nkT}-1) & V_d>V_z \\
+-\infty & V_d \le V_z
+\end{cases}
+$$
 
-And the voltage across the resistor will be:
+The plot of this function looks like this:
 
-$$V_{R} = I_{R} \cdot R = V_{in}-V_{th}$$
+![Diode I/V curve](/assets/hp423a/diode_iv_curve.png) 
 
-In reality, voltage/current curve can be described with the following formula:
+Above the $$V_Z$$, the reverse breakdown voltage, the curve is an exponential
+function. Below the reverse breakdown voltage, the diode self-destructs...
 
-$$I = I_0(e^\frac{qV}{nkT}-1)$$
+Compared to an ideal diode: there is:
 
-*The formula above does not model diode breakdown: the often destructive behavior that
-happens when the junction voltage exceeds a certain negative value.*
+* a small current when the diode is reverse polarized
+* a smooth transition region to go from almost no current to *a lot* of current
+* the reverse breakdown voltage
 
-There are a bunch of factors in there
+There are a bunch of factors in the general equation:
 
-* $$I_0$$ is the diode leakage current density in the absence of light. 
+* $$V_d$$ is the junction voltage, the voltage across the diode terminals.
 * $$T$$ is the absolute temperature.
-* $$V$$ is the junction voltage, the voltage across the diode terminals.
+* $$I_S$$ is the diode leakage current density in the absence of light. 
+* $$n$$ is an ideality factor between 1 and 2 that typically increases when the current decreases.
 * $$k$$ is Boltzmann's constant
 * $$q$$ is the charge of an electron
-* $$n$$ is an ideality factor between 1 and 2 that typically increases when the current decreases.
 
-Note that $$I_0$$ itself is temperature dependent as well!
+A lot can be said about this equation, but there's plenty of content on the web on that
+already. Check out the [Diode Equation](https://www.pveducation.org/pvcdrom/pn-junctions/diode-equation)
+or [the Ideal Diode Equation][ideal_diode_equation].
 
-The [Diode Equation](https://www.pveducation.org/pvcdrom/pn-junctions/diode-equation)
-goes into more detail about diode behavior. It even has some interactive graphs to
-play with.
+[ideal_diode_equation]:https://eng.libretexts.org/Bookshelves/Materials_Science/Supplemental_Modules_(Materials_Science)/Solar_Basics/D._P-N_Junction_Diodes/3%3A_Ideal_Diode_Equation
 
+One thing is clear though: as soon as $$V_d$$ goes over a certain threshold,
+the current through the diode will be so high that it might as well be an
+ideal diode, and in a resistive divider, the resistance will carry the
+voltage in excess of the threshold.
 
-Here's what such a graph typically looks like:
+But let's zoom in on what happens below the threshold:
 
-https://www.desmos.com/calculator/n9uo7irghk
+![Diode I/V curve - subthreshold](/assets/hp423a/diode_iv_curve_subthreshold.png) 
 
-There's a characteristic knee in the graph above which the current starts going up 
-rapidly. In the graph above, the knee is somewhere around a value of $$x=0.7V$$.
-
-Below the knee, when $$x>0$$, it's possible to approximate the curve with a
-quadratic polynomial:
-
-https://www.desmos.com/calculator/8jyd1jaqmr
+The real I/V curve is still exponential, of course, but below 0.3V, it can
+be approximated very well with a quadratic curve. In this case, that
+curve is $$I(V_d)=1.7V_d^2+0.015$$.
 
 That's the square law region of the diode.
 
-When places in series with a resistors, the 
+The quadratic approximation is not only heavily dependent on temperature, but
+also on the silicon: you can buy 2 diodes of the same type, and keep them
+at the same temperature, yet their I/V curves might still be shifted quite
+a bit from each other. That's not a problem when the diode is operating
+in the region above the threshold, the resistance is too low to matter, but 
+subthreshold, the resistance will much higher, often higher than the resistance
+that's in series with the diode.
 
+We'll soon get back to square law behavior.
 
-Vin = Vdiode + VR
+A quick word about the threshold voltage: there is no exact value of the diode 
+threshold voltage. Most textbooks talk about the minimum forward bias voltage 
+that is required for a diode to start conducting current. But the I/V curve is 
+a continuous exponential function. There isn't a clear point at which a diode
+starts conducting. 
 
-
-VR = f(Vdiode)R
-Vdiode = Vin - f(Vdiode)R
-
-x = Vin - f(x)R
-
-
-Vin = Vd + I*R
-
-I = I0(e^aVd-1)
-
-Vin = Vd + I0(E^aVd-1)R
-
-Vin = x + f(x).R
-
-Vin = Vd + aVd^2R
-
-aRVd^2 +Vd -Vin = 0
+In general, the treshold levels for a silicon and germanium based diodes are
+around 0.7V and 0.3V respectively. For a 
+[Schottky diode](https://www.electronics-tutorials.ws/diode/schottky-diode.html), 
+it's around 0.4V.
 
 [![Spice simulation: AM wave with triangle envelope with detector output](/assets/hp423a/spice_detector_triangle.png)](/assets/hp423a/spice_detector_triangle.png)
 
 # The HP 423A Crystal Detector
 
-First mentioned in a November 1963 edition of HP Journal, the HP 423A is old. The 
+The HP 423A low-barrier Schottky diode detector. First mentioned in a November 1963 
+edition of HP Journal, the HP 423A is old. 
+
+The 
 [Keysight product page](https://www.keysight.com/us/en/product/423A/coaxial-crystal-detector.html)
-predictably lists it as obsolete, but Keysight sells a 
+predictably lists it as obsolete, but they still sell a 
 [423B](https://www.keysight.com/us/en/support/423B/low-barrier-schottky-diode-detector-10-mhz-to-12-4-ghz.html).
 
 Going through the specs, there are a couple of differences: the 423A only sustains an input power of 
-100mW (20dBm) vs 200mW (23dBm) for the B version. There are are also differences in output impedance, 
+100mW (20dBm/6.3Vpp) vs 200mW (23dBm/8.9Vpp) for the B version. There are are also differences in output impedance, 
 frequency response flatness, sensitivity levels, noise levels and so forth. But the supported
 frequency range is the same, from 10MHz to 12GHz.
 
@@ -233,10 +246,10 @@ damage the device, but the other characteristics don't matter a whole lot since 
 they mean to begin with. 
 
 100mW/20dBm of power is pretty high for test and measurement equipment, and well above the 
-the maximum 15dBm output of the sweep and signal generator.
+the maximum 15dBm output of my sweep and signal generator.
 
-Despite the differences, the [423B datasheet](https://www.keysight.com/us/en/assets/7018-06773/data-sheets/5952-8299.pdf)
-and other documentation that explains the basics about how they work and some of its applications.
+Despite their differences, the [423B datasheet](https://www.keysight.com/us/en/assets/7018-06773/data-sheets/5952-8299.pdf)
+explains the basics about how they work and some of its applications.
 
 In their words:
 
@@ -252,13 +265,12 @@ If they're so useful for measurements, then let's just get on with ti and do exa
 
 The setup below has the 8656A RF signal generator configured to generate a 100MHz
 carrier waveform at a -10dBm power level. It's set to AM mode, expecting an external
-signal as modulation signal.
+signal on its modulation input.  A 
+[33120A signal generator ](/2023/01/01/HP33120A-Repair-Shutting-Down-the-Eye-of-Sauron.html)
+is sending out 1 kHz 1Vpp sine wave to that input.
 
-A [33120A signal generator ](/2023/01/01/HP33120A-Repair-Shutting-Down-the-Eye-of-Sauron.html)
-is sending out 1 kHz 1Vpp sine wave that is sent to the modulation input.
-
-The scope is configured in peak detect mode and indeed shows the
-outline of a high-frequency signal with 1kHz envelope: 
+The sample rate of scope is way below the 100MHz carrier, but it shows the outline of a 
+1kHz envelop of the AM signal very well:
 
 [![AM signal on scope](/assets/hp423a/am_waveform.png)](/assets/hp423a/am_waveform.png)
 *Click to enlarge*
@@ -268,10 +280,10 @@ the following equivalent schematic:
 
 [![Measurement Setup 1](/assets/hp423a/measurement_setup1.png)](/assets/hp423a/measurement_setup1.png)
 
-The crystal detector has a 50&#937; input impedance, so we need to set the input impedance of channel 2 
-of the scope to 1M to avoid having two 50&#937; loads on the RF source. The HP 423A operating manual 
-lists an output impedance of <15k&#937;, shunted by 10pF. We'll get back to that 15k&#937; later, but
-the capacitor in the schematic above is the one of 30pF.
+Since the crystal detector has a 50&#937; input impedance, the input impedance of channel 2 
+of the scope is set to 1M to avoid having two 50&#937; loads on the RF source. The HP 423A operating manual 
+lists a detector output impedance of <15k&#937;, shunted by 10pF. We'll get back to that 15k&#937; later, but
+the capacitor in the schematic above is the one of 10pF.
 
 In addition to the capacitor inside the detector itself, there's also the capacitance of the coax cable
 between the detector and the scope. The one that I'm using is 7ft long. At ~30pF/ft, the cable alone
@@ -289,14 +301,12 @@ For now, channel 1 of the scope, connected to the output of the detector, is als
 1M&#937; to avoid loading the output too much.  
 
 The diode of the detector is in 'opposite' direction. This doesn't fundamentally change the operation, 
-it's just that it will pass through the negative part of the incoming signal. For some reason,
-that's the default configuration for many of these kind of dectectors. HP, and currently Keysight,
-also sell an option with the diode oriented the other way around.
+it will pass through the negative part of the incoming signal. This is the default configuration for 
+many of these kind of dectectors, but HP/Keysight, also sell an option with the diode oriented the 
+other way around.
 
-Let's now see the result on the scope:
-
-The purple waveform is now the direct output of the signal generator, and
-the yellow is the one from the crystal detector. 
+Let's now see the result on the scope. The purple waveform is now the direct output of the 
+signal generator, and the yellow is the one from the crystal detector. 
 
 [![-20dBm AM signal and detector output on scope](/assets/hp423a/am_waveform_and_detector_-20dBm.png)](/assets/hp423a/am_waveform_and_detector_-20dBm.png)
 *Click to enlarge*
@@ -307,34 +317,36 @@ to the left.
 The detected signal looks a bit like but is not quite a sine wave, and the smaller the envelope of the 
 original signal, the less the detector output seems to follow the envelope. 
 
-This is also expected. Notice that the RF peak of the signal is &plusmn;53mV. The diode of the 
-detector is operating in the so-called square law region, where detector has a quadratic I/V response
-curve!
+This is also expected. The oscilloscope cursor shows that an RF signal peak of &plusmn;53mV. The 
+diode of the detector is operating in the square law region!
 
-This becomes even clearer when we modulate the RF signal with a triangle waveform:
+This becomes even clearer when we modulate the RF signal with a triangle waveform: the detector
+output is a parabola:
 
 [![-20dBm AM triangle waveform and detector output on scope](/assets/hp423a/triangle_waveform_-20dBm.png)](/assets/hp423a/triangle_waveform_-20dBm.png)
 
 In the current setup, the only resistor at the output of the detector is the 1M&#937; 
-load of the oscilloscope. For low power Schottky diodes, the square wave region
-of a detector in such a configuration runs roughly until -20dBm, which is how I
+load of the oscilloscope. For low power Schottky diodes, the square law region
+of a detector in such a configuration runs roughly until -20dBm/63mVpp, which is how I
 have configured output level of the signal generator.
 
-If I configure the signal generator to output -10dBm, the output still looks curved close for
+If I configure the signal generator to output -10dBm/0.2Vpp, the output still looks curved close for
 the small signals, but it definitely looks more linear for higher values.
 
 [![-10dBm AM triangle waveform and detector output on scope](/assets/hp423a/triangle_waveform_-10dBm.png)](/assets/hp423a/triangle_waveform_-10dBm.png)
 
-Raising the output by 10dBm once more to 0dBm, and there's very little left of quadratic behavior.
+**XXXXX Are all these graphs wrong? Vpp in the graph is double of what is should be?**
+
+Raising the output by 10dBm once more to 0dBm/0.63Vpp, and there's very little left of quadratic behavior.
 
 [![0dBm AM triangle waveform and detector output on scope](/assets/hp423a/triangle_waveform_0dBm.png)](/assets/hp423a/triangle_waveform_0dBm.png)
 
 # Playing with the Detector Load 
 
-Without a load resistor (or better: with a very weak load resistor of 1M&#937;), the square law
+Without a load resistor, or better: with a very weak load resistor of 1M&#937;, the square law
 region of the detector goes from around -50dBm to around -20dBm. There's nothing much we can do about
 the -50dBm: below that you're essentially measuring noise. But it is possible to increase the region
-upwards to -10dBm, but adding a load resistors at the output of the detector.
+upwards to -10dBm, by adding a load resistor at the output of the detector.
 
 [![Measurement Setup 2](/assets/hp423a/measurement_setup2.png)](/assets/hp423a/measurement_setup2.png)
 
@@ -347,10 +359,8 @@ Here's what happens with our signal for the -10dBm case:
 
 [![-10dBm AM with load resistor triangle waveform and detector output on scope](/assets/hp423a/triangle_waveform_-10dBm_RL.png)](/assets/hp423a/triangle_waveform_-10dBm_RL.png)
 
-The yellow detector output is definitely quadratic again, but that's not the only thing.
-
-The amplitude of the detector output is much smaller. And the yellow line also has a weird
-kind of fuzziness.
+The yellow detector output is definitely quadratic again, but the amplitude of the detector 
+output is much smaller as well. And the yellow line also has a weird kind of fuzziness.
 
 **Smaller Output Voltage**
 
