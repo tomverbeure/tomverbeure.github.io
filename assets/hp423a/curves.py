@@ -9,7 +9,7 @@ mask = v<=-10.05
 i[mask] = v[mask]*10
 
 q_mask = v<0.6
-q = 1.7*v[q_mask]*v[q_mask]+0.015
+q = 1.055*v[q_mask]*v[q_mask]+0.2185*v[q_mask]
 
 q_mask = v<0.6
 q2 = 1.99*v[q_mask]*v[q_mask]

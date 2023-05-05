@@ -182,6 +182,13 @@ There are a bunch of factors in the general equation:
 * $$k$$ is Boltzmann's constant
 * $$q$$ is the charge of an electron
 
+The $$kT/q$$ part of the exponent is usually called $$V_T$$. It simplifies the exponential 
+equation to:
+
+$$I(V_d) = I_S(e^\frac{V_d}{nV_T}-1)$$
+
+At a temperature of 300K, $$V_T$$ has value of 0.026mV.
+
 A lot can be said about this equation, but there's plenty of content on the web on that
 already. Check out the [Diode Equation](https://www.pveducation.org/pvcdrom/pn-junctions/diode-equation)
 or [the Ideal Diode Equation][ideal_diode_equation].
@@ -198,10 +205,51 @@ But let's zoom in on what happens below the threshold:
 ![Diode I/V curve - subthreshold](/assets/hp423a/diode_iv_curve_subthreshold.png) 
 
 The real I/V curve is still exponential, of course, but below 0.3V, it can
-be approximated very well with a quadratic curve. In this case, that
-curve is $$I(V_d)=1.7V_d^2+0.015$$.
+be approximated very well with a quadratic curve. In this case, the
+exponential curve has been aproximated by $$I(V_d)=1.055V_d^2+0.219x$$.
 
-That's the square law region of the diode.
+The reason for behaving quadratically is high school calculus: the 
+[Taylor series](https://en.wikipedia.org/wiki/Taylor_series) of exponential function is: 
+
+
+$$e^x = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \frac{x^4}{4!} + \frac{x^5}{5!} + \cdots$$
+
+For small values of $$x$$, we can approximate the series above as follows:
+
+$$e^x \approx 1 + x + \frac{x^2}{2}$$
+
+Let's substitute $$x$$ back to $$\frac{V_d}{nV_T}$$, then for small $$V_d$$, the I/V
+curve now looks like this:
+
+$$
+I(V_d) \approx I_S[(\frac{V_d}{nV_T}) + \frac{1}{2}(\frac{V_d}{nV_T})^2]
+$$
+
+That's nice, but there's still a linear and a power-of-two term. Are there cases
+where there's just the power-of-two term left? There is!
+
+Here's what happens when the voltage across the diode is a sine wave: $$V_d = V_p\cos(\omega T)$$.
+
+$$
+\begin{align*}
+I(V_d) &\approx I_S[(\frac{V_d}{nV_T}) + \frac{1}{2}(\frac{V_d}{nV_T})^2] \\
+&\approx I_S\frac{V_p}{nV_T} \cos(\omega T) +  \frac{I_S}{2}(\frac{V_p}{nV_T}\cos(\omega T))^2 \\
+&\approx I_S\frac{V_p}{nV_T} \cos(\omega T) +  \frac{I_S}{2}(\frac{V_p}{nV_T})^2\frac{1 + \cos(2 \omega T)}{2} \\
+&\approx I_S\frac{V_p}{nV_T} \cos(\omega T) +  \frac{I_S}{4}(\frac{V_p}{nV_T})^2[1 + \cos(2 \omega T)]\\
+\end{align*}
+$$
+
+If we apply a low pass filter with a cutoff well below frequency of the sine wave to function above, 
+then the equation above reduces to:
+
+$$
+I_{dc} = \frac{I_S}{4}[\frac{V_p}{nV_T}]^2
+$$
+
+Under the right conditions, the output current is proportional to the power of two of the 
+amplitude of the sine wave!
+
+![Schematic with AC source, diode and RC filter](/assets/hp423a/diode_rc_schematic.png)
 
 The quadratic approximation is not only heavily dependent on temperature, but
 also on the silicon: you can buy 2 diodes of the same type, and keep them
@@ -910,5 +958,7 @@ Using a 100MHz output frequency, I measured the meter readings at about +10dBm, 
     Interesting information about frequency response, SWR etc. 
     
 * [Keysight - 415E SWR Meter](https://www.keysight.com/us/en/product/415E/swr-meter.html#resources)
+
+* [The SPICE Diode Model](https://ltwiki.org/files/SPICEdiodeModel.pdf)
 
 # Footnotes
