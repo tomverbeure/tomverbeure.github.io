@@ -48,8 +48,7 @@ of different kinds of filters.
 
 In [a recent tweet](https://twitter.com/matthewvenn/status/1311611352021118976), Matt Venn
 pointed me to [pyFDA](https://github.com/chipmuenk/pyfda), short for Python Filter
-Design Analysis tool, and [his video tutorial](https://www.youtube.com/watch?v=dtK-4JZ4Cwc) 
-about it.
+Design Analysis tool.
 
 I've since been using it, and it definitely helped me in getting my PDM MEMS microphone design
 off the ground.

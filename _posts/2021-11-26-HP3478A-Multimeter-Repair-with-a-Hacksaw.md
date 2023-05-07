@@ -70,7 +70,7 @@ There's also plenty of material of Youtube: teardowns, how to replace the calibr
 calibration data (very important!), how to download and restore calibration data over GPIB, how to clean the 
 display, and so forth.
 
-There's even a work-in-progress [MAME 3478A emulator](https://github.com/mamedev/mame/blob/master/src/mame/drivers/hp3478a.cpp), 
+There's even a work-in-progress [MAME 3478A emulator](https://gitlab.com/mamedev/mame/-/blob/mame0226/src/mame/drivers/hp3478a.cpp)
 which is a great resource to understand some of the internals of the device.
 
 This quote from [discussion thread on the EEVblog forum](https://www.eevblog.com/forum/beginners/is-190$-a-bargain-for-a-hp-2378a-bench-multimeter/)

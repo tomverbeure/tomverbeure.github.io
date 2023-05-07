@@ -11,7 +11,7 @@ categories:
 # Introduction
 
 It's been more than 7 years now since the first public release of 
-[Project IceStorm](http://bygone.clairexen.net/icestorm/).  Its goal was to reverse engineer to the internals
+[Project IceStorm](https://clifford.at/icestorm).  Its goal was to reverse engineer to the internals
 of Lattice ICE40 FPGAs, and create a full open source toolchain to go from RTL all the way
 to a place-and-routed bitstream.  Project IceStorm was a huge success and started a small revolution in the 
 world of hobby electronics. While it had been possible to design for FPGAs before,

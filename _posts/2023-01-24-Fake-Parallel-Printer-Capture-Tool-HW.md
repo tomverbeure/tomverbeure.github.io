@@ -10,7 +10,7 @@ categories:
 
 # Introduction
 
-My [previous blog post](/2023/01/01/HP33120A-Repair-Shutting-Down-the-Eye-of-Sauron.html)
+My [previous blog post](/2023/01/02/HP33120A-Repair-Shutting-Down-the-Eye-of-Sauron.html)
 contained a screenshot of an Advantest R3273 spectrum analyzer that I took by holding 
 my iPhone in front of the screen:
 
@@ -97,7 +97,7 @@ they drown in a sea of "USB to parallel port" results!
 The [parallel printer port](https://en.wikipedia.org/wiki/Parallel_port) and associated 
 protocol was originally defined by [Centronics](https://en.wikipedia.org/wiki/Centronics) way back 
 in 1970 for their Model 101 printer.
-The [Vintage Technology Digital Archive](vtda.org) still has the 
+The [Vintage Technology Digital Archive](http://vtda.org) still has the 
 [specification and interface information](http://vtda.org/docs/computing/Centronics/101_101A_101AL_102A_306_SpecificationsInterfaceInformation.pdf)
 for it.
 

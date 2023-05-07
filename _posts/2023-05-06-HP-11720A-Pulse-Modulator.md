@@ -374,6 +374,7 @@ they're definitely not accurate.
 * [HP 11720A operating and service manual](/assets/hp11720a/HP 11720A Operation & Service.pdf)
 * [HP 11720A Datasheet](/assets/hp11720a/HP_11720A_Pulse_Modulator_Datasheet.pdf)
 * [HP App Note 58: The PIN Diode as a Microwave Modulator](https://www.hpmemoryproject.org/an/pdf/an_58.pdf)
+* [HP App Note 218-5: Obtaining Leveled Pulse-Modulated Microwave Signals from the HP 8672A](https://www.hpmemoryproject.org/an/pdf/an_218-5.pdf)
 * [Azur Electronis - HP 11720A Pulse Modulator](http://www.azurelectronics.com/HP%2011720A%202-18GHz%20Pulse%20Modulator.htm)
 * [Google sheet with measurements](https://docs.google.com/spreadsheets/d/1OYbOlhEPLmADi5-Oza86DO5IdMgwWnYsb08lWcWkfdg/edit?usp=sharing)
 
