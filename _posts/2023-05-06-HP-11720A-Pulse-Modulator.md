@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Measuring the HP 11720A Pulse Modulator and Coax Cables
-date:   2023-05-06 00:00:00 -0700
+date:   2023-05-06 00:00:00 -1000
 categories:
 ---
 
@@ -19,7 +19,7 @@ test stuff is always fun. And they became essentially free by making a package d
 that included an HP 423A power meter (with sensor!) and haggling the price down by $40. 
 Everybody happy!
 
-The first pulse modulator is an HP 11720A supported range from 2 to 18GHz. The second one 
+The first pulse modulator is an HP 11720A with supported range from 2 to 18GHz. The second one 
 is an HP 8731B. This one has a range of 0.8 to 2.4GHz.
 
 In this blog post, I'll only look at the HP 11720A.
@@ -27,7 +27,7 @@ In this blog post, I'll only look at the HP 11720A.
 [![HP 11720A front panel](/assets/hp11720a/hp11720a_front.jpg)](/assets/hp11720a/hp11720a_front.jpg)
 *(Click to enlarge)* 
 
-After that, I digress and start measuring the quality of a bunch of
+After that, I'll digress and start measuring the quality of a bunch of
 coax cables...
 
 # What is a pulse modulator and what are they used for?
@@ -36,28 +36,28 @@ A pulse modulator is conceptually a pretty simple device. The main input takes i
 a [continuous-wave (CW)](https://en.wikipedia.org/wiki/Continuous_wave) 
 RF signal, one that has a constant amplitude and frequency.
 
-A modulation signal enters through a second input. It modifies the amplitude of the 
+A modulation signal enters through a second input and modifies the amplitude of the 
 RF signal. In the case of a pulse modulator, the second input is usually digital, and
-the modulation is completely on or off.
+the modulation is either completely on or off.
 
 ![Pulse modulation](/assets/hp11720a/pulse_modulation.png)
 
-The output RF signal is incoming RF signal after it has been subjected to the
+The output RF signal is the incoming RF signal after it has been subjected to the
 modulation signal. 
 
 Simple!
 
 The 
 [HP 11720A datasheet](/assets/hp11720a/HP_11720A_Pulse_Modulator_Datasheet.pdf)
-mentions a few possible applications: pulsed radar systems, and an accessory for wideband 
-sweepers and synthesizers. It definitely sounds very cool to build my own
-radar, but chances are that I'll never feel comfortable enough with RF to enter that 
-kind of field. We'll see...
+mentions a few possible applications: pulsed radar systems, electronics warfare,
+and an accessory for wideband sweepers and synthesizers. It definitely sounds very 
+cool to build my own radar, but chances are that I'll never feel comfortable enough 
+with RF to enter that kind of field. We'll see...
 
-# The HP 11720A
+# The HP 11720A Pulse Modulator
 
-The HP 11720A has RF type-N connectors as input and output, and a BNC connector
-for a 5V TTL modulation signal, with 50&#937; termination, though +3V is sufficient
+The HP 11720A has RF type-N input and output connectors, and a BNC connector
+for a 50&#937;-terminated 5V TTL modulation signal, though +3V is sufficient
 to control the output.[^1]  On my device, the front panel says "+50 VDC MAX / -05 VDC MAX", 
 but after further inspection, it turns out that the decimal point has competely faded away.
 Oops!
@@ -65,24 +65,25 @@ Oops!
 [^1]: I was able to make the output toggle with a level as low as 2.5V.
 
 Either way, since it's a pure digital input, the modulation signal either passes the
-incoming RF signal to the output, or it switches it off entirely.
+incoming RF signal to the output, or it switches it off entirely. The datasheet
+and operating manual are particularly proud about the speed by which the
+RF signal can be switched on or off, less than 10ns.
 
 ![Pulse specifications](/assets/hp11720a/pulse_specifications.png)
 
-The frequency range is a pretty luxurious 2 to 18GHz, but that makes it impossible
+The RF frequency range is a pretty luxurious 2 to 18GHz, but that makes it impossible
 to observe the output with a regular oscilloscope. 
-
-The manual suggests one solution to test the output of the modulator: mix it with an 
+The manual suggests a solution to test the output of the modulator: mix it with an 
 unmodulated additional RF source with the same RF frequency, and the modulation signal 
 should come out. Since I lack a second source, I'll be verifying the output power 
 instead.
 
 Speaking of power: the RF input power is listed as +20dBm (0.1W), but you can go up to 
 +33dBm (2W) before you damage the thing. None of my RF toys come close to +20dBM, so I don'
-t need to worry about that. The minimum RF pulse with is 50ns, which should to fine when 
+t need to worry about that. The minimum RF pulse width is 50ns, which should to fine when 
 shooting a radar pulses to the planes that are flying over our house on rainy days.
 
-There's an insertion loss of less than 6dB between 2 and 12.4GHz, and less than 10dB between
+The modulator has a loss of less than 6dB between 2 and 12.4GHz, and less than 10dB between
 2 to 18GHz. That's the amount by which the RF output level will be lower than the input.
 
 When first released, it sold for $2600. I'm not sure when that was, but the manual was printed 
@@ -95,7 +96,7 @@ in 1977.
 
 Like many other RF modulators, the 11720A uses a [PIN diode](https://en.wikipedia.org/wiki/PIN_diode)
 to do the modulation. PIN, or better P-I-N, stands for P region, Intrinsic region, N region. 
-Contrary to regular diodes than have P- and N-doped silion regions next to eachother, a PIN diode has a
+Contrary to regular diodes than have P- and N-doped silion regions next to each other, a PIN diode has a
 non-doped silicon region in between.
 
 ![PIN diode](/assets/hp11720a/PIN_diode.png)
@@ -125,10 +126,10 @@ of how it works:
 * When the modulator passes through the signal, the shunt diodes are switched off and
   the series diode is switch on, and vice versa when the modulator is blocking the
   input signal.
-* There are two control signal: the one that goes to the PIN modulator itself take care
+* There are two control signals: the one that goes to the PIN modulator itself take care
   of keeping the modulator on or off. The one that goes into the BIAS circuit
-  generator strong pulse when the modulation switches on or off: this makes the
-  switching action must faster, and thus allows for fast edges.
+  generates a strong pulse when the modulation switches on or off: this makes the
+  switching action much faster, and thus allows for steeper RF on/off edges.
 * Finally, a high pass filter makes sure that some of the control currents are blocked
   before sending the signal back out.
 
@@ -139,7 +140,7 @@ Here's what the main RF actors look like in the real world:
 [![HP 11720A RF path](/assets/hp11720a/RF_path.jpg)](/assets/hp11720a/RF_path.jpg)
 *(Click to enlarge)*
 
-The control logic is relatively straightforward: a handful of logic TTL buffers, some timing logics,
+The control logic is relatively straightforward: a handful of logic TTL buffers, some timing logic,
 and drivers. Check out the manual for the schematic.
 
 # Measurement Setup for a Quick Testing Session
@@ -180,7 +181,7 @@ From bottom to top:
 
 * HP 432A power meter
 
-    The power meter has a thermistor-based power sensor that is plugged in straight into
+    The power meter has an HP 478A thermistor-based power sensor that is plugged in straight into
     the pin modulator.
 
 
@@ -206,7 +207,7 @@ generator straight to the pin modulator. These kind of cables very sturdy, and r
 Let's see what happens:
 
 
-| Wiltron Output Frequency (GHz) | Gen Out HP 432A (dBm) | Cable Out HP 432A (dBm) | RF Out HP 432A (dBm) | Pin Modulator Loss (dBm) |
+| Wiltron Output Frequency (GHz) | Gen Out HP-432A (dBm) | Cable Out HP-432A (dBm) | Pin Out HP-432A (dBm) | Pin Modulator Loss (dBm) |
 |--------------------------------|-----------------------|-------------------------|----------------------|--------------------------|
 | 1.5                            | 9.4                   | 8.7                     | 4.5                  | 4.2                      |
 | 2                              | 9                     | 8                       | 6                    | 2                        |
@@ -222,10 +223,10 @@ Let's see what happens:
 | 18                             | 0.5                   | -13.6                   | X                    | X                        |
 | 20                             | -4                    | X                       | X                    | X                        |
 
-The first column shows the test frequencies, the second is the power output with the power detector plugged 
+The first column shows the test frequencies, the second is the power output with the power sensor plugged 
 straight into the output of the generator. Third is the power at the output of the cable. The fourth column shows 
-the power after going through the pin modulator, and the last column shows the loss inside the pin modulator, 
-the difference between the thirds and the fourth column.
+the power after going through the pin modulator, and the last column shows the difference between the third and 
+the fourth column, the loss inside the pin modulator. 
 
 [![Pin modulator power measurements with HP 432A](/assets/hp11720a/HP 11720A Pin Modulator - Power Measurements.png)](/assets/hp11720a/HP 11720A Pin Modulator - Power Measurements.png)
 *(Click to enlarge)*
@@ -234,7 +235,7 @@ We're seeing the following:
 
 * For all measurements, the power starts to drop above 12GHz.
 
-    This is normal: the detector of the power meter is only rated until 10GHz.
+    This is normal: the sensor of the power meter is only rated until 10GHz.
     However, even above 10GHz, the meter is measuring something and we should be
     able to compare results relative to each other. 
 
@@ -253,7 +254,8 @@ modulator is within spec as well.
 # Cable Loss Measurements with HP 432A
 
 One thing that becames quickly clear while experimenting is the importance of the type of
-coax cable. I measured the power characteristics of 4 cables:
+coax cable. I was first doing measurements with a regular BNC coax, and the results didn't make
+sense. I measured the power characteristics of 4 cables:
 
 * the 4ft RG-214 coax with N-type connectors that I used above. 
 * a 6.5ft RG-58 coax with BNC connectors. This is basically your standard coax cable.
@@ -333,8 +335,8 @@ in power setting:
 *(Click to enlarge)*
 
 The power meter is only rated for frequencies up to 10GHz. Below that, the difference stays within reason for the
-RG-58 and RG-142 cables, except for 5GHz and 10GHz. Above 10GHz, the spectrum analyzer is still capable of measure power, 
-but the power meter drops off, and the results start to diverge. For the RG-214, the results start to diverge
+RG-58 and RG-142 cables, except for 5GHz and 10GHz. Above 10GHz, the spectrum analyzer is still capable of measuring power, 
+but the power meter drops off, and the difference between them increases. For the RG-214, the results start to diverge
 at 6GHz.
 
 | Wiltron Output Frequency (GHz) | RG-214C-4ft Difference (dBm) | RG-58C-6.5ft Difference (dBm) | RG-142-5ft Difference (dBm) | RG-142-12ft Difference (dBm) |
@@ -355,21 +357,22 @@ at 6GHz.
 
 # Final Remark
 
-In addition to learning about PIN diodes, I experience first-hand the difficulty of make reliable
-measurements with RF signals. It's very easy to get incorrect results due to test setup issue.
+In addition to learning about PIN diodes, I experienced first-hand the difficulty of making reliable
+measurements with RF signals. It's very easy to get incorrect results due to test setup issues.
 For example, when measuring the RG-214 cable with the spectrum analyzer, I got power numbers
 that were 30dB too low, even after tightening the cable adapters. Only after unscrewing the 
 adapter completely and then screwing it back in, did I get reasonable results. This happened a 
 number of times. It probably doesn't help that all my cables and most of the equipement are sourced
-from Craiglist, the electronics flea market, and AliExpress. And, of course, even the more
+from Craiglist, the electronics flea market, or AliExpress. And, of course, even the more
 recent units, such as the spectrum analyzer, haven't been properly calibrated in years.
 
 So all the results here must be taken with a very thick grain of salt: they are showing trends, but
-there definitely not accurate.
+they're definitely not accurate.
 
 # References
 
 * [HP 11720A operating and service manual](/assets/hp11720a/HP 11720A Operation & Service.pdf)
+* [HP 11720A Datasheet](/assets/hp11720a/HP_11720A_Pulse_Modulator_Datasheet.pdf)
 * [HP App Note 58: The PIN Diode as a Microwave Modulator](https://www.hpmemoryproject.org/an/pdf/an_58.pdf)
 * [Azur Electronis - HP 11720A Pulse Modulator](http://www.azurelectronics.com/HP%2011720A%202-18GHz%20Pulse%20Modulator.htm)
 * [Google sheet with measurements](https://docs.google.com/spreadsheets/d/1OYbOlhEPLmADi5-Oza86DO5IdMgwWnYsb08lWcWkfdg/edit?usp=sharing)

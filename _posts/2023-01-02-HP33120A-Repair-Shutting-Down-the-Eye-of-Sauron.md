@@ -1,7 +1,7 @@
 ---
 layout: post
 title: HP 33120A Repair - Shutting Down the Eye of Sauron
-date:   2023-01-02 00:00:00 -0700
+date:   2023-01-02 00:00:00 -1000
 categories:
 ---
 

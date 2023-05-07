@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Fake Parallel Printer - Converting Printer Captures to Bitmaps
-date:   2023-01-25 00:00:00 -0700
+date:   2023-01-25 00:00:00 -1000
 categories:
 ---
 

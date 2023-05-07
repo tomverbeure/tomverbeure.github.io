@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Fake Parallel Printer - A Parallel Port Traffic Capturing Tool
-date:   2023-01-24 00:00:00 -0700
+date:   2023-01-24 00:00:00 -1000
 categories:
 ---
 

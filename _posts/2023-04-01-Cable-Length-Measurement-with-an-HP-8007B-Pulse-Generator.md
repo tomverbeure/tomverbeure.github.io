@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Cable Length Measurement with an HP 8007B Pulse Generator
-date:   2023-04-01 00:00:00 -0700
+date:   2023-04-01 00:00:00 -1000
 categories:
 ---
 
