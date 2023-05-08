@@ -312,7 +312,7 @@ signal on its modulation input.  A
 [33120A signal generator ](/2023/01/01/HP33120A-Repair-Shutting-Down-the-Eye-of-Sauron.html)
 is sending out 1 kHz 1Vpp sine wave to that input.
 
-XXXX Setup XXXX
+[![Measurement setup with RF and LF signal generator and oscilloscope](/assets/hp423a/setup_without_crystal_detector.jpg)](/assets/hp423a/setup_without_crystal_detector.jpg)
 
 The sample rate of scope is way below the 100MHz carrier, but it shows the outline of a 
 1kHz envelop of the AM signal very well:
@@ -322,11 +322,11 @@ The sample rate of scope is way below the 100MHz carrier, but it shows the outli
 
 We now connect the crystal detector to the output of the RF generator. 
 
-XXXX Setup showing the cyrstal detector plugged into the RF generator XXXX
+[![Measurement setup with crystal detector](/assets/hp423a/setup_with_crystal_detector.jpg)](/assets/hp423a/setup_with_crystal_detector.jpg)
 
 The setup has the following equivalent schematic:
 
-[![Measurement Setup 1](/assets/hp423a/measurement_setup1.png)](/assets/hp423a/measurement_setup1.png)
+[![Measurement setup schematic](/assets/hp423a/measurement_setup1.png)](/assets/hp423a/measurement_setup1.png)
 
 Since the crystal detector has a 50&#937; input impedance, the input impedance of channel 2 
 of the scope is set to 1M&#937; to avoid having two 50&#937; loads on the RF source. The HP 423A operating manual 
@@ -494,19 +494,18 @@ it out. First with a real AM signal, which matched my scope shots nicely.
 
 [![Spice simulation: AM wave with triangle envelope with detector output](/assets/hp423a/spice_detector_triangle.png)](/assets/hp423a/spice_detector_triangle.png)
 
-But I soon switched to a diode-resistor configuration and without an amplitude
-modulated signal. It make things much easier to understand.
+But I soon switched to a diode-resistor configuration without amplitude
+modulated signal. It makes things much easier to understand.
 
 ![Schematic diode and resistor](/assets/hp423a/diode_r_schematic.png)
 
-When the source voltage is zero, the diode resistance will initially be very high (blocking) and 
-thus the source voltage will be primarily over the diode. 
+When the source voltage is zero, the diode resistance will initially be very high (blocking),
+much higher than the load resistance, and the source voltage will be primarily over the diode. 
 
-As the source voltage increases, the 
-resistance of the diode will decrease. Since the resistance of the load resistor stays constant, 
-the voltage ratio will shift from diode to the resistor. Since an increase in source voltage only 
-gets applied partially over the diode, the current through the diode won't increase quadratically 
-(square law), but less than that.
+As the source voltage increases, the resistance of the diode will decrease. Since the resistance 
+of the load resistor stays constant, the voltage ratio will shift from diode to the resistor. 
+Because the increase in source voltage only gets applied partially over the diode, the current 
+through the diode won't increase quadratically (square law), but less than that.
 
 The extent by which this happens depends on the value of the load resistor.
 
@@ -520,9 +519,12 @@ will follow (more or less) the theoretical diode I/V curve.
 
 [![Voltage over diode for different load values](/assets/hp423a/voltage_over_diode.png)](/assets/hp423a/voltage_over_diode.png)
 
-In the graph above, you can see the voltage over the diode. The bottom red line is for a 10k load 
-resistance. The top brown line is the source input. You can see how right from the start, the voltage 
-over the diode is already different than the input voltage, and as the input voltage increases, the 
+In the graph above, you can see the voltage over the diode for a linearly increasing $$V_{in}$$. 
+The top brown line is the source input.  The bottom red line is for a 10k&#937; load resistance. The lines
+above that are for decreasing load resistors: 2000&#937;, 1000&#937;, 500&#937; and 250&#937;.
+
+For the 10k resistor, the voltage over the diode is already different than the input voltage right from
+the start, and as the input voltage increases, the 
 voltage over the diode veers away in a non-linear way: the load resistor is getting an ever larger 
 share of the input voltage. It takes a much longer time for this to happen with lower load
 resistor values.
@@ -555,7 +557,7 @@ Except for a DC-blocking capactor at the entrance, the schematic is exactly as o
 a 53&#937; termination resistor[^2], the detection diode, and a capactor. The output of the detector
 goes to chopper circuit that samples the detector value at a rate of 220Hz.
 
-[^2]: Not quite 50&#937', but I think that's because the detector circuit itself adds a bit of
+[^2]: Not quite 50&#937;, but I think that's because the detector circuit itself adds a bit of
       load to the input as well.
 
 [![HP 8484A schematic frontend](/assets/hp423a/hp8484a_schematic_frontend.jpg)](/assets/hp423a/hp8484a_schematic_frontend.jpg)

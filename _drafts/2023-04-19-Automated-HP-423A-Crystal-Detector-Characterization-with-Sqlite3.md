@@ -1049,4 +1049,6 @@ Using a 100MHz output frequency, I measured the meter readings at about +10dBm, 
 
 * [HP App Note 218-5: Obtaining Leveled Pulse-Modulated Microwave Signals from the HP 8672A](https://www.hpmemoryproject.org/an/pdf/an_218-5.pdf)
 
+* [Low Barrier Schottky Diode BAT62 RF Power Detection](https://www.farnell.com/datasheets/2254436.pdf)
+
 # Footnotes
