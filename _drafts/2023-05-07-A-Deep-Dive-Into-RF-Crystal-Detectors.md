@@ -1,6 +1,6 @@
 ---
 layout: post
-title: A Beginner's Deep Dive into RF Crystal Detector
+title: The HP 423A and a Beginner's Deep Dive into RF Crystal Detectors
 date:   2023-05-07 00:00:00 -1000
 categories:
 ---
@@ -46,25 +46,20 @@ It's an HP 423A crystal detector. According to the
 > instrument converts RF power levels applied to the 50&#937; input connector into proportional values
 > of DC voltage. ... The frequency range of the 423A is 10MHz to 12.4GHz.
 
-In the introduction of 
-[an earlier blog post](/2023/04/01/Cable-Length-Measurement-with-an-HP-8007B-Pulse-Generator.html), 
-I wrote about John, my local RF equipment dealer. A while ago, he sold me a bargain Wiltron SG-1206/U 
-programmable sweep generator that can send out a signal from 10MHz all the way to 20GHz at power levels 
-between -115dBm to 15dBm. I also picked up a dirt cheap (and smelly) HP 8656A 1GHz signal generator at 
-a previous flea market. I hadn't found a good use for either, so now was a good time to give them a 
-little workout.
+At last year's flea market, I picked up a dirt cheap, and smelly, HP 8656A 990MHz signal generator. It
+has support for amplitude modulation which is what I needed to give the detector a good workout.
 
-[![Wiltron SG-1206/U and HP 8656A signal generators](/assets/hp423a/hp8656a_wiltron_sg1206u.jpg)](/assets/hp423a/hp8656a_wiltron_sg1206u.jpg)
+[![HP 8656A signal generators](/assets/hp423a/hp8656a.jpg)](/assets/hp423a/hp8656a.jpg)
 
-In the process of playing with the detector, I discovered the warts of both signal generators, 
+In the process of playing with the detector, I discovered some warts of the signal generator, 
 I picked up an RF power meter on Craigslist, learned a truckload about RF power measurements and 
 the general behavior of diodes and the math behind it, I *finally* installed 
 [ngspice](https://ngspice.sourceforge.io/) and ran a bunch of simulations, 
 and figured out a misunderstanding about standing-wave ratio (SWR) and their relationship with 
-crystal detectors. *(Phew)*
+crystal detectors. *(Phew)* 
 
-I'm writing things down here to have a reference if I need the info back, but expect
-the contents to be meandering between a bunch of topics.
+In this blog post, I'm covering some of the theory being crystal detector, I'lll do a bunch
+of measurements, and I'll have a look at some applications.
 
 # What is a Crystal Detector?
 
@@ -114,12 +109,12 @@ is very simple.
 
 ![Crystal set radio schematic](/assets/hp423a/crystal_set_radio.jpg)
 
-On the left, a ferrite rod antenna and a variable capacitor create an LC tuning network to select
-the radio station. A germanium diode does the detection with a 470K&#937; load resistor.
+On the left, a ferrite rod antenna and a variable capacitor create a tunable LC network to select
+the radio frequency. A germanium diode does the detection with a 470K&#937; load resistor.
 The schematic doesn't have a capacitor: the output is a 
 [piezoelectric earpiece](https://en.wikipedia.org/wiki/Crystal_earpiece) 
-has the required capacitance. Notice the absence of a battery. The whole circuit
-is powered by the picked up radio waves.
+has the required capacitance. Notice the absence of a battery: the whole circuit
+is powered by the picked-up radio waves.
 
 AM radios have long ago moved on from crystal detectors to better solutions. Modern demodulators 
 mix (multiply) the incoming signal with a locally generated RF sine wave which makes the original 
@@ -127,8 +122,8 @@ LF signal emerge.
 
 It's not 100% clear to me if crystal detectors are currently still being
 used to demodulate other types of AM content. When you google for crystal detectors
-today, most hits talk about using them for power measurements and power leveling, where
-power measurement is part of a feedback loop that's used to regulate the output of an
+today, most hits talk about using them for RF power measurements or for power leveling, where
+a power measurement is part of a feedback loop that's used to regulate the output of an
 RF signal source.
 
 Here's an example of such a power leveling setup, taken from an 
@@ -139,7 +134,7 @@ Here's an example of such a power leveling setup, taken from an
 Detector HP 8470B, a close cousin of my HP 423A, measures the power
 of a chain that starts at a signal generator, goes through a 
 [pulse modulator](/2023/05/06/HP-11720A-Pulse-Modulator.html),
-and amplifier, and a directional coupler. The output of the detector ends up back at 
+an amplifier, and a directional coupler. The output of the detector ends up back at 
 the signal generator through its automatic level control (ALC) input.
 
 # Diode Square Law Behavior
@@ -152,7 +147,7 @@ otherwise. Such an ideal device has the following voltage to current graph:
 
 ![Behavior of ideal diode with and without threshold](/assets/hp423a/ideal_diode.png)
 
-In this ideal case, the resistance of the diode is zero above the threshold and
+The resistance of the diode is zero above the threshold and
 infinite below. In practice, a diode is always used in a circuit that has some kind
 of some kind of series resistance (not necessarily resistor!) to limit the current. 
 Together, the diode and this resistance form a voltage divider.
@@ -211,7 +206,7 @@ or [the Ideal Diode Equation][ideal_diode_equation].
 
 One thing is clear though: as soon as $$V_d$$ goes over a certain threshold,
 the current through the diode will be so high that it might as well be an
-ideal diode, and in a resistive divider, the resistance will carry the
+ideal diode, and in a resistive divider, the resistor will carry the
 voltage in excess of the threshold.
 
 But let's zoom in on what happens below the threshold:
@@ -223,7 +218,7 @@ be approximated very well with a quadratic curve. In this case, the
 exponential curve has been aproximated by $$I(V_d)=1.055V_d^2+0.219x$$.
 
 The quadratic behavior can be explained with a little bit of high school calculus.
-The [Taylor series](https://en.wikipedia.org/wiki/Taylor_series) of exponential function is: 
+The [Taylor series](https://en.wikipedia.org/wiki/Taylor_series) of an exponential function is: 
 
 $$e^x = 1 + x + \frac{x^2}{2!} + \frac{x^3}{3!} + \frac{x^4}{4!} + \frac{x^5}{5!} + \cdots$$
 
@@ -247,7 +242,7 @@ $$V_p$$ and frequency $$f$$: $$V_d = V_p\cos(2\pi f)$$.
 $$
 \begin{align*}
 I(V_d) &\approx I_S[(\frac{V_d}{nV_T}) + \frac{1}{2}(\frac{V_d}{nV_T})^2] \\
-&\approx I_S\frac{V_p}{nV_T} \cos(2\pi f) +  \frac{I_S}{2}(\frac{V_p}{nV_T}\cos(2\pi f))^2 \\
+&\approx I_S\frac{V_p}{nV_T} \cos(2\pi f) +  \frac{I_S}{2}[\frac{V_p}{nV_T}\cos(2\pi f)]^2 \\
 &\approx I_S\frac{V_p}{nV_T} \cos(2\pi f) +  \frac{I_S}{2}(\frac{V_p}{nV_T})^2\frac{1 + \cos(2 \cdot 2\pi f)}{2} \\
 &\approx I_S\frac{V_p}{nV_T} \cos(2\pi f) +  \frac{I_S}{4}(\frac{V_p}{nV_T})^2[1 + \cos(4\pi f)]\\
 \end{align*}
@@ -322,12 +317,10 @@ XXXX Setup XXXX
 The sample rate of scope is way below the 100MHz carrier, but it shows the outline of a 
 1kHz envelop of the AM signal very well:
 
-XXX Screenshot is wrong. It's -10dBm instead of -20dBm! XXX
-
 [![AM signal on scope](/assets/hp423a/am_waveform.png)](/assets/hp423a/am_waveform.png)
 *Click to enlarge*
 
-When we now connect the crystal detector to the output of the RF output. 
+We now connect the crystal detector to the output of the RF generator. 
 
 XXXX Setup showing the cyrstal detector plugged into the RF generator XXXX
 
@@ -342,15 +335,15 @@ the capacitor in the schematic above is the one of 10pF.
 
 In addition to the capacitor inside the detector itself, there's also the capacitance of the coax cable
 between the detector and the scope. The one that I'm using is 7ft long. At ~30pF/ft, the cable alone
-add another 210pF, which dwarfs the detector capacitance. Not for nothing, the operation manual has
+adds another 210pF, which dwarfs the detector capacitance. Not for nothing, the operation manual has
 following: 
 
 > when using the crystal detector with an oscilloscope, and the waveshapes to be observed have rise
 > times of less than 5us, the coaxial cable connecting to the oscilloscope and detector should be as
 > short as possible and shunted with a resistor.
 
-The reason they're talking about the rise time is that cable capacitance will be part of an RC 
-low-pass filter that will dull the edges on an RF pulse at the input. This is important if you
+The reason they're talking about the rise time is that the cable capacitance will be part of an RC 
+low-pass filter that dulls the edges on an RF pulse at the input. This is important if you
 want to use a crystal detector to check the slope of pulses that come out of a
 pulse modulator, like 
 [the HP 11720A that I wrote about earlier](/2023/05/06/HP-11720A-Pulse-Modulator.html).
@@ -598,63 +591,38 @@ I don't have a power sensor yet for my HP 438A, but
 [Daniel Tufvesson](https://twitter.com/DanielTufvesson/status/1647545015764230144) 
 has been hard at work at building one himself.
 
-# Reference
+# References
+
+**Crystal Detector**
 
 * [HP 423A and 8470A Crystal Detector - Operating and Service Manual](/assets/hp423a/HP_423A,8470A_Operating_&_Service.pdf)
 * [HP Journal Nov, 1963 - A New Coaxial Crystal Detector with Extremely Flat Frequency Response](https://www.hpl.hp.com/hpjournal/pdfs/IssuePDFs/1963-11.pdf)
-
-
-* [DIY Power Sensor for HP 436A and 438A](https://twitter.com/DanielTufvesson/status/1647545015764230144)
-
-    * [Chopper And Chopper-Stabilised Amplifiers, What Are They All About Then?](https://hackaday.com/2018/02/27/chopper-and-chopper-stabilised-amplifiers-what-are-they-all-about-then/)
-
-* [Infineon - RF and microwave power detection with Schottky diodes](https://www.infineon.com/dgdl/Infineon-AN_1807_PL32_1808_132434_RF%20and%20microwave%20power%20detection%20-AN-v01_00-EN.pdf?fileId=5546d46265f064ff0166440727be1055)
-
-* [Agilent AN980 - Square Law and Linear Detection](/assets/hp423a/an986-square_law_and_linear_detection.pdf)
-
-    Interesting sections about diode equivalent resistance.
-
-* [Square Law Detectors](https://www.nitehawk.com/rasmit/ras_appl6.pdf)
-* [Wiltron - Operator's and Unit Maintenance Manual for SG-1206/U](https://radionerds.com/images/2/20/TM_11-6625-3231-12.PDF)
-* [Analog Devices - Understanding, Operating, and Interfacing to Integrated Diode-Based RF Detectors](https://www.analog.com/en/technical-articles/integrated-diode-based-rf-detectors.html)
-* [Diode Detector](https://analog.intgckts.com/rf-power-detector/diode-detector-2/)
-* [Design and development of RF power detector for microwave application](https://www.semanticscholar.org/paper/Design-and-development-of-RF-power-detector-for-Ali-Ibrahim/fed809b8f38fe7d0ebc0ffdc9fd1a7da3ac93037)
-
-* [HP AN 64-1A - Fundamentals of RF and Microwave Power Measurements](https://www.hpmemoryproject.org/an/pdf/an_64-1a.pdf)
-
-    83 pages about RF power measurements. Goes over all the different techniques, benefits, 
-    disadvantages, etc.
-
-    Required reading to get up to speed.
-
-* [6 Lines of Python to Plot SQLite Data](https://funprojects.blog/2021/12/27/6-lines-of-python-to-plot-sqlite-data/)
-
-* [RF Diode Detector Measurement](https://twiki.ph.rhul.ac.uk/twiki/pub/PP/Public/JackTowlerLog1/diode.pdf)
-
-* [Diode detectors for RF measurement Part 1: Rectifier circuits, theory and calculation procedures.](https://g3ynh.info/circuits/Diode_det.pdf)
-
-    116 pages with everything you ever wanted to know about diode rectifiers.
-    
-* [RF Diode detector / AM demodulator](http://www.crystal-radio.eu/diodedetector/endiodedetector.htm)
-
-* [HP RF & Microwave Measurement Symposium and Exhibition - Characteristics and Applications of Diode Detectors](https://xdevs.com/doc/HP/pub/Pratt_Diode_detectors.pdf)
-
-    Excellent presentation that derives the math and talks about applications.
-
-* [Aertech Industries - Crystal Detectors](https://www.prc68.com/I/Aertech.shtml#Crystal_Detector)
-
-    Links to various detector patents.
-
-* [Crystal Detector Calibration Program and Procedure](https://apps.dtic.mil/sti/pdfs/ADA523931.pdf)
-
 * [Agilent 8473B/C Crystal Detector - Operating and Service Manual](https://xdevs.com/doc/HP_Agilent_Keysight/HP%208473%20Operating%20and%20Service.pdf)
 
-    Interesting information about frequency response, SWR etc. 
-    
-* [Keysight - 415E SWR Meter](https://www.keysight.com/us/en/product/415E/swr-meter.html#resources)
+**Square Law**
+
+* [HP RF & Microwave Measurement Symposium and Exhibition - Characteristics and Applications of Diode Detectors](https://xdevs.com/doc/HP/pub/Pratt_Diode_detectors.pdf)
+* [Agilent AN980 - Square Law and Linear Detection](/assets/hp423a/an986-square_law_and_linear_detection.pdf)
+* [Square Law Detectors](https://www.nitehawk.com/rasmit/ras_appl6.pdf)
+* [Diode Detector - Principle of Operation](https://analog.intgckts.com/rf-power-detector/diode-detector-2/)
+
+
+**Power Measurement & Power Leveling**
+
+* [HP AN 64-1A - Fundamentals of RF and Microwave Power Measurements](https://www.hpmemoryproject.org/an/pdf/an_64-1a.pdf)
+* [HP AN 218-5: Obtaining Leveled Pulse-Modulated Microwave Signals from the HP 8672A](https://www.hpmemoryproject.org/an/pdf/an_218-5.pdf)
+* [Infineon - RF and microwave power detection with Schottky diodes](https://www.infineon.com/dgdl/Infineon-AN_1807_PL32_1808_132434_RF%20and%20microwave%20power%20detection%20-AN-v01_00-EN.pdf?fileId=5546d46265f064ff0166440727be1055)
+* [RF Diode Detector Measurement](https://twiki.ph.rhul.ac.uk/twiki/pub/PP/Public/JackTowlerLog1/diode.pdf)
+* [Diode detectors for RF measurement Part 1: Rectifier circuits, theory and calculation procedures.](https://g3ynh.info/circuits/Diode_det.pdf)
+* [Analog Devices - Understanding, Operating, and Interfacing to Integrated Diode-Based RF Detectors](https://www.analog.com/en/technical-articles/integrated-diode-based-rf-detectors.html)
+* [DIY Power Sensor for HP 436A and 438A](https://twitter.com/DanielTufvesson/status/1647545015764230144)
+
+**AM Demodulation**
+
+* [RF Diode detector / AM demodulator](http://www.crystal-radio.eu/diodedetector/endiodedetector.htm)
+
+**Spice**
 
 * [The SPICE Diode Model](https://ltwiki.org/files/SPICEdiodeModel.pdf)
-
-* [HP App Note 218-5: Obtaining Leveled Pulse-Modulated Microwave Signals from the HP 8672A](https://www.hpmemoryproject.org/an/pdf/an_218-5.pdf)
 
 # Footnotes
