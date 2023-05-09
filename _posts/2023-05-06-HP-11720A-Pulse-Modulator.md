@@ -79,8 +79,8 @@ should come out. Since I lack a second source, I'll be verifying the output powe
 instead.
 
 Speaking of power: the RF input power is listed as +20dBm (0.1W), but you can go up to 
-+33dBm (2W) before you damage the thing. None of my RF toys come close to +20dBM, so I don'
-t need to worry about that. The minimum RF pulse width is 50ns, which should to fine when 
++33dBm (2W) before you damage the thing. None of my RF toys come close to +20dBM, so I don't
+need to worry about that. The minimum RF pulse width is 50ns, which should to fine when 
 shooting a radar pulses to the planes that are flying over our house on rainy days.
 
 The modulator has a loss of less than 6dB between 2 and 12.4GHz, and less than 10dB between
