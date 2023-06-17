@@ -38,10 +38,12 @@ I also read up on the theory behind it. The basics are not super complicated, bu
 really understood some less intuitive aspects, I also ran some simulations to check that
 I really got thing right.
 
-One thing is particular was the concept of using linear regression to increase the
-accuracy of a frequency measurement.
+One thing in particular was the concept of using linear regression to increase the
+accuracy of a frequency measurement. 
 
-This blog post talks about that...
+This blog post first goes over some general frequency counter basics, it explains linear regression 
+when applied frequency counters, it shows linear regression in action with a Python simulation
+scripts, and finishes with a lot of references related to time measurement.
 
 # Frequency Counter Basics
 
