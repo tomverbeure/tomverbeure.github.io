@@ -36,14 +36,14 @@ time playing with them while testing oven controlled oscillators (OCXOs) and GPS
 
 I also read up on the theory behind it. The basics are not super complicated, but to make sure I
 really understood some less intuitive aspects, I also ran some simulations to check that
-I really got thing right.
+I really got things right.
 
 One thing in particular was the concept of using linear regression to increase the
 accuracy of a frequency measurement. 
 
 This blog post first goes over some general frequency counter basics, it explains linear regression 
-when applied frequency counters, it shows linear regression in action with a Python simulation
-scripts, and finishes with a lot of references related to time measurement.
+when applied to frequency counters, it shows linear regression in action with a Python simulation
+script, and it finishes with a lot of references related to time measurement.
 
 # Frequency Counter Basics
 
@@ -351,6 +351,22 @@ need to do are a few multiplications, subtractions, and a division.
 
     freq_input = (m*sum_xy - sum_x*sum_y) / (m*sum_xx-sum_x*sum_x) * freq_ref
 ```
+
+# Some Caveats
+
+Linear regression works great... when it does, but that's not always the case.
+
+It requires a constant frequency throughout the whole measurement period. When the frequency
+changes a bit, maybe it's a spread-spectrum oscillator, the linear regression will just fail and
+the result may not be better than the regular reciprocal method.
+
+It doesn't help when you need to measure the time interval between two pulses. In that case,
+there's really only two input edges: start and stop, and no way to extract multiple measurements.
+
+But even when you want to measure a frequency, you won't be able to extract a sufficient
+amount of samples if the input frequency is too low: you need 60,025 samples to gain two
+digits. When the input signal has a frequency of 1000Hz and the gate time is 1 second, then
+1000 samples are the maximum of what you'll be able to get.
 
 # From Theory to Simulated Practice
 
