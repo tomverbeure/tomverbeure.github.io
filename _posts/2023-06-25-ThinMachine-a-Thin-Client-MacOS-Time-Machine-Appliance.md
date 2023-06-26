@@ -27,7 +27,7 @@ I bought a Mac Mini and an Iomega MiniMax backup drive along with it.
 
 A year later, Apple released Time Capsule, an AirPort Extreme base
 station with built-in backup hard drive. By then I had also bought my first
-MacBook, so seemless wireless backups were highly appreciated.
+MacBook, so seamless wireless backups were highly appreciated.
 
 The first Time Capsule was stolen during a home burglary, but the second 
 worked great for more than 10 years until it didn't, 448 days ago, as my 
@@ -57,7 +57,7 @@ ThinMachine, a MacOS Time Machine backup appliance.
 
 My pre-purchase thin client research consisted of going on eBay, typing
 'thin client' and selecting the cheapest option that was ready to go, 
-with at last 4GB of RAM, a flash drive and a power supply. I ended up with this:
+with at least 4GB of RAM, a flash drive and a power supply. I ended up with this:
 
 ![eBay listing](/assets/thinmachine/ebay_listing.jpg)
 
