@@ -27,7 +27,7 @@ I bought a Mac Mini and an Iomega MiniMax backup drive along with it.
 
 A year later, Apple released Time Capsule, an AirPort Extreme base
 station with built-in backup hard drive. By then I had also bought my first
-MacBook, so seemless wireless backups were highly appreciated.
+MacBook, so seamless wireless backups were highly appreciated.
 
 The first Time Capsule was stolen during a home burglary, but the second 
 worked great for more than 10 years until it didn't, 448 days ago, as my 
