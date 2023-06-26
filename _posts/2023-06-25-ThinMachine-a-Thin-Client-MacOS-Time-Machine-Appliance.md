@@ -313,7 +313,7 @@ sudo chown timemachine:timemachine /mnt/timemachine/
 
 **The instructions below setup up Time Machine using the Apple
 File Protocol (AFP). After publishing this blog post, I've been
-told that this is no deprecated and the Samba should be used instead.
+told that this is now deprecated and the Samba should be used instead.
 I'll update this blog post in the near future.**
 
 I followed the [Timemachine backup to a Linux server](https://www.maxhaesslein.de/notes/timemachine-backup-to-a-linux-server/)
