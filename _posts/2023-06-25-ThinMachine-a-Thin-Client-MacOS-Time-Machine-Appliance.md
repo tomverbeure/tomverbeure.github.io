@@ -311,7 +311,12 @@ sudo chown timemachine:timemachine /mnt/timemachine/
 
 # Set up the Time Machine server daemon
 
-I follwed the [Timemachine backup to a Linux server](https://www.maxhaesslein.de/notes/timemachine-backup-to-a-linux-server/)
+**The instructions below setup up Time Machine using the Apple
+File Protocol (AFP). After publishing this blog post, I've been
+told that this is no deprecated and the Samba should be used instead.
+I'll update this blog post in the near future.**
+
+I followed the [Timemachine backup to a Linux server](https://www.maxhaesslein.de/notes/timemachine-backup-to-a-linux-server/)
 instructions for this.
 
 * Edit `/etc/netatalk/afp.conf`
