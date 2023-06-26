@@ -5,6 +5,10 @@ date:   2023-06-25 00:00:00 -1000
 categories:
 ---
 
+**The instructions below set up Time Machine using the Apple File Protocol 
+(AFP). After publishing this blog post, I've been told that this is now 
+deprecated and that Samba should be used instead.  I'll update this blog 
+post in the near future.**
 
 * TOC
 {:toc}
@@ -311,10 +315,6 @@ sudo chown timemachine:timemachine /mnt/timemachine/
 
 # Set up the Time Machine server daemon
 
-**The instructions below setup up Time Machine using the Apple
-File Protocol (AFP). After publishing this blog post, I've been
-told that this is now deprecated and that Samba should be used instead.
-I'll update this blog post in the near future.**
 
 I followed the [Timemachine backup to a Linux server](https://www.maxhaesslein.de/notes/timemachine-backup-to-a-linux-server/)
 instructions for this.
