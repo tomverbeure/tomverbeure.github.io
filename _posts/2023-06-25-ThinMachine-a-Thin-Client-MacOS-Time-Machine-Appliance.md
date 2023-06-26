@@ -57,7 +57,7 @@ ThinMachine, a MacOS Time Machine backup appliance.
 
 My pre-purchase thin client research consisted of going on eBay, typing
 'thin client' and selecting the cheapest option that was ready to go, 
-with at last 4GB of RAM, a flash drive and a power supply. I ended up with this:
+with at least 4GB of RAM, a flash drive and a power supply. I ended up with this:
 
 ![eBay listing](/assets/thinmachine/ebay_listing.jpg)
 
