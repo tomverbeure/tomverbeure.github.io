@@ -14,7 +14,7 @@ Lew had 2 RF pulse modulators for sale: $25 for one, $30 for both, because his w
 asking not how much he's able to sell this lab equipment for, but how many tons of material
 he has been able to get rid of.
 
-As usual, I have have no need for these things, but the price was right, and playing with 
+As usual, I have no need for these things, but the price was right, and playing with 
 test stuff is always fun. And they became essentially free by making a package deal 
 that included an HP 423A power meter (with sensor!) and haggling the price down by $40. 
 Everybody happy!
@@ -60,11 +60,11 @@ The HP 11720A has RF type-N input and output connectors, and a BNC connector
 for a 50&#937;-terminated 5V TTL modulation signal, though +3V is sufficient
 to control the output.[^1]  On my device, the front panel says "+50 VDC MAX / -05 VDC MAX", 
 but after further inspection, it turns out that the decimal point has competely faded away.
-Oops!
+The actual values are +5.0/-0.5. Oops!
 
 [^1]: I was able to make the output toggle with a level as low as 2.5V.
 
-Either way, since it's a pure digital input, the modulation signal either passes the
+Since it's a pure digital input, the modulation signal either passes the
 incoming RF signal to the output, or it switches it off entirely. The datasheet
 and operating manual are particularly proud about the speed by which the
 RF signal can be switched on or off, less than 10ns.
@@ -73,14 +73,14 @@ RF signal can be switched on or off, less than 10ns.
 
 The RF frequency range is a pretty luxurious 2 to 18GHz, but that makes it impossible
 to observe the output with a regular oscilloscope. 
-The manual suggests a solution to test the output of the modulator: mix it with an 
+The manual suggests a solution to test the output of the modulator: mix/multiply it with an 
 unmodulated additional RF source with the same RF frequency, and the modulation signal 
 should come out. Since I lack a second source, I'll be verifying the output power 
 instead.
 
 Speaking of power: the RF input power is listed as +20dBm (0.1W), but you can go up to 
 +33dBm (2W) before you damage the thing. None of my RF toys come close to +20dBM, so I don't
-need to worry about that. The minimum RF pulse width is 50ns, which should to fine when 
+need to worry about that. The minimum RF pulse width is 50ns, which should be fine when 
 shooting a radar pulses to the planes that are flying over our house on rainy days.
 
 The modulator has a loss of less than 6dB between 2 and 12.4GHz, and less than 10dB between
@@ -116,7 +116,7 @@ contains the full schematic of the device, as well as a *Principles of Operation
 At the risk of making a fool of myself, here's my own summarized and simplified understanding
 of how it works:
 
-* The RF signal comes in from the bottom.
+* In the schematic below, the RF signal comes in from the bottom.
 * It first goes through a biasing circuit that adds a DC bias signal to the RF
   signal, which switches the series diode further up on or off.
 * A low-pass filter prevents the incoming RF signal from leaking into the driver circuit. 
