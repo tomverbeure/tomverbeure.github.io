@@ -17,11 +17,16 @@ and their never ending quest for increasingly accurate time measurements.
 
 In my [previous blog post](/2023/06/16/Frequency-Counting-with-Linear-Regression.html)
 about high precision frequency measurements, I mentioned the need for an accurate 
-time reference.
+time reference. In addition to their own internal clock generator, test equipment such
+as frequency counters, signal generators, spectrum analyzers etc. have an external 10MHz 
+reference clock input so that all equipement in the lab can use the same time reference.
 
-Such time reference can be derived from different kind of devices, I have a 
-GTI300 frequency standard for example, but ultimately you need to be calibrate
-such a standard against a golden reference. For almost all hobbyists, the
+![Racal Dana 1992 external reference clock input](/assets/tm4313/external_ref_clock.jpg)
+
+Such a 10MHz clock be created by kinds of devices: I have a GTI300 frequency standard,
+for example, and ultra-stable Rubidium atom clock modules can be found on eBay for less 
+than $500, but ultimately you need to be calibrate such a standard against a golden 
+reference.  For almost all hobbyists, the
 [global navigation satellite system](https://en.wikipedia.org/wiki/Satellite_navigation) 
 (GNSS), in its various forms[^1], is used as the golden reference. 
 
