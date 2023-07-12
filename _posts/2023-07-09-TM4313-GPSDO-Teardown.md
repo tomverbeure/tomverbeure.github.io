@@ -245,7 +245,12 @@ signal against a reference signal, and adjust the generated signal when the valu
 FLLs are easier to design, but they react slower when the generated frequency
 gets off the mark (e.g. due to external temperature changes.) That's because it's
 possible for the phase of the 2 signals to be off, but not sufficiently so that
-there's a difference in measured frequency.
+there's a difference in measured frequency. But a major issue with FLLs is that 
+temporary errors aren't compensated for later: for example, if the frequency is
+a bit too low for a while, an FLL will fix that eventually by regulating the
+frequency back where it needs to be, but it will not temporarily increase
+for a bit to compensate it being too low earlier. This can result in long
+term drift.
 
 **Phase Locked Loop**
 
@@ -258,8 +263,19 @@ reference signal. This almost always happens in the analog domain, with a capaci
 that gets charged more or less depending on the phase difference, and an A/D
 converter (ADC) to read out the value.
 
-There is no such phase detector or ADC on this PCB, so it's a good guess to assume
-that the TM4313 uses frequency locked loop.
+There is no such phase detector or ADC on this PCB, <strike>so it's a good guess to assume
+that the TM4313 uses frequency locked loop</strike>.
+
+
+**UPDATE:** 
+
+It has been pointed out to me that you don't need an analog phase phase detector,
+and that it can be done perfectly fine by counting the number of cycles between
+1PPS pulses with a clock that's fast enough. The LPC1752 runs internally at
+100MHz[^5], which is
+high enough to do phase detection when averaging over a large amount of measurements.
+
+[^5]: It reports out that number over the serial port, see below.
 
 # OCXO Temperature
 
