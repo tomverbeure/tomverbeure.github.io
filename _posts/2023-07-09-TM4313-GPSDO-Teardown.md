@@ -280,13 +280,28 @@ for the measurement!
 [^5]: It reports out that number over the serial port, see below.
 
 I soldered a wire to the GPS module 1PPS output, put it on the scope together
-with the stabilized 1PPS output and let things run for about a hour to get an idea of the
-GPS 1PPS jitter. Here is result: 
+with the stabilized 1PPS output and let things run for a whole night to check out the
+relationship between the two.  Here is result: 
 
-![GPS 1PPS jitter](/assets/tm4313/1PPS_jitter.png)
+![GPS 1PPS after whole night](/assets/tm4313/1PPS_after_whole_night.png)
 
-Here we see a range of 49ns, but there's no persistent drift, so it's probably a PLL.
-Though letting it run for 1 hour may be too short for that...
+Here we see a range of 57ns, but there's no persistent drift, so that points to a PLL.
+
+As we shall see below, the TM4313 first works in coarse tracking mode before
+it switches to fine tracking. The screenshot above includes the coarse tracking,
+which can be expected to be less precise. 
+
+After running for a whole night, we can expect that GPSDO to have found an analog
+tuning value that's pretty stable, with no need to make big adjustments. Any
+pulse-to-pulse jitter should be due to the limited clock speed of the GPS module
+internal oscillator.
+
+So after taking the screenshot above, I cleared the screen and captured the first 10 seconds:
+
+![GPS 1PPS after stabilization](/assets/tm4313/1PPS_after_stabilization.png)
+
+Here we can clearly see how the GPS module creates the 1PPS signal with discrete steps of
+around 8ns. This is similar to the popular u-blox GPS modules (and their clones!)
 
 
 # OCXO Temperature
