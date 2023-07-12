@@ -168,7 +168,7 @@ Here are the main components:
 
     ![CSI OCXO specs](/assets/tm4313/CTI_OCXO_specs.png)
 
-* an unmarked ATGM332D-5N-31 GPS module
+* an unmarked ATGM332D-5N-31 GPS module ([datasheet](/assets/tm4313/ZHONGKEWEI-ATGM332D-5N31.pdf))
 
 * an NXP LPC1752 microcontroller ([datasheet](https://www.nxp.com/docs/en/data-sheet/LPC1759_58_56_54_52_51.pdf))
 
@@ -272,10 +272,22 @@ that the TM4313 uses frequency locked loop</strike>.
 It has been pointed out to me that you don't need an analog phase phase detector,
 and that it can be done perfectly fine by counting the number of cycles between
 1PPS pulses with a clock that's fast enough. The LPC1752 runs internally at
-100MHz[^5], which is
-high enough to do phase detection when averaging over a large amount of measurements.
+100MHz[^5], which is high enough to do phase detection when averaging over a large 
+amount of measurements. They might even be using 
+[linear regression](/2023/06/16/Frequency-Counting-with-Linear-Regression.html)
+for the measurement!
 
 [^5]: It reports out that number over the serial port, see below.
+
+I soldered a wire to the GPS module 1PPS output, put it on the scope together
+with the stabilized 1PPS output and let things run for about a hour to get an idea of the
+GPS 1PPS jitter. Here is result: 
+
+![GPS 1PPS jitter](/assets/tm4313/1PPS_jitter.png)
+
+Here we see a range of 49ns, but there's no persistent drift, so it's probably a PLL.
+Though letting it run for 1 hour may be too short for that...
+
 
 # OCXO Temperature
 
