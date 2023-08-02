@@ -101,8 +101,8 @@ g(x) & = 7 x - x^2 \\
 Addition and subtraction work by adding or subtracting together the coefficients that belong to the same $$x^i$$:
 
 $$\begin{aligned}
-f(x)+g(x) & = (3+0) + (2+7) x + (5-1) x^2 + (4+0) x^3 \\
-          & = 3 + 9 x + 4 x^2 + 4 x^3 \\
+f(x)+g(x) & = (3+0) + (2+7) x + (5-1) x^2 + (-4+0) x^3 \\
+          & = 3 + 9 x + 4 x^2 - 4 x^3 \\
 \end{aligned}$$
 
 You can multiply polynomials:
