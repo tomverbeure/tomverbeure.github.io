@@ -98,7 +98,7 @@ it's fairly conventional:
 
 I'm not a analog designer and can't explain all the details, but here's my rough understanding:
 
-The top half creates the 0V to 25V output, the bottom half 0V to -25V. Both havles are nearly
+The top half creates the 0V to 25V output, the bottom half 0V to -25V. Both halves are nearly
 identical, so I'll only look at the top half.
 
 **The Pre-Regulator**

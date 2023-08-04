@@ -19,13 +19,13 @@ In my [previous blog post](/2023/06/16/Frequency-Counting-with-Linear-Regression
 about high precision frequency measurements, I mentioned the need for an accurate 
 time reference. In addition to their own internal clock generator, test equipment such
 as frequency counters, signal generators, spectrum analyzers etc. have an external 10MHz 
-reference clock input so that all equipement in the lab can use the same time reference.
+reference clock input so that all devices in the lab can use the same time reference.
 
 ![Racal Dana 1992 external reference clock input](/assets/tm4313/external_ref_clock.jpg)
 
-Such a 10MHz clock be created by kinds of devices: I have a GTI300 frequency standard,
-for example, and ultra-stable Rubidium atom clock modules can be found on eBay for less 
-than $500, but ultimately you need to be calibrate such a standard against a golden 
+Such a 10MHz clock be created by different kinds of devices: I have a GTI300 frequency standard,
+for example, and ultra-stable Rubidium atomic clock modules can be found on eBay for less 
+than $500, but ultimately you need to calibrate such a standard against a golden 
 reference.  For almost all hobbyists, the
 [global navigation satellite system](https://en.wikipedia.org/wiki/Satellite_navigation) 
 (GNSS), in its various forms[^1], is used as the golden reference. 
@@ -35,20 +35,20 @@ reference.  For almost all hobbyists, the
       [Galileo](https://en.wikipedia.org/wiki/Galileo_(satellite_navigation)), and 
       [BeiDou](https://en.wikipedia.org/wiki/BeiDou)
 
-In a satellite positioning system, each satellite has an atom clock that is
-synchronized its own central golden reference on the ground. The satellites continously
+In a satellite positioning system, each satellite has an atomic clock that is
+in turn synchronized to a central golden reference on the ground. The satellites continously
 transmit their time and location back to earth. A GPS receiver tries to capture the signal 
 from as many satellites as possible, and figures out its location through 
 [trilateration](https://en.wikipedia.org/wiki/Trilateration):
-due to the speed of light, the received time stamps will be different for different
-satellites.
+due to electromagnetic waves travelling at the speed of light, the received time stamps 
+will be different for different satellites.
 
 But instead of using the satellites' time stamps to derive a location, you can also just
 use them as a very accurate time reference. 
 
 In this blog post, I'll first discuss the principles of a 
 [GPS Disciplined Oscillator](https://en.wikipedia.org/wiki/GPS_disciplined_oscillator)
-(GPSDO), and then I'll tear down the TM4313, a $95 GPSDO that I got from eBay.
+(GPSDO), and then I'll tear down the TM4313, a $95 GPSDO that I bought new from eBay.
 
 # What is a GPSDO?
 
@@ -56,30 +56,30 @@ A GPSDO uses two time keeping mechanisms with complementary characteristics to
 create the best of both worlds: a reference clock that is accurate both in the short 
 and the long term.
 
-The time extracted from the GPS module is long term stable: it's as accurate
-as the GPS system itself. However the 1PPS signal often has a lot of jitter.
-Cheap GPS modules typically have a jitter of tens of nanoseconds on them.
+The time extracted from a GPS module is long term stable: it's as accurate
+as the GPS system itself. However, the 1-pulse-per-second (1PPS) output signal often has a lot of jitter.
+On cheap GPS modules, the pulse-to-pulse jitter can be on the order of tens of nanoseconds.
 
 On a signal that pulses once every second, that means the 1PPS signal has short
-term relative accuracy of around 10^-8. For a GPSDO, we're looking for something
-that's around 10^-10!
+term relative accuracy of around 10<sup>-8</sup>. For a GPSDO, we're looking for something
+that's around 10<sup>-10</sup>!
 
 The other time keeping mechanism is the oven controlled crystal oscillator or
 OCXO. They consist of a crystal oscillator that is embedded inside an insulated
 oven, with a control circuit to keep the inside of the oven at a constant
 temperature to combat the temperature dependency of the oscillator frequency.
 
-OCXO specifications vary a lot (and so does the cost!) but they tend to
+OCXO specifications vary a lot (and so does the cost) but they tend to
 have excellent short term jitter phase noise characteristics.  However, they are subject 
 to various drift mechanism. There are some of them: 
 
-* despite their built-in oven to keep the temperature stable, their output frequency 
+* despite their built-in oven to keep the temperature stable, the output frequency 
   still changes when the ambient temperature changes.
-* new OCXO must run for about a month to get past there initial aging phase, during
+* a new OCXO must run for about a month to get past its initial aging phase, during
   which the output frequency can change significantly.
-* once past the initial aging, OCXOs will still drift, though at a much lower rate.
+* once sufficiently aged, an OCXO will still drift, though at a much lower rate.
 
-OCXOs have a tuning input to nudge the output frequency up and down by a tiny
+OCXOs have an electronic tuning input to nudge the output frequency up and down by a tiny
 fraction. It's not uncommon for the total tuning range of a 10MHz OCXO to be less than 1Hz.
 
 A GPSDO uses an OCXO to create a stable clock in the short term, while using the GPS
@@ -88,17 +88,17 @@ name GPS Disciplined Oscillator: the oscillator is kept in check by the GPS syst
 
 # The TM4313 GPSDO 
 
-I stumbled onto the TM4313 while searching for GPSDOs on eBay. I hadn't seen the TM4313 before, 
+I stumbled onto the TM4313 while searching for GPSDOs on eBay. I hadn't seen them before, 
 and with a nice metal enclosure and one of the lowest GPSDO prices around, they seemed
 attractive.
 
-There is almost no information about the TM4313: when you google for just the "TM4313" terms,
-there's tons of GPSDO related results, but none of them actually discuss the TM4313, except
+There is almost no information about the TM4313: when you google for just the "TM4313" term,
+there's tons of GPSDO related results, but none of them actually discuss the TM4313 itself, except
 for this one in-depth report: 
 [Comparison of Inexpensive 10 MHz GNSS Disciplined Oscillators](https://reeve.com/Documents/Articles%20Papers/Reeve_GDOComp.pdf).
 
 It judged the TM4313 to a good-enough option, so I placed an order. Shipping time was supposed to 
-be a few weeks, but it arrived only a few days later.
+be a few weeks, but it arrived just a few days later.
 
 The non-descript box contained the following items:
 
@@ -110,15 +110,15 @@ The non-descript box contained the following items:
 * a 5V power brick
 
 The unit itself has a good looking aluminum enclosure with front and
-back plate that are aluminum as well.
+back plates that are aluminum as well.
 
 The front plate has 4 blue LEDs for power status, time tracking status,
 GPS lock, and serial communication status.
 
 ![TM4313 Front](/assets/tm4313/TM4313_front.jpg)
 
-There's a micro-USB port to connect the GPSDO to a PC and extract time information and
-a socket for a 5V power plug. I would have prefered the power plug to be in the back but
+There's a micro-USB port to connect the GPSDO to a PC, allowing you to extract GPS information, 
+and a socket for a 5V power plug. I would have prefered the power plug to be in the back but
 there wasn't any room left there.
 
 
@@ -127,10 +127,12 @@ outputs, and a 1-pulse-per-second (1PPS) output.
 
 ![TM4313 Back](/assets/tm4313/TM4313_back.jpg)
 
-The 10MHz reference output of a GPSDO is either a sine wave or a digital square wave.
-The benefit of a sine wave is the lack of strong harmonics in the signal. The TM4313
+There's no standard about the signaling of a 10MHz reference clocks. Most common, they are an
+AC sine wave or a digital square wave.
+The benefit of a sine wave is the lack of strong harmonics in the signal but on a digital
+square wave the edges are better defined.  The TM4313
 doesn't come with a specification sheet or manual, and there is no mention anywhere
-about the type of output. When put on a scope, I can see 10MHz sinewave with an
+about the type of output. When put on a scope, I could see 10MHz sinewave with an
 amplitude of +-1.1V into a 50 Ohm termination resistor.
 
 The 1PPS output is a 5V TTL signal with 100ms on and 900ms off time. 
@@ -146,8 +148,8 @@ on large OCXOs with a high thermal capacity, but it's very fast on the TM4313: i
 
 ![TM4313 startup power](/assets/tm4313/TM4313_startup_power.jpg)
 
-It can take hours for a GPSDO to reach their true stable state, so it's common
-for them to be stuck in a closet and powered on all the time. It's important to keep the
+Since it can take hours for a GPSDO to reach their true stable state, it's common
+for them to be stuck in a closet while powered on permanently. It's important to keep the
 power consumption to an minimum.
 
 # Inside the TM4313
@@ -194,7 +196,7 @@ result:
 [![TM4313 PCB unannotated](/assets/tm4313/TM4313_unannotated.jpg)](/assets/tm4313/TM4313_unannotated.jpg)
 *(Click to enlarge)*
 
-Underneath the OCXO sits MAX6192A voltage reference 
+Underneath the OCXO sits a MAX6192A voltage reference 
 ([datasheet](https://www.analog.com/media/en/technical-documentation/data-sheets/max6190-max6198.pdf))
 and another jelly-bean IC.
 
@@ -214,7 +216,7 @@ for a GPSDO:
 
 * The OCXO generates a 5V 10MHz square wave signal.
 * One branch buffers the signal with an inverter and then sends it through
-  an L/C filter to create a 10MHz sine wave output.
+  an L/C low pass filter to create a 10MHz sine wave output.
 * The other branch buffers the 10MHz signal as well and sends it to the microcontroller.
 * The GPS unit creates a 1PPS signal that also goes to the microcontroller
 * The microcontroller does its magic and generates an OCXO tuning value. It uses
@@ -335,7 +337,7 @@ We already know that the OCXO heater goes full blast only during the first
 minute. The steep part of the OCXO warming-up curve takes longer,  about 2 minutes. 
 It takes time for the heat inside the oven to warm up the outside shell.
 Things then slow down significantly. It takes another 3 minutes for the
-FLL to lock and the GPSDO to track the GPS signal.
+PLL to lock and the GPSDO to track the GPS signal.
 
 ![TM4313 with thermometer](/assets/tm4313/TM4313_with_thermometer.jpg)
 
