@@ -11,6 +11,8 @@ categories:
 
 # References
 
+* [Basic Equations of the PLLs](https://catalogimages.wiley.com/images/db/pdf/0470848669.excerpt.pdf)
+
 **Costas Loop**
 
 * The Costas Loop Series - Eric Hagemann
@@ -29,5 +31,6 @@ categories:
 * [Implementation of a Software Defined Spread Spectrum Communication System](https://egrove.olemiss.edu/cgi/viewcontent.cgi?article=1032&context=etd)
 
 * [DSP related discussion](https://www.dsprelated.com/showthread/comp.dsp/112658-1.php)
+
 
 
