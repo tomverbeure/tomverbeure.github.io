@@ -32,5 +32,4 @@ categories:
 
 * [DSP related discussion](https://www.dsprelated.com/showthread/comp.dsp/112658-1.php)
 
-
-
+* [DESIGN OF PLL-BASED CLOCK AND DATA RECOVERY CIRCUITS FOR HIGH-SPEED SERDES LINKS](https://core.ac.uk/download/pdf/29156891.pdf)
