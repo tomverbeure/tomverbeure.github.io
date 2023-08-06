@@ -26,3 +26,16 @@ categories:
 * [Time Machines 4-way GPS splitter](https://timemachinescorp.com/product/4-way-gps-splitter/)
 
 * [Time Machines outdoor antenna products](https://www.timemachinescorp.com/wp-content/uploads/Outdoor-Antenna-Products-2.pdf)
+
+
+* [Stability and Noise Performance of Various Rubidium Standards](http://www.ke5fx.com/rb.htm)
+
+    Includes LPRO-101 and PRS10
+
+* [LPRO USER’S GUIDE and INTEGRATION GUIDELINES](http://www.ham-radio.com/sbms/LPRO-101.pdf)
+
+* [PRS10 — Rubidium frequency standard with low phase noise](https://www.thinksrs.com/downloads/pdfs/catalog/PRS10c.pdf)
+
+* [A History of the Rubidium Frequency Standard](https://www.wriley.com/A%20History%20of%20the%20Rubidium%20Frequency%20Standard.pdf)
+
+* [HP Journal 1968-07 - A Rubidium-Vapor Frequency Standard for Systems Requiring Superior Frequency Stability](http://diyhpl.us/~nmz787/hp_journal/www.hpl.hp.com/hpjournal/pdfs/IssuePDFs/1968-07.pdf)
