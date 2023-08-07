@@ -39,3 +39,8 @@ categories:
 * [A History of the Rubidium Frequency Standard](https://www.wriley.com/A%20History%20of%20the%20Rubidium%20Frequency%20Standard.pdf)
 
 * [HP Journal 1968-07 - A Rubidium-Vapor Frequency Standard for Systems Requiring Superior Frequency Stability](http://diyhpl.us/~nmz787/hp_journal/www.hpl.hp.com/hpjournal/pdfs/IssuePDFs/1968-07.pdf)
+
+* [How to interpret Allan Deviation plot for gyroscope?](https://dsp.stackexchange.com/questions/53970/how-to-interpret-allan-deviation-plot-for-gyroscope)
+
+    Explanation also useful for ADEV in general.
+
