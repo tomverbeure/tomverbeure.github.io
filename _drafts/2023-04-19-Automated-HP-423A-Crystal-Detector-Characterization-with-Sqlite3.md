@@ -47,10 +47,10 @@ The setup is pretty straightforward:
     
     I decided on the Rohde & Schwarz instead of my HP 8656A because it's a much younger device for 
     which the power was calibrated as recently as 1998, which is practically yesterday. I don't quite 
-    trust the RF power output of the HP 8656a. An additional bonus: the SHMU doesn't generate this 
-    terrible smell.
+    trust the RF power output of the HP 8656a. It also has a maximum frequency of 4320 instead of 990MHz.
+    An additional bonus: the SHMU doesn't generate this terrible smell.
 
-* a [HP 3478A 5 1/2 digit benchtop multi-meter](/2021/11/26/HP3478A-Multimeter-Repair-with-a-Hacksaw.html) 
+* a [HP 3478A 5 1/2 digit benchtop multimeter](/2021/11/26/HP3478A-Multimeter-Repair-with-a-Hacksaw.html) 
 
     Used to measure the output voltage of the detector
     
@@ -70,7 +70,7 @@ I already have all the tools for an automated setup:
 
 * equipment with a GPIB interface
 
-    The signal generator and the multi-meter both have it. GPIB is an old interface that
+    The signal generator and the multimeter both have it. GPIB is an old interface that
     is being replaced by USB and Ethernet on modern equipment, but even for those it's
     often still included. Since modern equipment is ridiculously expensive, almost all
     my toys are old and only have a GPIB interface on them.
@@ -78,8 +78,9 @@ I already have all the tools for an automated setup:
 * A GPIB-to-USB interface dongle
 
     They're not cheap, but one dongle is sufficient to daisy-chain multiple devices
-    together. Here are two blog posts that describe how to make them work with
-    Linux.
+    together. I have two blog posts that describe how to make an [Agilent 82357B](/2023/01/29/Installing-Linux-GPIB-Drivers-for-the-Agilent-82357B.html)
+    and a [National Instruments GPIB-USB-HS](/2020/06/27/Tektronix-TDS420A-Remote-Control-over-GPIB.html#acquiring-a-usb-to-gpib-dongle)
+    work with Linux.
 
 * PyMeasure and/or instrument manuals
 
@@ -95,10 +96,10 @@ to send out a 500MHz signal with a -10dBm power level:
 import pyvisa
 
 rm = pyvisa.ResourceManager()
-swp_gen = rm.open_resource("GPIB::23")
+sig_gen = rm.open_resource("GPIB::25") # SMHU address
 
-swp_gen.write("F1500MH")
-swp_gen.write("LVL-10DM")
+sig_gen.write("RF 500MHZ")
+sig_gen.write("LEVEL -10DBM")
 ```
 
 And this is how to read back a DC voltage from the DMV:
@@ -118,14 +119,14 @@ It's really that simple!
 In the past I've always done the obvious when recording data: store the result in a text file,
 usually in CSV format so that it can be imported into a spreadsheet.
 
-It's easy to do, but I kind of hate the fact that you get a directoy that's cluttered with
+It's easy to do, but I kind of hate the fact that you get a directory that's cluttered with
 files.
 
-In the past, I've read the [Appropriate Uses For SQLite](https://www.sqlite.org/whentouse.html)
-article and using it for data analysis is one of the state use cases. It just makes
+The [SQLite website](https://www.sqlite.org) has this [Appropriate Uses For SQLite](https://www.sqlite.org/whentouse.html)
+article and using it for data analysis is one of the stated use cases. It just makes
 sense to store data in a database...
 
-So I've recently started doing exactly that. Python comes with a sqlite3 support library out of the
+So I've recently started doing exactly that. Python comes with an sqlite3 support library out of the
 box, and I have a small template that I just modify for each of my data gathering projects. Once
 you have the template, the overhead of using sqlite is pretty much zero.
 
@@ -206,7 +207,7 @@ that can be reused later, but the boilerplate code is so small that I'd rather n
 
 # Data Recording Loop
 
-The actual data gather process is usually a bunch of nested loops. The actual
+The actual data gathering process is usually a bunch of nested loops. The actual
 code can be found [here](https://github.com/tomverbeure/hp423a_workout/blob/7e34636d9b9e02f3885900a971deb834dda00f00/423a_workout.py#L49-L79), 
 but it looks like this
 
@@ -236,13 +237,17 @@ XXX
 
 # Extracting Data from the Database
 
-Once recorded, analyzing the data is lightweight as well. Even if you don't know any SQL, 
+Once recorded, analyzing the data is lightweight as well.  Even if you don't know any SQL, 
 fetching the data is a matter of modifying one template SQL statement. You can then use 
-Python to do the heavy lifting for you. Pandas is a popular choice for Python data analysis, 
-but I have no experience with it... yet.
+Python to do the heavy lifting for you. 
 
-I usually first try out the SQL queries using the sqlite command line. When I'm satsified that
-it's doing what I want, I embed the query into a Python post-processing script.
+An alternative is [Pandas](https://pandas.pydata.org/), a popular Python package for data analysis[^1] 
+that can access Sqlite3 databases without the need to write SQL, but I have no experience with it... yet.
+
+[^1]: It can use [the world's best GPUs](https://www.nvidia.com) to accelerate calculations.
+
+So raw SQL statements it is. I usually first try out an SQL query using the sqlite command line. 
+When I'm satsified that it's doing what I want, I embed the query into a Python post-processing script.
 
 Here I'm fetching all the data of a single session:
 
@@ -263,7 +268,7 @@ id|session_id|created|freq|power_dbm|v
 10|1|2023-04-22 04:20:17|10.0|-115.0|-5.1e-06
 ```
 
-I'm using the time stamp to sort the data in measurement order. The `limit 10` is there
+I'm using the `created` timestamp to sort the data in measurement order. The `limit 10` is there
 to avoid an avalanche of data on my screen. It should be removed from the Python script.
 
 The simplest way to execute this in a Python script is as follows:
@@ -303,10 +308,10 @@ right Python variable:
     ...
 ```
 
-This is something the Pandas library will automatically do for you, but
+This is something the Pandas library would automatically do for you, but
 that's for a different blog post.
 
-SQLite has a some of data processing function so that you don't even need to use
+SQLite has some of data processing functions so that you don't even need to use
 Python to further filter the data. Even if it doesn't have the function
 that you need, a standard deviation function is sadly missing, you can expand
 Sqlite by adding custom functions yourself.
