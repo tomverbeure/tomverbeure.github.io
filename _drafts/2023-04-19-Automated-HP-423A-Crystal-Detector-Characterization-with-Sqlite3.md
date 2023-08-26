@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Automated Crystal Detector Characterization with GPIB and Sqlite3
+title: Automated Measurements with GPIB and Sqlite3
 date:   2023-06-03 00:00:00 -1000
 categories:
 ---
@@ -26,8 +26,9 @@ categories:
 
 # Introduction
 
-In my previous blog post, I wrote about RF crystal detectors, how they work, and how
-they are used, among other things, to measure RF power.
+In a [previous blog post](/2023/05/07/The-HP-423A-and-a-Deep-Dive-Into-RF-Crystal-Detectors.html), 
+I wrote about RF crystal detectors, how they work, and how they are used, among other things, to 
+measure RF power.
 
 To get a better feel of how the detector behaves under different conditions, I decided 
 do a bunch of measurements for different frequency and power combinations, and see
@@ -35,12 +36,24 @@ how that changes the output voltage of the crystal detector.
 
 # Characterizing the Detector
 
-The setup is pretty straightforward: a newly acquired Rohde & Schwarz SHMU signal generator, 
-to drive the detector, and my HP 3478A 5 1/2 digit benchtop multi-meter measured the output 
-voltage. I decided on the Rohde & Schwarz instead of the HP 8656A because it's a much
-younger device for which the power was calibrated as recently as 1998, which is practically
-yesterday. I don't quite trust the RF power output of the HP 8656a...  
+The setup is pretty straightforward: 
 
+* the HP 423A crystal detector
+
+* a Rohde & Schwarz SHMU signal generator 
+
+    Newly acquired for a way-below-eBay price, this 57 lb beast drives the detector with different 
+    frequencies and amplitudes.
+    
+    I decided on the Rohde & Schwarz instead of my HP 8656A because it's a much younger device for 
+    which the power was calibrated as recently as 1998, which is practically yesterday. I don't quite 
+    trust the RF power output of the HP 8656a. An additional bonus: the SHMU doesn't generate this 
+    terrible smell.
+
+* a [HP 3478A 5 1/2 digit benchtop multi-meter](/2021/11/26/HP3478A-Multimeter-Repair-with-a-Hacksaw.html) 
+
+    Used to measure the output voltage of the detector
+    
 I first did a bunch of measurements the manual way, and ended up with the following
 table:
 
