@@ -113,205 +113,6 @@
 
             var VIC;
 
-            function calculate_gtf(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, reduced_blanking, video_optimized){
-
-                H_POL       = "?";
-                V_POL       = "?";
-                INTERLACED  = interlaced;
-
-                MARGIN_PER          = 0.018;
-                CELL_GRAN           = 8;
-                MIN_PORCH           = 1;
-                V_SYNC_RQD          = 3;
-                H_SYNC_PER          = 0.08;
-                MIN_VSYNC_BP        = 550;
-                M_PER               = 6;
-                C_PER               = 0.4;
-                K                   = 128;
-                J_PER               = 0.2;
-
-                H_PIXELS            = horiz_pixels;
-                V_LINES             = vert_pixels;
-                MARGINS_RQD         = margins;
-                INT_RQD             = interlaced;
-                V_FRAME_RATE_RQD    = refresh_rate;
-
-                H_PIXELS_RND        = Math.round(H_PIXELS/CELL_GRAN_RND) * CELL_GRAN_RND;
-                V_LINES_RND         = INT_RQD ? Math.round(V_LINEX/2) : Math.round(V_LINES);
-                V_FIELD_RATE_RQD    = INT_RQD ? V_FRAME_RATE_RQD * 2 : V_FRAME_RATE_RQD;
-                TOP_MARGIN_LINES    = MARGINS_RQD ? Math.round(MARGINS_PER * V_LINES_RND) : 0;
-                BOT_MARGIN_LINES    = TOP_MARGIN_LINES;
-                INTERLACE           = INT_RQD ? 0.5 : 0;
-                H_PERIOD_EST        = ((1/V_FIELD_RATE_RQD) - (MIN_VSYNC_BP / 1000000) / (V_LINES_RND + (2 * TOP_MARGIN_LINES) + MIN_PORCH_RND + INTERLACE ) * 1000000;
-                V_SYNC_BP           = Math.round(MIN_VSYNC_BP / H_PERIOD_EST);
-                V_BACK_PORCH        = V_SYNC_BP - V_SYNC_RQD;
-                TOTAL_V_LINES       = V_LINES_RND + TOP_MARGIN_LINES + BOT_MARGIN_LINES 
-
-
-
-
-                if (reduced_blanking == "cvt"){
-                    CLOCK_STEP          = 0.25;
-                    MIN_V_BPORCH        = 6;
-                    RB_H_BLANK          = 160;
-                    RB_H_SYNC           = 32;
-                    RB_MIN_V_BLANK      = 460;
-                    RB_V_FPORCH         = 3;
-                    REFRESH_MULTIPLIER  = 1;
-                    H_POL               = "-";
-                    V_POL               = "+";
-                }
-                else if (reduced_blanking == "cvt_rb"){
-                    CLOCK_STEP          = 0.25;
-                    MIN_V_BPORCH        = 6;
-                    RB_H_BLANK          = 160;
-                    RB_H_SYNC           = 32;
-                    RB_MIN_V_BLANK      = 460;
-                    RB_V_FPORCH         = 3;
-                    REFRESH_MULTIPLIER  = 1;
-                    H_POL               = "+";
-                    V_POL               = "-";
-                }
-                else if (reduced_blanking == "cvt_rb2"){
-                    CLOCK_STEP          = 0.001;
-                    MIN_V_BPORCH        = 6;
-                    RB_H_BLANK          = 80;
-                    RB_H_SYNC           = 32;
-                    RB_MIN_V_BLANK      = 460;
-                    RB_V_FPORCH         = 1;
-                    REFRESH_MULTIPLIER  = video_optimized ? 1000/1001 : 1;
-                    H_POL               = "+";
-                    V_POL               = "-";
-                }
-
-                // Input parameters
-                H_PIXELS            = horiz_pixels;
-                V_LINES             = vert_pixels;
-                IP_FREQ_RQD         = refresh_rate;
-                MARGINS_RQD         = margins;
-                INT_RQD             = interlaced;
-
-                CELL_GRAN_RND       = Math.floor(CELL_GRAN);
-
-                // 5.2 Computation of Common Parameters
-                V_FIELD_RATE_RQD    = INT_RQD ? IP_FREQ_RQD * 2 : IP_FREQ_RQD;
-
-                H_PIXELS_RND        = Math.floor(H_PIXELS / CELL_GRAN_RND) * CELL_GRAN_RND;
-
-                LEFT_MARGIN         = MARGINS_RQD ? (Math.floor((H_PIXELS_RND * MARGIN_PER / 100) / CELL_GRAN_RND) * CELL_GRAN_RND) : 0;
-                RIGHT_MARGIN        = LEFT_MARGIN;
-
-                TOTAL_ACTIVE_PIXELS = H_PIXELS_RND + LEFT_MARGIN + RIGHT_MARGIN;
-
-                V_LINES_RND         = INT_RQD ? Math.floor(V_LINES / 2) : Math.floor(V_LINES);
-
-                TOP_MARGIN          = MARGINS_RQD ? Math.floor(V_LINES_RND * MARGIN_PER / 100) : 0;
-                BOT_MARGIN          = TOP_MARGIN;
-
-                INTERLACE           = INT_RQD ? 0.5 : 0;
-
-                // Calculate Aspect Ratio
-                var ver_pixels = INT_RQD ? 2 * V_LINES_RND : V_LINES_RND;
-                var hor_pixels_4_3   = CELL_GRAN_RND * Math.round(ver_pixels *  4 /  3) / CELL_GRAN_RND;
-                var hor_pixels_16_9  = CELL_GRAN_RND * Math.round(ver_pixels * 16 /  9) / CELL_GRAN_RND;
-                var hor_pixels_16_10 = CELL_GRAN_RND * Math.round(ver_pixels * 16 / 10) / CELL_GRAN_RND;
-                var hor_pixels_5_4   = CELL_GRAN_RND * Math.round(ver_pixels *  5 /  4) / CELL_GRAN_RND;
-                var hor_pixels_15_9  = CELL_GRAN_RND * Math.round(ver_pixels * 15 /  9) / CELL_GRAN_RND;
-                var hor_pixels_43_18 = CELL_GRAN_RND * Math.round(ver_pixels * 43 / 18) / CELL_GRAN_RND;
-                var hor_pixels_64_27 = CELL_GRAN_RND * Math.round(ver_pixels * 64 / 27) / CELL_GRAN_RND;
-                var hor_pixels_12_5  = CELL_GRAN_RND * Math.round(ver_pixels * 12 /  5) / CELL_GRAN_RND;
-
-                ASPECT_RATIO = (hor_pixels_4_3   == H_PIXELS_RND) ? "4:3"   :
-                               (hor_pixels_16_9  == H_PIXELS_RND) ? "16:9"  :
-                               (hor_pixels_16_10 == H_PIXELS_RND) ? "16:10" :
-                               (hor_pixels_5_4   == H_PIXELS_RND) ? "5:4"   :
-                               (hor_pixels_15_9  == H_PIXELS_RND) ? "15:9"  :
-                               // Following aspect ratios are not defined by the spec...
-                               (hor_pixels_43_18 == H_PIXELS_RND) ? "43:18" :
-                               (hor_pixels_64_27 == H_PIXELS_RND) ? "64:27" :
-                               (hor_pixels_12_5  == H_PIXELS_RND) ? "12:5"  :
-                                                                    "Unknown";
-                // V_SYNC_RND depends on aspect ratio and reduced blanking
-                if      (reduced_blanking == "cvt_rb2") V_SYNC_RND = 8;
-                else if (ASPECT_RATIO == "4:3")       V_SYNC_RND = 4;
-                else if (ASPECT_RATIO == "16:9")      V_SYNC_RND = 5;
-                else if (ASPECT_RATIO == "16:10")     V_SYNC_RND = 6;
-                else if (ASPECT_RATIO == "5:4")       V_SYNC_RND = 7;
-                else if (ASPECT_RATIO == "15:9")      V_SYNC_RND = 7;
-                else                                  V_SYNC_RND = 10;
-
-                if (reduced_blanking == "cvt"){
-                    // 5.3 Computation of CRT Timing Parameters
-                    H_PERIOD_EST = ((1 / V_FIELD_RATE_RQD) - MIN_VSYNC_BP / 1000000.0) / (V_LINES_RND + (2 * TOP_MARGIN) + MIN_V_PORCH_RND + INTERLACE) * 1000000.0;
-
-                    V_SYNC_BP = Math.floor(MIN_VSYNC_BP / H_PERIOD_EST) + 1;
-                    if (V_SYNC_BP < (V_SYNC_RND + MIN_V_BPORCH)){
-                        V_SYNC_BP = V_SYNC_RND + MIN_V_BPORCH;
-                    }
-
-                    V_BLANK = V_SYNC_BP + MIN_V_PORCH_RND;
-                    V_FRONT_PORCH = MIN_V_PORCH_RND;
-                    V_BACK_PORCH = V_SYNC_BP - V_SYNC_RND;
-
-                    TOTAL_V_LINES = V_LINES_RND + TOP_MARGIN + BOT_MARGIN + V_SYNC_BP + INTERLACE + MIN_V_PORCH_RND;
-
-                    IDEAL_DUTY_CYCLE = C_PRIME - (M_PRIME * H_PERIOD_EST/1000);
-
-                    if (IDEAL_DUTY_CYCLE < 20){
-                        H_BLANK = Math.floor(TOTAL_ACTIVE_PIXELS * 20 / (100-20) / (2 * CELL_GRAN_RND)) * (2 * CELL_GRAN_RND);
-                    }
-                    else{
-                        H_BLANK = Math.floor(TOTAL_ACTIVE_PIXELS * IDEAL_DUTY_CYCLE / (100 - IDEAL_DUTY_CYCLE) / (2 * CELL_GRAN_RND)) * (2 * CELL_GRAN_RND);
-                    }
-                    TOTAL_PIXELS = TOTAL_ACTIVE_PIXELS + H_BLANK;
-
-                    H_SYNC = Math.floor(H_SYNC_PER * TOTAL_PIXELS / CELL_GRAN_RND) * CELL_GRAN_RND;
-                    H_BACK_PORCH = H_BLANK / 2;
-                    H_FRONT_PORCH = H_BLANK - H_SYNC - H_BACK_PORCH;
-
-                    ACT_PIXEL_FREQ = CLOCK_STEP * Math.floor(TOTAL_PIXELS / H_PERIOD_EST / CLOCK_STEP);
-
-                }
-                else{
-                    H_PERIOD_EST = ((1000000 / V_FIELD_RATE_RQD) - RB_MIN_V_BLANK) / (V_LINES_RND + TOP_MARGIN + BOT_MARGIN);
-                    H_BLANK = RB_H_BLANK;
-
-                    VBI_LINES = Math.floor(RB_MIN_V_BLANK / H_PERIOD_EST) + 1;
-
-                    RB_MIN_VBI = RB_V_FPORCH + V_SYNC_RND + MIN_V_BPORCH;
-                    ACT_VBI_LINES = (VBI_LINES < RB_MIN_VBI) ? RB_MIN_VBI : VBI_LINES;
-
-                    TOTAL_V_LINES = ACT_VBI_LINES + V_LINES_RND + TOP_MARGIN + BOT_MARGIN + INTERLACE;
-
-                    TOTAL_PIXELS = RB_H_BLANK + TOTAL_ACTIVE_PIXELS;
-
-                    ACT_PIXEL_FREQ = CLOCK_STEP * Math.floor((V_FIELD_RATE_RQD * TOTAL_V_LINES * TOTAL_PIXELS / 1000000 * REFRESH_MULTIPLIER) / CLOCK_STEP);
-
-                    if (reduced_blanking == "cvt_rb2"){
-                        V_BLANK = ACT_VBI_LINES;
-                        V_FRONT_PORCH = ACT_VBI_LINES - V_SYNC_RND - 6;
-                        V_BACK_PORCH  = 6;
-
-                        H_SYNC = 32;
-                        H_BACK_PORCH = 40;
-                        H_FRONT_PORCH = H_BLANK - H_SYNC - H_BACK_PORCH;
-                    }
-                    else{
-                        V_BLANK = ACT_VBI_LINES;
-                        V_FRONT_PORCH = 3;
-                        V_BACK_PORCH  = ACT_VBI_LINES - V_FRONT_PORCH - V_SYNC_RND;
-
-                        H_SYNC = 32;
-                        H_BACK_PORCH = 80;
-                        H_FRONT_PORCH = H_BLANK - H_SYNC - H_BACK_PORCH;
-                    }
-                }
-
-                ACT_H_FREQ     = 1000 * ACT_PIXEL_FREQ / TOTAL_PIXELS;
-                ACT_FIELD_RATE = 1000 * ACT_H_FREQ / TOTAL_V_LINES;
-                ACT_FRAME_RATE = INT_RQD ? ACT_FIELD_RATE / 2 : ACT_FIELD_RATE;
-            }
-
             function calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, reduced_blanking, video_optimized){
 
                 H_POL       = "?";
@@ -652,6 +453,10 @@
                                 <option value="yuv422">YUV 4:2:2</option>
                                 <option value="yuv420">YUV 4:2:0</option></select>
                     </tr>
+                    <tr>
+                        <td><label>Video Optimized</label></td>
+                        <td><select id="video_opt" name="video_opt"><option value="y">Yes</option><option value="n" selected>No</option></select>
+                    </tr>
                 </table>
             </form>
 
@@ -664,6 +469,7 @@
                 $('#interlaced')  .change( function(){ update_status(); })
                 $('#bpc')         .change( function(){ update_status(); })
                 $('#color_fmt')   .change( function(){ update_status(); })
+                $('#video_opt')   .change( function(){ update_status(); })
             </script>
         <h2>Timings</h2>
 
@@ -1246,6 +1052,7 @@
                     var interlaced          = $('#interlaced').val() == "y";
                     var bpc                 = Number($('#bpc').val());
                     var color_fmt           = $('#color_fmt').val();
+                    var video_opt           = $('#video_opt').val()  == "y";
 
                     var color_fmt_multiplier = (color_fmt == "rgb444") ? 3   :
                                                (color_fmt == "yuv444") ? 3   :
@@ -1253,6 +1060,7 @@
                                                (color_fmt == "yuv420") ? 1.5 : 0;
 
                     var standards = [ "cvt", "cvt_rb", "cvt_rb2", "custom", "dmt", "cea" ];
+
                     standards.forEach(function(standard, index){
 
                         var result = true;
@@ -1273,10 +1081,10 @@
 
                             if (result){
                                 if (DMT_TYPE == "cvt"){
-                                    calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, false, interlaced, "cvt", false);
+                                    calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, false, interlaced, "cvt", video_opt);
                                 }
                                 else if (DMT_TYPE == "cvt-rb"){
-                                    calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, false, interlaced, "cvt_rb", false);
+                                    calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, false, interlaced, "cvt_rb", video_opt);
                                 }
                                 else if (DMT_TYPE == "CEA-861"){
                                     result = lookup_vic(horiz_pixels, vert_pixels, refresh_rate, interlaced);
@@ -1307,7 +1115,7 @@
                             pclock          = ACT_PIXEL_FREQ * 1000000;
                         }
                         else {
-                            calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, standard, false);
+                            calculate_cvt(horiz_pixels, vert_pixels, refresh_rate, margins, interlaced, standard, video_opt);
 
                             hactive         = TOTAL_ACTIVE_PIXELS;
                             hblank          = H_BLANK;
