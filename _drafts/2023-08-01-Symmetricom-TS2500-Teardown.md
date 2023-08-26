@@ -9,6 +9,9 @@ categories:
 {:toc}
 
 
+# OT-21 Expansion PCB
+
+
 # References
 
 * [Patent 7,227,346 - Two Channel Digital Phase Detector](http://ftb.ko4bb.com/manuals/71.198.0.176/Symmetricom_digital_phase_detector_patent_7227346.pdf)
@@ -43,4 +46,6 @@ categories:
 * [How to interpret Allan Deviation plot for gyroscope?](https://dsp.stackexchange.com/questions/53970/how-to-interpret-allan-deviation-plot-for-gyroscope)
 
     Explanation also useful for ADEV in general.
+
+* [NIST Technical Note 1337, “Characterization of Clocks and Oscillators](https://tf.nist.gov/general/pdf/868.pdf)
 
