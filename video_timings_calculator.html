@@ -756,7 +756,7 @@
                     <td></td>
                     <td></td>
                 </tr>
-		<tr bgcolor=#ffffff><td colspan=8><b>Modelines</b></td></tr>
+                <tr bgcolor=#ffffff><td colspan=8><b>Modelines</b></td></tr>
 		<tr bgcolor=#ffffff>
                     <td>CVT Modeline</td>
                     <td colspan=7><code><label id="cvt-modeline"></label></code></td>
@@ -1061,6 +1061,50 @@
 
                     var standards = [ "cvt", "cvt_rb", "cvt_rb2", "custom", "dmt", "cea" ];
 
+                    var ethernet_mtu1500 = 1500/1542;   // includes inter-packet gap
+
+                    var rfc4175_overhead = 20 +         // IP header
+                                            8 +         // UDP header
+                                           12 +         // Minimal RTP header
+                                           13;          // RFC 4175 additional header
+
+                    var transports = {
+                        "dp_2"              : { name: "DisplayPort 2.0 (20 GHz)",               bw: 20000000000*4/132*128 },
+                        "dp_hbr3"           : { name: "DisplayPort HBR3 (8.1 GHz)",             bw: 8000000000*4/10*8 },
+                        "dp_hbr2"           : { name: "DisplayPort HBR2 (5.4 GHz)",             bw: 5400000000*4/10*8 },
+                        "dp_hbr"            : { name: "DisplayPort HBR (2.7 GHz)",              bw: 2700000000*4/10*8 },
+                        "dp_rbr"            : { name: "DisplayPort RBR (1.64 GHz)",             bw: 1640000000*4/10*8 },
+
+                        "dpam_2"            : { name: "DP 2.0 Type-C Alt Mode (20 GHz)",        bw: 20000000000*2/132*128 },
+                        "dpam_hbr3"         : { name: "DP HBR3 Type-C Alt Mode (8.1 GHz)",      bw: 8000000000*2/10*8 },
+                        "dpam_hbr2"         : { name: "DP HBR2 Type-C Alt Mode (5.4 GHz)",      bw: 5400000000*2/10*8 },
+                        "dpam_hbr"          : { name: "DP HBR Type-C Alt Mode (2.7 GHz)",       bw: 2700000000*2/10*8 },
+                        "dpam_rbr"          : { name: "DP RBR Type-C Alt Mode (1.64 GHz)",      bw: 1640000000*2/10*8 },
+
+                        "dvi_dl"            : { name: "DVI-DL (330 MHz)",                       bw: 330000000*24 },
+                        "dvi_d"             : { name: "DVI-D (165 MHz)",                        bw: 165000000*24 },
+
+                        "hdmi_1_0"          : { name: "HDMI 1.0/1.1/1.2 (165 MHz)",             bw: 165000000*24 },
+                        "hdmi_1_3"          : { name: "HDMI 1.3/1.4 (340 MHz)",                 bw: 340000000*24 },
+                        "hdmi_2_0"          : { name: "HDMI 2.0 (600 MHz)",                     bw: 600000000*24 },
+                        "hdmi_2_1_6g"       : { name: "HDMI 2.1 FRL (6 GHz)",                   bw: 6000000000*4*16/18 },
+                        "hdmi_2_1_8g"       : { name: "HDMI 2.1 FRL (8 GHz)",                   bw: 8000000000*4*16/18 },
+                        "hdmi_2_1_10g"      : { name: "HDMI 2.1 FRL (10 GHz)",                  bw: 10000000000*4*16/18 },
+                        "hdmi_2_1_12g"      : { name: "HDMI 2.1 FRL (12 GHz)",                  bw: 12000000000*4*16/18 },
+
+                        "rfc4175_eth100m"   : { name: "RFC4175/100M Ethernet",                  bw: 100000000   * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500},
+                        "rfc4175_eth1g"     : { name: "RFC4175/100M Ethernet",                  bw: 1000000000  * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500},
+                        "rfc4175_eth10g"    : { name: "RFC4175/100M Ethernet",                  bw: 10000000000 * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500},
+                    };
+
+                    var transport_list = [
+                        "dp_2", "dp_hbr3", "dp_hbr2", "dp_hbr", "dp_rbr", 
+                        "dpam_2", "dpam_hbr3", "dpam_hbr2", "dpam_hbr", "dpam_rbr", 
+                        "dvi_dl", "dvi_d", 
+                        "hdmi_2_0", "hdmi_1_3", "hdmi_1_0", 
+                        "hdmi_2_1_12g", "hdmi_2_1_10g", "hdmi_2_1_8g", "hdmi_2_1_6g", 
+                        "rfc4175_eth100m", "rfc4175_eth1g", "rfc4175_eth10g" ];
+
                     standards.forEach(function(standard, index){
 
                         var result = true;
@@ -1138,39 +1182,32 @@
                         total_bw        = pclock * bpc * color_fmt_multiplier;
                         active_bw       = vfreq * bpc * vactive * hactive * color_fmt_multiplier;
 
-                        dp_2_bw         =  20000000000*4/132*128;
-                        dp_hbr3_bw      =   8100000000*4/10*8;
-                        dp_hbr2_bw      =   5400000000*4/10*8;
-                        dp_hbr_bw       =   2700000000*4/10*8;
-                        dp_rbr_bw       =   1640000000*4/10*8;
+                        dp_2_bw         = transports['dp_2']['bw'];
+                        dp_hbr3_bw      = transports['dp_hbr3']['bw'];
+                        dp_hbr2_bw      = transports['dp_hbr2']['bw'];
+                        dp_hbr_bw       = transports['dp_hbr']['bw'];
+                        dp_rbr_bw       = transports['dp_rbr']['bw'];
 
-                        dpam_2_bw       =  20000000000*2/132*128;
-                        dpam_hbr3_bw    =   8100000000*2/10*8;
-                        dpam_hbr2_bw    =   5400000000*2/10*8;
-                        dpam_hbr_bw     =   2700000000*2/10*8;
-                        dpam_rbr_bw     =   1640000000*2/10*8;
+                        dpam_2_bw       = transports['dpam_2']['bw'];
+                        dpam_hbr3_bw    = transports['dpam_hbr3']['bw'];
+                        dpam_hbr2_bw    = transports['dpam_hbr2']['bw'];
+                        dpam_hbr_bw     = transports['dpam_hbr']['bw'];
+                        dpam_rbr_bw     = transports['dpam_rbr']['bw'];
 
-                        dvi_d_bw        =    165000000*24;
-                        dvi_dl_bw       =    330000000*24;
+                        dvi_d_bw        = transports['dvi_d']['bw'];
+                        dvi_dl_bw       = transports['dvi_dl']['bw'];
 
-                        hdmi_1_0_bw     =    165000000*24;
-                        hdmi_1_3_bw     =    340000000*24;
-                        hdmi_2_0_bw     =    600000000*24;
-                        hdmi_2_1_6g_bw  =   6000000000*4*16/18;
-                        hdmi_2_1_8g_bw  =   8000000000*4*16/18;
-                        hdmi_2_1_10g_bw =  10000000000*4*16/18;
-                        hdmi_2_1_12g_bw =  12000000000*4*16/18;
+                        hdmi_1_0_bw     = transports['hdmi_1_0']['bw'];
+                        hdmi_1_3_bw     = transports['hdmi_1_3']['bw'];
+                        hdmi_2_0_bw     = transports['hdmi_2_0']['bw'];
+                        hdmi_2_1_6g_bw  = transports['hdmi_2_1_6g']['bw'];
+                        hdmi_2_1_8g_bw  = transports['hdmi_2_1_8g']['bw'];
+                        hdmi_2_1_10g_bw = transports['hdmi_2_1_10g']['bw'];
+                        hdmi_2_1_12g_bw = transports['hdmi_2_1_12g']['bw'];
 
-                        ethernet_mtu1500 = 1500/1542;   // includes inter-packet gap
-
-                        rfc4175_overhead = 20 +         // IP header
-                                            8 +         // UDP header
-                                           12 +         // Minimal RTP header
-                                           13;          // RFC 4175 additional header
-
-                        rfc4175_eth100m_bw  = 100000000   * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500;
-                        rfc4175_eth1g_bw    = 1000000000  * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500;
-                        rfc4175_eth10g_bw   = 10000000000 * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500;
+                        rfc4175_eth100m_bw  = transports['rfc4175_eth100m']['bw'];
+                        rfc4175_eth1g_bw    = transports['rfc4175_eth1g']['bw'];
+                        rfc4175_eth10g_bw   = transports['rfc4175_eth10g']['bw'];
 
                         dp_2_ok         = (total_bw < dp_2_bw)    ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                         dp_hbr3_ok      = (total_bw < dp_hbr3_bw) ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
