@@ -440,6 +440,8 @@
                     <tr>
                         <td><label>Bits per Component</label></td>
                         <td><select id="bpc" name="bpc">
+                                <option value="5">5</option>
+                                <option value="6">6</option>
                                 <option value="8" selected>8</option>
                                 <option value="10">10</option>
                                 <option value="12">12</option>
@@ -516,7 +518,7 @@
                     <td><label>Pixels</label></td>
                 </tr>
                 <tr bgcolor=#ffffff>
-                    <td><label>H Pixels</label></td>
+                    <td><label>H Active</label></td>
                     <td><label id="cvt-hpixels"></label></td>
                     <td><label id="cvt_rb-hpixels"></label></td>
                     <td><label id="cvt_rb2-hpixels"></label></td>
@@ -596,7 +598,7 @@
                     <td><label>us</label></td>
                 </tr>
 
-_                <tr bgcolor=#ffffff>
+                <tr bgcolor=#ffffff>
                     <td><label>V Total</label></td>
                     <td><label id="cvt-vtotal"></label></td>
                     <td><label id="cvt_rb-vtotal"></label></td>
@@ -604,17 +606,17 @@ _                <tr bgcolor=#ffffff>
                     <td><label id="cea-vtotal"></label></td>
                     <td><label id="dmt-vtotal"></label></td>
                     <td><label id="custom-vtotal"></label></td>
-                    <td><label>Pixels</label></td>
+                    <td><label>Lines</label></td>
                 </tr>
                 <tr bgcolor=#ffffff>
-                    <td><label>V Pixels</label></td>
+                    <td><label>V Active</label></td>
                     <td><label id="cvt-vpixels"></label></td>
                     <td><label id="cvt_rb-vpixels"></label></td>
                     <td><label id="cvt_rb2-vpixels"></label></td>
                     <td><label id="cea-vpixels"></label></td>
                     <td><label id="dmt-vpixels"></label></td>
                     <td><label id="custom-vpixels"></label></td>
-                    <td><label>Pixels</label></td>
+                    <td><label>Lines</label></td>
                 </tr>
                 <tr bgcolor=#ffffff>
                     <td><label>V Blank</label></td>
@@ -624,7 +626,17 @@ _                <tr bgcolor=#ffffff>
                     <td><label id="cea-vblank"></label></td>
                     <td><label id="dmt-vblank"></label></td>
                     <td><input id="custom-vblank" type="text" value="6" /></td>
-                    <td><label>Pixels</label></td>
+                    <td><label>Lines</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>V Blank Duration</label></td>
+                    <td><label id="cvt-vblank_duration"></label></td>
+                    <td><label id="cvt_rb-vblank_duration"></label></td>
+                    <td><label id="cvt_rb2-vblank_duration"></label></td>
+                    <td><label id="cea-vblank_duration"></label></td>
+                    <td><label id="dmt-vblank_duration"></label></td>
+		    <td><label id="custom-vblank_duration"></label></td>
+                    <td><label>us</label></td>
                 </tr>
                 <tr bgcolor=#ffffff>
                     <td><label>V Front Porch</label></td>
@@ -634,7 +646,7 @@ _                <tr bgcolor=#ffffff>
                     <td><label id="cea-vfront"></label></td>
                     <td><label id="dmt-vfront"></label></td>
                     <td></td>
-                    <td><label>Pixels</label></td>
+                    <td><label>Lines</label></td>
                 </tr>
                 <tr bgcolor=#ffffff>
                     <td><label>V Sync</label></td>
@@ -644,7 +656,7 @@ _                <tr bgcolor=#ffffff>
                     <td><label id="cea-vsync"></label></td>
                     <td><label id="dmt-vsync"></label></td>
                     <td></td>
-                    <td><label>Pixels</label></td>
+                    <td><label>Lines</label></td>
                 </tr>
                 <tr bgcolor=#ffffff>
                     <td><label>V Back Porch</label></td>
@@ -654,7 +666,7 @@ _                <tr bgcolor=#ffffff>
                     <td><label id="cea-vback"></label></td>
                     <td><label id="dmt-vback"></label></td>
                     <td></td>
-                    <td><label>Pixels</label></td>
+                    <td><label>Lines</label></td>
                 </tr>
                 <tr bgcolor=#ffffff>
                     <td><label>V Sync Polarity</label></td>
@@ -687,13 +699,23 @@ _                <tr bgcolor=#ffffff>
                     <td><label>ms</label></td>
                 </tr>
                 <tr bgcolor=#ffffff>
-                    <td><label>Total BW</label></td>
-                    <td><label id="cvt-total_bw"></label></td>
-                    <td><label id="cvt_rb-total_bw"></label></td>
-                    <td><label id="cvt_rb2-total_bw"></label></td>
-                    <td><label id="cea-total_bw"></label></td>
-                    <td><label id="dmt-total_bw"></label></td>
-                    <td><label id="custom-total_bw"></label></td>
+                    <td><label>Peak BW</label></td>
+                    <td><label id="cvt-peak_bw"></label></td>
+                    <td><label id="cvt_rb-peak_bw"></label></td>
+                    <td><label id="cvt_rb2-peak_bw"></label></td>
+                    <td><label id="cea-peak_bw"></label></td>
+                    <td><label id="dmt-peak_bw"></label></td>
+                    <td><label id="custom-peak_bw"></label></td>
+                    <td><label>Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>Line BW</label></td>
+                    <td><label id="cvt-line_bw"></label></td>
+                    <td><label id="cvt_rb-line_bw"></label></td>
+                    <td><label id="cvt_rb2-line_bw"></label></td>
+                    <td><label id="cea-line_bw"></label></td>
+                    <td><label id="dmt-line_bw"></label></td>
+                    <td><label id="custom-line_bw"></label></td>
                     <td><label>Mbit/s</label></td>
                 </tr>
                 <tr bgcolor=#ffffff>
@@ -779,14 +801,34 @@ _                <tr bgcolor=#ffffff>
                 </tr>
 		<tr bgcolor=#ffffff><td colspan=8><b>DisplayPort</b></td></tr>
                 <tr bgcolor=#ffffff>
-                    <td><label>DisplayPort 2.0 (20 GHz)</label></td>
-                    <td><label id="cvt-dp_2"></label></td>
-                    <td><label id="cvt_rb-dp_2"></label></td>
-                    <td><label id="cvt_rb2-dp_2"></label></td>
-                    <td><label id="cea-dp_2"></label></td>
-                    <td><label id="dmt-dp_2"></label></td>
-                    <td><label id="custom-dp_2"></label></td>
+                    <td><label>DisplayPort UBR20 (20 GHz)</label></td>
+                    <td><label id="cvt-dp_ubr20"></label></td>
+                    <td><label id="cvt_rb-dp_ubr20"></label></td>
+                    <td><label id="cvt_rb2-dp_ubr20"></label></td>
+                    <td><label id="cea-dp_ubr20"></label></td>
+                    <td><label id="dmt-dp_ubr20"></label></td>
+                    <td><label id="custom-dp_ubr20"></label></td>
                     <td><label>Max BW 77,575 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>DisplayPort UBR13.5 (13.5 GHz)</label></td>
+                    <td><label id="cvt-dp_ubr13"></label></td>
+                    <td><label id="cvt_rb-dp_ubr13"></label></td>
+                    <td><label id="cvt_rb2-dp_ubr13"></label></td>
+                    <td><label id="cea-dp_ubr13"></label></td>
+                    <td><label id="dmt-dp_ubr13"></label></td>
+                    <td><label id="custom-dp_ubr13"></label></td>
+                    <td><label>Max BW 52,364 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>DisplayPort UBR10 (10 GHz)</label></td>
+                    <td><label id="cvt-dp_ubr10"></label></td>
+                    <td><label id="cvt_rb-dp_ubr10"></label></td>
+                    <td><label id="cvt_rb2-dp_ubr10"></label></td>
+                    <td><label id="cea-dp_ubr10"></label></td>
+                    <td><label id="dmt-dp_ubr10"></label></td>
+                    <td><label id="custom-dp_ubr10"></label></td>
+                    <td><label>Max BW 38,788 Mbit/s</label></td>
                 </tr>
                 <tr bgcolor=#ffffff>
                     <td><label>DisplayPort HBR3 (8.1 GHz)</label></td>
@@ -926,7 +968,7 @@ _                <tr bgcolor=#ffffff>
                     <td><label>HDMI 2.0 (600 MHz)</label></td>
                     <td><label id="cvt-hdmi_2_0"></label></td>
                     <td><label id="cvt_rb-hdmi_2_0"></label></td>
-                    _<td><label id="cvt_rb2-hdmi_2_0"></label></td>
+                    <td><label id="cvt_rb2-hdmi_2_0"></label></td>
                     <td><label id="cea-hdmi_2_0"></label></td>
                     <td><label id="dmt-hdmi_2_0"></label></td>
                     <td><label id="custom-hdmi_2_0"></label></td>
@@ -955,7 +997,7 @@ _                <tr bgcolor=#ffffff>
                 <tr/>
 		<tr bgcolor=#ffffff><td colspan=8><b>DVI</b></td></tr>
                 <tr bgcolor=#ffffff>
-                    <td><label>DVI-DL (330 MHz)</label></td>
+                    <td><label>DVI-DL (dual link 165 MHz)</label></td>
                     <td><label id="cvt-dvi_dl"></label></td>
                     <td><label id="cvt_rb-dvi_dl"></label></td>
                     <td><label id="cvt_rb2-dvi_dl"></label></td>
@@ -965,17 +1007,69 @@ _                <tr bgcolor=#ffffff>
                     <td><label>Max BW 7,920 Mbit/s</label></td>
                 </tr>
                 <tr bgcolor=#ffffff>
-                    <td><label>DVI-D</label></td>
+                    <td><label>DVI-D (single link 165 MHz)</label></td>
                     <td><label id="cvt-dvi_d"></label></td>
                     <td><label id="cvt_rb-dvi_d"></label></td>
                     <td><label id="cvt_rb2-dvi_d"></label></td>
                     <td><label id="cea-dvi_d"></label></td>
                     <td><label id="dmt-dvi_d"></label></td>
                     <td><label id="custom-dvi_d"></label></td>
-                    <td><label>Max BW 3960 Mbit/s</label></td>
+                    <td><label>Max BW 3,960 Mbit/s</label></td>
                 </tr>
                 <tr/>
-		<tr bgcolor=#ffffff><td colspan=8><b>RFC4175</b></td></tr>
+        <tr bgcolor=#ffffff><td colspan=8><b>SDI</b></td></tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>12G-SDI</label></td>
+                    <td><label id="cvt-sdi_12g"></label></td>
+                    <td><label id="cvt_rb-sdi_12g"></label></td>
+                    <td><label id="cvt_rb2-sdi_12g"></label></td>
+                    <td><label id="cea-sdi_12g"></label></td>
+                    <td><label id="dmt-sdi_12g"></label></td>
+                    <td><label id="custom-sdi_12g"></label></td>
+                    <td><label>Max BW 11,880 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>6G-SDI</label></td>
+                    <td><label id="cvt-sdi_6g"></label></td>
+                    <td><label id="cvt_rb-sdi_6g"></label></td>
+                    <td><label id="cvt_rb2-sdi_6g"></label></td>
+                    <td><label id="cea-sdi_6g"></label></td>
+                    <td><label id="dmt-sdi_6g"></label></td>
+                    <td><label id="custom-sdi_6g"></label></td>
+                    <td><label>Max BW 5,940 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>3G-SDI</label></td>
+                    <td><label id="cvt-sdi_3g"></label></td>
+                    <td><label id="cvt_rb-sdi_3g"></label></td>
+                    <td><label id="cvt_rb2-sdi_3g"></label></td>
+                    <td><label id="cea-sdi_3g"></label></td>
+                    <td><label id="dmt-sdi_3g"></label></td>
+                    <td><label id="custom-sdi_3g"></label></td>
+                    <td><label>Max BW 2,970 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>HD-SDI</label></td>
+                    <td><label id="cvt-sdi_hd"></label></td>
+                    <td><label id="cvt_rb-sdi_hd"></label></td>
+                    <td><label id="cvt_rb2-sdi_hd"></label></td>
+                    <td><label id="cea-sdi_hd"></label></td>
+                    <td><label id="dmt-sdi_hd"></label></td>
+                    <td><label id="custom-sdi_hd"></label></td>
+                    <td><label>Max BW 1,485 Mbit/s</label></td>
+                </tr>
+                <tr bgcolor=#ffffff>
+                    <td><label>SD-SDI</label></td>
+                    <td><label id="cvt-sdi_sd"></label></td>
+                    <td><label id="cvt_rb-sdi_sd"></label></td>
+                    <td><label id="cvt_rb2-sdi_sd"></label></td>
+                    <td><label id="cea-sdi_sd"></label></td>
+                    <td><label id="dmt-sdi_sd"></label></td>
+                    <td><label id="custom-sdi_sd"></label></td>
+                    <td><label>Max BW 270 Mbit/s</label></td>
+                </tr>
+                <tr/>
+            <tr bgcolor=#ffffff><td colspan=8><b>RFC4175</b></td></tr>
                 <tr bgcolor=#ffffff>
                     <td><label>RFC4175/100M Ethernet</label></td>
                     <td><label id="cvt-rfc4175_eth100m"></label></td>
@@ -1069,7 +1163,9 @@ _                <tr bgcolor=#ffffff>
                                            13;          // RFC 4175 additional header
 
                     var transports = {
-                        "dp_2"              : { name: "DisplayPort 2.0 (20 GHz)",           dsc:1, bw: 20000000000*4/132*128 },
+                        "dp_ubr20"          : { name: "DisplayPort UBR20 (20 GHz)",         dsc:1, bw: 20000000000*4/132*128 },
+                        "dp_ubr13"          : { name: "DisplayPort UBR13.5 (13.5 GHz)",     dsc:1, bw: 13500000000*4/132*128 },
+                        "dp_ubr10"          : { name: "DisplayPort UBR10 (10 GHz)",         dsc:1, bw: 10000000000*4/132*128 },
                         "dp_hbr3"           : { name: "DisplayPort HBR3 (8.1 GHz)",         dsc:1, bw: 8000000000*4/10*8 },
                         "dp_hbr2"           : { name: "DisplayPort HBR2 (5.4 GHz)",         dsc:1, bw: 5400000000*4/10*8 },
                         "dp_hbr"            : { name: "DisplayPort HBR (2.7 GHz)",          dsc:1, bw: 2700000000*4/10*8 },
@@ -1092,17 +1188,25 @@ _                <tr bgcolor=#ffffff>
                         "hdmi_2_1_10g"      : { name: "HDMI 2.1 FRL (10 GHz)",              dsc:1, bw: 10000000000*4*16/18 },
                         "hdmi_2_1_12g"      : { name: "HDMI 2.1 FRL (12 GHz)",              dsc:1, bw: 12000000000*4*16/18 },
 
+                        "sdi_sd"            : { name: "SD-SDI",                             dsc:0, bw: 270000000 },
+                        "sdi_hd"            : { name: "HD-SDI",                             dsc:0, bw: 1485000000 },
+                        "sdi_3g"            : { name: "3G-SDI",                             dsc:0, bw: 2970000000 },
+                        "sdi_6g"            : { name: "6G-SDI",                             dsc:0, bw: 5940000000 },
+                        "sdi_12g"           : { name: "12G-SDI",                            dsc:0, bw: 11880000000 },
+
                         "rfc4175_eth100m"   : { name: "RFC4175/100M Ethernet",              dsc:0, bw: 100000000   * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500},
                         "rfc4175_eth1g"     : { name: "RFC4175/100M Ethernet",              dsc:0, bw: 1000000000  * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500},
                         "rfc4175_eth10g"    : { name: "RFC4175/100M Ethernet",              dsc:0, bw: 10000000000 * ethernet_mtu1500 * (1500 - rfc4175_overhead) / 1500},
                     };
 
                     var transport_list = [
-                        "dp_2", "dp_hbr3", "dp_hbr2", "dp_hbr", "dp_rbr", 
+                        "dp_ubr20", "dp_ubr13", "dp_ubr10", 
+                        "dp_hbr3", "dp_hbr2", "dp_hbr", "dp_rbr", 
                         "dpam_2", "dpam_hbr3", "dpam_hbr2", "dpam_hbr", "dpam_rbr", 
                         "dvi_dl", "dvi_d", 
                         "hdmi_2_0", "hdmi_1_3", "hdmi_1_0", 
                         "hdmi_2_1_12g", "hdmi_2_1_10g", "hdmi_2_1_8g", "hdmi_2_1_6g", 
+                        "sdi_sd", "sdi_hd", "sdi_3g", "sdi_6g", "sdi_12g", 
                         "rfc4175_eth100m", "rfc4175_eth1g", "rfc4175_eth10g" ];
 
                     standards.forEach(function(standard, index){
@@ -1179,9 +1283,11 @@ _                <tr bgcolor=#ffffff>
                         hperiod         = 1/hfreq;
                         vperiod         = 1/vfreq;
 
-                        total_bw        = pclock * bpc * color_fmt_multiplier;
-                        total_bw_dsc    = pclock * 8;   // Minium BW required, when compressed to 8bpp.
+                        peak_bw         = pclock * bpc * color_fmt_multiplier;
+                        peak_bw_dsc     = pclock * 8;   // Minium BW required, when compressed to 8bpp.
+                        line_bw         = peak_bw * hactive / htotal;
                         active_bw       = vfreq * bpc * vactive * hactive * color_fmt_multiplier;
+                        vblank_duration = vblank * hperiod;
 
                         results = { };
 
@@ -1197,12 +1303,12 @@ _                <tr bgcolor=#ffffff>
                                 str = "<font color=\"red\">RGB only</font>";
                             }
                             else{
-                                ok = (total_bw < t_info['bw']);
+                                ok = (peak_bw < t_info['bw']);
                                 str = ok ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
-                                str += " (" + Math.round(total_bw/t_info['bw']*100) + "%)"
+                                str += " (" + Math.round(peak_bw/t_info['bw']*100) + "%)"
 
                                 if (!ok && t_info['dsc']){
-                                    dsc_ok  = (total_bw_dsc < t_info['bw']);
+                                    dsc_ok  = (peak_bw_dsc < t_info['bw']);
                                     dsc_bpp = Math.round(t_info['bw'] / pclock * 4)/4;
 
                                     if (dsc_ok){
@@ -1237,6 +1343,7 @@ _                <tr bgcolor=#ffffff>
                             $(prefix + "-vtotal").text(vtotal);
                             $(prefix + "-vpixels").text(vactive);
                             $(prefix + "-vblank").text(vblank);
+                            $(prefix + "-vblank_duration").text(Math.round(vblank_duration*1000000));
                             $(prefix + "-vfront").text(V_FRONT_PORCH);
                             $(prefix + "-vsync").text(V_SYNC_RND);
                             $(prefix + "-vback").text(V_BACK_PORCH);
@@ -1244,7 +1351,8 @@ _                <tr bgcolor=#ffffff>
                             $(prefix + "-vfreq").text(Math.round(vfreq*1000)/1000);
                             $(prefix + "-vperiod").text(Math.round(vperiod*1000000)/1000);
     
-                            $(prefix + "-total_bw").text(Math.round(total_bw/1000000));
+                            $(prefix + "-peak_bw").text(Math.round(peak_bw/1000000));
+                            $(prefix + "-line_bw").text(Math.round(line_bw/1000000));
                             $(prefix + "-active_bw").text(Math.round(active_bw/1000000));
 
                             if (DMT_ID) $(prefix + "-dmt_id").text("0x" + DMT_ID.toString(16) );
@@ -1278,6 +1386,7 @@ _                <tr bgcolor=#ffffff>
                             $(prefix + "-vtotal").text("");
                             $(prefix + "-vpixels").text("");
                             $(prefix + "-vblank").text("");
+                            $(prefix + "-vblank_duration").text("");
                             $(prefix + "-vfront").text("");
                             $(prefix + "-vsync").text("");
                             $(prefix + "-vback").text("");
@@ -1285,7 +1394,8 @@ _                <tr bgcolor=#ffffff>
                             $(prefix + "-vfreq").text("");
                             $(prefix + "-vperiod").text("");
     
-                            $(prefix + "-total_bw").text("");
+                            $(prefix + "-peak_bw").text("");
+                            $(prefix + "-line_bw").text("");
                             $(prefix + "-active_bw").text("");
 
                             $(prefix + "-dmt_id").text("");
@@ -1304,9 +1414,9 @@ _                <tr bgcolor=#ffffff>
 
                     });
 
-                    $("#max_rfc4175_eth100m").html("Max BW " + Math.round(rfc4175_eth100m_bw/1000000) + " Mbit/s");
-                    $("#max_rfc4175_eth1g").html("Max BW " + Math.round(rfc4175_eth1g_bw/1000000) + " Mbit/s");
-                    $("#max_rfc4175_eth10g").html("Max BW " + Math.round(rfc4175_eth10g_bw/1000000) + " Mbit/s");
+                    $("#max_rfc4175_eth100m").html("Max BW " + Math.round(transports['rfc4175_eth100m']['bw']/1000000) + " Mbit/s");
+                    $("#max_rfc4175_eth1g").html("Max BW " + Math.round(transports['rfc4175_eth1g']['bw']/1000000) + " Mbit/s");
+                    $("#max_rfc4175_eth10g").html("Max BW " + Math.round(transports['rfc4175_eth10g']['bw']/1000000).toLocaleString('en-US') + " Mbit/s");
 
                 }
 
