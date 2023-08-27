@@ -1180,34 +1180,8 @@ _                <tr bgcolor=#ffffff>
                         vperiod         = 1/vfreq;
 
                         total_bw        = pclock * bpc * color_fmt_multiplier;
+                        total_bw_dsc    = pclock * 8;   // Minium BW required, when compressed to 8bpp.
                         active_bw       = vfreq * bpc * vactive * hactive * color_fmt_multiplier;
-
-                        dp_2_bw         = transports['dp_2']['bw'];
-                        dp_hbr3_bw      = transports['dp_hbr3']['bw'];
-                        dp_hbr2_bw      = transports['dp_hbr2']['bw'];
-                        dp_hbr_bw       = transports['dp_hbr']['bw'];
-                        dp_rbr_bw       = transports['dp_rbr']['bw'];
-
-                        dpam_2_bw       = transports['dpam_2']['bw'];
-                        dpam_hbr3_bw    = transports['dpam_hbr3']['bw'];
-                        dpam_hbr2_bw    = transports['dpam_hbr2']['bw'];
-                        dpam_hbr_bw     = transports['dpam_hbr']['bw'];
-                        dpam_rbr_bw     = transports['dpam_rbr']['bw'];
-
-                        dvi_d_bw        = transports['dvi_d']['bw'];
-                        dvi_dl_bw       = transports['dvi_dl']['bw'];
-
-                        hdmi_1_0_bw     = transports['hdmi_1_0']['bw'];
-                        hdmi_1_3_bw     = transports['hdmi_1_3']['bw'];
-                        hdmi_2_0_bw     = transports['hdmi_2_0']['bw'];
-                        hdmi_2_1_6g_bw  = transports['hdmi_2_1_6g']['bw'];
-                        hdmi_2_1_8g_bw  = transports['hdmi_2_1_8g']['bw'];
-                        hdmi_2_1_10g_bw = transports['hdmi_2_1_10g']['bw'];
-                        hdmi_2_1_12g_bw = transports['hdmi_2_1_12g']['bw'];
-
-                        rfc4175_eth100m_bw  = transports['rfc4175_eth100m']['bw'];
-                        rfc4175_eth1g_bw    = transports['rfc4175_eth1g']['bw'];
-                        rfc4175_eth10g_bw   = transports['rfc4175_eth10g']['bw'];
 
                         results = { };
 
@@ -1218,10 +1192,24 @@ _                <tr bgcolor=#ffffff>
                                 ok  = 0;
                                 str = "<font color=\"red\">8 bpc only</font>";
                             }
+                            else if ( (transport == 'dvi_d' || transport == 'dvi_dl') && color_fmt != "rgb444"){
+                                ok  = 0;
+                                str = "<font color=\"red\">RGB only</font>";
+                            }
                             else{
                                 ok = (total_bw < t_info['bw']);
                                 str = ok ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                                 str += " (" + Math.round(total_bw/t_info['bw']*100) + "%)"
+
+                                if (!ok && t_info['dsc']){
+                                    dsc_ok  = (total_bw_dsc < t_info['bw']);
+                                    dsc_bpp = Math.round(t_info['bw'] / pclock * 4)/4;
+
+                                    if (dsc_ok){
+                                        str += " <br/> <font color=\"green\">DSC Ok</font>";
+                                        str += " (" + dsc_bpp + "bpp)";
+                                    }
+                                }
                             }
 
                             results[transport] = {};
