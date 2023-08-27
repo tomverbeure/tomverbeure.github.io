@@ -443,7 +443,7 @@ And that's all there is to it!
 # Design Introspection to Capture the UART TX Writes
 
 To better illustrate that save/restore actually worked, the testbench captures
-writes to the TX register of a [SpinalHDL UART](https://spinalhdl.github.io/SpinalDoc-RTD/SpinalHDL/Libraries/Com/uart.html)
+writes to the TX register of a [SpinalHDL UART](https://spinalhdl.github.io/SpinalDoc-RTD/master/SpinalHDL/Libraries/Com/uart.html)
 that is connected to the CPU through a standard APB3 bus. 
 
 The individual signals are referenced [as follows](https://github.com/tomverbeure/cxxrtl_eval/blob/26e7a499e24aa4c9e7142e0328e519f868c83cab/cxxrtl/main.cpp#L71-L75):

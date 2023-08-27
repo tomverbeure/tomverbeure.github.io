@@ -842,7 +842,7 @@ a significantly higher price.
     Another board by Muse Lab that uses the same expansion board, and also ECP5-LFE5U025F FPGA, though with 
     a different package. Features are similar, though there are no Ethernet PHYs
 
-* [Colorlight i6])https://www.colorlightinside.com/Products/i%20Receiving-series/34_8.html)
+* [Colorlight i6](https://www.colorlightinside.com/Products/i%20Receiving-series/34_8.html)
 
     Uses a Lattice ECP3-LFE3-35EA-6FN484C, and not supported by any open source tools. I'm not aware of a
     reverse engineering effort.
