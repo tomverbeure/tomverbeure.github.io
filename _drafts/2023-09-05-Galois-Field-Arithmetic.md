@@ -11,67 +11,113 @@ categories:
 * TOC
 {:toc}
 
+# Introduction
 
-In my blog post about Reed-Solomon coding, I used regular integers for all calculations.
-These are unpractical for real-world implementations, but since everybody knows integers
-since first grade, it made things easier to learn things one step at a time.
+In [my blog post about Reed-Solomon coding](/2022/08/07/Reed-Solomon.html), 
+I used regular integers for all calculations.  These are unpractical for a real-world 
+implementation, but since everybody knows integers math since first grade, it made things 
+easier to learn things one step at a time.
 
-Instead of working with pure integers, practical Reed-Solomon implementations will
-use Galois field elements as symbols.
+Instead of working with pure integers, actual Reed-Solomon implementations will
+use elements from a [Galois or Finite field](https://en.wikipedia.org/wiki/Finite_field) 
+as symbols.
 
-# Galois Base Field
+In this blog post, I will first talk a bit about Galois fields. I will rely heavily on 
+examples instead of 
 
-A Galois field has a limited number of elements, but still supports addition, subtraction,
-multiplications and division operations. When two Galois field elements are subjected
-to these operations, the result will still be a Galois field elements.
+Not nearly enough to
+have a solid theoretical understanding, just sufficiently so that I can refer back to
+it when I've forgotten some of the details. You can find much better material online if 
+you want to get a better understanding. Check out in the [References](#references) section
+below from a bunch of links.
 
-A good example of a Galois field is GF(5). As elements, it has the integer numbers 0 to 4.
-Addition, subtraction, and multiplicaiton work the same as for regular integers, 
-except that each such operation is followed by a modulo 5 operation. Division in a Galois field
-is defined as a multiplication of the inverse: a / b = a * (b^-1).
+Once these basics are out of the way, I'll dive into some details related to hardware
+implementation of Galois field multipliers.
+
+# Galois Field
+
+In mathematic, a field is a set of elements for which addition, subtraction, multiplication
+and division operations have been defined, with propertes that are the same the ones
+that we take for granted when dealing with rational or real numbers, such as the associative
+and distributive properties.
+
+A Galois field is a field that has a limited number of elements, but that still has
+these kind of operations and properties.
+
+A good example of a Galois field is GF(5). It has the integer numbers 0 to 4 as elements.
+Addition, subtraction, and multiplicaiton work the same as for regular integers, except that each such operation 
+is followed by a modulo 5 operation. Division is defined as a multiplication by the inverse:
+
+$$ \frac{a}{b} = a \cdot b^{-1} $$
 
 Here are a few example operations in GF(5):
 
-1 + 3 = (1+3) mod 5 = 4 mod 5 = 4
-2 + 7 = (2+6) mod 5 = 8 mod 5 = 3
-3 * 4 = (3 * 12) mod 5 = 36 mod 5 = 1
+$$
+\begin{align}
+1 + 3 = (1+3) \bmod 5 = 4 \bmod 5 = 4     \\
+2 + 7 = (2+6) \bmod 5 = 8 \bmod 5 = 3     \\
+3 \cdot 4 = (3 \cdot 4) \bmod 5 = 36 \bmod 5 = 1     \\
+\end{align}
+$$
 
-For division, let's say we want to do 2/3 in GF(5). We first need to find the multiplicative
-inverse of 3 so that 3 x 3^-1 = 1. There are 5 different options 0,1,2,3,4.
+**Division**
 
-(3 * 1) mod 5 = 3
-(3 * 2) mod 5 = 1       <----
-(3 * 3) mod 5 = 4
-(3 * 4) mod 5 = 2
+Division is a bit less intuitive: we need the multiplicative inverse of the divisor, which can be
+found by checking all possible element. Let's say we want to do 2/3 in GF(5). 3 is the divisor. 
+We need to find $$3^{-1}$$ so that $$3 \cdot 3^{-1} = 1$$. 
 
-We can see that 3^-1 = 2.
+There are 5 different options 0,1,2,3,4.
 
-So:
+$$
+\begin{align}
+(3 \cdot 0) \bmod 5 = 0 \\
+(3 \cdot 1) \bmod 5 = 3 \\
+(3 \cdot 2) \bmod 5 = 1 \\
+(3 \cdot 3) \bmod 5 = 4 \\
+(3 \cdot 4) \bmod 5 = 2 \\
+\end{align}
+$$
 
-2/3 = (2 * 2) mod 5 = 4
+We can see that $$(3 \cdot 2)\bmod 5 = 1$$, so $$3^{-1}=2$$. 
 
-The [Wikipedia article on Reed-Solomon error correction](https://en.wikipedia.org/wiki/Reed–Solomon_error_correction#Error_locator_polynomial),
+And thus:
+
+$$2/3 = (2 \cdot 2) \bmod 5 = 4$$
+
+**A Prime Number of Elements**
+
+One thing to note is that the number of elements in a Galois field must always be a
+a prime number. This is because the division operation would otherwise be ill defined.
+
+For example, let's try to find the multiplicative inverse of 2 when doing a modulo 6 operation:
+
+$$
+\begin{align}
+(2 \cdot 0) \bmod 6 = 0 \\
+(2 \cdot 1) \bmod 6 = 2 \\
+(2 \cdot 2) \bmod 6 = 4 \\
+(2 \cdot 3) \bmod 6 = 0 \\
+(2 \cdot 4) \bmod 6 = 2 \\
+(2 \cdot 5) \bmod 6 = 4 \\
+\end{align}
+$$
+
+There's no solution with a result of 1. Since there's at least one element for which a
+multiplicative inverse doesn't exist, GF(6) can't be a field.
+
+**Real World Example of a Galois Field**
+
+Since a Galois field must have a prime number of elements, only GF(2) can map directly
+to the zeros and ones of digital logic. All other fields will have an odd number of elements.
+But that doesn't mean that there aren't any real-world cases where these kind of Galois
+fields are used: the [Wikipedia article on Reed-Solomon error correction](https://en.wikipedia.org/wiki/Reed–Solomon_error_correction#Error_locator_polynomial)
 has an example that uses GF(929), a field that is used for coding [PD417](https://en.wikipedia.org/wiki/PDF417)
 bar codes.
 
-One thing to note is that the number of elements in a Galois field must always be a
-a prime number. In the examples above of GF(5) and GF(929), 5 and 929, and the power
-factor is 1.
+![PD417 bar code](/assets/reed_solomon/Wikipedia_PDF417.png)<br/>
+*&copy; [Markus.Jungbauer - Wikipedia](https://en.wikipedia.org/wiki/PDF417#/media/File:Wikipedia_PDF417.png)*
 
-The reason why it must be a prime power is because the division operation would otherwise be ill defined.
 
-For example, let's try to find a multiplicative inverse of 2 when doing a modulo 8 operation:
-
-(2 * 1) mod 8 = 2
-(2 * 2) mod 8 = 4
-(2 * 3) mod 8 = 6
-(2 * 4) mod 8 = 0
-(2 * 5) mod 8 = 2
-(2 * 6) mod 8 = 4
-(2 * 7) mod 8 = 6
-
-There's no solution with a result of 1. Since there's at least one element for which a
-multiplicative inverse doesn't exist, there can't be a GF(8) field).
 
 # Galois Field Extension
 
@@ -81,5 +127,11 @@ of the Galois base field.
 For example, the base field GF(5) can be extended to GF(5^3) which consists of 3 GF(3) elements.
 
 
+# References
+
+* [Wikipedia - Finite field](https://en.wikipedia.org/wiki/Finite_field)
+
+
+* [Python galois package](https://galois.readthedocs.io/)
 
 

@@ -179,6 +179,12 @@ however, the correct value is the result that is most common.
 
 # GF(2^m) multiplication
 
+* [VLSI Architectures for Computing Multiplications and Inverses in GF(2^m)](https://ipnpr.jpl.nasa.gov/progress_report/42-75/75E.PDF)
+
+    * On JPL/NASA website
+    * 1983
+    * Describes a parallel Massey and Omura multiplier
+
 * [Patent: Omura and Massey - Computational method and apparatus for finite field arithmetic](https://patents.google.com/patent/US4587627A/en?oq=4587627)
 
     * Represents GF(2^m) numbers with a normal basis.
