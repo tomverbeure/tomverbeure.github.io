@@ -304,6 +304,17 @@ or XOR in the case of a binary base field, each component. But the exponential
 notation is great for multiplication: you can add the exponents and then do module 16
 on the result. There's no need for a polynomial division.
 
+# Linear Combination
+
+It is possible to find an element $$\beta$$ from $$(0, 1, \alpha, \alpha^2, ..., \alpha^{14})$$ so that 
+each element $$\alpha^i$$ can be written as:
+
+$$ \alpha^i = b_3\beta^8 + b_2\beta^3 +b_1\beta^2 +b_0\beta^1 $$
+
+This is called a normal basis. The coefficients $$b_i$$ are elements
+of the base field GF(2). XXXX does this only work for GF(2) ?
+
+
 # References
 
 * [Wikipedia - Finite field](https://en.wikipedia.org/wiki/Finite_field)
