@@ -117,15 +117,192 @@ bar codes.
 ![PD417 bar code](/assets/reed_solomon/Wikipedia_PDF417.png)<br/>
 *&copy; [Markus.Jungbauer - Wikipedia](https://en.wikipedia.org/wiki/PDF417#/media/File:Wikipedia_PDF417.png)*
 
+Modulo 929 calculations are fine for bar codes, where you only need to process a few per 
+second at most. But they're not something you'd want to use for high speed communication
+protocols that run at rates of gigabits or bytes per second. 
+
+**GF(2)**
+
+Before taking the next step, let's first look at the only basic operation that does map
+neatly to ones and zeros: GF(2). The binary Galois field only has 2 symbols: 0 and 1.
+
+It has the following addition table:
+
+$$
+\begin{align}
+(0 + 0) \bmod 2 = 0 \\
+(0 + 1) \bmod 2 = 1 \\
+(1 + 0) \bmod 2 = 1 \\
+(1 + 1) \bmod 2 = 0 \\
+\end{align}
+$$
+
+And this is the multiplication table:
+
+$$
+\begin{align}
+(0 \cdot 0) \bmod 2 = 0 \\
+(0 \cdot 1) \bmod 2 = 0 \\
+(1 \cdot 0) \bmod 2 = 0 \\
+(1 \cdot 1) \bmod 2 = 1 \\
+\end{align}
+$$
+
+Addition maps to a XOR and multiplication to an AND gate! Another property of note is that
+subtraction is the same as addition. 
+
+These are promising properties for a hardware implementation.
+
+# Galois Field Extensions
+
+The Galois fields discussed in the previous section, constructed out of a single prime number, are sometimes 
+called base Galois fields. It turns out that you can create new Galois fields, called Galois field extensions,
+out of a base Galois field by grouping multiple base elements together into an ordered tuple.
+
+The notation for a Galois field extension is as follows: $$\text{GF}(p^n)$$, where $$p$$ is the base
+prime number, and $$n$$ is the order of the extended Galois field.  The total number of elements
+in an extended Galois field is $$p^n$$.
+
+For example, $$\text{GF}(2^4)$$ is a Galois field for which  each element consists of an ordered tuple 
+$$(a_3, a_2, a_1, a_0)$$ of 4 $$\text{GF}(2)$$ elements.  The total number of elements of this field is 16. 
+
+*You'll sometimes see this written a $$\text{GF}(16)$$, which isn't ambiguous since all the factors 
+of 16 are 2, so there's only 1 prime number possible, but my personal preference is to always write 
+it down as $$\text{GF}(2^4)$$.*
+
+**Extended Galois Field Addition**
+
+All Galois fields require addition, subtraction, multiplication, and division operation. For Galois
+field extensions, we turn to polynomials to define these operations.
+
+The elements within each tuple are mapped to  coefficients of a polynomial:
+
+$$(a_3, a_2, a_1, a_0) \rightarrow a_3 x^3 + a_2 x^2 + a_1 x + a_0$$
+
+Addition of 2 tuples becomes a polynomial addition:
+
+$$
+\begin{align}
+(a_3, a_2, a_1, a_0) + (b_3, b_2, b_1, b_0)  \\
+\rightarrow (a_3 x^3 + a_2 x^2 + a_1 x + a_0) + (b_3 x^3 + b_2 x^2 + b_1 x + b_0) \\
+\rightarrow (a_3+b_3) x^3 + (a_2 + b_2) x^2 + (a_1 + b_1) x + (a_0 + b_0)
+\end{align}
+$$
+
+Notice how, for addition, the polynomial order of the result remains the same: addition of
+2 elements of an extended Galois field automatically still belong to the same Galois field.
+
+**Extended Galois Field Multiplication**
+
+For multiplication, we also use polynomial multiplication, but with an additional
+step: pure multiplication would result in polynomials of an order that doesn't always fall
+within the order of the multiplicatoin operands, which violates the requirement for
+a field. We can fix this by following each multipication with division with a so called
+*primitive polynomial* $$p(x)$$ and only retaining the remainder, just like we did for base Galois 
+fields, where we applied a modulo operation to keep the results in check.
+
+**Primitive Polynomial**
+
+There are some requirements to primitive polynomial $$p(x)$$. One of the most important ones
+is that it needs to be irreducible, with coefficients of the base Galois field. An
+irreducible polynomial can not be factored into multiple lower order polynomials.
+
+*Note the similarity here with base Galois fields, where the modulo operation must be
+done with a prime number, one that can not be factored into multiple smaller integer.*
+
+A primitive polynomial defines how Galois field calculations behave, so standardized
+protocols always specify which primitive polynomial to use. If you want to use your own
+coding protocol, you could try to find a primitive polynomial yourself, but it's much easier 
+to just select one from one of tables that can be found online.
+
+Computers work with bytes. Many protocols use the $$\text{GF}(2^8)$$ field,
+so that a byte can be directly mapped to a tuple of size 8. One of the most used
+primitive polynomials for $$\text{GF}(2^8)$$ is
+
+$$p(x) = x^8 + x^4 + x^3 + x^2 + 1$$
+
+It is so popular that modern CPU ISA have instructions to perform Galois field operations 
+specifically for this primitive polynomial. The Rijndael algorithm, the basis for AES encryption,
+uses this polynomial. It is also used for Reed-Solomon coding in the CCSDS standard for space 
+communication. And many others.
+
+**Extended Galois Field Elements**
+
+We now know that elements of an extended Galois field are tuples, and now to perform
+operations on them, but some details of what those elements looks like. 
+
+Let's use $$\text{GF}(2^4)$$ as an example, with $$p(x)=x^4+x+1$$ as primitive polynomial.
+The field contains 16 elements. We need a zero, a one, and 14 additional elements that
+we name $$\alpha^1$$ to $$\alpha^{14}$$. Here's the total set of field elements:
+
+$$(0, 1, \alpha^1, \alpha^2, \alpha^3, ..., \alpha^{14})$$
+
+We're using an exponent to number each $$\alpha$$ because that's how we're going to
+construct their tuple values.
+
+For the 0 and 1 field elements, we choose tuples $$(0,0,0,0)$$ and $$(0,0,0,1)$$.
+$$\alpha^1$$ is called the primitive element. From the remaining 14 tuples, there are
+multiple options that can serve a primitive element, but let's choose tuple $$(0,0,1,0)$$.
+From here we can derive the tuple values for the remaining elements by using 
+polynomial multiplication.
 
 
-# Galois Field Extension
+$$
+\begin{align}
+\alpha^1 = (0,0,1,0) = x \\
+\alpha^2 = \alpha^1\alpha^1 = x\cdot x = x^2 =  (0,1,0,0) \\
+\alpha^3 = \alpha^2\alpha^1 = x^2\cdot x = x^3 =  (1,0,0,0) \\
+\end{align}
+$$
 
-Once you have a Galois field, you can create a Galois field extension that consists of multiple elements
-of the Galois base field.
+So far so good. But now it gets interesting:
 
-For example, the base field GF(5) can be extended to GF(5^3) which consists of 3 GF(3) elements.
+$$\alpha^4 = \alpha^3\alpha^1 = x^3\cdot x = x^4 = ???$$
 
+$$x^4$$ is a polynomial with an order that it higher than what's allowed a $$\text{GF}(2^4)$$
+field. We need to use the primitive polynomial to get the result back in check:
+
+$$x^4 \bmod p(x) = x^4 \bmod (x^4+x+1) = x+1 $$
+
+$$
+\begin{align}
+\alpha^4 = \alpha^3\alpha^1 = x^3\cdot x = x+1 =  (0,0,1,1) \\
+\alpha^5 = \alpha^4\alpha^1 = (x+1)x = x^2+x =  (0,1,1,0) \\
+\alpha^6 = \alpha^5\alpha^1 = (x^2+x)x = x^3+x^2 =  (1,1,0,0) \\
+\alpha^7 = \alpha^6\alpha^1 = (x^3+x^2)x = x^4+x^3 = x^3+x+1 =  (1,0,1,1) \\
+\end{align}
+$$
+
+For $$a^7$$, we could have done the polynomial division of $$x^4+x^3$$ with the primitive $$p(x)$$, 
+but since we already calculated earlier that $$x^4$$ translates into $$x+1$$, it was easier to 
+just do a substitution.
+
+$$
+\begin{align}
+\alpha^8 = \alpha^7\alpha^1 = (x^3+x+1)x = x^4+x^2+x = x^2+x+x+1 = x^2+1 =  (0,1,0,1) \\
+\alpha^9 = x^3+x = (1,0,1,0) \\
+\alpha^{10} = x^2+x+1 = (0,1,1,1) \\
+\alpha^{11} = x^3+x^2+x = (1,1,1,0) \\
+\alpha^{12} = x^3+x^2+x+1 = (1,1,1,1) \\
+\alpha^{13} = x^3+x^2+1 = (1,1,0,1) \\
+\alpha^{14} = x^3+1 = (1,0,0,1) \\
+\alpha^{15} = 1 = (0,0,0,1) \\
+\alpha^{16} = x = (0,0,1,0) \\
+\end{align}
+$$
+
+After $$\alpha^{14}$$, we restart at 1, or $$\alpha^0$$, and then $$\alpha^1$$, and so forth. The
+whole sequence repeats again.
+
+The take-away here is that there two main ways in which elements of a field can be described:
+
+* a tuple that maps directly to a polynomial
+* an element $$\alpha$$ with a certain exponent
+
+The tuple and polynomial representation are great to do additions: you can just add,
+or XOR in the case of a binary base field, each component. But the exponential
+notation is great for multiplication: you can add the exponents and then do module 16
+on the result. There's no need for a polynomial division.
 
 # References
 
