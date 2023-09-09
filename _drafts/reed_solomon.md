@@ -193,9 +193,9 @@ however, the correct value is the result that is most common.
     * How to convert between standard basis and normal basis?
     * [PDF file](https://patentimages.storage.googleapis.com/8c/fa/14/b1f76598ebc393/US4587627.pdf)
 
-* [Vlsi designs for multiplication over finite fields GF(2m)](https://link.springer.com/chapter/10.1007/3-540-51083-4_67)
+* [Mastrovito - Vlsi designs for multiplication over finite fields GF(2m)](https://link.springer.com/chapter/10.1007/3-540-51083-4_67)
 
-    Original paper (not available for free)
+    Original paper (not available for free). Cost $60 for conference proceedings.
 
 * [Systematic Design Approach of Mastrovito Multipliers over GF(2^m)](https://sites.ecse.rpi.edu/~tzhang/pub/SIPS2000.pdf)
 
@@ -233,3 +233,18 @@ however, the correct value is the result that is most common.
     * [Introduction to Reed Solomon Codes](https://rscode.sourceforge.net/rs.html)
 
 * [CoolRunner-II CPLD Galois Field GF(2m) Multiplier](https://docs.xilinx.com/v/u/en-US/xapp371)
+
+
+
+* [Reed-Solomon with regular n^2 + remainder 8x8 multiply](https://github.com/winsonbook/Reed-Solomon-/blob/master/multiply.v)
+
+* [Reed-Solomon poly to power and power to poly multiply](https://github.com/freecores/reed_solomon_decoder/blob/master/rtl/GF_matrix_dec.v)
+
+    * [8-bit inverse](https://github.com/winsonbook/Reed-Solomon-/blob/master/Inverse_8_bit.v)
+    * [8-bit determinant](https://github.com/winsonbook/Reed-Solomon-/blob/master/Determinant.v)
+
+* [Reed-Solomon with case statement](https://github.com/RedFlag2017/rs-codec/blob/master/00_src/rs_dec/gf256mul_dec.v)
+
+    [Encoder doesn't cover all cases?](https://github.com/RedFlag2017/rs-codec/blob/master/00_src/rs_enc/gf256mul.v)
+
+
