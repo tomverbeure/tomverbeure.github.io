@@ -228,7 +228,8 @@ however, the correct value is the result that is most common.
     Shows basic example of Mastrovito. Then compares area of different solutions.
     Discusses protections against side channel attacks.
 
-* [Automatic Generation of Polynomial-Basis Multipliers in GF (2n) using Recursive VHDL](http://koclab.cs.ucsb.edu/teaching/cren/project/2005past/nelson.pdf)
+
+    
 
 **Massey and Omura**
 
@@ -281,6 +282,11 @@ however, the correct value is the result that is most common.
     > can outperform its quadratic counterpart for n as small as 100.
 
     So for small orders such as  GF(2^8), using a quadratic multiplier is just fine.
+
+* [Nelson (2004) - Automatic Generation of Polynomial-Basis Multipliers in GF (2n) using Recursive VHDL](http://koclab.cs.ucsb.edu/teaching/cren/project/2005past/nelson.pdf)
+
+    Compares a recursive approach with Mastrovito and Karatsuba. Karatsuba is smaller and faster
+    than Mastrovito, even for GF(2^8)?
 
 # Implementations
 
