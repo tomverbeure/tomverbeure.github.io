@@ -218,9 +218,13 @@ however, the correct value is the result that is most common.
 
     Proprietary multiplier generator using either Mastrovito (polynomial basis) or Massey-Omura (normal basis)
 
+    Paper: [Automatic Generation System for Multiple-Valued Galois-Field Parallel Multipliers](https://www.researchgate.net/publication/318803493_Automatic_Generation_System_for_Multiple-Valued_Galois-Field_Parallel_Multipliers) [PDF](https://www.researchgate.net/profile/Naofumi-Homma/publication/318803493_Automatic_Generation_System_for_Multiple-Valued_Galois-Field_Parallel_Multipliers/links/5f1789c2a6fdcc9626a6780d/Automatic-Generation-System-for-Multiple-Valued-Galois-Field-Parallel-Multipliers.pdf)
+
 * [Galois Field Multiplier for Reed Solomon Code](https://www.edaboard.com/threads/galois-field-multiplier-for-reed-solomon-code.137081/)
 
     Check out how this was derived...
+
+* [Automatic Generation of Polynomial-Basis Multipliers in GF (2n) using Recursive VHDL](http://koclab.cs.ucsb.edu/teaching/cren/project/2005past/nelson.pdf)
 
 # Implementations
 
