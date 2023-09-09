@@ -179,36 +179,35 @@ however, the correct value is the result that is most common.
 
 # GF(2^m) multiplication
 
-* [VLSI Architectures for Computing Multiplications and Inverses in GF(2^m)](https://ipnpr.jpl.nasa.gov/progress_report/42-75/75E.PDF)
+**Mastrovito**
 
-    * On JPL/NASA website
-    * 1983
-    * Describes a parallel Massey and Omura multiplier
-
-* [Patent: Omura and Massey - Computational method and apparatus for finite field arithmetic](https://patents.google.com/patent/US4587627A/en?oq=4587627)
-
-    * Represents GF(2^m) numbers with a normal basis.
-    * primitive polynomial needs to have linearly independent roots (not always the case?)
-    * Simple implementation without division
-    * How to convert between standard basis and normal basis?
-    * [PDF file](https://patentimages.storage.googleapis.com/8c/fa/14/b1f76598ebc393/US4587627.pdf)
-
-* [Mastrovito - Vlsi designs for multiplication over finite fields GF(2m)](https://link.springer.com/chapter/10.1007/3-540-51083-4_67)
+* [Mastrovito (1988) - Vlsi designs for multiplication over finite fields GF(2m)](https://link.springer.com/chapter/10.1007/3-540-51083-4_67)
 
     Original paper (not available for free). Cost $60 for conference proceedings.
 
-* [Systematic Design Approach of Mastrovito Multipliers over GF(2^m)](https://sites.ecse.rpi.edu/~tzhang/pub/SIPS2000.pdf)
+* [Zhang (2000) - Systematic Design Approach of Mastrovito Multipliers over GF(2^m)](https://sites.ecse.rpi.edu/~tzhang/pub/SIPS2000.pdf)
+    
+    General algorithms to construct the Mastrovito matrix that works for all kinds
+    of primitive polygons.
 
-    This is probably the way to go.
+    Algorithm is described, but pretty complex and probably not useful for
+    smaller multipliers.
 
-* [Mastrovito Multiplier for General Irreducible Polynomials](https://cetinkayakoc.net/docs/c18.pdf)
+    If one wanted to design a Mastrovito multiplier in general, this is probably
+    the best way to go about it though.
 
-    Need to read this...
+* [Halbutogullari & Koc (2000) - Mastrovito Multiplier for General Irreducible Polynomials](https://cetinkayakoc.net/docs/c18.pdf)
 
-* [A New Construction of Massey-Omura Parallel Multiplier over GF(2^m)](https://ece.uwaterloo.ca/~ahasan/web_papers/journal_articles/web_new_cons_NBM.pdf)
+    Similar to the Zhang paper. Zhang paper claims to be a better version of this one.
 
-    * Started with a good overview of GF multipliers
-    * Also a ton of good references
+    [Full paper](https://ieeexplore.ieee.org/document/859542)
+
+* [Petra (2007) - A Novel Architecture for Galois Fields GF(2^m) Multipliers Based on Mastrovito Scheme](https://ieeexplore.ieee.org/document/4336296)
+
+    Easy to follow derivation a simply Mastrovito derivation. Followed by some optimizations.
+    I used this to come up with my Verilog implementation.
+
+    Paper not available for free.
 
 * [The low latency massey-omura multiplier over GF(2^m)](https://ieeexplore.ieee.org/document/1413008)
 
@@ -221,6 +220,64 @@ however, the correct value is the result that is most common.
 * [Galois Field Multiplier for Reed Solomon Code](https://www.edaboard.com/threads/galois-field-multiplier-for-reed-solomon-code.137081/)
 
     Check out how this was derived...
+
+* [Fast and Secure Finite Field Multipliers](https://inria.hal.science/hal-01169851)
+
+    Shows basic example of Mastrovito. Then compares area of different solutions.
+    Discusses protections against side channel attacks.
+
+**Massey and Omura**
+
+* [Patent: Omura and Massey - Computational method and apparatus for finite field arithmetic](https://patents.google.com/patent/US4587627A/en?oq=4587627)
+
+    * Represents GF(2^m) numbers with a normal basis.
+    * primitive polynomial needs to have linearly independent roots (not always the case?)
+    * Simple implementation without division
+    * How to convert between standard basis and normal basis?
+    * [PDF file](https://patentimages.storage.googleapis.com/8c/fa/14/b1f76598ebc393/US4587627.pdf)
+
+* [VLSI Architectures for Computing Multiplications and Inverses in GF(2^m)](https://ipnpr.jpl.nasa.gov/progress_report/42-75/75E.PDF)
+
+    * On JPL/NASA website
+    * 1983
+    * Describes a parallel Massey and Omura multiplier
+
+* [Reyhani-Masoleh & Hasan (2002) - A New Construction of Massey-Omura Parallel Multiplier over GF(2^m)](https://ece.uwaterloo.ca/~ahasan/web_papers/journal_articles/web_new_cons_NBM.pdf)
+    * Starts with a good overview of GF multipliers
+    * Also a ton of good references
+
+**Karatsub-Ofman**
+
+* [Paar (1996) - Efficient Multiplier Architectures for Galois Fields GF(2^4n)](https://ieeexplore.ieee.org/document/663762)
+
+    More efficient than Mastrovito, but not for general polynomials?
+
+    Paper not available for free.
+
+**Misc**
+
+* [Allen - Energy Effifficient Adaptive Reed-Solomon Decoding System](https://scholarworks.umass.edu/cgi/viewcontent.cgi?article=1131&context=theses)
+
+    Has a section that compares Mastrovito against Paar multiplier. The Paar multiplier
+    is smaller (53 vs 58 LUTs without pipelining), but uses more power because of glitches 
+    due to mismatched path lengths.
+
+* [Fan (2015) - A survey of some recent bit-parallel GF(2^n) multipliers](https://www.sciencedirect.com/science/article/pii/S107157971400121X)
+    
+    Extensive survey of different algorithms, both quadratic and sub-quadratic.
+
+    From the conclusion: 
+
+    > Based on the analysis presented here, a quadratic space complexity bit-parallel multiplier for 
+    > GF(2^n) can be about two times faster than its subquadratic counterpart (log2(2n) vs. 2 log2(n)). 
+    > On the other hand, for cryptographic field sizes the quadratic complexity multiplier will be 
+    > much larger; for example the total gate count for a quadratic complexity multiplier for GF(2^512) 
+    > is about four times that of its subquadratic counterpart. If both space and time complexities are 
+    > considered together, for example the area–time product, then a subquadratic complexity multiplier 
+    > can outperform its quadratic counterpart for n as small as 100.
+
+    So for small orders such as  GF(2^8), using a quadratic multiplier is just fine.
+
 
 # Implementations
 
@@ -235,6 +292,9 @@ however, the correct value is the result that is most common.
 * [CoolRunner-II CPLD Galois Field GF(2m) Multiplier](https://docs.xilinx.com/v/u/en-US/xapp371)
 
 
+* [VHDL Implementation of Reed-Solomon FEC architecture for high-speed optical communications](https://odr.chalmers.se/server/api/core/bitstreams/f33fca38-5a07-458e-9330-47391a3656a8/content)
+
+    32 symbols per clock RS decoder.
 
 * [Reed-Solomon with regular n^2 + remainder 8x8 multiply](https://github.com/winsonbook/Reed-Solomon-/blob/master/multiply.v)
 
