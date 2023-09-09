@@ -235,7 +235,7 @@ Let's use $$\text{GF}(2^4)$$ as an example, with $$p(x)=x^4+x+1$$ as primitive p
 The field contains 16 elements. We need a zero, a one, and 14 additional elements that
 we name $$\alpha^1$$ to $$\alpha^{14}$$. Here's the total set of field elements:
 
-$$(0, 1, \alpha^1, \alpha^2, \alpha^3, ..., \alpha^{14})$$
+$$(0, 1, \alpha^1, \alpha^2, \alpha^3, \ldots, \alpha^{14})$$
 
 We're using an exponent to number each $$\alpha$$ because that's how we're going to
 construct their tuple values.
@@ -304,12 +304,140 @@ or XOR in the case of a binary base field, each component. But the exponential
 notation is great for multiplication: you can add the exponents and then do module 16
 on the result. There's no need for a polynomial division.
 
+# Mastrovito Multiplier
+
+Reference: A Novel Architecture for Galois Fields $$\text{GF}(2^m)$$ Multipliers Based on Mastrovito Scheme
+
+* irreducible  polynomial: $$p(x) = z^m + p_{m-1} \cdot z^{m-1} + \ldots + p_1 \cdot z + 1 $$.
+
+  $$p(x)$$ is also called the field generator polynomial.
+
+* basis: $$\vec{s} = [1,\alpha,\alpha^2,\ldots,\alpha^{m-1}]$$
+
+* $$\alpha$$ is a root of $$p(z)$$, so: 
+
+    $$\alpha^m = p_{m-1} \cdot \alpha^{m-1} + \ldots + p_1 \cdot \alpha + 1 $$
+
+    XXX why is this?
+
+* elements A and B
+
+    $$A = a_0 + a_1 \alpha + \ldots + a_{m-1}\alpha^{m-1} \tag{1}$$
+
+    $$B = b_0 + b_1 \alpha + \ldots + b_{m-1}\alpha^{m-1} \tag{1}$$
+
+* With $$\vec{a} = [a_0, a_1, \ldots, a_{m_1}]$$ and $$\vec{b} = [b_0, b_1, \ldots, b_{m_1}]$$,
+  this can also be written as:
+
+    $$A = \vec{s} \cdot \vec{a}^\intercal$$ 
+
+    $$B = \vec{s} \cdot \vec{b}^\intercal$$
+
+* C is the multiplication of A and B:
+
+    $$C = b_0 \cdot A + b_1 \cdot A \cdot \alpha + \ldots + b_{m-1} \cdot A \cdot \alpha^{m-1} \tag{1}$$
+
+    *Note how there's a scalar multiplication between $$b_i$$ and vector A.*
+
+* This can also be written as:
+
+    $$C = [ A, A \cdot \alpha, \ldots, A \cdot \alpha^{m-1} ] \cdot \vec{b}^\intercal$$
+
+*  The following vectors are the standard-basis components of $$A\cdot\alpha^i$$:
+
+    $$M_i = [ M_{0,i}, M_{1,i}, \ldots M_{m-1,i} ]$$
+
+    and thus:
+
+    $$ A\cdot\alpha^i = \vec{s} \cdot M_i^\intercal$$
+
+    $$ C = \vec{s} \cdot [c_0, c_1, \ldots, c_{m-1}]^\intercal $$
+
+    $$ C = \vec{s} \cdot [ M_0^\intercal, M_1^\intercal, \ldots, M_{m-1}^\intercal ] \cdot \vec{b}^\intercal $$
+
+A Mastrovito multiplier have two steps:
+
+1. Calculate matrix $$\mathbf{M}$$ using coefficient $$a_i$$ and coefficients $$p_i$$ from $$p(z)$$
+2. Evaluate $$c_j = M_{j,0} \cdot b_0 + M_{j,1} \cdot b_1 + \ldots + M_{j,m_1} \cdot b_{m-1}$$
+
+Step 2 does not require $$p(x)$$ and has a fixed number of XOR and AND gates, but step 1 is more
+complex.
+
+* Start with $$M_0$$:
+
+    $$M_0 = [a_0, a_1, \ldots, a_{m-1} ]$$
+
+* $$M_i$$ can be generated from $$M_{i-1}$$ by multiplying with $$\alpha$$:
+
+    $$\vec{s} \cdot M_i^\intercal = \alpha \cdot \vec{s} \cdot M_{i-1}^\intercal$$
+
+    $$\alpha \cdot \vec{s} \cdot M_{i-1}^\intercal =  \alpha \cdot (M_{0,i-1} +  M_{1,i-1} \cdot \alpha + \ldots + M_{m-1,i-1} \cdot \alpha^{m-1})$$
+
+    $$ =  M_{0,i-1} \cdot \alpha +  M_{1,i-1} \cdot \alpha^2 + \ldots + M_{m-1,i-1} \cdot \alpha^{m})$$
+
+    $$\alpha^{m}$$ can be replaced by $$p_{m-1} \cdot \alpha^{m-1} + \ldots + p_1 \cdot \alpha + 1$$:
+
+    $$ =  M_{0,i-1} \cdot \alpha +  M_{1,i-1} \cdot \alpha^2 + \ldots + M_{m-1,i-1} \cdot (p_{m-1} \cdot \alpha^{m-1} + \ldots + p_1 \cdot \alpha + 1)$$
+
+    Regroup for $$\alpha^i$$:
+
+    $$ =  M_{m-1,i-1} +  (M_{0,i-1} + p_1 \cdot M_{m-1,i-1})  \cdot \alpha + \ldots + (M_{m-2,i-1} + M_{m-1,i-1} \cdot p_{m-1}) \cdot \alpha^{m-1}$$
+
+* Algorithm to calculate all values of $$M_i$$:
+
+    $$M_0 = [a_0, a_1, \ldots, a_{m-1} ]$$
+
+    $$M_{0,i} = M_{m-1,i-1}$$
+
+    $$M_{j,i} = M_{j-1,i-1} + M_{m-1,i-1} \cdot p_j$$
+
+
+# Example
+
+Example for $$\text{GF}(2^4)$$:
+
+$$\vec{a} = [ a_0, a_1, a_2, a_3 ]$$
+
+$$\vec{b} = [ a_0, b_1, b_2, b_3 ]$$
+
+$$\vec{s} = [ 1, \alpha, \alpha^2, \alpha^3]$$
+
+$$p(x) = 1 + x + x^4$$
+
+$$\vec{p} = [p_0, p_1, p_2, p_3, p_4] = [1,1,0,0,1]$$
+
+$$M_0 = [ a_0, a_1, a_2, a_3 ]$$
+
+$$
+M_1 = [  (a_3                ),
+         (a_0 + a_3 \cdot p_1), 
+         (a_1 + a_3 \cdot p_2), 
+         (a_2 + a_3 \cdot p_3) 
+         ]
+$$
+
+$$
+M_2 = [ (a_2 + a_3 \cdot p_3), 
+        (a_3                ) + (a_2 + a_3 \cdot p_3) \cdot p_1, 
+        (a_0 + a_3 \cdot p_1) + (a_2 + a_3 \cdot p_3) \cdot p_2, 
+        (a_1 + a_3 \cdot p_2) + (a_2 + a_3 \cdot p_3) \cdot p_3 
+        ]
+$$
+
+$$
+M_3 = [ ((a_1 + a_3 \cdot p_2) + (a_2 + a_3 \cdot p_3) \cdot p_3), 
+        ((a_2 + a_3 \cdot p_3))                                   + ((a_1 + a_3 \cdot p_2) + (a_2 + a_3 \cdot p_3) \cdot p_3)) + a_3 \cdot p_1, 
+        ((a_3                  + (a_2 + a_3 \cdot p_3) \cdot p_1) + ((a_1 + a_3 \cdot p_2) + (a_2 + a_3 \cdot p_3) \cdot p_3)) + a_3 \cdot p_2, 
+        ((a_0 + a_3 \cdot p_1) + (a_2 + a_3 \cdot p_3) \cdot p_2) + ((a_1 + a_3 \cdot p_2) + (a_2 + a_3 \cdot p_3) \cdot p_3)) + a_3 \cdot p_3 
+        ]
+$$
+
 # Linear Combination
 
-It is possible to find an element $$\beta$$ from $$(0, 1, \alpha, \alpha^2, ..., \alpha^{14})$$ so that 
+It is possible to find an element $$\beta$$ from $$(0, 1, \alpha, \alpha^2, \ldots, \alpha^{14})$$ so that 
 each element $$\alpha^i$$ can be written as:
 
-$$ \alpha^i = b_3\beta^8 + b_2\beta^3 +b_1\beta^2 +b_0\beta^1 $$
+$$\alpha^i = b_3\beta^8 + b_2\beta^3 +b_1\beta^2 +b_0\beta^1   $$
 
 This is called a normal basis. The coefficients $$b_i$$ are elements
 of the base field GF(2). XXXX does this only work for GF(2) ?
