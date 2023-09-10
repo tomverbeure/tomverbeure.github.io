@@ -1,0 +1,72 @@
+library(basic_cells){
+
+    cell (INV) {
+        area : 1;
+        pin(A) {
+            direction : input;
+        }
+    
+        pin(Y) {
+            direction : output;
+            function : "A'";
+        }
+  }
+  
+    cell (BUF) {
+        area : 2;
+        pin(A) {
+            direction : input;
+        }
+        pin(Y) {
+            direction : output;
+            function : "A";
+        }
+    }  
+
+    cell (AND2) {
+        area : 4;
+        pin(A) {
+            direction : input;
+        }
+        pin(B) {
+            direction : input;
+        }
+        pin(Y) {
+            direction: output;
+            function : "(A * B)";
+        }
+    }
+  
+    cell (XOR2) {
+        area : 6;
+        pin(A) {
+            direction : input;
+        }
+        pin(B) {
+            direction : input;
+        }
+        pin(Y) {
+            direction: output;
+            function : "(A ^ B)";
+        }
+    }
+
+    cell (DFF) {
+        area : 8;
+        pin(D) {
+            direction : input;
+        }	
+        pin(CK) {
+            direction : input;
+            clock : true;
+        }
+        ff("Q") {
+            clocked_on : "CK";
+            next_state : "D";
+        }
+        pin(Q) {
+            direction : output;
+            function: "Q";
+        }
+    }
+}

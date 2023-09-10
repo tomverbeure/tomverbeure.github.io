@@ -1,0 +1,19 @@
+
+
+read_verilog gf16_mul.v
+hierarchy -auto-top
+flatten
+proc
+techmap
+clean
+stat
+
+dfflibmap -liberty ./basic_cells.lib
+abc -liberty ./basic_cells.lib
+clean
+stat -liberty ./basic_cells.lib
+tee -o gf16_mul.json stat -json -liberty ./basic_cells.lib
+
+read_verilog -specify basic_cells.v
+sta
+
