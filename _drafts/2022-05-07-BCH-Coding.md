@@ -1,7 +1,7 @@
 ---
 layout: post
 title: BCH Coding
-date:   2019-08-06 00:00:00 -1000
+date:   2022-05-07 00:00:00 -1000
 categories:
 ---
 
@@ -102,4 +102,10 @@ The key understanding of an LFSR:
 * [The mathematics of RAID-d6](https://mirrors.edge.kernel.org/pub/linux/kernel/people/hpa/raid6.pdf)
 * [The RAID-6 Liberation Codes](https://www.usenix.org/legacy/event/fast08/tech/full_papers/plank/plank_html/index.html) 
 
+* [Hamsterworks HDMI header error correction](https://web.archive.org/web/20191021164243/http://hamsterworks.co.nz/mediawiki/index.php/HDMI_header_error_correction)
 
+    * [local copy](/assets/bch/HDMI_header_correction_Hamsterworks.html)
+
+    * [HDMI header ECC tweet with code](https://twitter.com/field_hamster/status/1010141225121267713)
+    * ![HDMI ECC code](/assets/bch/hdmi_ECC.jpg)
+    * ![HDMI ECC encoder](/assets/bch/HDMI_BCC_encoder.png)
