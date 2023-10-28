@@ -13,6 +13,9 @@ categories:
 
 * [Basic Equations of the PLLs](https://catalogimages.wiley.com/images/db/pdf/0470848669.excerpt.pdf)
 
+
+* https://electronics.stackexchange.com/questions/476611/understanding-pll-vco-integrator-phase-shift
+
 **Costas Loop**
 
 * The Costas Loop Series - Eric Hagemann
@@ -33,3 +36,19 @@ categories:
 * [DSP related discussion](https://www.dsprelated.com/showthread/comp.dsp/112658-1.php)
 
 * [DESIGN OF PLL-BASED CLOCK AND DATA RECOVERY CIRCUITS FOR HIGH-SPEED SERDES LINKS](https://core.ac.uk/download/pdf/29156891.pdf)
+
+    Section 3 is a great tutorial on clock-and-data recovery (CDR) basics.
+
+    * Hogge phase-detector
+
+        Easy to understand. Negative: always requires skew between data-in and clock.
+
+    * Bang-Bang or Alexander Phase Detector
+
+        Most popular.
+
+        Uses 3 samples to (2 rising, 1 falling edge) to detect if a data transition is present
+        and if the clock is early or late.
+
+        There is no linear phase difference: the clock is either leading or lagging.
+
