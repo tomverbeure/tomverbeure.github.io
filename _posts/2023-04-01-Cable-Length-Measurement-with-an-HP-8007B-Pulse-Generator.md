@@ -141,7 +141,7 @@ $$BW(Hz) = 0.35/rise\ time(s)$$
 # The HP 8007B Pulse Generator
 
 I don't know the exact date when the 8007B came to be, but the manual was printed in October 1972,
-makes it more than 50 years old. 
+which makes it more than 50 years old. 
 
 Here's some information I've been able to gather on the web:
 
@@ -182,7 +182,7 @@ That said, a
 generates pulses with a 40ps rise time for just $70.
 
 Let's connect the pulse generator an HP Infiniium 54825A, a 25 year old but still very
-capable oscilloscope with a 500MHz bandwidth, a 2 GSa/s sample rate. *The datasheet lists
+capable oscilloscope with a 500MHz bandwidth and a 2 GSa/s sample rate. *The datasheet lists
 a rise time of 700ps, but a footnote says that this number is derived with the 0.35/bandwidth 
 rule of thumb.*
 
