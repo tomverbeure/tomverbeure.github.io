@@ -96,7 +96,7 @@ use open source alternative that can load a Verilog design with some constraints
 exist.
 
 That was until the release of [SymbiYosys](https://symbiyosys.readthedocs.io/en/latest/). Written
-by open source All-Star Clifford Wolf, SymbiYosys links your Verilog design which formal commands
+by open source All-Star Clifford Wolf, SymbiYosys links your Verilog design with formal commands
 to a SAT solver. SymbiYosys itself is a script around [Yosys](http://www.clifford.at/yosys/), 
 the widely used open source logic synthesis tool.
 
