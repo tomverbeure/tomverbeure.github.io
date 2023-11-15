@@ -368,7 +368,7 @@ What we really want is support for temporal assertions.
 SystemVerilog has had them for something like 15 years.
 
 You can find a quick overview of what they can do on
-[this Doulos tutorial page](https://www.doulos.com/knowhow/sysverilog/tutorial/assertions/),
+[this Doulos tutorial page](https://www.doulos.com/knowhow/systemverilog/systemverilog-tutorials/systemverilog-assertions-tutorial/),
 but it's essentially a very compact way to describe sequences of events.
 
 The example above could have been written like this:
