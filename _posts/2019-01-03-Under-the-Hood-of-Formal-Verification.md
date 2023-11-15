@@ -693,6 +693,6 @@ Support for SpinalHDL, MiGen and other Verilog generating frameworks could be ad
 They would require a rewrite of the FSM handling code of `verificsva.cc`, but it's not 
 overly complex. 
 
-The possibilities are very exciting. I want able to contribute to this area in the future and 
+The possibilities are very exciting. I want to be able to contribute to this area in the future and 
 hope that others want to do so as well.
 
