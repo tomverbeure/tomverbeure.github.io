@@ -534,7 +534,7 @@ FSMs can be transformed into a deterministic one! And the algorithm is pretty st
 
 Just google "NFA to DFA conversion" and you'll find plenty of tutorials and examples.
 
-I used a tool called ["JFLAP" ](http://www.jflap.org) which, among other things, supports
+I used a tool called ["JFLAP" ](https://www.jflap.org/) which, among other things, supports
 graphical FSM entry and as well as automated conversion from NFA to DFA to convert
 our NFA to a DFA:
 
