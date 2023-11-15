@@ -54,7 +54,7 @@ signals added together will require a 4 bit result. But that real warning will o
 of harmless false positives.
 
 And, of course, the problem sketched here is actually a very simply one. One that triggers a bug when
-8 orthogonal signals assert a exactly the same time, so not *that* complicated to identify up front
+8 orthogonal signals assert at exactly the same time, so not *that* complicated to identify up front
 as a problem case to begin with.
 
 Similar issues can hide in intricate pipelines for which problem conditions are much harder to imagine.
@@ -224,7 +224,7 @@ tick and check out its different components:
     rule will always be satisfied, or it can figure out which inputs need to be applied to a boolean network
     to make a particular equation true.
 
-    There are a bunch of different open source SAT solvers, each with the own strength and weaknesses. One
+    There are a bunch of different open source SAT solvers, each with their own strengths and weaknesses. One
     thing that they have in common is that they support a common input format: [SMT2](http://smtlib.cs.uiowa.edu/).
 
 * Yosys
