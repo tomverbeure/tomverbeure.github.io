@@ -45,25 +45,14 @@ has similar tools as well.
 Project IceStorm and Project Trellis started out by reverse engineering bitstreams that were
 generated with the commerical FPGA tools from Lattice. 
 
-# How Block RAM Content Replacement Works
+# A Day in the Life of a FPGA RAMs
 
-Commercial tools like Quartus and Vivado have an integrated backend database that contains all the
-aspects of design. The open source FPGA flow, on the other hand, consists of a bunch of tools
-that pass along design information with files: 
+Before getting into replacing the contents of block RAMs, let's first explore the journey from
+a register array that declared in a Verilog file to a block RAM with power-up initialization
+contents in an FPGA. The steps that are described here are specific to the open source
+Yosys/NextPNR/Project Trellis flow, which is what we're going to be using anyway.
 
-* [Yosys](https://github.com/YosysHQ/yosys) gets fed with Verilog and produces a netlist in JSON 
-  format that contains all the desired cells and interconnects.
-* [NextPNR](https://github.com/YosysHQ/nextpnr) takes in the JSON file, and additional constraint
-  files for pin placements, and generates config file with all the place and route information.
-* `ecppack` or `icepack` read the config file and convert it to a bitstream that can be uploaded
-  into the actual FPGA.
-
-It's a pipeline that works well, but there is no central design database from which to pull information.
-
-
-# The Generic Way to Infer Initialized RAMs
-
-The generic way to add RAM to your FPGA design looks more or less like this:
+Here's a common way to declare a RAM in Verilog:
 
 ```verilog
     localparam mem_size_bytes   = 2048;
@@ -87,15 +76,47 @@ The generic way to add RAM to your FPGA design looks more or less like this:
             mem_rdata  <= mem[mem_addr];
 ```
 
-Any competent FPGA synthesis tool will infer a 2KB block RAM from the code above.
+If you're using an FPGA[^1], you can specify the power-up initialization contents
+of that RAM, like this:
 
-If you want the RAM contents to be initialized after configuration, just add the lines below:
+[^1]: Don't expect this to work with ASICs: they typically power up in an undefined state.
+      That's annoying, but it has some interesting [cryptographic side benefits](https://www.intrinsic-id.com/sram-puf/).
 
 ```verilog
     initial begin
         $readmemh("mem_init_file.hex", mem);
     end
 ```
+
+
+
+
+
+# How Block RAM Content Replacement Works
+
+Commercial tools like Quartus and Vivado have an integrated backend database that contains all the
+aspects of design. The open source FPGA flow, on the other hand, consists of a bunch of tools
+that pass along design information with files: 
+
+* [Yosys](https://github.com/YosysHQ/yosys) gets fed with Verilog and produces a netlist in JSON 
+  format that contains all the desired cells and interconnects.
+* [NextPNR](https://github.com/YosysHQ/nextpnr) takes in the JSON file, and additional constraint
+  files for pin placements, and generates config file with all the place and route information.
+* `ecppack` or `icepack` read the config file and convert it to a bitstream that can be uploaded
+  into the actual FPGA.
+
+It's a pipeline that works well, but there is no central design database from which to pull information.
+
+
+# The Generic Way to Infer Initialized RAMs
+
+The generic way to add RAM to your FPGA design looks more or less like this:
+
+
+Any competent FPGA synthesis tool will infer a 2KB block RAM from the code above.
+
+If you want the RAM contents to be initialized after configuration, just add the lines below:
+
 
 This method works for simulation and, once again, most competent FPGA tools will
 synthesize a bitstream that initializes the block RAM with content after configuration.
