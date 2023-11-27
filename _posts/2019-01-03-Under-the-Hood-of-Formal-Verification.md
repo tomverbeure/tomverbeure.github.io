@@ -54,7 +54,7 @@ signals added together will require a 4 bit result. But that real warning will o
 of harmless false positives.
 
 And, of course, the problem sketched here is actually a very simply one. One that triggers a bug when
-8 orthogonal signals assert a exactly the same time, so not *that* complicated to identify up front
+8 orthogonal signals assert at exactly the same time, so not *that* complicated to identify up front
 as a problem case to begin with.
 
 Similar issues can hide in intricate pipelines for which problem conditions are much harder to imagine.
@@ -96,7 +96,7 @@ use open source alternative that can load a Verilog design with some constraints
 exist.
 
 That was until the release of [SymbiYosys](https://symbiyosys.readthedocs.io/en/latest/). Written
-by open source All-Star Clifford Wolf, SymbiYosys links your Verilog design which formal commands
+by open source All-Star Clifford Wolf, SymbiYosys links your Verilog design with formal commands
 to a SAT solver. SymbiYosys itself is a script around [Yosys](http://www.clifford.at/yosys/), 
 the widely used open source logic synthesis tool.
 
@@ -224,7 +224,7 @@ tick and check out its different components:
     rule will always be satisfied, or it can figure out which inputs need to be applied to a boolean network
     to make a particular equation true.
 
-    There are a bunch of different open source SAT solvers, each with the own strength and weaknesses. One
+    There are a bunch of different open source SAT solvers, each with their own strengths and weaknesses. One
     thing that they have in common is that they support a common input format: [SMT2](http://smtlib.cs.uiowa.edu/).
 
 * Yosys
@@ -368,7 +368,7 @@ What we really want is support for temporal assertions.
 SystemVerilog has had them for something like 15 years.
 
 You can find a quick overview of what they can do on
-[this Doulos tutorial page](https://www.doulos.com/knowhow/sysverilog/tutorial/assertions/),
+[this Doulos tutorial page](https://www.doulos.com/knowhow/systemverilog/systemverilog-tutorials/systemverilog-assertions-tutorial/),
 but it's essentially a very compact way to describe sequences of events.
 
 The example above could have been written like this:
@@ -534,7 +534,7 @@ FSMs can be transformed into a deterministic one! And the algorithm is pretty st
 
 Just google "NFA to DFA conversion" and you'll find plenty of tutorials and examples.
 
-I used a tool called ["JFLAP" ](http://www.jflap.org) which, among other things, supports
+I used a tool called ["JFLAP" ](https://www.jflap.org/) which, among other things, supports
 graphical FSM entry and as well as automated conversion from NFA to DFA to convert
 our NFA to a DFA:
 
@@ -693,6 +693,6 @@ Support for SpinalHDL, MiGen and other Verilog generating frameworks could be ad
 They would require a rewrite of the FSM handling code of `verificsva.cc`, but it's not 
 overly complex. 
 
-The possibilities are very exciting. I want able to contribute to this area in the future and 
+The possibilities are very exciting. I want to be able to contribute to this area in the future and 
 hope that others want to do so as well.
 
