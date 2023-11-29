@@ -74,26 +74,50 @@ The DSLogic comes with a nice, elongated hard case.
 
 [![DSLogic case](/assets/dslogic/dslogic_case.jpg)](/assets/dslogic/dslogic_case.jpg)
 
+[![DSLogic contents](/assets/dslogic/dslogic_contents.jpg)](/assets/dslogic/dslogic_contents.jpg)
+
 Inside, you'll find:
 
 * the device itself, a slick aluminum case
 * a USB-C to USB-A cable
 * 5 4-way probe cables and 1 3-way clock and trigger cable
-* 16 test clips
+* 18 test clips
 
-Yes, you read it right, 5 4-way probe cables, not 4. I don't know if DreamSourceLab added one
+# Cables and Clips
+
+You read it right, my device came with 5 4-way probe cables, not 4. I don't know if DreamSourceLab added one
 extra in case you lose one, or if they mistakenly included one too much, but it's definitely good 
 to have a spare.
 
-[![DSLogic contents](/assets/dslogic/dslogic_contents.jpg)](/assets/dslogic/dslogic_contents.jpg)
+![DSLogic and 6 sets of probe, clock and trigger wires](/assets/dslogic/DSLogic_and_probe_wires.jpg)
 
-The cables are quite stiff, we'll get to that later, and are definitely not as pliable as those
+The cables are quite stiff and are definitely not as pliable as those
 that comes with a Saleae. The case has been designed such that the probe cables can
 be stored without the need to bend them. I like it.
 
-The quality of the test clips is terrible, but no different than those of 5 times more expensive 
-Saleae Logic 16 Pro. The HP and Tektronix grabbers that I got from eBay are much better and
-are of course compatible.
+The quality of the test clips is not great, but they are no different than those of the 5 times 
+more expensive Saleae Logic 16 Pro. They're clones of the HP/Agilent logic analyzer grabbers that 
+I got from eBay and will do the job, but I much prefer the ones from Tektronix.
+
+![4 different grabbers](/assets/dslogic/grabbers.jpg)
+*From left to right: Tektronix, Agilent, Saleae, and DSLogic clips*
+
+
+
+# The Hardware
+
+
+![DSLogic and probe wire plugs](/assets/dslogic/DSLogic_and_probe_wire_plugs.jpg)
+
+![DSLogic with two cables plugged in](/assets/dslogic/DSLogic_and_two_cables_plugged_in.jpg)
+
+![DSLogic opened up](/assets/dslogic/DSLogic_opened_up.jpg)
+
+[![DSLogic PCB top side - not annotated](/assets/dslogic/DSLogic_PCB_top_side_not_annotated.jpg)](/assets/dslogic/DSLogic_PCB_top_side_not_annotated.jpg)
+*(Click to enlarge)*
+
+[![DSLogic PCB top side - annotated](/assets/dslogic/DSLogic_PCB_top_side_annotated.jpg)](/assets/dslogic/DSLogic_PCB_top_side_annotated.jpg)
+*(Click to enlarge)*
 
 # Software: From Saleae Logic to PulseView to DSView
 
@@ -171,7 +195,7 @@ Components:
 
     Probably! Might be slightly different...
 
-* 100k resistor to ground + ESD -> 33Ohm series resistor (into FPGA?)
+* 100k resistor to ground + ESD -> 33 Ohm series resistor (into FPGA?)
 
 # References
 
