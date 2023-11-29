@@ -109,3 +109,8 @@ The key understanding of an LFSR:
     * [HDMI header ECC tweet with code](https://twitter.com/field_hamster/status/1010141225121267713)
     * ![HDMI ECC code](/assets/bch/hdmi_ECC.jpg)
     * ![HDMI ECC encoder](/assets/bch/HDMI_BCC_encoder.png)
+
+* [Comparision Bose-Chaudhuri-Hocquenghem BCH and Reed Solomon](https://www.itu.int/wftp3/av-arch/video-site/h261/H261_Specialists_Group/Contributions/476.pdf)
+
+* [Error Detection and Correction Using the BCH Code](https://aqdi.com/wordpress/wp-content/uploads/2015/12/bch.pdf)
+
