@@ -29,8 +29,8 @@ By 2010, it was completely defeated with the release of the
 [master key](https://github.com/rjw57/hdcp-genkey/blob/master/master-key.txt)[^1] that can be used to 
 generate transmit and receive keys at will.
 
-To keep Hollywood happy, a succesor was invented: HDCP 2.0, an entirely new protocol with no similarities 
-to revision 1.  This time, the creators decided to use proven cryptography algorithms such as public key
+To keep Hollywood happy, a successor was invented: HDCP 2.0, an entirely new protocol with no similarities 
+to revision 1.  This time, the creators used proven cryptography algorithms such as public key
 authentication, and 128-bit AES encryption. HDCP 2.1 added the concept of content stream types **to block the 
 retransmition of high quality video streams** (e.g. 4K or HDR).
 
@@ -45,7 +45,7 @@ are still supported. Similarly, most HDCP 2 sources will fall back to HDCP 1 whe
 TVs that don't have HDCP 2 support.
 
 There's a major issue however: remember how HDCP 2.1 added content stream types? There are currently only 2 of
-them: type 0 and type 1, where type 1 is considered high value. It's up to a content provider to decide 
+them: type 0 and type 1, where type 1 is considered high value content. It's up to a content provider to decide 
 whether a video stream gets tagged as such. In the case of Netflix, UHD (4K) or HDR content is classified as 
 type 1 while traditional HD content (720p and 1080p non-HDR) is type 0. On Amazon Prime, 1080p HDR content
 is classified as type 0 content, but UHD, with our without HDR, is classified as type 1.
@@ -54,7 +54,7 @@ So if you have a 4K display that only supports HDCP 1, you're out of luck: Netfl
 1080p streams. The issue can't be solved with repeaters such as home theater video receivers, because 
 the HDCP specification prohibits retransmision of type 1 content. 
 
-And yet, the Monoprice Blackbird claims to do HDPC 2 to HDCP 1 downconversion just fine. Maybe it only supports 
+And yet, the Monoprice Blackbird claims to do HDCP 2 to HDCP 1 downconversion just fine. Maybe it only supports 
 type 0 content, making it technically HDCP 2 compliant even if it doesn't supports only a fraction of the available 
 content? 
 
@@ -80,7 +80,7 @@ Let's look at the main actors:
 * Silicon Image Sil9679CNUC 
 
     Google has quite a bit of hits for this product, but they're all articles from way back when HDCP 2.2
-    capable TV silicon was rare. Apparently, this chip was the very first one that allowed televsion 
+    capable TV silicon was rare. This chip was the very first one that allowed televsion 
     manufacturers to add support for HDCP 2.2 to their 4K TVs. It only supports the YUV 4:2:0 color format,
     but that's sufficient for most TV content.
 
@@ -115,13 +115,13 @@ Let's look at the main actors:
 * Console Connector J1
 
     You can visually trace the PCB traces from connector J1 to the STM8 controller: 2 pins are connected
-    to its UART interface. We're definitely going to have a closer look at that.
+    to its UART interface. We'll soon have a closer look at that.
 
 * Debug Connector J2
 
     The second pin of connector J2 is connected to the SWIM pin of the STM8. SWIM is short for
     [Single Wire Interface Module](http://kuku.eu.org/?projects/stm8spi/stm8spi#mcb_toc_head1). 
-    It's a single-pin alternative of the more common JTAG interface.
+    It's a single-pin alternative of the more common JTAG interface and used to connect a debugger.
 
 # The Test
 
@@ -129,7 +129,7 @@ To test whether or not the HDCP converter works, I did a couple of experiments.
 
 The equipment:
 
-* an Amazon Fire TV Stick 4K
+* an Amazon [Fire TV Stick 4K](https://www.amazon.com/gp/product/B08XVYZ1Y5)
 * a 15 year old Samsung TV, 1080p, no HDR, HDCP1 only
 * a 5 year old Monoprice 4K 32" monitor, HDR support (terrible quality),  HDCP1 only
 * the Monoprice HDCP 2 to HDCP 1 converter
@@ -173,7 +173,7 @@ But what is it doing exactly?
 
 # Digging Deeper: UART Transactions
 
-Let's dig deeper. The obvious second step is to wire up the UART pins of the
+Let's dig deeper. The obvious next step is to wire up the UART pins of the
 microcontroller and see if there's anything interesting to see there.
 
 ![UART connected](/assets/hdcp_converter/uart_connected.jpg)
@@ -182,7 +182,7 @@ I used a USB to serial converter to capture UART traffic with a 115200 bit rate.
 
 The TX port of the UART is chatty whenever there is some major event: booting up,
 plugging an HDMI cable in or out, or going to sleep. I typed a bunch of commands back
-to the device, but was not able to get a response of out it.
+to the device, but was not able to get an additional response of out it.
 
 **Booting Up**
 
@@ -253,8 +253,8 @@ for the source on the input HDMI port.
 The EDID data contains all the information about the connected monitor: supported
 resolutions and refresh rates, colometry information, audio modes and so forth. 
 After removing the "Edid Block 1 Data", you can paste these hex values straight into 
-[an online EDID parser](http://www.edidreader.com) to extract all the 
-EDID information in a readable format.
+[an online EDID parser](http://www.edidreader.com) to convert the binary 
+EDID information into a readable format.
 
 ![EDID parser screenshot](/assets/hdcp_converter/EDID_parser.png)
 
@@ -357,9 +357,9 @@ There are multiple I2C devices on the DDC bus:
     The Status and Control Data Channel was introduced for HDMI 2.0. For earlier versions, 
     data transmission over the high-speed HDMI links was a pure one-way fire-and-forget
     affair. HDMI 2.0 added status registers to observe link quality and control registers to 
-    control clock to data ratio, enable or disable scrambling operation and so forth.
+    set the clock to data ratio, enable or disable scrambling operation and more.
 
-    The HDMI converter only supports HDMI 1.4, so you can expect to source requests to
+    The HDMI converter only supports HDMI 1.4, so you can expect source requests to
     address 0x54 to result in an I2C NAK (not-acknowledged) response.
 
 * HDCP: 0x3A
@@ -371,7 +371,8 @@ There are multiple I2C devices on the DDC bus:
 
 Let's walk through the key I2C transactions of the recorded trace.
 
-Initially, nothing is connected, and the sink, the HDCP converter in this case, doesn't respond:
+Initially, nothing is connected, and the sink, the RX port of the HDCP converter in this case,
+doesn't respond:
 
 ```
 // HDCP... Nothing connected
@@ -404,7 +405,7 @@ on the [HDCP Specifications](https://www.digital-cp.com/hdcp-specifications) pag
 of the Digital Content Protection consortium.
 
 There are specifications that describe the general principles, such as the
-*HDCP Specification Rev. 2.2 Interface Independent Adaptation*, as well as
+*HDCP Specification Rev. 2.2 Interface Independent Adaptation* document, as well as
 specifications with interface specific implementation details, such as the
 *HDCP 2.3 on HDMI Specification*. We can use the latter to decode the
 meaning of the I2C transactions. Section 2.14 *HDCP Port* shows all the
