@@ -83,7 +83,7 @@ Inside, you'll find:
 * 5 4-way probe cables and 1 3-way clock and trigger cable
 * 18 test clips
 
-# Cables and Clips
+# Probe Cables and Clips
 
 You read it right, my device came with 5 4-way probe cables, not 4. I don't know if DreamSourceLab added one
 extra in case you lose one, or if they mistakenly included one too much, but it's definitely good 
@@ -103,7 +103,6 @@ I got from eBay and will do the job, but I much prefer the ones from Tektronix.
 *From left to right: Tektronix, Agilent, Saleae, and DSLogic clips*
 
 
-
 # The Hardware
 
 
@@ -118,6 +117,11 @@ I got from eBay and will do the job, but I much prefer the ones from Tektronix.
 
 [![DSLogic PCB top side - annotated](/assets/dslogic/DSLogic_PCB_top_side_annotated.jpg)](/assets/dslogic/DSLogic_PCB_top_side_annotated.jpg)
 *(Click to enlarge)*
+
+# Input Circuit
+
+[![DSLogic input schematic](/assets/dslogic/DSLogic_input_schematic.png)](/assets/dslogic/DSLogic_input_schematic.png)
+
 
 # Software: From Saleae Logic to PulseView to DSView
 
@@ -205,4 +209,18 @@ Components:
 
     Comparison between Saleae Logic Pro 16, Innomaker LA2016, Innomaker LA5016, DSLogic Plus, and DSLogic U3Pro16
 
+LVDS comparator
+
+* [Can I use differential I/O pins of FPGA as high speed comparator?](https://electronics.stackexchange.com/questions/90149/can-i-use-differential-i-o-pins-of-fpga-as-high-speed-comparator)
+* [Logic analyzer with Kintex-7](https://www.reddit.com/r/FPGA/comments/14wx7hg/logic_analyzer_with_kintex7/)
+* [FPGA ADC design](https://sps.ewi.tudelft.nl/fpga_tdc/ADC_basic.html)
+* [LVDS inputs on Cyclone II](https://www.fpgarelated.com/showthread/comp.arch.fpga/42373-1.php)
+
+    Comments by Xilinx engineer about the design of Spartan 3 LVDS comparator
+
+* [APP NOTE: make an analog to digital converter using FPGA pins](http://dangerousprototypes.com/blog/2019/11/03/app-note-make-an-analog-to-digital-converter-using-fpga-pins/)
+* [TAKING ADVANTAGE OF LVDS INPUT BUFFERS TO IMPLEMENT SIGMA-DELTA A/D CONVERTERS IN FPGAS](http://www.ee.nmt.edu/~erives/531_14/Sigma-Delta.pdf)
+* [A 7.4-Bit ENOB 600 MS/s FPGA-Based Online Calibrated Slope ADC without External Components](https://www.mdpi.com/1424-8220/22/15/5852)
+* [An FPGA-based 7-ENOB 600 MSample/s ADC without any External Components](https://dl.acm.org/doi/abs/10.1145/3431920.3439287)
+* [200 MS/s ADC implemented in a FPGA employing TDCs](https://sps.ewi.tudelft.nl/pubs/Homulle15fpga.pdf)
 
