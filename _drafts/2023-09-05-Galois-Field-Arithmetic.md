@@ -447,7 +447,8 @@ of the base field GF(2). XXXX does this only work for GF(2) ?
 
 * [Wikipedia - Finite field](https://en.wikipedia.org/wiki/Finite_field)
 
-
 * [Python galois package](https://galois.readthedocs.io/)
+
+* [Parallel Multiplier Designs for the Galois/Counter Mode of Operation](https://pdfs.semanticscholar.org/1246/a9ad98dc0421ccfc945e6529c886f23e848d.pdf
 
 
