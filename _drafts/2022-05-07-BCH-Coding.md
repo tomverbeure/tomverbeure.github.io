@@ -95,6 +95,8 @@ The key understanding of an LFSR:
     Describes mathematics and algorithms for coding and encoding, and how to implement it with logic
     circuits.
 
+* [Parallel Multiplier Designs for the Galois/Counter Mode of Operation](https://uwspace.uwaterloo.ca/bitstream/handle/10012/3789/Final%20Thesis%20-%20Pujan%20Patel.pdf?sequence=1)
+
 * [Reed-Solomon error-correcting code decoder](https://www.nayuki.io/page/reed-solomon-error-correcting-code-decoder)
 
     Mathematics explained in function of implementing it in code (Java, Python)
@@ -112,5 +114,10 @@ The key understanding of an LFSR:
 
 * [Comparision Bose-Chaudhuri-Hocquenghem BCH and Reed Solomon](https://www.itu.int/wftp3/av-arch/video-site/h261/H261_Specialists_Group/Contributions/476.pdf)
 
+    Interesting apples-to-apples comparison between BCH and RS. It also shows how that
+    you can do either burst or non-burst correction with BCH codes.
+
 * [Error Detection and Correction Using the BCH Code](https://aqdi.com/wordpress/wp-content/uploads/2015/12/bch.pdf)
+
+    Long-winded introduction about coding in general, but 
 
