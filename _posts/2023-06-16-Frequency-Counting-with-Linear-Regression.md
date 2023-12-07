@@ -82,7 +82,7 @@ Rubidium clock reference or a
 [GPS disciplined oscillator (GPSDO)](https://en.wikipedia.org/wiki/GPS_disciplined_oscillator).
 
 With an additional fixed-rate clock available, the frequency counter implements
-2 counters: once that counts the edges on the input signal, like before, and
+2 counters: one that counts the edges on the input signal, like before, and
 one that counts reference clock cycles.
 
 The measurement time from the earlier equation gets translated into a number
@@ -111,7 +111,7 @@ $$
 \text{frequency} = \frac{10}{9,999,923 \cdot 10^{-7}s} = 10.00008 \text{Hz}
 $$
 
-The benefit of the reciprocal counter is clear: it has a high precision even if
+The benefit of the reciprocal counter is clear: the result has a high precision even if
 the input signal has a very low frequency.
 
 The waveforms below show how this works in practice:
@@ -304,7 +304,7 @@ of result will go down.*
 
 Commercial frequency counters will use hundreds, thousands or more samples per measurement.
 
-It should be clear the continuous time sampling with linear regression increases
+It should be clear that continuous time sampling with linear regression increases
 the precision of a frequency counter. Given enough samples, the increase in resolution
 is equal to: 
 
@@ -312,7 +312,7 @@ $$\frac{2.45}{\sqrt{m}}$$
 
 where $$m$$ is the number of samples. 
 
-Like the averaging case that was mentioned before, we can once again see $$\frac{1}{\sqrt{m}}$$ 
+Like the averaging case that was mentioned before, we can again see a $$\frac{1}{\sqrt{m}}$$ 
 factor here, but what we've gained is that the gate time for the full measurement hasn't changed: 
 we've added new measurements in the middle.
 
@@ -360,7 +360,7 @@ It requires a constant frequency throughout the whole measurement period. When t
 changes a bit, maybe it's a spread-spectrum oscillator, the linear regression will just fail and
 the result may not be better than the regular reciprocal method.
 
-It doesn't help when you need to measure the time interval between two pulses. In that case,
+Linear regression also doesn't help when you need to measure the time interval between two pulses. In that case,
 there's really only two input edges: start and stop, and no way to extract multiple measurements.
 
 But even when you want to measure a frequency, you won't be able to extract a sufficient
@@ -371,8 +371,8 @@ digits. When the input signal has a frequency of 1000Hz and the gate time is 1 s
 # From Theory to Simulated Practice
 
 So much for the theory, let's how these things translate into practice with a Python script that
-generates a bunch of timestamp pairs, and calculates the frequency with traditional reciprocal way
-and with linear regression. The script that generates all the graphs below can be found 
+generates a bunch of timestamp pairs, and calculates the frequency with the traditional reciprocal
+method and with linear regression. The script that generates all the graphs below can be found 
 [here](/assets/freq_counter/simulate.py).
 
 The inputs for each simulation are:
@@ -394,9 +394,9 @@ number of samples.
 
 Some basic observations:
 
-* there's a general downtrend in the errors.
+* there's a general downtrend in the measurement errors.
 
-    There better be! The longer you measure, the lower the error.
+    There better be! The more data, the lower the error.
 
 * the errors are jittery.
 
