@@ -78,7 +78,13 @@ Only 2 versions.
 
 # BCH Code
 
-https://en.wikipedia.org/wiki/BCH_code
+[BCH code on Wikipedia](https://en.wikipedia.org/wiki/BCH_code)
+
+* Block length: $$n=2^m-1$$
+* Partiy check bits: $$n-k \le mt$$
+* Minimum distance: $$d \ge 2t+1$$
+
+with $$m \ge 3$$ and $$t < 2^{m-1}$$
 
 
 ## Generator Polynomial
@@ -178,3 +184,5 @@ The key understanding of an LFSR:
 * [Channel Coding: The Road to Channel Capacity](https://arxiv.org/abs/cs/0611112)
 
     Fantastic paper about the history and evolution of coding
+
+* [Binary BCH (15,7,5) work out](http://souktha.github.io/misc/bch15_7_5/)
