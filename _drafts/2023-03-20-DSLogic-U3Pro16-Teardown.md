@@ -11,7 +11,7 @@ categories:
 # Introduction
 
 The year was 2020, and offices all over the world shut down. A house remodel had just
-started, so I moved from a comfortably airconditioned corporate building to a very messy 
+started, so my work area moved from a comfortably airconditioned corporate building to a very messy 
 garage.
 
 [![A very messy garage](/assets/dslogic/garage.jpg)](/assets/dslogic/garage.jpg)
@@ -29,9 +29,9 @@ it for some hobby-related activities.
 
 But eventually corporate offices reopened, the Saleae went back to its
 original habitat, and I found myself without a good 16-channel USB logic analyzer.
-Buy a Saleae for myself was out of the question: even after 
-the [$150 hobbyist discount](https://blog.saleae.com/saleae-discounts/), I simply
-can't justify a price of $1350.
+Buying a Saleae for myself was out of the question: even after 
+the [$150 hobbyist discount](https://blog.saleae.com/saleae-discounts/), I can't justify the $1350
+price tag.
 
 After looking around for a while, I decided to give the 
 [DSLogic U3Pro16](https://www.dreamsourcelab.com/product/dslogic-series/)
@@ -128,27 +128,143 @@ The hooks of a fake probe are flat, and don't attach as well to their target:
 ![Fake probe with flat hooks](/assets/dslogic/fake_flat_hooks.jpg)
 
 If you need to probe targets with a pitch that is smaller than 1.25mm, you should check out
-the [micro clips that I reviewed](/tools/2018/04/29/micro-chip-rw-clip.html)
+these [micro clips that I reviewed](/tools/2018/04/29/micro-chip-rw-clip.html) ages ago.
 
 
-# The Hardware
+# The Controller Hardware
 
+Each cable supports 4 probes and plugs into the main unit with 8 0.05" pins in 4x2 configuration.
+The cable itself has a tiny PCB sticking out that slots into a gap of the aluminum enclosure. This
+way it's not possible to plug in the cable incorectly... unlike the Saleae. It's great.
 
 ![DSLogic and probe wire plugs](/assets/dslogic/DSLogic_and_probe_wire_plugs.jpg)
 
 ![DSLogic with two cables plugged in](/assets/dslogic/DSLogic_and_two_cables_plugged_in.jpg)
 
+When we open up the device, we can see Infieon (formerly Cypress) CYUSB3014-BZX EZ-USB
+FX3 SuperSpeed controller. A Saleae Logic Pro uses the same device. 
+
 ![DSLogic opened up](/assets/dslogic/DSLogic_opened_up.jpg)
+
+These are your standard to-go-to USB interface devices when you need a microcontroller in addition
+to the core USB functionatility. They're relatively cheap too, you can get them
+for [$14 in single digital quantities at LCSC.com](https://www.lcsc.com/product-detail/span-style-background-color-ff0-USB-span-ICs_Cypress-Semicon-CYUSB3014-BZXI_C57294.html).
+
+![CYUSB3014 block diagram](/assets/dslogic/CYUSB3014.png)
+
+The other size of the PCB is much busier.
 
 [![DSLogic PCB top side - not annotated](/assets/dslogic/DSLogic_PCB_top_side_not_annotated.jpg)](/assets/dslogic/DSLogic_PCB_top_side_not_annotated.jpg)
 *(Click to enlarge)*
 
+The big ticket components are:
+
+* a [Spartan-6](https://www.xilinx.com/products/silicon-devices/fpga/spartan-6.html) XC6SLX16 FPGA
+
+    Reponsible data acquisition, triggering, run-length encoding/compression,
+    data storage to DRAM, and sending data to the CYUSB-3014.
+
+    A Saleae Logic 16 Pro has a smaller Spartan-6 LX9. That makes sense: it's triggering options
+    aren't as advanced as the DSLogic and since it doesn't have DDR memory, it doesn't need a
+    memory controller on the FPGA.
+
+* a DDR3-1600 DRAM
+
+    It's a [Micron MT41K128M16JT-125](https://www.micron.com/products/dram/ddr3-sdram/part-catalog/mt41k128m16jt-125) 
+    with 2Gbits of storage and a 16-bit data bus.
+
+* an Analog Devices [ADF4360-7](https://www.analog.com/media/en/technical-documentation/data-sheets/ADF4360-7.pdf) clock generator
+
+    I found this a bit surprising. A Spartan-6 LX16 FPGA has 2 clock managment tiles (CMT) that each have 1 real PLL and
+    2 DCMs (digital clock manager) with delay locked loop, digital frequency synthesizer, etc. The VCO of the PLL can be configured 
+    with a frequency up to 1080 MHz which should be sufficient to capture signals at 1GHz, but clearly there was a
+    need for something more or better.
+
+    The ADF4360-7 can generate an output clock as fast a 1800MHz.
+
+
+There's obviously an extensive supporting cast:
+
+* a Macronix [MX25R2035F](https://www.macronix.com/Lists/Datasheet/Attachments/8696/MX25R2035F,%20Wide%20Range,%202Mb,%20v1.6.pdf)
+  serial flash
+
+    This is used to configure the FPGA.
+
+* an[SGM2054](http://www.sg-micro.com/uploads/soft/20220506/1651829741.pdf) DDR termination voltage controller
+
+* an [LM26480](https://www.ti.com/lit/ds/symlink/lm26480.pdf) FPGA power regulator
+
+* two clock oscillators: 24MHz and 19.2MHz 
+
+* a TI [HD3SS3220](https://www.ti.com/lit/ds/symlink/hd3ss3220.pdf) USB-C Mux
+
+* a [SP3010-04UTG](https://www.arrow.com/en/products/sp3010-04utg/littelfuse) for USB ESD protection 
+
+    Marked QH4
+
+Two 5x2 pin connectors J7 and J8 on the right size of the PCB are almost certainly used to connect
+programming and debugging cables to the FPGA and the CYUSB-3014. 
+    
+
 [![DSLogic PCB top side - annotated](/assets/dslogic/DSLogic_PCB_top_side_annotated.jpg)](/assets/dslogic/DSLogic_PCB_top_side_annotated.jpg)
 *(Click to enlarge)*
 
-# Input Circuit
+# The Input Circuit
+
+I spent a bit of time Ohm-ing out the input circuit. Here's what I came up with:
 
 [![DSLogic input schematic](/assets/dslogic/DSLogic_input_schematic.png)](/assets/dslogic/DSLogic_input_schematic.png)
+
+The cable itself has a 100k Ohm series resistor and a 100k Ohm shunt resistor to ground at the entrance of
+the PCB that act as by-two resistive divider. The series resistor also limits the current going into the device.
+
+Before going to a second 33 Ohm series resistor that goes into the FPGA, there's an ESD protection
+device. I'm not 100% sure, but my guess is that it's a [SRV05-4D-TP](https://www.mccsemi.com/pdf/Products/SRV05-4D(SOT23-6L).pdf)
+or some variant thereof.
+
+I'm not 100% sure why the 33 Ohm resistor is there. It's common to have these type of resistors on high
+speed lines to avoid reflection, but since there's already a 100k resistor in the path, I don't think that
+makes much sense here. It might be there for additional protection of the ESD structure that resides inside
+the FPGA IOs?
+
+A DSLogic has a fully programmable input threshold voltage. If that's the case, then where's the 
+opamp to compare the input voltage against this threshold voltag. (There is such a comparator on a
+Saleae Logic Pro!)
+
+The answer to that question is: "it's in the FPGA!"
+
+FPGA IOs can support many different I/O standards: single-ended ones, such as CMOS, TTL, and a whole bunch of differential
+protocols too. Differential protocols compare a positive and a negative version of the same signals, but nothing 
+prevents anyone from assigning a static value to the negative input of a differential pair and making the input
+circuit behave as a regular single-end pair with programmable threshold. Like this:
+
+[![DSLogic Spartan LVDS Input](/assets/dslogic/DSLogic_Spartan_LVDS_Input.png)](/assets/dslogic/DSLogic_Spartan_LVDS_Input.png)
+
+There is plenty of literature out there about using the LVDS comparator in single-ended mode. It's even
+possible to create pretty fast analog-digital convertors this way, but that's outside the scope of this
+blog post.
+
+# Impact of Input Circuit on Circuit Under Test
+
+
+[![DSLogic Pro video](/assets/dslogic/DSLogic_Pro_video.jpg)](/assets/dslogic/DSLogic_Pro_video.jpg)
+
+6 years ago, OpenTechLab [reviewed the DSLogic Plus](https://www.youtube.com/watch?v=xZ5wKYnCNcs), 
+the successor of the DSLogic U3Pro16. Joel
+spent a lot of time [looking at its input circuit](https://youtu.be/xZ5wKYnCNcs?t=439). He mentions
+a 7.6k Ohm pull-down resistor at the input, different than the 100k Ohm that I measured. There's
+no mention of a series resistor in the cable or about the way adjustable thresholds are handled, but
+I think that the DSLogic Pro has a simular input circuit.
+
+His review continues with an [in-depth analysis](https://youtu.be/xZ5wKYnCNcs?t=660) of how measuring a signal 
+can impact the signal itself, he even [builds a simulation model of the whole system](https://youtu.be/xZ5wKYnCNcs?t=1142), 
+and does a [real-world comparison between a DSLogic measurement and a fake-Saleae one](https://youtu.be/xZ5wKYnCNcs?t=1397).
+
+While his measurements are convincing, I wasn't able to repeat his results on a similar setup with
+a DSLogic U3Pro and a Saleae Logic Pro: for both cases, a 200MHz signal was still good enough. I need to
+spend a bit more time to better understand the difference between my and his setup...
+
+Either way, I recommend watching this video.
 
 
 # Software: From Saleae Logic to PulseView to DSView
@@ -176,7 +292,7 @@ was a reskinned version of PulseView. A big no-no since the latter is developed 
 license.
 
 After a bit of drama, DreamSourceLab made [DSView available on GitHub](https://github.com/DreamSourceLab/DSView) 
-under the required GPL3 as well, with attribution to sigrok project. DSView is a hard 
+under the required GPL3 as well, with attribution to the sigrok project. DSView is a hard 
 fork of PulseView and there are still some bad feelings because DreamSourceLab doesn't push 
 changes to the PulseView project, but at least they've legally in the clear for the past 6 years.
 
@@ -198,36 +314,13 @@ You can find an example decoder [here](https://github.com/saleae/SampleAnalyzer)
 # Installing DSView on a Linux Machine
 
 DreamSourceLab provides Windows and MacOS binaries for DSView, but not for Linux.
-When you click the Download button for Linux, it simply downloads a tar file with the
+When you click the Download button for Linux, it returns a tar file with the
 source code, which you're expected to compile yourself!
 
-I was looking forward to running into the usual issues with package dependencies, but
+I wasn't looking forward to running into the usual issues with package dependencies and build failures, but
 after following the instructions in the [INSTALL file,](https://github.com/DreamSourceLab/DSView/blob/master/INSTALL) 
 I ended up with a working executable on first try.
 
-
-
-Components:
-
-* FPGA: Spartan-6 XC6SLX16-FTG256DIV1945
-* DRAM: DDR3-1600: Micron MT41K128M16JT-125 (D9PTK), 2Gb, 16-bit
-* DDR termination voltage controller: [SGM2054](http://www.sg-micro.com/uploads/soft/20220506/1651829741.pdf)
-* FPGA power regulator: [LM26480](https://www.ti.com/lit/ds/symlink/lm26480.pdf)
-* 24MHz oscillator
-* USB interface: CYSB3014-BZX
-    * [$14 on LCSC](https://www.lcsc.com/product-detail/Microcontroller-Units-MCUs-MPUs-SOCs_Cypress-Semicon-CYUSB3014-BZXC_C462526.html)
-* 19.2MHz oscillator
-* USB ESD protection: SP3010-04UTG
-    * marked QH4
-    
-* USB-C mux: TI [HD3SS3220](https://www.ti.com/lit/ds/symlink/hd3ss3220.pdf)
-* Clock generator: [ADF4360-7](https://www.analog.com/media/en/technical-documentation/data-sheets/ADF4360-7.pdf)
-* Flash: Macronix [MX25R2035F](https://www.macronix.com/Lists/Datasheet/Attachments/8696/MX25R2035F,%20Wide%20Range,%202Mb,%20v1.6.pdf)
-* Measurement ESD protection: [SRV05-4D-TP](https://www.mccsemi.com/pdf/Products/SRV05-4D(SOT23-6L).pdf)
-
-    Probably! Might be slightly different...
-
-* 100k resistor to ground + ESD -> 33 Ohm series resistor (into FPGA?)
 
 # References
 
