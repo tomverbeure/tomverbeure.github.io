@@ -91,7 +91,7 @@ to have a spare.
 
 ![DSLogic and 6 sets of probe, clock and trigger wires](/assets/dslogic/DSLogic_and_probe_wires.jpg)
 
-The cables are quite stiff and are definitely not as pliable as those
+The cables are quite stiff and are not as pliable as those
 that comes with a Saleae. The case has been designed such that the probe cables can
 be stored without the need to bend them. I like it.
 
@@ -101,6 +101,34 @@ I got from eBay and will do the job, but I much prefer the ones from Tektronix.
 
 ![4 different grabbers](/assets/dslogic/grabbers.jpg)
 *From left to right: Tektronix, Agilent, Saleae, and DSLogic clips*
+
+Compared to the other ones, the Tektronix probes are narrow which makes it easier to place multiple
+ones next to each other one fine-pitch pin arrays.
+
+![Tek fine pitch grabbers](/assets/dslogic/tek_fine_pitch.jpg)
+
+If you're thinking about upgrading your current probes: stay away from fakes. As I write this,
+you can find packs of 20 probes on eBay for $40 (incl shipping), so around $2 per probe. Search
+for "Tektronix SMG50" or "Tektronix 020-1386-01".
+
+Meanwhile, you can buy a pack of 12 fake ones on Amazon for $16, or $1.3 a piece. They work, but
+they aren't any better than the probes that come standard with the DSLogic:
+
+![Fake vs original Tek grabber](/assets/dslogic/fake_vs_original_tek.jpg)
+*Fake probe on the left, Tek probe on the right*
+
+The stem of the fake ones is much thicker, and the hooks are different too. 
+
+The Tek probe has rounded hooks:
+
+![Tek probe with rounded hooks](/assets/dslogic/tek_rounded_hooks.jpg)
+
+The hooks of a fake probe are flat, and don't attach as well to their target:
+
+![Fake probe with flat hooks](/assets/dslogic/fake_flat_hooks.jpg)
+
+If you need to probe targets with a pitch that is smaller than 1.25mm, you should check out
+the [micro clips that I reviewed](/tools/2018/04/29/micro-chip-rw-clip.html)
 
 
 # The Hardware
