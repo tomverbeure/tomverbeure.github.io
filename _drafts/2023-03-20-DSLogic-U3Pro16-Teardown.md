@@ -228,13 +228,13 @@ makes much sense here. It might be there for additional protection of the ESD st
 the FPGA IOs?
 
 A DSLogic has a fully programmable input threshold voltage. If that's the case, then where's the 
-opamp to compare the input voltage against this threshold voltag. (There is such a comparator on a
+opamp to compare the input voltage against this threshold voltage. (There is such a comparator on a
 Saleae Logic Pro!)
 
 The answer to that question is: "it's in the FPGA!"
 
-FPGA IOs can support many different I/O standards: single-ended ones, such as CMOS, TTL, and a whole bunch of differential
-protocols too. Differential protocols compare a positive and a negative version of the same signals, but nothing 
+FPGA IOs can support many different I/O standards: single-ended ones, think CMOS and TTL, and a whole bunch of differential
+standards too. Differential protocols compare a positive and a negative version of the same signal, but nothing 
 prevents anyone from assigning a static value to the negative input of a differential pair and making the input
 circuit behave as a regular single-end pair with programmable threshold. Like this:
 
@@ -265,6 +265,54 @@ a DSLogic U3Pro and a Saleae Logic Pro: for both cases, a 200MHz signal was stil
 spend a bit more time to better understand the difference between my and his setup...
 
 Either way, I recommend watching this video.
+
+# Additional IOs: External Clock, Trigger In, Trigger Out
+
+In addition to the 16 input pins that are used to record data, the DSLogic has 3 special IOs and
+a seperate 3-wire cable to wire them up. They are marked with the character "OIC" above the connector, which
+stands for Output, Input, Clock.
+
+* Clock
+
+    Instead of using a free-running internal clock, the 16 input signals can be sampled with an
+    external sampling clock.
+
+    This corresponds to a mode that's called "state clocking" in big-iron Tektronix and
+    HP/Agilent/Keysight logic analyzers. 
+
+    Using an external clock that is the same as the one that is used to generate the signals that you 
+    want to record is a major benefit: you will always record the signal at the right time as long as 
+    setup and hold requirements are met. When using a free-running internal sampling clock, you must
+    use a sample rate that is a factor of 2 or more higher to get an accurate representation of what's
+    going on in the system.
+
+    The DSLogic U16Pro provides the option to sample the data signals at the positive or negative
+    edge of the external clock. On one hand, I would have prefered more options in moving the edge of 
+    the clock back and forth. It's something that should be doable with the DLLs that are part of the
+    DCMs blocks of a Spartan-6. But on the other, external clocking is not supported at all by Saleae
+    analyzers.
+
+    The maximum clock speed of the external clock input is 50MHz, significantly lower than the free-running 
+    sample speed. This is the usually the case as well for big iron logic analyzers. For example, my
+    old Agilent 1670G has a free running sampling speed of 500MHz and a maxumim state clock speed of 150MHz.
+
+* Trigger In
+
+    According to the manuals: "TI is the input for an external trigger signal". That's a great
+    feature, but I couldn't figure out a way in DSView on how to enable it. After a bit of googling,
+    I found the [following comment in issue on GitHub](https://github.com/DreamSourceLab/DSView/issues/145):
+
+    > This "TI" signal has no function now. It's reserved for compatible and further extension.
+
+    This comment is dated July 29, 2018. A closer look at the U3Pro16 datasheets shows the description of
+    the "TI" input as "Reserved"...
+
+* Trigger Out
+    
+    When a trigger is activated inside the U3Pro, a pulse is generated on this pin.
+
+    The manual doesn't give more details, but after futzing around with the horrible oscilloscope UI of my
+    1670G, I was able to capture a 500ms trigger out pulse of 1.8V.
 
 
 # Software: From Saleae Logic to PulseView to DSView
@@ -321,6 +369,49 @@ I wasn't looking forward to running into the usual issues with package dependenc
 after following the instructions in the [INSTALL file,](https://github.com/DreamSourceLab/DSView/blob/master/INSTALL) 
 I ended up with a working executable on first try.
 
+# DSView UI
+
+The UI of DSView is straightforward and similar to Saleae Logic 2. There are things that annoy me in both 
+tools but I don't have a strong preference.
+
+DSView can pan and zoom in or out just as fast as Logic 2.
+
+You really should try DSView with a Demo Device. It will give you a good feel about what you can do. The stacked protocol
+decoders area amazing. You can export decoded protocols as CSV files, but only one protocol at a time. It would be
+nice if you can export multiple protocols in the same CSV file so that you can easier compare transaction flow
+between interfaces.
+
+
+# Triggers
+
+One of the biggest benefit of the DSLogic over a Saleae is their trigger capability. Saleae Logic 2.4.13 offers the following
+options:
+
+[![Saleae Logic trigger options](/assets/dslogic/Saleae_trigger_options.png)](/assets/dslogic/Saleae_trigger_options.png)
+
+You can set a rising edge, falling edge, a high or a low level on 1 signal, and in combination with some static values on 
+other signals, and that's it. There's not even a rising-or-falling edge option. It's frankly a bit embarrasing. When you have a 
+full FPGA at your disposal, triggering functionality is not hard to implement.
+
+Meanwhile, even in Simple Trigger mode, the DSLogic can trigger on multiple edges at the same time, something that can
+be useful when using an external sampling clock.
+
+[![DSLogic simple trigger options](/assets/dslogic/DSLogic_simple_trigger_option.png)](/assets/dslogic/DSLogic_simple_trigger_option.png)
+
+But the DSLogic really shines when enabling the Advanced Trigger option.
+
+In Stage Trigger mode, you can create state sequences that are up to 16 phases long, with 2 16-bit comparisons
+and a counter per stage. 
+
+[![DSLogic stage trigger](/assets/dslogic/DSLogic_stage_trigger.png)](/assets/dslogic/DSLogic_stage_trigger.png)
+
+Alternatively, Serial Trigger mode is a powerful enough to capture protocols like I2C, as shown below, where a start
+flag is triggered by a falling edge of SDA when SCL is high, a stop flag by a rising edge of SDA when SCL is high,
+and data bits are captured on the rising edge of SCL:
+
+[![DSLogic serial trigger](/assets/dslogic/DSLogic_serial_trigger.png)](/assets/dslogic/DSLogic_serial_trigger.png)
+
+You don't always need powerful trigger options, but they're great to have when you do.
 
 # References
 
