@@ -216,7 +216,7 @@ README
 You're supposed to copy these files from the logic analyzer to your local machine with FTP, but
 that didn't work for me so I used a floppy disk instead. I'm making the 3 files available here for
 download. Just click on them here to grab them:
-[`LG165.BDF`](/assets/hp1670g/LG165.BDF), [`SG165.BDF`](/assets/hp1670g/LG165.BDF), 
+[`LG165.BDF`](/assets/hp1670g/LG165.BDF), [`SG165.BDF`](/assets/hp1670g/SG165.BDF), 
 [`README`](/assets/hp1670g/README), and store the files on your Linux machine's file system.
 
 The README explains what to do. It boils down to this:
