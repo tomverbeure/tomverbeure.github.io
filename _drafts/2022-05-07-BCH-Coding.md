@@ -186,3 +186,7 @@ The key understanding of an LFSR:
     Fantastic paper about the history and evolution of coding
 
 * [Binary BCH (15,7,5) work out](http://souktha.github.io/misc/bch15_7_5/)
+
+* [Trivialize Linear Recurrence Problems with Berlekamp-Massey!](https://mzhang2021.github.io/cp-blog/berlekamp-massey/)
+
+    Excellent step-by-step explanation.
