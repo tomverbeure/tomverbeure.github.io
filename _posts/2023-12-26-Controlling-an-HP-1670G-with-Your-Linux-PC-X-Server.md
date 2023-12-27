@@ -1,6 +1,5 @@
 ---
-layout: post
-title: Controlling an HP 1670G Logic Analyzer with Your Linux PC X Server
+title: Remote Controlling an HP 1670G Logic Analyzer with a Linux PC X Server
 date:   2023-12-26 00:00:00 -1000
 categories:
 ---
@@ -31,9 +30,8 @@ and mouse, but who has extra space for that on their bench or equipment cart?
 It used to be easy to have any kind of X client connect to a remote X server. Back in the
 early 1990s on the HP Apollo workstations in college, it was a simple matter of setting
 the DISPLAY environment variable, but that was before network security was a concern. Things are 
-bit more complicated now, and it took me a couple of hours to get the remove X server connection up 
-and running on my Ubuntu 
-20.04 machine. 
+bit more complicated now, and it took me a couple of hours to get the remote X server connection up 
+and running on my Ubuntu 20.04 machine. 
 
 In this blog post, I got through the steps that were required to make it work so that I
 won't forget the next time I need it.
