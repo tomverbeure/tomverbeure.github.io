@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Controlling an HP 1670G Logic Analyzer over Ethernet
+title: Controlling an HP 1670G Logic Analyzer with Your Linux PC X Server
 date:   2023-12-26 00:00:00 -1000
 categories:
 ---
