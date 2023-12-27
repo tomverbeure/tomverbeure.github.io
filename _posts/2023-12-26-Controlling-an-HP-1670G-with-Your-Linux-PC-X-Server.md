@@ -260,3 +260,12 @@ SOFTWARE ERROR - Please record these number XXXX XXXXXXXX XXXX
 If you see this, check if the font files were installed correctly. I didn't do that as first
 and got this message all the time. It went away for good after installation of the fonts.
 
+
+# References
+
+* [The Resistor Network - A Testament to X11 Backwards Compatibility](http://www.theresistornetwork.com/2013/12/a-testament-to-x11-backwards.html)
+
+    The blog post title is not on point, but it discusses remote control of an HP 1670A logic analyzer
+    by using the more traditional way. I was not able to get this method to work on my more
+    modern Ubuntu machine.
+
