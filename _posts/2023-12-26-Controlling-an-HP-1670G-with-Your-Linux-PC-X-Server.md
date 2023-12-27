@@ -156,10 +156,10 @@ you can use pretty much any number.
 
 The logic analyzer will send X server request to TCP/IP port 6111 for display number 111. 
 
-We need to tell the firewall to allow packets to this port to come through:
+We need to tell the firewall to allow packets from the logic analyzer IP address to this port to come through:
 
 ```sh
-sudo ufw allow 6111
+sudo ufw allow from 192.168.1.200 proto tcp to any port 6111
 ```
 
 **Step 8: Route incoming X server TCP request to your current display**
