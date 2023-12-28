@@ -240,7 +240,7 @@ If all goes well, you should see the logic analyzer screen on your desktop:
 
 ![Logic analyzer on the desktop](/assets/hp1670g/logic_analyzer_on_the_desktop.png)
 
-# Trouble shooting
+# Troubleshooting - remote session crashes
 
 Your logic analyzer may show the following image and error message:
 
@@ -258,4 +258,79 @@ SOFTWARE ERROR - Please record these number XXXX XXXXXXXX XXXX
 
 If you see this, check if the font files were installed correctly. I didn't do that as first
 and got this message all the time. It went away for good after installation of the fonts.
+
+# Troubleshooting - FTP transactions not working
+
+*This is not directly related to X server remote control, but I need to put it somewhere.*
+
+On some of my machines, ftp is not working. Here is what you're supposed to see:
+
+```
+Connected to 192.168.1.200.
+220    167XG V03.02 FUSION FTP server (Version 3.3) ready.
+Name (192.168.1.200:tom): data
+230 User DATA logged in.
+ftp> dir
+200 PORT command ok.
+150 Opening data connection for  (192.168.1.51,41623).
+dr-xr-xr-x    2    1    1       766  status
+dr-xr-xr-x    4    1    1       894  system
+dr-xr-xr-x    3    1    1       766  slot_a
+dr-xr-xr-x    3    1    1       766  slot_b
+226 Transfer complete.
+ftp> 
+```
+
+However, on my main Linux machine, it hangs immediately after issuing the `dir` command.
+
+In this case, `dmesg` reports this:
+
+```
+[UFW BLOCK] IN=wlp5s0 OUT= MAC=... SRC=192.168.1.200 DST=192.168.1.51 LEN=44 TOS=0x00 PREC=0x00 TTL=240 ID=1894 PROTO=TCP SPT=20 DPT=50021 WINDOW=0 RES=0x00 SYN URGP=0 
+```
+
+This is telling me that the UFW firewall is block packets. The key info here is: 
+
+`SRC=192.168.1.200 ... SPT=20`
+
+Packets from the logic analyzer that are coming from port 20 (ftp!) are blocked.
+
+I can tell UFW to allow packet from a given source IP address, but I can't tell it to only
+allow packets from source port 20. So my current solution is very crude:
+
+`sudo ufw allow from 192.168.1.200`
+
+This allows *all* traffic coming from the logic analyzer... or any device that pretends to be one.
+It's not ideal, but I don't use ftp very often so I only enable this rule when I need it.
+
+To disable, do the following:
+
+```sh
+sudo ufw status numbered
+```
+
+```
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+...
+[ 8] 6111/tcp                   ALLOW IN    192.168.1.200             
+[ 9] Anywhere                   ALLOW IN    192.168.1.200             
+...
+```
+
+Then delete the rule:
+
+```sh
+sudo ufw delete 9
+```
+
+```
+Deleting:
+ allow from 192.168.1.200
+Proceed with operation (y|n)? y
+Rule deleted
+```
+
 
