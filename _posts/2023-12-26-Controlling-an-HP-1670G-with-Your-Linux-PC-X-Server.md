@@ -295,8 +295,18 @@ This is telling me that the UFW firewall is block packets. The key info here is:
 
 Packets from the logic analyzer that are coming from port 20 (ftp!) are blocked.
 
-I can tell UFW to allow packet from a given source IP address, but I can't tell it to only
-allow packets from source port 20. So my current solution is very crude:
+The reason is due to the way FTP traditionally used to work: the client (my PC) creates a control
+connection FTP port of the server (the logic analyzer) to send command, and the server opens
+a data connection to send back data. This is called FTP 'active' mode. The problem is with this is 
+what I'm experiencing: my firewall is blocking those incoming request to port 20.
+
+There's also FTP 'passive' mode: in this case, the FTP client also opens the TCP data connection,
+which makes the firewall happy. Unfortunately, the logic analyzer doesn't support passive mode.
+
+I can tell UFW to allow all packets from a given source IP address, but I can't tell it to only
+allow packets from source port 20.
+
+So my current solution is very crude:
 
 `sudo ufw allow from 192.168.1.200`
 
@@ -332,6 +342,17 @@ Deleting:
 Proceed with operation (y|n)? y
 Rule deleted
 ```
+
+There are some alternative solutions:
+
+* Add an iptables rule for `nf_conntrack_ftp`. 
+
+    [Here](https://serverfault.com/questions/887309/iptables-nf-conntrack-ftp-not-working/887335#887335)
+    is an explanation on how to do that.
+
+* Add an FTP-specific rule to `/etc/ufw/before.rules`, as described [here](https://forums.raspberrypi.com/viewtopic.php?t=274706#p1665013)
+
+I didn't try those to solutions, but they might be handy for a permanent setup.
 
 # References
 
