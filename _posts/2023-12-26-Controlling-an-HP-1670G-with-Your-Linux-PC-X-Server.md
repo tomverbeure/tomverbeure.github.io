@@ -361,3 +361,11 @@ I didn't try those to solutions, but they might be handy for a permanent setup.
     The blog post title is not on point, but it discusses remote control of an HP 1670A logic analyzer
     by using the more traditional way. I was not able to get this method to work on my more
     modern Ubuntu machine.
+
+**Various 1670G info**
+
+* [Agilent Technologies 1670G Series Benchtop Logic Analyzers - Technical Data](http://bitsavers.org/test_equipment/hp/166x_167x/5968-6421_1670G_Technical_Data_200101.pdf)
+* [Agilent Technologies 1670G Series Logic Analyzers - User’s Guide](http://bitsavers.org/test_equipment/hp/166x_167x/01670-97022_1670G_Series_Users_Guide_200208.pdf)
+* [Agilent Technologies 1670G Series Logic Analyzers - Service Guide](http://bitsavers.org/test_equipment/hp/166x_167x/01670-97023_1670G_Service_Guide_200311.pdf)
+* [Agilent Technologies 1670G-Series Logic Analyzers - Programmer's Guide](http://bitsavers.org/test_equipment/hp/166x_167x/01670-97021_1670G_Programmers_Guide_200203.pdf)
+
