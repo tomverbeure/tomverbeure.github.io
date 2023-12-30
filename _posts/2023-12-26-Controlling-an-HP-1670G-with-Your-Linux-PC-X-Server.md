@@ -362,6 +362,12 @@ I didn't try those to solutions, but they might be handy for a permanent setup.
     by using the more traditional way. I was not able to get this method to work on my more
     modern Ubuntu machine.
 
+* [HP 1670D notes](https://blog.mateijordache.info/2022/05/31/hp-1670d-notes/) 
+
+    Another blog post that discusses setting up the closely related HP 1670D, though not specifically
+    focused on X Window connectivity and FTP. Replacing the spining metal hard drive by a flash
+    drive is something that I might do in the future...
+
 **Various 1670G info**
 
 * [Agilent Technologies 1670G Series Benchtop Logic Analyzers - Technical Data](http://bitsavers.org/test_equipment/hp/166x_167x/5968-6421_1670G_Technical_Data_200101.pdf)
