@@ -213,7 +213,7 @@ README
 ```
 
 You're supposed to copy these files from the logic analyzer to your local machine with FTP, but
-that didn't work for me so I used a floppy disk instead. I'm making the 3 files available here for
+FTP didn't work for me at the time so I used a floppy disk instead. I'm making the 3 files available here for
 download. Just click on them here to grab them:
 [`LG165.BDF`](/assets/hp1670g/LG165.BDF), [`SM165.BDF`](/assets/hp1670g/SM165.BDF), 
 [`README`](/assets/hp1670g/README), and store the files on your Linux machine's file system.
@@ -256,7 +256,7 @@ Current Serial #1817
 SOFTWARE ERROR - Please record these number XXXX XXXXXXXX XXXX
 ```
 
-If you see this, check if the font files were installed correctly. I didn't do that as first
+If you see this, check if the font files were installed correctly. I didn't do that at first
 and got this message all the time. It went away for good after installation of the fonts.
 
 # Troubleshooting - FTP transactions not working
