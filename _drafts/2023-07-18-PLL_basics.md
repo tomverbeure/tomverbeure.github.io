@@ -52,3 +52,16 @@ categories:
 
         There is no linear phase difference: the clock is either leading or lagging.
 
+**Filters**
+
+
+* [Analog Devices - Linear Circuit Design Handbook](https://www.analog.com/en/education/education-library/linear-circuit-design-handbook.html)
+
+    * [Analog Filters](https://www.analog.com/media/en/training-seminars/design-handbooks/basic-linear-design/chapter8.pdf)
+
+* [Engineering Mathematics with Examples and Solutions](https://www.mathforengineers.com/)
+
+    * [Low Pass Filter Transfer Function](https://www.mathforengineers.com/filters/low-pass-filter-transfer-function.html)
+
+* [Electronics Tutorials - Band Stop Filter](https://www.electronics-tutorials.ws/filter/band-stop-filter.html)
+
