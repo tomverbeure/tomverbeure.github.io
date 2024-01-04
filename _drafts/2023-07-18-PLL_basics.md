@@ -52,6 +52,8 @@ categories:
 
         There is no linear phase difference: the clock is either leading or lagging.
 
+* [PLL Performance, Simulation, and Design](https://www.ti.com.cn/cn/lit/ml/snaa106c/snaa106c.pdf)
+
 **Filters**
 
 
