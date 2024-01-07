@@ -9,20 +9,35 @@ categories:
 
 # Introduction
 
-While researching a DSP related topic, Google presented me with an excellent article,
+While researching a DSP related topic, Google dug up an excellent article,
 written by Hideo Okawara, that is just one part of a series of ~53. I was ready for more!
 
-Originally written for Verigy, it's now hosted by [Advantest](https://www.advantest.com/).
-But hosting it pretty much where it ends. Each article has a link that points to the other 
-ones, but those Verigy links are no defunct. Even a search for "Hideo Okawara" using the
-Advantest websites's search function will leave you empty handed.  This is one of those cases 
-where the tentacles of Google are a blessing: if it exists, chances are that they'll find it.
+Originally written for Verigy, the series is now hosted by [Advantest](https://www.advantest.com/).
+But hosting it pretty much where it ends. Each article has a link that's dedicated to the
+series, but those Verigy links are now defunct. A search for "Hideo Okawara" using the
+Advantest websites's search function will leave you empty handed, though that's not
+surprising, corporate website search functions are universally terrible.
+
+This is one of those cases where the tentacles of Google are a blessing: if it exists, 
+chances are that they'll find it.
 
 Advantest may not think it's worthwhile to catalog such a great learning resource, but I
 certainly do, so I spent a good hour trying to find as many links as I could.
 
-The result is below: only 5 out of 53 articles are missing. If anyone find a link to one of the 
+The result is below: only 5 out of 53 articles are missing. If anyone finds a link to one of the 
 missing ones, let me know!
+
+The articles are usually short, light on math, focus on intuitive understanding of concepts 
+and terminology, and often contain a concerete examples. While the code uses the API of 
+Advantest test equipment, it's still a good starting point for your own experiments with numpy 
+and scipy.
+
+A great example is Episode 51, which talks about [CIC Decimation and FIR Filtering](https://www3.advantest.com/documents/11348/9be9d841-823a-4a04-a7cc-38629a78fe6c).
+If I didn't know any better (and if that article wasn't written 8 years earlier), I could be
+tricked into thinking that he copied this FFT plot from 
+[one of my blog post](https://tomverbeure.github.io/2020/10/04/PDM-Microphones-and-Sigma-Delta-Conversion.html#from-analog-signal-to-pdm-with-a-sigma-delta-converter)!
+
+![Sigma-delta ADC FFT plot](/assets/okawara/PDM_spectrum.png)
 
 So here it is for your reading pleasure: Hideo Okawara's Mixed Signal Lecture Series.
 
@@ -130,10 +145,9 @@ So here it is for your reading pleasure: Hideo Okawara's Mixed Signal Lecture Se
 
 * [DSP-Based Testing - Fundamentals 53 - &Pi;/4 DQPSK Modulation](https://www3.advantest.com/documents/11348/b863139e-a308-47ed-b817-4a482be8a5b5)
 
-
 # Frequency/Phase Movement Analysis by Orthogonal Demodulation 
 
-* [PLL Lock-in Trend Analysis by RT-SPU Empowered Digitizer](https://www3.advantest.com/documents/11348/7c47bfae-ff2e-4d27-b0a6-c43aa3bc9739)
+* [Part 2 - PLL Lock-in Trend Analysis by RT-SPU Empowered Digitizer](https://www3.advantest.com/documents/11348/7c47bfae-ff2e-4d27-b0a6-c43aa3bc9739)
 
 * [Part 3 - More Application Examples of ODM](https://www3.advantest.com/documents/11348/96e01503-d452-4f9f-8c86-fbd4543648e8)
 
