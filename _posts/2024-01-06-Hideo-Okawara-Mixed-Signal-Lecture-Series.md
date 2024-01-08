@@ -24,7 +24,7 @@ chances are that they'll find it.
 Advantest may not think it's worthwhile to catalog such a great learning resource, but I
 certainly do, so I spent a good hour trying to find as many links as I could.
 
-The result is below: only 5 out of 53 articles are missing. If anyone finds a link to one of the 
+The result is below, 7 out of 53 articles are missing. If anyone finds a link to one of the 
 missing ones, let me know!
 
 The articles are usually short, light on math, focus on intuitive understanding of concepts 
@@ -71,11 +71,15 @@ So here it is for your reading pleasure: Hideo Okawara's Mixed Signal Lecture Se
 
 * [DSP-Based Testing - Fundamentals 14 - FIR Filter](https://www3.advantest.com/documents/11348/305e8639-4628-4a5d-8c21-03b725f06264)
 
+* 15
+
 * [DSP-Based Testing - Fundamentals 16 - Moving Average](https://www3.advantest.com/documents/11348/6c2835df-868d-43e9-965d-86dcd43f10d3)
 
 * [DSP-Based Testing - Fundamentals 17 - Another Method in S/N Calculation](https://www3.advantest.com/documents/11348/6236c092-8dc9-41b5-8ff2-c9ab1381cacc)
 
 * [DSP-Based Testing - Fundamentals 18 - Histogram Method in ADC Linearity Test](https://www3.advantest.com/documents/11348/27fd03db-3c5d-49e7-afb9-e0bcb6861cee)
+
+* 19
 
 * [DSP-Based Testing - Fundamentals 20 - Effect of Jitters in Sampling Clock and Test Signal](https://www3.advantest.com/documents/11348/d0c70a12-c101-4372-ac59-0e767b2e5188)
 
