@@ -53,7 +53,7 @@ So here it is for your reading pleasure: Hideo Okawara's Mixed Signal Lecture Se
 
 * [DSP-Based Testing - Fundamentals 5 - Spectrum Analysis -- DFT](https://www3.advantest.com/documents/11348/dbbdc762-84e0-4e50-b9cf-2dd34d625e8a)
 
-* [DSP-Based Testing - Fundamentals 6 Spectrum Analysis -- FFT](https://www3.advantest.com/documents/11348/8c5e06b8-85b8-407d-b253-b671ca9ac85c)
+* [DSP-Based Testing - Fundamentals 6 - Spectrum Analysis -- FFT](https://www3.advantest.com/documents/11348/8c5e06b8-85b8-407d-b253-b671ca9ac85c)
 
 * [DSP-Based Testing - Fundamentals 7 - Coherent Condition](https://www3.advantest.com/documents/11348/7f5f00bb-f5f0-41da-b154-fc1d974ad201)
 
