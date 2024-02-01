@@ -140,6 +140,8 @@ The 1PPS output is a 5V TTL signal with 100ms on and 900ms off time.
 On my oscilloscope, there was no obvious jitter between the 10MHz reference clock and
 the 1PPS output.
 
+*Somebody pointed me to a [TM4313 datasheet](/assets/tm4313/tm4313_datasheet.pdf).*
+
 # Power Consumption
 
 Immediately after powering up, an OCXO needs to warm up its oven. This can take minutes
@@ -743,6 +745,7 @@ but we'll see how long it takes before I want it to the next level.
 
 # References
 
+* [TM4313 Datasheet](/assets/tm4313/tm4313_datasheet.pdf)
 * [Bliley - Crystal Oscillators: The Beginner's Guide (OCXO, TCXO, VCXO, & Clocks)](https://blog.bliley.com/quartz-crystal-oscillators-guide-ocxo-tcxo-vcxo-clocks)
 * [Comparison of Inexpensive 10 MHz GNSS Disciplined Oscillators - W.D. Reeve](https://reeve.com/Documents/Articles%20Papers/Reeve_GDOComp.pdf)
 * [A high precision 10MHz GPS disciplined oscillator (GPSDO)](https://www.paulvdiyblogs.net/2020/07/a-high-precision-10mhz-gps-disciplined.html?m=1)
