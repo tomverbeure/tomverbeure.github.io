@@ -40,7 +40,7 @@ I've always been impressed by hobbyists like [Greg Davill](https://twitter.com/G
 new PCBs seemingly on a weekly basis, while never having made one myself.
 
 This was a chance to correct that and remove a thing from the bucket list: a simple project that's actually useful.
-I'd use open source [KiCAD](http://kicad-pcb.org/), because everybody seems to be moving to that, and have the
+I'd use open source [KiCAD](https://www.kicad.org/), because everybody seems to be moving to that, and have the
 PCB produced somewhere cheap.
 
 The functionality was simple:

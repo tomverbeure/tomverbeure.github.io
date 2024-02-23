@@ -80,6 +80,20 @@ Just pull a bit, it should come off easily.
 
 ![Remove the rotary encoder nut](/assets/e3631a_repair/0c_remove_nut.jpg)
 
+
+**Fast Forward to "Lift PCB retaining tab and slide out PCB"**
+
+Kevin reported that it's possible to replace the rotary knobs by just removing
+the front panel, without the need to completely dismantle the rest of the unit:
+
+> After opening my first unit and making a repair, I realized that Agilent 
+> left enough slack in the front panel cable bundle such that you can make 
+> this repair without opening up the back frame, outer sleeve, and cage. To 
+> do this, do everything until "Remove back frame". Then, remove the front 
+> panel screws and gently pull the front panel out. Of course, the cable will 
+> still be attached, but you can fold it down far enough to lift the retaining 
+> tab and unplug the front cable bundle to detach the front panel PCB.
+
 **Remove back frame**
 
 If the power supply warranty sticker wasn't broken yet, removing the back frame wil
@@ -99,6 +113,8 @@ These 4 screws fix the inner power supply cage connected to the outer metal slee
 ![Remove handle](/assets/e3631a_repair/1_remove_handle.jpg)
 
 ![Remove side screws](/assets/e3631a_repair/2_remove_side_screws.jpg)
+
+*Some E3631A versions only have the 2 screws of the handle to hold the chassis in place.*
 
 **Slide off the outer sleeve**
 
@@ -179,3 +195,7 @@ I did a quick check that things worked, before closing things up in reverse orde
 Success!!!
 
 Time spent from start to finish: 45 min.
+
+# References 
+
+* Blog post about my second E3631a: [The Agilent/HP E3631A Power Supply Repair that Wasn't](/2022/12/15/E3631A-Repair-that-Wasnt.html)

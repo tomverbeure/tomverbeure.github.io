@@ -162,7 +162,7 @@ and tool flow. I develop my designs on Intel FPGAs because of the excellent debu
 I still want to be able to run the final, debugged, result on a Lattice FPGA! You can't do that
 with a Nios2-based system.
 
-Instead, I'll extend the VexRiscv-based [mini CPU design](http://localhost:4000/2021/04/25/Intel-FPGA-RAM-Bitstream-Patching.html#mini-cpu-a-concrete-design-example)
+Instead, I'll extend the VexRiscv-based [mini CPU design](/2021/04/25/Intel-FPGA-RAM-Bitstream-Patching.html#mini-cpu-a-concrete-design-example)
 of my previous blog post with a JTAG UART.
 
 A full project that runs on an [Arrow DECA FPGA](/2021/04/23/Arrow-DECA-FPGA-board.html)

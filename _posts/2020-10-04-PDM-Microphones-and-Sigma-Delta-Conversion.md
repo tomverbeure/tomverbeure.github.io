@@ -206,7 +206,7 @@ An oversampling rate of 64 and a 4th order sigma-delta converter seems to be do 
 
 And that's exactly what today's PDM microphones support.
 
-Notice how the green vertical line shifts to the right as the oversampling rate increases.
+Notice how the green vertical line shifts to the left as the oversampling rate increases.
 This is, of course, expected: we are doubling the sampling rate with each step while bandwidth of
 our input signal stays the same. 
 
@@ -260,9 +260,9 @@ There are 2 basic components:
 # Coming Up 
 
 Enough learning about how to make fancy graphs with NumPy! (You can find the code for
-that [here](...), BTW.)
+that [here](https://github.com/tomverbeure/pdm/tree/master/modeling/sigma_delta), BTW.)
 
-[Let's learn how to design some real filters!](/2020/10/05/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html)
+[Let's learn how to design some real filters!](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html)
 
 # References
 

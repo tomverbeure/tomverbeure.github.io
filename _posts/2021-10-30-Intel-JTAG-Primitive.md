@@ -573,7 +573,7 @@ Open On-Chip Debugger
     You can select the USER0 scan chain like this:
 
     ```
-irscan max10.fpga_tap 8 0x00c
+irscan max10.fpga_tap 0x00c
     ```
 
     Do a bunch of scan operation on the USER0 chain:
@@ -597,7 +597,7 @@ irscan max10.fpga_tap 8 0x00c
     Similarly, you can select the USER1 scan chain like this:
 
     ```
-irscan max10.fpga_tap 8 0x00e
+irscan max10.fpga_tap 0x00e
     ```
 
     In the example below, scanning values of 0x01, 0x02, and 0x00 result in different
