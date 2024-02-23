@@ -19,3 +19,4 @@ schematics-only PDF file.
 
 The result is here:  [8656A Signal Generator Operating and Service Manual - Chapter 8 Schematics.pdf](/assets/hp8656a/8656A Signal Generator Operating and Service Manual - Chapter 8 Schematics.pdf)
 
+Enjoy!
