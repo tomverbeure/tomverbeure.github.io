@@ -1,0 +1,44 @@
+
+
+The frequency sweep setup isn't exactly intuitive.  See the pull-out card for some useful information.
+
+      Note:  frequency sweep is mostly "digital" - e.g. the synthesizer is stepped in frequency a number of 
+      times to cover the specified "span".   The span, frequency step size, and "dwell time" at each step is 
+      programmable.
+
+1.  Some "Special Functions" can be used to set operational parameters.
+	Example:  the dwell time at each frequency step is set by Special Functions 40 through 44.
+	
+2.  Basic Sweep Setup
+	a)  Set the Center Frequency in the same way frequency is specified in CW mode.  
+	      e.g. press the FREQ key in the FUNCTION panel, then enter the frequency and finish with the 
+	      appropriate units key.  (KHz, MHz, etc.)
+	b)  In the FUNCTION panel, sweep parameters are shown in Red text.  
+	     To select a sweep parameter to set, press the SHIFT button followed by the button associated with
+	      "Swp Width" or "Swp Incr" button.
+	c)  After the function is selected, specify the data using the keypad in the DATA panel.
+	     First, key in the numeric data and then complete entry by pressing the appropriate key in
+	     the UNITS panel.  
+	            Process:
+		Press   SHIFT key
+		Press   Swp Width key or Swp Incr key 
+		Press   Data keys 
+		Press   Units key
+	      Both parameters should be set after power up. (?)
+	d)  The "dwell time" (duration of each frequency step in the sweep) is controlled by two keys
+	      in the SWEEP panel (above the output connector) or AUTO can be selected.  
+	      Selecting AUTO should start the sweep using a default dwell time.  =====================> START SWEEP
+
+	     To set the dwell time to one of the 5 built-in values specified by a Special Function code,  
+	      determine the desired two digit code (e.g. 41) from the pull-out card.  Enter the code by:
+	             Process:
+		Press the SHIFT key in the FUNCTION panel
+		Enter the two digit code in the DATA panel 
+	e)  Finish entry and start the sweep when a Special Function is used by pressing the SLOW key in the 
+	     SWEEP panel.  The sweep should start.		            =====================> START SWEEP
+
+	Once sweeping, it appears that the parameters can be adjusted as needed.
+
+
+	
+		 
