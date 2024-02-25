@@ -115,7 +115,7 @@ The different sections have the following functionatily:
     This section contains an ASIC that generates that addresses that must be fetched
     from the main waveform RAM. It also generates that signal that will be used
     for AM: you'd think that amplitude modulation is done in the digital domain, but
-    it's actually use an analog multiplier.
+    it actually uses an analog multiplier.
 
 3. System DAC
 
@@ -131,7 +131,7 @@ The different sections have the following functionatily:
     of the signal that must be generated.
 
     The amplitude of the signal that comes out of the DAC can be controlled with
-    a range of only +-2dB. Further amplitude control is performed later in the
+    a range of only &plusmn;2dB. Further amplitude control is performed later in the
     pipeline.
 
 5.  Filters
@@ -142,8 +142,8 @@ The different sections have the following functionatily:
 
 6. Sync, Square Wave and Attenuator
 
-    An attenuator in this block reduced the amplitude with 2dB steps but only down to -14dB,
-    which is why it's call the pre-attenuator.
+    An attenuator in this block reduces the amplitude in steps of 2dB but only down to -14dB,
+    which is why it's called the pre-attenuator.
 
     There's also a SYNC generator, and a square wave generator which are created by
     using a comparator opamp against the signal that comes out of the filter block.
@@ -169,13 +169,13 @@ The different sections have the following functionatily:
 
     There are 5 main voltages: +5V, -5.2V, +18V, -18V, and +5V.
 
-    There are 2 +5V rails because one is for the floating ground electronics and the
-    other is for the earth referenced ground.
+    There are 2 +5V rails, one for the floating ground electronics and the
+    other for the earth referenced ground.
 
 11. Display and Keyboard
 
     Like all the HP instruments of its day, the 33120A uses a vacuum fluorescent display (VFD).
-    These have a tendency to fade over time and replacment parts are often very pricey.
+    These have a tendency to fade over time and replacment parts are often pricey.
 
     On my units, they are in fantastic shape.
 
@@ -242,7 +242,7 @@ I once again started probing all around the PCB to check if anything else might 
 *Tip: if you're probing a live circuit with an oscilloscope and you set the impedance at
 50 Ohm, you'll get really weird results...*
 
-I did this for at least 15 uneventful minutes when sudden I was staring at the Eye
+I did this for at least 15 uneventful minutes when suddenly I was staring at the Eye
 of Sauron:
 
 ![The Eye of Sauron](/assets/hp33120a/the_eye_of_sauron.gif)
