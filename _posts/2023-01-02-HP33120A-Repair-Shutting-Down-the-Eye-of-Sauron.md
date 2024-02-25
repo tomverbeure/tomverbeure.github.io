@@ -1,7 +1,7 @@
 ---
 layout: post
 title: HP 33120A Repair - Shutting Down the Eye of Sauron
-date:   2023-01-02 00:00:00 -0700
+date:   2023-01-02 00:00:00 -1000
 categories:
 ---
 
@@ -38,13 +38,13 @@ there on a shelve gathering dust. I've never had a use for a signal generator (d
 anyone ever?), but I love to play with test equipment just for the fun of it, so I
 borrowed them and took them home. That was 2 years ago.
 
-After powering them up, it was quickly clear that only one of them was working correctly,
+After powering them up, it was obvious that only one of them was working correctly,
 sending out the default 1kHz 100mVpp sine wave.  The other one had a 1kHz square wave signal 
 on the SYNC output, but the main output was dead. 
 
 ![Oscilloscope and 2 33120A](/assets/hp33120a/oscilloscope_and_2_hp33120a.jpg)
 
-It was time to open the, up and have a look inside!
+It was time to open them up and have a look inside!
 
 # Opening Up an HP 33120A
 

@@ -38,7 +38,7 @@ logic cell instance of a given type to one or more different ones.
 that contains the Verilog source files and the scripts to generate the graphics and Yosys results
 of this blog post.*
 
-A good example of a `techmap` operation is one where a generic multipication
+A good example of a `techmap` operation is one where a generic multiplication
 is converted into a DSP block of an FPGA. For those who are unfamiliar with the technology,
 FPGAs usually have only a few core logic primitives: lookup-table cells (LUTs) are used to construct
 any kind of random logic circuit, RAM cells are, well, RAMs, and DSPs are larger cells that contain one

@@ -25,11 +25,11 @@ was no match for the VexRiscV by any possible metric.
 
 In the process, I spent some time trying to understand the internals of the CPU, and
 the way it was designed. I came back incredibly impressed. Not only does the
-VexRiscV CPU provide a plethora of performance and functionality knobs, it
+VexRiscV CPU provide a ton of performance and functionality knobs, it
 implements those in a way that truly shows the limits of traditional RTL languages
 such as Verilog, SystemVerilog and VHDL.
 
-The VexRiscV code demonstrates how one can write RTL that is at the same time as
+The VexRiscV code demonstrates how one can write RTL that is as
 efficient as the most optimized Verilog, yet at the same time extremely configurable.
 
 It is no surprise that the VexRiscV won the first prize of the RISC-V Summit
