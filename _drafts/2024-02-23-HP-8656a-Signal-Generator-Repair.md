@@ -147,3 +147,9 @@ internal reference oscillator stable at the same temperature and thus avoid long
 stabilization times when switching the machine to active mode.
 
 
+# References
+
+* [Comparing the HP 8656A, HP 8657B and HP 3586A](http://www.ko4bb.com/getsimple/index.php?id=comparing-the-hp-8656a-hp-8657b-and-hp-3586a)
+
+    > The HP 8656B is superior to the A model, with smaller step size (10 Hz instead of 100 Hz) and lower phase noise.
+
