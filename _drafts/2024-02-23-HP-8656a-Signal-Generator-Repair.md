@@ -120,19 +120,39 @@ power module that contains the power plug receptacle, the fuse and the voltage s
 
 ![HP 8656A backside power panel](/assets/hp8656a/hp8656a_backside_power_panel.jpg)
 
-The [schematic](/2024/02/22/HP-8656A-Schematics.html) doesn't show any input capacitors
-inside the power module, a Comcron F2058 with HP identifier 0960-0443:
+It's not very clear, but the [schematic](/2024/02/22/HP-8656A-Schematics.html) shows 
+the input capacitors inside the power module, a Corcom F2058 with HP identifier 0960-0443:
 
 ![HP 8656A input power schematic](/assets/hp8656a/hp8656a_input_power_schematic.jpg)
 
-But they are drawn on the component itself:
+They're also are drawn on the component itself:
 
-![Comcron F2058](/assets/hp8656a/Comcron F2058.jpg)
+![Corcom F2058](/assets/hp8656a/Corcom F2058.jpg)
 
+
+Unsurprisingly, this component has been obsolete. You can still find some on eBay, but since
+these are recovered from junked equipment, chances are that the capacitors inside them have 
+reached their end of life just the same. The HP 8656B, successor of the 8656A, uses a different
+power module, the Schaffner FN370-2-22 (HP identifier 0960-0679) which can still be bought
+[new on Mouser](https://www.mouser.com/ProductDetail/Schaffner/FN370-2-22?qs=62ecY7oL%252BWMAB7PCNdwF1A%3D%3D)
+for the princely sum of $36. Unfortunately, the two are not compatible: the size and the
+schematic is different.
+
+Size 66.6x29mm
+
+![Schaffner FN370-2-22](/assets/hp8656a/Schaffner FN370-2-22 schematic.png)
+
+These modules have a selector in them so that, in cooperation with the transformer, you can create 
+configurations ofr 100V, 120V, 230V, and 240V mains voltages. If you're sure that you'll
+have export your unit to a different country, you could configure the wiring yourself for
+just one AC voltage and use a cheaper line filter module, such as [this one](https://www.mouser.com/ProductDetail/Astrodyne-TDI/082.01001.00?qs=mzRxyRlhVdt6x2I4WJwZlQ%3D%3D).
+
+I took the whole back panel apart and extracted the line module, after which I found out that
+the module didn't smell at all. So my current, temporary(?) solution is to just put it
+back together and live it with.
 
 
 # Remainder
-
 
 You need to finess it gently to put it just in the right position and then
 never touch it again. After that, I switched the thing on and off by unplugging
@@ -149,7 +169,16 @@ stabilization times when switching the machine to active mode.
 
 # References
 
+* [8656A Signal Generator Operating & Service Manual](/assets/hp8656a/8656A Signal Generator Operating and Service Manual - 9018-05716.pdf)
+
+    PDF with just the schematics: [8656A Signal Generator Operating and Service Manual - Chapter 8 Schematics.pdf](/assets/hp8656a/8656A Signal Generator Operating and Service Manual - Chapter 8 Schematics.pdf)
+
 * [Comparing the HP 8656A, HP 8657B and HP 3586A](http://www.ko4bb.com/getsimple/index.php?id=comparing-the-hp-8656a-hp-8657b-and-hp-3586a)
 
     > The HP 8656B is superior to the A model, with smaller step size (10 Hz instead of 100 Hz) and lower phase noise.
 
+* [Lazy Electrons - HP 8656A Repair](https://lazyelectrons.wordpress.com/2018/09/02/hp-8656a-signal-generator-repair/)
+
+    Primarily focuses on the attentuator actuation mechanism. Also has a video shows how to disassembly the thing.
+
+* [EEVBlog discussion about this repair](https://www.eevblog.com/forum/testgear/hp-8656a-nauseating-smell)
