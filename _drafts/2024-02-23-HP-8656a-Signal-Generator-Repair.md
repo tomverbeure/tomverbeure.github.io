@@ -105,6 +105,70 @@ Even when rotated open, the PCB assembly can conveniently be locked in place:
 Just push the sping-loaded metal bar a bit to the inside and rotate the assembly
 further into the notch.
 
+# Recapping the Bottom PCB
+
+Those 4 large capacitors, C17, C18, C19, and C20 are almost certainly the biggest 
+contributors to the smell.
+
+According to table 6-3, page 6-25, of the service manual, C17, C19, and C20 are rated 3200uF/40VDC, 
+and C18 is rated 13000uf/25VDC. 
+
+
+![HP 8656A big capacitors](/assets/hp8656a/hp8656a_big_capacitors.png)
+
+All are +75%/-10%, so it's clear that the value doesn't matter that much, as long as you don't go lower.
+
+On my unit, C17 is not 13000uF but a whopping 24000uF. I've seen other repairs where C17
+has this value, so this is something HP seems to have changed in later model. There's no reason
+to follow the service manual in this case!
+
+Capacitors have changed a lot in the past 40 years: back then, they were huge, and often in an axial
+configuration with connection leads on either side. That's not the case anymore: not only are they
+much smaller now, but an axial layout is harder to mount with pick-and-place machines.
+
+On Digikey, the largest axial electrolytic capacitor that I could find was 
+[18000uF](https://www.digikey.com/en/products/detail/vishay-sprague/53D183G025JT6/5611315), 
+with a eye-popping price of $24.
+
+Meanwhile, a 
+[22000uF cap with a radial configuration](https://www.digikey.com/en/products/detail/nichicon/LLS1E223MELA/3768587) 
+is only $4. It will require a bit more work to solder additional wires, but that's a fair
+trade-off.
+
+I decided to replace the following capacitors, they're all aluminum electrolytics:
+
+
+| Reference              | Old            | New            |
+|------------------------|----------------|----------------|
+| A10C18                 | 24000uF/25V AL | 22000uF/25V AL |
+| A10C17, A10C19, A10C20 | 3200uF/40V AL  | 4700uF/50V AL  |
+| A10C23, A10C25         | 200uF/25V AL   | 220uF/25V AL   |
+| A10C24                 | 500uF/10V AL   | 1000uF/16V AL  |
+
+You can order them from DigiKey with [this list](https://www.digikey.com/en/mylists/list/T52FSWUKOO).
+
+# Fan Replacement
+
+The fan is ridiculously loud. When 120VAC is selected, the fan is powered directly by the mains, there is
+not on/off switch.
+
+![HP 8656A fan specifications](/assets/hp8656a/8656a_fan_specs.png)
+
+The complete specs are: 115V 50/60Hz AC, 36-CFM.
+
+In [this EEVblog forum thread](https://www.eevblog.com/forum/repair/hp-8656a-fan-questions/), there
+are multiple suggestions about how to reduce the fan noise:
+
+* use a series resistor to reduce the voltage over the fan
+* use [a series capacitor](https://www.eevblog.com/forum/repair/hp-8656a-fan-questions/msg2485911/#msg2485911) 
+  to reduce the voltage over the fan. 
+
+  This has the benefit of not generating extra heat.
+* install a separate 18V transformer and rectifier to drive a 24V DC motor 
+* reduce the voltage of the fan by connecting one lead of the fan to 
+  a different transformer connection. (My idea!)
+
+
 # A Wild Goose Chase for the Source of the Smell
 
 In one of my [HP 3478A repair blog posts](/2022/12/02/HP3478A-Multimeter-Calibration-Data-Backup-and-Battery-Replacement.html),
@@ -144,8 +208,23 @@ Size 66.6x29mm
 
 These modules have a selector in them so that, in cooperation with the transformer, you can create 
 configurations ofr 100V, 120V, 230V, and 240V mains voltages. If you're sure that you'll
-have export your unit to a different country, you could configure the wiring yourself for
-just one AC voltage and use a cheaper line filter module, such as [this one](https://www.mouser.com/ProductDetail/Astrodyne-TDI/082.01001.00?qs=mzRxyRlhVdt6x2I4WJwZlQ%3D%3D).
+have never export your unit to a different country, you could configure the wiring yourself for
+just one AC voltage and use a cheaper line filter module, such as 
+[this one](https://www.mouser.com/ProductDetail/Astrodyne-TDI/082SM.00300.00?qs=eP2BKZSCXI7mqcKDec2Dzg%3D%3D)
+from Astrodyne TDI.
+
+Here's the equivalent schematic for the 120VAC case:
+
+![HP 8656A input power schematic 120V](/assets/hp8656a/hp8656a_input_power_schematic_120v.jpg)
+
+And here's the equivalent schematic for the 240VAC case:
+
+![HP 8656A input power schematic 240](/assets/hp8656a/hp8656a_input_power_schematic_240v.jpg)
+
+In the 120VAC case, two windings of the transformer and the fan moter are all connected in parallel 
+to the 120V mains. In the 240VAC case, the two transformer windings are connected in series, and the
+motor is connected to the center of those two windings which act as a series voltage divider, so the
+motor will still see 120VAC.
 
 I took the whole back panel apart and extracted the line module, after which I found out that
 the module didn't smell at all. So my current, temporary(?) solution is to just put it
@@ -181,4 +260,20 @@ stabilization times when switching the machine to active mode.
 
     Primarily focuses on the attentuator actuation mechanism. Also has a video shows how to disassembly the thing.
 
-* [EEVBlog discussion about this repair](https://www.eevblog.com/forum/testgear/hp-8656a-nauseating-smell)
+* [EEVBlog forum: discussion about this repair](https://www.eevblog.com/forum/testgear/hp-8656a-nauseating-smell)
+
+* [EEVBlog forum: fan replacement](https://www.eevblog.com/forum/repair/hp-8656a-fan-questions/msg2484969/#msg2484969)
+
+    Uses a 120VAC 92mm fan.
+
+* [EEVBlog forum: Fool for the 8656A Sig Gen](https://www.eevblog.com/forum/testgear/fool-for-the-8656a-sig-gen/)
+
+    Long thread about a repair. Includes replacing voltage regulators and some discussion about the attenuator
+    forks and grommets.
+
+* [Youtube: The Radio Shop - HP 8656A Troubleshoot](https://www.youtube.com/watch?v=uPELMl31ZtA)
+
+    Debugs failing power rails.
+
+* [Youtube: HP 8656A Frequency Generator With Bad Front Panel Switches](https://www.youtube.com/watch?v=h_4q0Oa9beA)
+
