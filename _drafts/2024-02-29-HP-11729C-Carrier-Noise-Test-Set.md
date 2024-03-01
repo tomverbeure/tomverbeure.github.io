@@ -86,9 +86,18 @@ If only there were ways to get rid of the center carrier signal while keeping th
 It turns out that there are multiple techniques to do that. The HP 11729C provides the tools for two
 such techniques.
 
-# Inside the HP 11729C
+# The HP 11729C
 
+[![HP 11729C - Frontside](/assets/hp11729c/hp11729c_frontside.jpg)](/assets/hp11729c/hp11729c_frontside.jpg)
 
+[![HP 11729C - Backside](/assets/hp11729c/hp11729c_backside.jpg)](/assets/hp11729c/hp11729c_backside.jpg)
+
+[![HP 11729C - Top-Front view](/assets/hp11729c/hp11729c_top_front_view.jpg)](/assets/hp11729c/hp11729c_top_front_view.jpg)
+
+[![HP 11729C - Top-Front view - annotated](/assets/hp11729c/hp11729c_top_view_annotated.jpg)](/assets/hp11729c/hp11729c_top_view_annotated.jpg)
+*(Click to enlarge)*
+
+![HP 11729C - RIFA cap](/assets/hp11729c/hp11729c_rifa_cap.jpg)
 
 # References
 
