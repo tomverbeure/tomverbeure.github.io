@@ -103,4 +103,5 @@ such techniques.
 
 * [HP 11729C - Operating and Service Manual](/assets/hp11729c/HP-11729C_Operating_and_Service_Manual.pdf)
 * [HP 11729B - Carrier Noise Test Set - Convenient phase and amplitude noise measurements on high quality sources](/assets/hp11729c/HP11729B - Carrier Noise Test Set - Convenient phase and amplitude noise measurements on high quality sources.pdf)
-* [HP Product Note 11729C-2 - Phase Noise Characterizaton of Microwave Oscillators](/assets/hp11729c/PN11729C-2 - Phase Noise Characterization of Microwave Oscillators.pdf)
+* [HP Product Note 11729B-1 - Phase Noise Characterizaton of Microwave Oscillators - The Phase Detector Method](/assets/hp11729c/PN11729B-1 - Phase Noise Characterization of Microwave Oscillators - phase detector method.pdf)
+* [HP Product Note 11729C-2 - Phase Noise Characterizaton of Microwave Oscillators - The Frequency Discriminator Method](/assets/hp11729c/PN11729C-2 - Phase Noise Characterization of Microwave Oscillators - frequency discriminator method.pdf)
