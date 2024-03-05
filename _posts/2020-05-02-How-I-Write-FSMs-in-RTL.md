@@ -427,7 +427,7 @@ The answer is simple and, based on the answers on the subreddit, pretty universa
 [Quine-McCluskey optimization](https://en.wikipedia.org/wiki/Quine%E2%80%93McCluskey_algorithm), 
 the existence of Mealy vs Moore should be forgotten the moment an engineer gets their degree and enters the professional world. 
 
-I've seen some misguided redditors comment that they ask candidates about Mealy vs Moore during interviewings. This should be a 
+I've seen some misguided redditors comment that they ask candidates about Mealy vs Moore during interviews. This should be a 
 fireable offense for the interviewer.
 
 That said: 2-process coding style is flexible enough to code any kind of FSM. If, for some weird reason, you want to stick
