@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Guide Technology GTI300 Frequency Standard
+title: Guide Technology GTI300 Frequency Standard Teardown
 date:   2023-06-27 00:00:00 -1000
 categories:
 ---
@@ -24,7 +24,23 @@ categories:
 * TOC
 {:toc}
 
+# Introduction
+
+Between all the lab equipment that I've gathered over the years, quite a few of them
+an oven controlled crystal oscillator (OCXO). I also have a 
+[TM4313 GPSDO](/2023/07/09/TM4313-GPSDO-Teardown.html),
+and even two pieces of obsolete telecom equipment that have Rubidium atomic
+clock modules in them but those need some modifications to be usable as timing
+reference.
+
+But despite all that, my central 10MHz reference clock generator is this tidy
+little box: a GT300 frequency standard from Guide Technology Inc., another
+Craigslist acquisition from Lew's lab.
+
 ![GTI300 Front](/assets/gti300/gti300_front.jpg)
+
+
+
 
 [![GTI300 PCB](/assets/gti300/gti300_pcb.jpg)](/assets/gti300/gti300_pcb.jpg)
 *(Click to enlarge)*
