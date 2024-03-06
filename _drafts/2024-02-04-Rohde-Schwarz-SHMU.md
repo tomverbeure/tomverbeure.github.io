@@ -46,8 +46,23 @@ categories:
 
     RF/CF - EXT AC
 
+* Frequency modulation - page 2.32
+
+    * RF output signal is no longer phase-synchronized if FM is set
+    EXT DC: DC to 100kHz
+
+* 2.3.29 Modulation, external source
+
+    "FM DC mode allows for VCO operation, externally applied analog sweeps or digital
+    frequency modulation."
+
 
 # References
 
+* [SMHU Operating Manual](/assets/smhu/R&S SMHU Operating.pdf)
+* [SMHU Datasheet](/assets/smhu/Rohde-Schwarz-SMHU-Datasheet.pdf)
+* [SMHU Extended German Datasheet](/assets/smhu/smhu_extended_datasheet_german.pdf)
+
+* [Double frequency range for R&S Signal Generators](/assets/smhu/freq_doubler.pdf)
 
 * [Converting Oscillator Phase Noise to Time Jitter](https://www.analog.com/media/en/training-seminars/tutorials/MT-008.pdf)
