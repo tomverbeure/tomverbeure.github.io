@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Guide Technology GTI300 Frequency Standard Teardown
+title: Guide Technology GT300 Frequency Standard Teardown
 date:   2023-06-27 00:00:00 -1000
 categories:
 ---
@@ -37,12 +37,12 @@ But despite all that, my central 10MHz reference clock generator is this tidy
 little box: a GT300 frequency standard from Guide Technology Inc., another
 Craigslist acquisition from Lew's lab.
 
-![GTI300 Front](/assets/gti300/gti300_front.jpg)
+![GT300 Front](/assets/gt300/gt300_front.jpg)
 
 
 
 
-[![GTI300 PCB](/assets/gti300/gti300_pcb.jpg)](/assets/gti300/gti300_pcb.jpg)
+[![GT300 PCB](/assets/gt300/gt300_pcb.jpg)](/assets/gt300/gt300_pcb.jpg)
 *(Click to enlarge)*
 
 # OCXO Frequency Adjustment
@@ -50,7 +50,7 @@ Craigslist acquisition from Lew's lab.
 The crystal oscillator inside an OCXO isn't perfect, so your typical OCXO comes
 with a way to tune the output frequency to the perfect value, or to use the OCXO
 as an element in PLL.  The tuning range is usually quite narrow. I don't have the 
-specification of the Vectron 318Y0839 that's used in the GTI300, but the famous 
+specification of the Vectron 318Y0839 that's used in the GT300, but the famous 
 HP 10811A/B has a 
 [service manual](http://hparchive.com/Manuals/HP-10811AB-Manual.pdf)
 with full schematics (and much more!), so let's use that for the discussion here.
@@ -65,7 +65,7 @@ trimmable capacitor. The trimmable capacitor is used for coarse tuning and
 
 Both tuning methods are highlighted in the schematic below:
 
-[![HP 10811A OCXO schematic](/assets/gti300/hp10811_schematic.png)](/assets/gti300/hp10811_schematic.png)
+[![HP 10811A OCXO schematic](/assets/gt300/hp10811_schematic.png)](/assets/gt300/hp10811_schematic.png)
 *(Click to enlarge)*
 
 The trim capacitor is circled in green. The EFC circuit is marked in red.
@@ -86,10 +86,10 @@ a pretty stable voltage reference. The exact output voltage doesn't matter too
 much, you'll need to calibrate the thing anyway, but the stability over
 temperature and power supply, and the noise is imporant.
 
-The GTI300 uses the obsolete [MC1403](https://www.onsemi.com/pdf/datasheet/mc1403-d.pdf)
+The GT300 uses the obsolete [MC1403](https://www.onsemi.com/pdf/datasheet/mc1403-d.pdf)
 voltage reference. 
 
-[![MC1403 electrical characteristics](/assets/gti300/mc1403_characteristics.png)](/assets/gti300/mc1403_characteristics.png)
+[![MC1403 electrical characteristics](/assets/gt300/mc1403_characteristics.png)](/assets/gt300/mc1403_characteristics.png)
 *(Click to enlarge)*
 
 It has an output of 2.5V and a typical temperature coefficient
@@ -103,18 +103,18 @@ We can also see that it has a typical *Line Regulation* value of 0.6V for
 a supply voltage between 4.5V and 15V. This is the output voltage deviation you 
 can expect when applying different supply voltages.
 
-![OCXO tuning circuit](/assets/gti300/ocxo_tuning_circuit.png)
+![OCXO tuning circuit](/assets/gt300/ocxo_tuning_circuit.png)
 
 
 # LM317 Voltage Regulator Basics
 
-The GTI300 uses an LM317 voltage regulator to create a stable 5V supply for the
+The GT300 uses an LM317 voltage regulator to create a stable 5V supply for the
 OCXO, but the circuit uses is a bit more complicated that what you'd expect.
 
 The datasheet of the LM317 contains a number of application examples, but they're
 all a variant of the following basic circuit:
 
-![LM317 Basic Circuit](/assets/gti300/LM317_basic_circuit.jpg)
+![LM317 Basic Circuit](/assets/gt300/LM317_basic_circuit.jpg)
 
 The formula of the output voltage is 
 
@@ -129,7 +129,7 @@ where $$V_\text{ref}$$ is 1.25V and $$I_\text{ADJ}$$ around 50uA, but it can go 
 Instead of just accepting the formula above as gospel, I derived the formula
 myself. To do that, you need start with the block diagram of the LM317:
 
-![LM317 Block Diagram](/assets/gti300/LM317_block_diagram.jpg)
+![LM317 Block Diagram](/assets/gt300/LM317_block_diagram.jpg)
 
 We can see an opamp, a 1.25V zener diode at the plus input, a drive transistor
 duo in Darlington configuration, the constant current source, and some miscellaneous 
@@ -138,7 +138,7 @@ protection logic.
 Let's simplify this a little bit and only keep the items that are part of the
 control loop:
 
-![LM317 Control Loop](/assets/gti300/LM317_control_loop.svg)
+![LM317 Control Loop](/assets/gt300/LM317_control_loop.svg)
 
 Here's how we get the formula:
 
@@ -176,5 +176,5 @@ The power supply circuit of t
 
 # Reference
 
-* [Schematic](/assets/gti300/GTI OCXO Schematic.pdf)
+* [Schematic](/assets/gt300/GTI OCXO Schematic.pdf)
 * [TI - LM317 Datasheet](https://www.ti.com/lit/ds/symlink/lm317.pdf)
