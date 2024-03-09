@@ -134,9 +134,12 @@ $$
 where $$V_\text{ref}$$ is 1.25V and $$I_\text{ADJ}$$ around 50uA, but it can go up to 
 100uA.
 
+Instead of just accepting this formula above as gospel, I derived it
+myself to freshen up my college era opamp knowledge.
 
-Instead of just accepting the formula above as gospel, I derived the formula
-myself. To do that, you need start with the block diagram of the LM317:
+*(You can totally skip the rest of this section...)*
+
+To do that, you need start with the block diagram of the LM317:
 
 ![LM317 Block Diagram](/assets/gt300/LM317_block_diagram.jpg)
 
@@ -169,9 +172,41 @@ Here's how we get the formula:
 In many cases, the current through $$R_1$$ will be much larger than $$I_\text{adj}$$,
 and we can just ignore the $$I_\text{adj}$$ term altogether. 
 
-The LM317 has its own built-in voltage reference, the 1.25V zener diode. It
-only takes 2 resistors to create an accurate output voltage.
+# GT300 Voltage Regulation Loop 
 
+Thanks to its built-in voltage reference, the 1.25V, the LM317 can create a stable
+output voltage that is good enough for most applications, but the designers
+of the GT300 clearly wanted something better and decided to make the MC1403
+voltage reference a part of the regulation circuit.
+
+The rearranged schematic of that circuit is here:
+
+![GT300 Voltage Regulation Schematic](/assets/gt300/voltage_regulation_schematic.png)
+
+It works like this:
+
+1. The 2.5V reference voltage is applied to the + input of the opamp.
+1. the opamp will try to give the - input the same voltage, so we can
+   assume a voltage of 2.5 there as well.
+1. The - input comes from a 50k resistive divider between Vout and ground.  
+1. There's a 1.25V difference between the LM317 VO and ADJ pin.
+1. The current through R5 goes (almost) entirely through R6 as well.
+1. Since R5 and R6 have the same value, the voltage across R6 is 1.25V too.
+1. All the opamps need to do is regulate its ouput, Vop, to a value of
+   Vout - 2x1.25V.
+
+While the 1.25V value of the zener is included in the calcution of the opamp
+output, it is not used to determine the value of Vout: **the output voltage
+is determined by the much better 2.5V voltage reference!**
+
+So why is that the GT300 is using an LM317 when they could have used a regular
+power transistor? I think it's because the current circuit still benefits
+from the over-temperature and over-current protection facilities of the LM317.
+
+Earlier I also wondered by the MC1403 power input was connected to the
+unregulated 9V power rail instead of the 5V one. That may be to avoid
+some kind of chicken-and-egg problem during startup: it avoid the case where
+the voltage regulation uses a voltage reference that uses the regulated voltage.
 
 # OCXO Frequency Adjustment
 
@@ -232,3 +267,4 @@ The power supply circuit of t
 * [Schematic](/assets/gt300/GT300 OCXO Schematic.pdf)
 * [TI - LM317 Datasheet](https://www.ti.com/lit/ds/symlink/lm317.pdf)
 * [Analog Devices/Linear Technology - LT1013 Datasheet](https://www.analog.com/media/en/technical-documentation/data-sheets/lt1013-lt1014.pdf) 
+https://www.eevblog.com/forum/beginners/lm317-with-external-voltage-reference-whats-the-benefit/msg4934164/#msg4934164
