@@ -284,12 +284,15 @@ at least once per year, the chance of that happening is close to nil.
 
 # Inside an OCXO 
 
-The crystal oscillator inside an OCXO isn't perfect, so your typical OCXO comes
-with a way to tune the output frequency to the perfect value, or to use the OCXO
-as an element in PLL.  The tuning range is usually quite narrow. I don't have the 
-specification of the Vectron 318Y0839 that's used in the GT300, but the famous 
-HP 10811A/B has a 
-[service manual](http://hparchive.com/Manuals/HP-10811AB-Manual.pdf)
+Every OCXO has a way to tune the output frequency to the desired value. Either with a trimmer,
+as is the case for the GT300, or as part of a PLL of a GPSDO.  The tuning range is usually quite narrow. 
+
+I don't have the specification of the Vectron 318Y0839 that is used in the GT300, but the 
+HP 10811A/B is a famous OCXO that's used in old HP test equipment, such as
+my flea market HP 5334A. 
+
+
+has a [service manual](http://hparchive.com/Manuals/HP-10811AB-Manual.pdf)
 with full schematics (and much more!), so let's use that for the discussion here.
 
 The 10811A has an output frequency of 10MHz and an electrical tuning range of &plusmn;1Hz, 
