@@ -27,9 +27,7 @@ categories:
 # Introduction
 
 I've gathered a fair amount of test equipement over the years and quite a bit of them
-have an oven controlled crystal oscillator (OCXO). I even have two pieces of obsolete telecom 
-equipment with a Rubidium atomic clock module that are waiting for some modifications to be usable 
-as timing reference. There's  also the [TM4313 GPSDO](/2023/07/09/TM4313-GPSDO-Teardown.html)
+have an oven controlled crystal oscillator (OCXO). There's  also the [TM4313 GPSDO](/2023/07/09/TM4313-GPSDO-Teardown.html)
 that I took apart last year.
 
 But none of these serve as my lab's central 10MHz reference clock generator. For that, I use
@@ -38,7 +36,7 @@ acquisition from one of my favorite equipment suppliers.
 
 ![GT300 Front](/assets/gt300/gt300_front.jpg)
 
-There are a few reason why I'm using this instead some of my other references:
+There are a few reasons why I'm using this instead some of my other references:
 
 1. It has an aged, low drift OCXO. The previous owner even ran some long-term tests
    to check the PPM deviation over time.
