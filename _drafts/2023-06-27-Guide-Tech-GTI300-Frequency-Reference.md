@@ -126,7 +126,7 @@ to calibrate the output frequency.
 
 [LT1013](https://www.analog.com/media/en/technical-documentation/data-sheets/lt1013-lt1014.pdf) 
 is a low temperature-drift opamp. It doubles the 0 to 2.5V output range of the potentiometer 
-to the 0 to 5V range of the OXCO frequency adjust input. 
+to the 0 to 5V range of the OCXO frequency adjust input. 
 
 # LM317 Voltage Regulator Basics
 
@@ -255,6 +255,32 @@ A 1M Ohm termination results in a 1.5V amplitude:
 That output 1 and output 2 have inverted outputs due to the additional inverting
 NAND gate in the path of output 1.
 
+# OCXO Aging
+
+As mentioned before, the previous owner ran a long-term test to check the aging of the
+OCXO of this unit.
+
+[![OCXO aging graph](/assets/gt300/OCXO_aging_graph.png)](/assets/gt300/OCXO_aging_graph.png)
+
+Powering an OCXO on and off is a bit of a traumatic experience for an high-precision crystal. It's
+one of the reasons why it's better to keep them always on.
+
+The GT300 has been sitting idle before this test was started and was then calibrated against GPSDO.
+In the graph, you can see that it takes 2 months before the OCXO settles into a pattern a steady drift
+that's caused by aging.
+
+The relative aging rate can be calculated as follows:
+
+* Freq. shift @ 200 days   =  -0.0375 Hz
+* Freq. offset at Start of test:  = -0.007 Hz
+* Freq. shift over 200 days =  -0.0375 – (-0.007)  = -0.0305 Hz
+* Freq. aging rate:   Delta freq / Delta time  =  -0.0305/200  = -0.0001525 Hz/Day = -1.525e-4 Hz/day
+* Freq. aging rate relative to 10MHz  =   (-1.525e-4) / (10E6) = 1.525E-11
+* Aging rate/day = 1.525E-11
+
+This is supposed to be a good number, and one that can go down to the 1E-12 range when powered on 
+uninterrupted for years. My GT300 is not connected to a UPS, and with PG&E power going down
+at least once per year, the chance of that happening is close to nil.
 
 # Inside an OCXO 
 
