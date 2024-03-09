@@ -26,27 +26,26 @@ categories:
 
 # Introduction
 
-I've gathered quite a bit of lab equipement over the years. Quite a few of them
-have an oven controlled crystal oscillator (OCXO), there's even two pieces of obsolete telecom 
+I've gathered a fair amount of test equipement over the years and quite a bit of them
+have an oven controlled crystal oscillator (OCXO). I even have two pieces of obsolete telecom 
 equipment with a Rubidium atomic clock module that are waiting for some modifications to be usable 
-as timing reference.  I also have the [TM4313 GPSDO](/2023/07/09/TM4313-GPSDO-Teardown.html)
-that I give took apart last year.
+as timing reference. There's  also the [TM4313 GPSDO](/2023/07/09/TM4313-GPSDO-Teardown.html)
+that I took apart last year.
 
 But none of these serve as my lab's central 10MHz reference clock generator. For that, I use
 this tidy little box: a GT300 frequency standard from Guide Technology Inc., another Craigslist 
-acquisition from one of my favorite equipmenet suppliers.
+acquisition from one of my favorite equipment suppliers.
 
 ![GT300 Front](/assets/gt300/gt300_front.jpg)
 
 There are a few reason why I'm using this instead some of my other references:
 
-1. it has an aged, very low drift OCXO. The previous owner even had some ran some long-term tests
+1. It has an aged, low drift OCXO. The previous owner even ran some long-term tests
    to check the PPM deviation over time.
-1. it doesn't require me to keep a cable running from my cave to a GPS antenna outside
-   the house.
-1. it has two outputs. That's usually enough for most of my use cases.
-1. it's small enough to sit on my desk without taking valuable space.
-1. it consumes much lower power than my boat anchor pieces of equipment with built-in
+1. I don't need a cable from my cave to a GPS antenna outside the house.
+1. It has two outputs, which is usually enough for most of my use cases.
+1. It's small enough to sit on my desk without taking valuable space.
+1. It consumes much lower power than my boat anchor-sized equipment with built-in
    OCXO. I can leave the GT300 on at all times.
 
 An OCXO based reference standard is really simple. All you need is the OCXO itself,
@@ -56,6 +55,17 @@ GPSDO.
 The unit came with schematics. There's not a whole lot to learn, but why not give it a good look
 anyway?
 
+Let's first get this out of the way: I have absolutely no need for an accurate frequency standard. 
+
+There's nothing in my hobby activities 
+that requires measuring frequencies with 10 digit accuracy, I use my RF signal generators only 
+to play with them and learn how they work, and while my spectrum analyzer is pretty good for 
+hobbyist use, it's not good enough to measure peak with 10 digit accuracy either.
+
+But there's just something fascinating about being able to make measurements so precise,
+and the idea of not doing that when you have the ability to do it is kind of unbearable. 
+I guess that puts me at a high risk of becoming a [time nut](http://leapsecond.com/time-nuts.htm).
+
 # Inside the GT300
 
 [![GT300 PCB](/assets/gt300/gt300_pcb.jpg)](/assets/gt300/gt300_pcb.jpg)
@@ -64,11 +74,11 @@ anyway?
 As could be expected, neither the PCB nor the schematic tell a complicated story. 
 
 * The output of a transformer is rectified into a crude 9V DC voltage. 
-* An LM317T voltage regulator generate the power supply for most components, but
+* An LM317T voltage regulator generates a 5V power rail for most components, but
   there's a twist.
 * An MC1403 voltage reference outputs a very stable 2.5V output. 
 * Opamp LT1013 is used to drive the tuning port of the OCXO.
-* A couple of 74ACT00 gates serves as amplifiers to drive a low pass filters before
+* A couple of 74ACT00 gates serve as amplifiers to drive a low pass filters before
   connecting to two outputs with opposite polarity.
 
 [![GT300 schematic](/assets/gt300/GT300_schematic.png)](/assets/gt300/GT300 OCXO Schematic.pdf)
@@ -91,34 +101,39 @@ voltage reference.
 It has an output of 2.5V and a typical temperature coefficient
 of 10ppm/C. A 5C temperature difference will change the output by 1.25mV or 0.05%. Not a lot, 
 but higher than the 4 digit accuracy that's needed to maintain that 10<sup>-10</sup> 
-OCXO precision! 
+OCXO precision.
 
-It shows that even with a voltage reference, it's still important to have a temperature 
-controlled room for accurate frequency measurements.
+It shows that even with a voltage reference, it's still important to locate the reference
+in a room that doesn't have large temperature swings.
 
-I redrew the schematic in KiCAD to make the arrange the component is a more
-logical way, with some math annotations to confirm the values of the schematic:
+I redrew the schematic in KiCAD to make the component arrangement a bit more
+logical, with some math annotations to confirm the values of the schematic:
 
 [![OCXO tuning circuit](/assets/gt300/ocxo_tuning_circuit.png)](/assets/gt300/ocxo_tuning_circuit.png)
 *(Click to enlarge)*
 
-Surprisingly, Vin of the MC1403 is indirectly connected to the the unregulated +9V instead 
+$$V_{in}$$ of the MC1403 is indirectly connected to the the unregulated 9V instead 
 of the regulated 5V. I think there's two reasons for this: the electrical characteristics
 of the MC1403 are specified for 15V. 5V may be too low to achieve the listed specification. 
-But another one is that the 5V itself depends on the 2.5V reference! I'll get into that later.
+But another one could be that the 5V itself depends on the 2.5V reference. I'll get into that later.
+
+Diodes XXX and C1 form your usual AC to DC rectifier with ripple attenuator, but there's an 
+additional RC low-pass filter in the form of R1 and C2 to eliminate higher frequency noise. The
+combination of R1 and the current that's going through MCP1403 and trim potentiometer
+RV1 creates a $$V_{in}$$ voltage of around 8.1V.
 
 The output of the reference goes to trim potentiometer RV1 with a control screw
 that's accessible on the front panel. This is the screw to turn when you want
-to calibrate that output clock. 
+to calibrate the output frequency. 
 
-Opamp [LT1013](https://www.analog.com/media/en/technical-documentation/data-sheets/lt1013-lt1014.pdf) 
-with a low temperature drift doubles the 0 to 2.5V output range of the potentiometer 
+[LT1013](https://www.analog.com/media/en/technical-documentation/data-sheets/lt1013-lt1014.pdf) 
+is a low temperature-drift opamp. It doubles the 0 to 2.5V output range of the potentiometer 
 to the 0 to 5V range of the OXCO frequency adjust input. 
 
 # LM317 Voltage Regulator Basics
 
 The GT300 uses an LM317 voltage regulator to create a stable 5V supply for the
-OCXO, but the circuit uses is a bit more complicated that what you'd expect.
+OCXO, but the circuit is a bit more complicated that what you'd expect.
 
 The datasheet of the LM317 contains a number of application examples, but they're
 all a variant of the following basic circuit:
@@ -144,7 +159,7 @@ To do that, you need start with the block diagram of the LM317:
 ![LM317 Block Diagram](/assets/gt300/LM317_block_diagram.jpg)
 
 We can see an opamp, a 1.25V zener diode at the plus input, a drive transistor
-duo in Darlington configuration, the constant current source, and some miscellaneous 
+combo in Darlington configuration, a constant current source, and some miscellaneous 
 protection logic.
 
 Let's simplify this a little bit and only keep the items that are part of the
@@ -164,49 +179,84 @@ Here's how we get the formula:
 1. Due to the 1.25V zener, the voltage of the ADJUST input of the LM317 is
    $$V_\text{plus}-1.25V$$.
 1. We can now calculate $$I_{R_1}$$, the current through resistor $$R_1$$.
-1. The current through R2 is the current through $$R_1$$ plus $$I_\text{adj}$$, the
+1. The current through $$R_2$$ is the current through $$R_1$$ plus $$I_\text{adj}$$, the
    current from the constant current source.
 1. From this, we can calculate the voltage drop across $$R_2$$. 
-1. And from that, we can derive the value of Vplus, and thus the output voltage Vo.
+1. And from that, we can derive the value of $$V_{plus}$$, and thus the output voltage $$V_{out}$$.
 
 In many cases, the current through $$R_1$$ will be much larger than $$I_\text{adj}$$,
 and we can just ignore the $$I_\text{adj}$$ term altogether. 
 
 # GT300 Voltage Regulation Loop 
 
-Thanks to its built-in voltage reference, the 1.25V, the LM317 can create a stable
+Thanks to its built-in 1.25V voltage reference, the LM317 can create a stable
 output voltage that is good enough for most applications, but the designers
 of the GT300 clearly wanted something better and decided to make the MC1403
 voltage reference a part of the regulation circuit.
 
 The rearranged schematic of that circuit is here:
 
-![GT300 Voltage Regulation Schematic](/assets/gt300/voltage_regulation_schematic.png)
+[![GT300 Voltage Regulation Schematic](/assets/gt300/voltage_regulation_schematic.png)](/assets/gt300/voltage_regulation_schematic.png)
+*(Click to enlarge)*
 
-It works like this:
+Let's do a similar circuit analysis as before:
 
 1. The 2.5V reference voltage is applied to the + input of the opamp.
-1. the opamp will try to give the - input the same voltage, so we can
-   assume a voltage of 2.5 there as well.
+1. the opamp tries keep the - input at the same level as the + input, so we can
+   assume a voltage of 2.5V there as well.
 1. The - input comes from a 50k resistive divider between Vout and ground.  
+
+The steps above are sufficient to calculate Vout:
+
+$$V_{out} = 2.5V \frac{50k}{20k + 10k . \text{fraction}}$$
+
+The other nodes of the circuit can be determined as follows, but they don't 
+play a role in the calculation of the output voltage:
+
 1. There's a 1.25V difference between the LM317 VO and ADJ pin.
 1. The current through R5 goes (almost) entirely through R6 as well.
 1. Since R5 and R6 have the same value, the voltage across R6 is 1.25V too.
-1. All the opamps need to do is regulate its ouput, Vop, to a value of
-   Vout - 2x1.25V.
+1. All the opamps need to do is regulate its ouput, $$V_{op}$$, to a value of
+   $$V_{out} - 2 \times 1.25V$$.
+1. C4 is present for control loop stabilization.
 
-While the 1.25V value of the zener is included in the calcution of the opamp
-output, it is not used to determine the value of Vout: **the output voltage
-is determined by the much better 2.5V voltage reference!**
+The important part here is that the 1.25V zener is not used to determine 
+the value of Vout: 
 
-So why is that the GT300 is using an LM317 when they could have used a regular
-power transistor? I think it's because the current circuit still benefits
+**The output voltage is determined entirely by the much better 2.5V voltage reference!**
+
+Why then is the GT300 using an LM317 instead of a regular power transistor? 
+I think it's because the current circuit still benefits
 from the over-temperature and over-current protection facilities of the LM317.
 
 Earlier I also wondered by the MC1403 power input was connected to the
-unregulated 9V power rail instead of the 5V one. That may be to avoid
+unregulated 9V power rail instead of regulated 5V. That may be to avoid
 some kind of chicken-and-egg problem during startup: it avoid the case where
 the voltage regulation uses a voltage reference that uses the regulated voltage.
+
+# Output Stage
+
+The OCXO sends out a 4V 10MHz square wave signal. Most frequency references send
+out an AC sine wave instead.
+
+The GT300 output stage uses digital gates from the fast 74ACT series as drivers.
+Two gates are connected in parallel for additional strength, but the on and off
+delays of gates are never truly identical, so 51 Ohm resistors are added at the output 
+to limit the current during edge transistions.
+
+Finally, there's an LC filter that converts the 10MHz square wave into a sine wave.
+
+When connected to a 50 Ohm termination, the output has an amplitude of 1.06V.
+
+[![Outputs with a 50 Ohm termination](/assets/gt300/10MHz_50.png)](/assets/gt300/10MHz_50.png)
+
+A 1M Ohm termination results in a 1.5V amplitude:
+
+[![Outputs with a 1 MOhm termination](/assets/gt300/10MHz_1M.png)](/assets/gt300/10MHz_1M.png)
+
+That output 1 and output 2 have inverted outputs due to the additional inverting
+NAND gate in the path of output 1.
+
 
 # Inside an OCXO 
 
@@ -252,6 +302,13 @@ much, you'll need to calibrate the thing anyway, but the stability over
 temperature and power supply, and the noise is imporant.
 
 TODO
+
+# Epilogue
+
+The original Craiglist ad had a graph with the long-term measurements. When this blog
+post almost complete, I emailed te seller for some more information, and he told me 
+that he was actually the original designer of the GT300! 
+
 
 # Reference
 
