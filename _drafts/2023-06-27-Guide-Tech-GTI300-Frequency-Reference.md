@@ -34,13 +34,13 @@ that I give took apart last year.
 
 But none of these serve as my lab's central 10MHz reference clock generator. For that, I use
 this tidy little box: a GT300 frequency standard from Guide Technology Inc., another Craigslist 
-acquisition from Lew's lab that I got really cheap as part of package deal.
+acquisition from one of my favorite equipmenet suppliers.
 
 ![GT300 Front](/assets/gt300/gt300_front.jpg)
 
 There are a few reason why I'm using this instead some of my other references:
 
-1. it has an aged, very low drift OCXO. Lew even had some ran some long-term tests
+1. it has an aged, very low drift OCXO. The previous owner even had some ran some long-term tests
    to check the PPM deviation over time.
 1. it doesn't require me to keep a cable running from my cave to a GPS antenna outside
    the house.
@@ -53,8 +53,8 @@ An OCXO based reference standard is really simple. All you need is the OCXO itse
 a power supply, and a voltage trimming circuit to calibrate the output against a
 GPSDO.
 
-There's not a whole lot to learn, but Lew had already gone to the trouble to reverse
-engineer the schematic down to the last detail, so why not give it a good look?
+The unit came with schematics. There's not a whole lot to learn, but why not give it a good look
+anyway?
 
 # Inside the GT300
 
@@ -97,7 +97,7 @@ It shows that even with a voltage reference, it's still important to have a temp
 controlled room for accurate frequency measurements.
 
 I redrew the schematic in KiCAD to make the arrange the component is a more
-logical way, with some annotations to confirm the values that Lew measured on the board:
+logical way, with some math annotations to confirm the values of the schematic:
 
 [![OCXO tuning circuit](/assets/gt300/ocxo_tuning_circuit.png)](/assets/gt300/ocxo_tuning_circuit.png)
 *(Click to enlarge)*
