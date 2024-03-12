@@ -262,8 +262,8 @@ OCXO of this unit.
 
 [![OCXO aging graph](/assets/gt300/OCXO_aging_graph.png)](/assets/gt300/OCXO_aging_graph.png)
 
-Powering an OCXO on and off is a bit of a traumatic experience for an high-precision crystal. It's
-one of the reasons why it's better to keep them always on.
+Powering an OCXO on and off is a bit of a traumatic experience for the high-precision crystal that
+lives inside and it's one of the reasons why it's better to keep them always on.
 
 The GT300 has been sitting idle before this test was started and was then calibrated against GPSDO.
 In the graph, you can see that it takes 2 months before the OCXO settles into a pattern a steady drift
@@ -287,21 +287,22 @@ at least once per year, the chance of that happening is close to nil.
 Every OCXO has a way to tune the output frequency to the desired value. Either with a trimmer,
 as is the case for the GT300, or as part of a PLL of a GPSDO.  The tuning range is usually quite narrow. 
 
-I don't have the specification of the Vectron 318Y0839 that is used in the GT300, but the 
-HP 10811A/B is a famous OCXO that's used in old HP test equipment, such as
-my flea market HP 5334A. 
-
-
+I don't have the specifications or datasheet of the Vectron 318Y0839 that is used in the GT300, 
+but the HP 10811 series of OCXOs, used in tons of old HP test equipment, 
 has a [service manual](http://hparchive.com/Manuals/HP-10811AB-Manual.pdf)
-with full schematics (and much more!), so let's use that for the discussion here.
+with full schematics and much more. Let's use that for the discussion here.
 
-The 10811A has an output frequency of 10MHz and an electrical tuning range of &plusmn;1Hz, 
+Here's the HP 10811-60111 variant in my flea market hP 5334A universal counter:
+
+[![HP 10811-60111 OCXO](/assets/gt300/hp10811.jpg)](/assets/gt300/hp10811.jpg)
+*(Click to enlarge)*
+
+The 10811 has an output frequency of 10MHz and an electrical tuning range of &plusmn;1Hz, 
 or a relative range of just of 10<sup>-7</sup>.
 Most OCXOs have only 1 way to control the output frequency by applying a voltage
-on their frequency adjust input. The 10811A has two options:
-through its EFC, electronic frequency adjust, input, or by changing the value of a 
-trimmable capacitor. The trimmable capacitor is used for coarse tuning and
- can change the output frequency by &plusmn;20Hz.
+on their frequency adjust input but the 10811 has two options: through its EFC, electronic frequency control, 
+input, or by changing the value of a trimmable capacitor. The trimmable capacitor is used for coarse tuning and
+can change the output frequency by &plusmn;20Hz.
 
 Both tuning methods are highlighted in the schematic below:
 
