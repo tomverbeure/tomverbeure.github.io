@@ -292,10 +292,13 @@ but the HP 10811 series of OCXOs, used in tons of old HP test equipment,
 has a [service manual](http://hparchive.com/Manuals/HP-10811AB-Manual.pdf)
 with full schematics and much more. Let's use that for the discussion here.
 
-Here's the HP 10811-60111 variant in my flea market hP 5334A universal counter:
+There are many 10811 variants, with different specifications. The HP 10811-60111 in my flea 
+market HP 5334A universal counter is one of the lowest rated ones, not unreasonable
+for a counter that never had high-end ambitions. You can see it here:
 
 [![HP 10811-60111 OCXO](/assets/gt300/hp10811.jpg)](/assets/gt300/hp10811.jpg)
 *(Click to enlarge)*
+
 
 The 10811 has an output frequency of 10MHz and an electrical tuning range of &plusmn;1Hz, 
 or a relative range of just of 10<sup>-7</sup>.
