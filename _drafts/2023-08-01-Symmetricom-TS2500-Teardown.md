@@ -9,8 +9,11 @@ categories:
 {:toc}
 
 
-# OT-21 Expansion PCB
+# TS2500
 
+* PRS10 Rubidium
+
+# OT-21 Expansion PCB
 
 # References
 
