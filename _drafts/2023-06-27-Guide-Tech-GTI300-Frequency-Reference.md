@@ -237,10 +237,27 @@ the voltage regulation uses a voltage reference that uses the regulated voltage.
 The OCXO sends out a 4V 10MHz square wave signal. Most frequency references send
 out an AC sine wave instead.
 
+**Output buffer**
+
+![output buffers](/assets/gt300/output_buffer.png)
+
 The GT300 output stage uses digital gates from the fast 74ACT series as drivers.
 Two gates are connected in parallel for additional strength, but the on and off
 delays of gates are never truly identical, so 51 Ohm resistors are added at the output 
 to limit the current during edge transistions.
+
+I've seen a couple of 74-series driven output buffer before, but I had never seen these
+kind of resistors added per output driver. It's definitely not always done. Here's
+the 1 PPS output buffer of an [SRS FR725 Rubidium Frequency Standard](https://thinksrs.com/downloads/pdfs/manuals/FS725m.pdf), 
+for example:
+
+![SRS FS725 output buffer](/assets/gt300/SRS_FS725_output_buffer.png)
+
+The 74HC540 is an octal buffer/line driver. The 8 buffers are driven by
+the same signal, split in 2 groups of 4 that are wired together, which
+then drive a 100 Ohm resistor.
+
+**Output filter**
 
 Finally, there's an LC filter that converts the 10MHz square wave into a sine wave.
 
