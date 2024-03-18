@@ -46,12 +46,117 @@ There are a couple of options to connect an antenna to a 12V GPS receiver:
 * Modify your GPS antenna to support 12V
 
 
+# Cloning the Existing Drive
+
+**Linux**
+
+```sh
+$ df
+```
+
+```
+/dev/sdb7          97854         2     92720   1% /media/tom/_tmparea
+/dev/sdb2           8571       442      7683   6% /media/tom/_persist
+/dev/sdb1          17047      2510     13597  16% /media/tom/_boot
+/dev/sdb5         173489     69985     94256  43% /media/tom/_fsroot1
+/dev/sdb6         173489     69986     94255  43% /media/tom/_fsroot2
+```
+
+```sh
+$ sudo dd if=/dev/sdb of=flash_contents_orig.img bs=1M
+```
+
+```
+[sudo] password for tom: 
+488+1 records in
+488+1 records out
+512483328 bytes (512 MB, 489 MiB) copied, 40.6726 s, 12.6 MB/s
+```
+
+Notice the `sync` command!
+
+```sh
+$ sudo dd if=flash_contents_orig.img of=/dev/sdb bs=1M && sync
+```
+
+```
+488+1 records in
+488+1 records out
+512483328 bytes (512 MB, 489 MiB) copied, 0.143977 s, 3.6 GB/s
+```
+
+**Windows**
+
+Use the [HDD Raw Copy Tool](https://hddguru.com/software/HDD-Raw-Copy-Tool/).
+
 # Getting Started
 
 * Reset to factor default settings
 * Use a static IP address
 
     You won't be able to connect with your browser otherwise!
+
+![S200 web home screen](/assets/s200/S200_home_screen.png)
+
+# 10MHz Out
+
+* 2.60Vpp AC
+
+![10MHz output on oscilloscope](/assets/s200/10MHz_output.png)
+
+![S250_BNC_connectors](/assets/s200/S250_BNC_connectors.png)
+
+![S250_BNC_connectors_diagram](/assets/s200/S250_BNC_connectors_diagram.png)
+
+# Satellite status
+
+```sh
+ssh admin@192.168.1.201
+gpsstrength
+```
+
+By default, there's only a simply command line processor the knows a few commands.
+
+# Enable SSH root access
+
+* Inspired by [this EEVblog post](https://www.eevblog.com/forum/metrology/symmetricom-s200-teardownupgrade-to-s250/msg2952418/#msg2952418)
+
+Boot procedure:
+* Boots `_fsroot1` or `_fsroot2`.
+* Overwrites /etc and /var with config.tar.gz data in the /persists partion.
+* So you need to patch the config.tar.gz file!
+
+* Use web interface to dump `syncServer.bkp` file
+
+```sh
+mkdir bak
+cd bak
+sudo tar xf ../syncServer.bkp
+```
+
+```
+tom@zen:~/projects/tomverbeure.github.io/assets/s200/bak$ ll
+total 444
+drwxrwxr-x 2 tom  tom    4096 Mar 16 23:32 ./
+drwxrwxr-x 4 tom  tom    4096 Mar 16 23:32 ../
+-rw-r--r-- 1 root root 439681 Jan  3  2006 config-1.2.tar.gz
+-r--r--r-- 1 root root    421 Jan  3  2006 persist.conf
+```
+
+```sh
+sudo tar xfz config-1.2.tar.gz
+```
+
+```
+sudo gvim etc/shadow
+sudo gvim etc/ssh/sshd_config
+sudo rm config-1.2.tar.gz
+sudo tar cfz config-1.2.tar.gz ./etc ./var
+sudo rm -fr ./etc ./var
+tar cf ../syncServer.patched.bkp config-1.2.tar.gz persist.conf
+cd ..
+rm -fr ./bak
+```
 
 
 # References
@@ -71,3 +176,5 @@ There are a couple of options to connect an antenna to a 12V GPS receiver:
 * [HEOL S200 S250 S300 S350 XLi servers GPS upgrade](https://trends.directindustry.com/heol-design/project-57722-1149241.html)
 
 * [EEVblog - Symmetricom Syncserver S350 + Furuno GT-8031 timing GPS + GPS week rollover](https://www.eevblog.com/forum/metrology/symmetricom-syncserver-s350-furuno-gt-8031-timing-gps-gps-week-rollover/)
+
+* [EEVblog - Synserver S200 GPS lock question](https://www.eevblog.com/forum/metrology/synserver-s200-gps-lock-question/msg5339408)
