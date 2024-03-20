@@ -39,6 +39,8 @@ The network analyzer consists of the 1038-D14A mainframe with display unit and t
 bunch of buttons missing in case I ever needed spare parts. So far I have not needed those,
 but that's because my attention shifted towards the Racal-Dana 1992 counter.
 
+[![Wavetek 1038-D14A and 1038-N10](/assets/w1038-n10/wavetek_1038-n10-chassis.jpg)](/assets/w1038-n10/wavetek_1038-n10-chassis.jpg)
+
 The mainframe exists in 2 form factors, one with the display unit on top and one with the
 display on the left of the N10. Mine luckily has the second configuration. It's much easier
 to stow on a shelve. Don't confuse the 1038-D14A with the 1038-D14 mainframe. But can be used
@@ -49,4 +51,24 @@ The unit also has a little drawer for cables, connectors, and, in my case, a 30 
 handbook that proved really useful: operating the 1038-N10 is not very intuitive, and while
 there is an operating and maintenance manual that goes in detail, having a booklet with just
 the basics makes it easier to get started.
+
+![1038-N10 Operational Handbook](/assets/w1038-n10/1038-N10 Operational Handbook.jpg)
+
+I couldn't find this manual anywhere online, so I made a scan that you can download 
+[here](/assets/w1038-n10/1038-N10 Operational Handbook.pdf). The quality isn't great,
+but it's better than nothing.
+
+# References
+
+**Manuals**
+
+* [Wavetek Model 1038-N10 Network Analyzer - Operating and Maintenance Manual](/assets/w1038-n10/Wavetek_pacific_1038-n10-operating_and_maintenance_manual.pdf)
+* [Wavetek Model 1038-N10 Network Analyzer - Operational Handbook](/assets/w1038-n10/1038-N10 Operational Handbook.pdf)
+
+**On the web**
+
+* [Pacific Measurements 1038 on tekwiki](https://w140.com/tekwiki/wiki/Pacific_Measurements_1038)
+* [Pacific Measurements or Wavetek 1038 System on groups.io](https://groups.io/g/TekScopes/topic/pacific_measurements_or/31300487?p=,,,20,0,0,0::recentpostdate%2Fsticky,,,20,2,20,31300487)
+* [Pacific Measurements or Wavetek 1038 System on eevblog forum](https://www.eevblog.com/forum/testgear/pacific-measurements-or-wavetek-1038-ns1020-nsn201/)
+
 
