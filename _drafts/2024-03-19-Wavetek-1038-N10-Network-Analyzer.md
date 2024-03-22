@@ -55,8 +55,22 @@ the basics makes it easier to get started.
 ![1038-N10 Operational Handbook](/assets/w1038-n10/1038-N10 Operational Handbook.jpg)
 
 I couldn't find this manual anywhere online, so I made a scan that you can download 
-[here](/assets/w1038-n10/1038-N10 Operational Handbook.pdf). The quality isn't great,
+[here](/assets/w1038-n10/1038-N10 Operational Handbook.pdf). The scan quality isn't great,
 but it's better than nothing.
+
+The N10 has 3 input channels: A, B and reference. Unlike most other test equipment, like spectrum
+analyzers or signal generators, these channels don't have a standard connector like SMA, BNC or
+type-N. Instead, you can only connected a proprietry cable that has a detector at the end of it.
+
+These detectors contain a diode to detect the envelop of the signal. If that sounds vaguely
+familiar maybe it's because you read 
+[my earlier blog post about RF crystal detector](/2023/05/07/The-HP-423A-and-a-Deep-Dive-Into-RF-Crystal-Detectors.html).
+Using a detector has some major advantages, but there are also some significant disadvantages.
+I'll get into that later.
+
+
+
+
 
 # References
 
