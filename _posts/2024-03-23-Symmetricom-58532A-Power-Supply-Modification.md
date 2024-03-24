@@ -25,7 +25,7 @@ Like all modern GPS antennas large and small, the 58532A is an active device: th
 signal is not only picked up at the antenna, but there's also a filter and an amplifier
 before the signal is sent to the cable.
 
-The datasheet has the following frequency response graph:
+The data sheet has the following frequency response graph:
 
 ![Frequency response graph](/assets/s58532a/frequency_response_graph.png)
 
@@ -261,7 +261,7 @@ Chances are that it uses a different LDO that supports 12V, but I wouldn't count
 
 # References
 
-* [Symmetricom 58532A Datasheet](/assets/s58532a/s58532a_datasheet.pdf)
+* [Symmetricom 58532A Data Sheet](/assets/s58532a/s58532a_datasheet.pdf)
 
 * [[time-nuts] 58532A GPS antenna repair](https://febo.com/pipermail/time-nuts_lists.febo.com/2019-March/095965.html)
 
