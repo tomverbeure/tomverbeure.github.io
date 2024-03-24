@@ -51,14 +51,14 @@ gain is due to the amplification, and how much is due to the physical shape of a
 [![58532A alternate PCB](/assets/s58532a/58532A_alternate_PCB.jpg)](/assets/s58532a/58532A_alternate_PCB.jpg)
 *Click to enlarge*
 
-There are PCB multiple variants of the 58532A. The one above, not mine, uses an 
+There are multiple PCB variants of the 58532A. The one above, not mine, uses an 
 [NE3608](/assets/s58532a/NE3508M04.pdf) low noise amplifier (LNA) with a typical gain of
 14dB, and two [NE662M04/2SC5508](assets/s58532a/ne662m04-48472.pdf) LNAs with a typical gain
 of 16dB. The total of that is 46dB, but I assume that some of the gain is lost
 due to the band pass filter. The LNAs are powered by a low drop-out voltage regulator (LDO).
 
 My version of the PCB has different components. It also uses 3 LNAs, but I wasn't
-able to identify them. It also lacks an LDO.
+able to identify them, and it lacks an LDO.
 
 **DC power**
 
@@ -77,7 +77,7 @@ capacitors but passed through by inductors, and the high-frequency GPS signal, g
 right to left, passes through capacitors but is blocked by inductors.
 
 Almost all GPS receivers supply a voltage of 3.3V or 5V on their antenna connector. My
-[TM4313 GPDO](2023/07/09/TM4313-GPSDO-Teardown.html) is a good exampit le: you can
+[TM4313 GPSDO](2023/07/09/TM4313-GPSDO-Teardown.html) is a good example: you can
 measure 3.3V between the center pin of the SMA connector and the ground.
 
 The Symmetricom 58532A specification requires a 5V supply, but mine works fine with the
