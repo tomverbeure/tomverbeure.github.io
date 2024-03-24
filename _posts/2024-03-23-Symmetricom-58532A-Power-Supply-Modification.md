@@ -132,12 +132,12 @@ Then remove the 4 inner screws:
 After this, you still can't remove the PCB: the cable from the type N connector is preventing
 the PCB from coming off, so you need to desolder that cable as well.
 
-![PCB removed](/assets/s58532a/pcb_removed.jpg)
+![PCB removed](/assets/s58532a/PCB_removed.jpg)
 
 You can now see the backside of the PCB. It's clearly different than the one that
 I showed earlier.
 
-[![PCB backside](/assets/s58532a/pcb_backside.jpg)](/assets/s58532a/pcb_backside.jpg)
+[![PCB backside](/assets/s58532a/PCB_backside.jpg)](/assets/s58532a/PCB_backside.jpg)
 *Click to enlarge*
 
 
