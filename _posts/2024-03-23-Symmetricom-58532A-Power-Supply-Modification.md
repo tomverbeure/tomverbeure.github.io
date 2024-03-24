@@ -7,7 +7,7 @@ categories:
 * TOC
 {:toc}
 
-# The Symmatricom 58532A
+# The Symmetricom 58532A
 
 As part of a package deal, I got my hands on a Symmetricom 58532A L1
 GPS antenna.
