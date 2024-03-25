@@ -265,7 +265,7 @@ at the same temperature, yet their I/V curves might still be shifted quite
 a bit from each other. 
 
 That's less of a problem when the diode is operating in the region above the threshold, 
-the resistance is too low to matter, but subthreshold, the resistance will much higher, 
+the resistance is too low to matter, but subthreshold, the resistance will be much higher, 
 often higher than the resistance that's in series with the diode.
 
 We'll soon get back to square law behavior.
