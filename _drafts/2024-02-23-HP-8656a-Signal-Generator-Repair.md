@@ -230,6 +230,12 @@ I took the whole back panel apart and extracted the line module, after which I f
 the module didn't smell at all. So my current, temporary(?) solution is to just put it
 back together and live it with.
 
+L -> c (transformer), d (transformer), c (fan)
+N -> e (transformer), f (transformer), e (fan)
+G -> gnd
+
+Not used: a (transformer mid tap), b (L), j (N)
+
 
 # Remainder
 
