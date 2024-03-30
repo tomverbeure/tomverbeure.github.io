@@ -34,8 +34,8 @@ SyncServer S200 with accessories for the ridiculously low price of $60.
 
 I've never left the flea market more excited.
 
-I didn't really know what one does with a *network time server*, but the fact that it was
-GPS controlled made me hope that it could work as a GPSDO, hopefully with a 10MHz reference
+I didn't really know what one does with a *network time server*, but since it's a *GPS*
+time server, I hope that it could work as a GPSDO, hopefully with a 10MHz reference
 clock and a 1 pulse-per-second (PPS) synchronization output.
 
 But even if not, I was sure that I'd be learning something.
@@ -47,11 +47,71 @@ was also an issue with the GPS module that needed to be fixed.
 In this blog post, I go through all the steps required to go from a mostly useless
 S200 to a fully functional GPSDO.
 
-Most of what has been described here was inspired by this long 
+Most of what's described here is based on this long 
 *[Symmetricom S200 Teardown/upgrade to S250](https://www.eevblog.com/forum/metrology/symmetricom-s200-teardownupgrade-to-s250)*
 discussion on the EEVblog forum.
 
 # What was the SyncServer S200 Supposed to be Used For?
+
+Symmetricom was acquired by Microsemi, and the SyncServer S200 is now obsolete, but
+Microsemi still has a [data sheet](/assets/s200/md_microsemi_s200_datasheet_vb_.pdf)
+on their website.
+
+Here's what it says in the first paragraph:
+
+> The SyncServer S200 GPS Network Time Server synchronizes clocks on servers for large
+> or expanding IT enterprises and for the ever-demanding high-bandwidth Next Generation
+> Network. Accurately synchronized clocks are critical for network log file accuracy,
+> security, billing systems, electronic transactions, database integrity, VoIP, and
+> many other essential applications.
+
+There's a lot more, but one of the key aspects of a time server like this is that it
+uses the [Network Time Protocol](https://en.wikipedia.org/wiki/Network_Time_Protocol), which
+
+> is a networking protocol for clock synchronization between computer systems over 
+> packet-switched, variable-latency data networks.
+
+The SyncServer S200 is a [Stratum 1](https://en.wikipedia.org/wiki/Network_Time_Protocol#Clock_strata) 
+level device. While it does not act as a Stratum 0 oracle of truth timing reference, it
+directly derives the time from a Stratum 0 device, in this case the GPS system.
+
+When the GPS signal falls away, a SyncServer falls back to Stratum 2 mode where it retrieves
+the time from other Stratum 1 devices (e.g. other SyncServers on the network) or it switches
+to hold-over mode where it let's an internal oscillator run without adjustments.
+
+The S200 has 3 oscillator options:
+
+* a TCXO with a drift of 21ms per day
+* an OCXO with a drift of 1ms per day
+* a Rubidium atomic clock with drift of 25us (!!!) per day
+
+It's clear that the primary use case of the S200 is not to act as a lab clock or frequency
+reference, but something that belong in a router cabinet.
+
+# The SyncServer S200
+
+[![S200 rear view](/assets/s200/S200_rear_view.jpg)](/assets/s200/S200_rear_view.jpg)
+
+
+# Furuno GT-8031H:
+
+When the S200 isn't able to lock its local OCXO to the GPS in, the 10MHz frequency is terribly
+off by 7Hz:
+
+[Unlocked output frequency](/assets/s200/unlocked_output_frequency.jpg)
+
+(For this measurement, I'm using the 10MHz of my TM4313 GPSDO as clock reference.)
+
+You can also see how the 1PPS output of S200 differs from the TM4313 output by 42ms.
+Note that this is despite seeing 9 satellites.
+
+The screen will show 
+
+* Status: Unlocked
+* Source: None
+* GPS In: Unlocked
+* 1PPS In: Unlocked
+* 10MHz In: Unlocked
 
 # Feature Comparison
 
