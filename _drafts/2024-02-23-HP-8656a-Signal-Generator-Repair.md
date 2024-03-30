@@ -10,7 +10,7 @@ categories:
 
 # Introduction
 
-A couple of years ago, I bought my first RF signal generator: an HP 8656A. It's an excellent
+A couple of years ago, I bought my first RF signal generator: an HP 8656A. It was an excellent
 deal, just $80 at the Silicon Valley Flea Market. The seller insisted that it was functional,
 what could possible go wrong?
 
@@ -18,20 +18,55 @@ what could possible go wrong?
 
 
 After dragging the 40lb beast home, I could, in fact, confirm that it did work... Sort of,
-because there are defintely a couple of issues with it:
+because there are defintely two issues with it:
 
 1. the front 'power' button doesn't work reliably
-1. the signal output power doesn't match the programmed output power level
-1. last, but not least, an unbearable chemical smell wafts out of the machine
-  when it's running
+1. the fan is way too loud
+1. an unbearable chemical smell wafts out of the machine when it's running
 
-Surprisingly, issues 1 and 2 aren't dealbreakers for most of my use cases, which
-primarily consists of connecting to other test equipment and playing with it. But the
-smell is so bad that using the machine for more than a few minutes makes you feel ill with
+Surprisingly, issues 1 isn't a dealbreaker because it's not a real power button to begin with:
+that noisy fan keeps running even when the button is set to standby, and if I finess that
+button just right in the on position, I can power the machine on and off by unplugging
+the power cable.
+
+Issue 2 is definitely annoying, but survivable.
+
+But the smell is so bad that using the machine for more than a few minutes makes you feel ill with
 something that feels a soar throat... for a couple of days.
 
 In this blog post, I take the machine apart to track down the source of the smell, and
 how to fix it.
+
+# The HP 8656A
+
+Before getting our hands dirty, a quick word about the HP 8656A: it's a pretty terrible
+product. Some call it one of the worst pieces of HP equipment ever made. An old timer at the 
+electronics flea market later told me that one of the already retired HP founders let his 
+displeasure know, which resulted in an 8656B that solved most of the problems.
+
+I have no way to confirm that story, but it's saying something about the general sentiment
+about it. And when I asked about the smell on the EEVblog forum, this was 
+[one of the replies](https://www.eevblog.com/forum/testgear/hp-8656a-nauseating-smell/msg5323268/#msg5323268):
+
+> Yeah, the 8656A stinks on ice....
+> 
+> Oh, you meant the RIFAs.  :P
+
+Here are some of the reasons:
+
+* the RF frequency can only be selected in selected in steps of 100Hz.
+* the phase noise is pretty bad.
+* there's no way to switch off the RF output. The best you can do is -127dBm.
+* the buttons on the front panel are woeful.
+
+Despite all that, it's still synthesized RF signal generator that's good enough
+for many uses, especially for $80. Ironically, in my case the bad phase noise was a 
+feature, because I wanted to experiment with measuring and comparing phase noise between 
+a bad and a good signal generator! And it's not as if I have a real use case for an RF signal g
+enerator to begin with, other than playing with them by connecting various pieces of test equipment
+together. 
+
+Here's a [sheet with the specifications](/assets/hp8656a/8656A_characteristics.pdf).
 
 # Opening Up the Top and Bottom of a 8656A
 
@@ -43,7 +78,7 @@ my usual routine of going over the top in show how to take things apart.
 There are 4 ways to access the internal of the 8656A: the front, the back, the top,
 and the bottom.
 
-Unlike many other HP equipment, there is no sliding sleeve around the main body of the
+Unlike a lot of other HP equipment, there is no sliding sleeve around the main body of the
 the machine, instead there are separate top and bottom panels that are easy to remove.
 
 First, remove 2 screws of each side: 
@@ -55,9 +90,9 @@ side panels towards the back.
 
 ![HP 8656A sliding side panel](/assets/hp8656a/hp8656a_sliding_side_panel.jpg)
 
-The side panels contains notches that fit into the holes of the metal top and
-bottom panels. That's really the only thing that keeps those panels in place: there
-are no additional screws or anything.
+The side panels contain notches that fit into the holes of the metal top and
+bottom panels. That and bit of friction is really the only thing that keeps those panels 
+in place: there are no additional screws.
 
 ![HP 8656A side panel removed](/assets/hp8656a/hp8656a_side_panel_removed.jpg)
 
@@ -65,11 +100,11 @@ You can now lift or slide of the panels:
 
 ![HP 8656A side panel removed](/assets/hp8656a/hp8656a_remove_panel.jpg)
 
-The service manuals recommends putting the signal generator on its side if you want to work
+The service manual recommends putting the signal generator on its side if you want to work
 on the top or the bottom, so that's what I did.
 
-To fix the smell, you only need to remove the panel, but I didn't know that at the time.
-Here's what it looks like when the top panel is removed:
+To fix the smell, you only need to remove the bottom panel, but I didn't know that at the time.
+Here's how things look  when the top panel is removed:
 
 ![HP 8656A top inside view](/assets/hp8656a/hp8656a_top_view.jpg)
 
@@ -89,8 +124,8 @@ more than 10: the bottom-right nut was hiding behind a flat cable:
 
 ![HP 8656A bottom nuts](/assets/hp8656a/hp8656a_bottom_nuts.jpg)
 
-I had to remove the flat-cable IC plug-in connector (marked with the green arrow) to
-be able to push the flat cable away from the hiding nut.
+I had to remove the flat cable IC plug-in connector (marked with the green arrow) before I
+could push the flat cable away from the nut that was hiding underneath.
 
 ![HP 8656A hiding nut](/assets/hp8656a/hp8656a_hiding_nut.jpg)
 
@@ -98,25 +133,32 @@ Once all the nuts are removed, the whole bottom PCB assembly can be rotated open
 
 ![HP 8656A bottom PCB rotated open](/assets/hp8656a/hp8656a_bottom_rotated.jpg)
 
-Even when rotated open, the PCB assembly can conveniently be locked in place:
+When rotated open, the PCB assembly can conveniently be locked in place:
 
 ![HP 8656A bottom PCB rotated open](/assets/hp8656a/hp8656a_bottom_locked_in_place.jpg)
 
-Just push the sping-loaded metal bar a bit to the inside and rotate the assembly
+Just push the sping-loaded metal bar in the direction of the arrow and rotate the assembly
 further into the notch.
 
-# Recapping the Bottom PCB
+# Removing Electrolytic Caps from the Bottom PCB
 
-Those 4 large capacitors, C17, C18, C19, and C20 are almost certainly the biggest 
-contributors to the smell.
+With the top and bottom open, the smell was even worse, and pervasive to the point that it
+was hard to pinpoint the cause. But old capacitors are notorious for leaking or, in the
+case of RIFA capacitors, bursting and catching fire. So I just removed the 4 big ones,
+C17, C18, C19, and C20, and check if they smelled on their own. Oh yes, they did, but
+even with these caps remove, the small was still everywhere.
+
+Even though the caps looked fine, my current theory 
+
+
 
 According to table 6-3, page 6-25, of the service manual, C17, C19, and C20 are rated 3200uF/40VDC, 
 and C18 is rated 13000uf/25VDC. 
 
-
 ![HP 8656A big capacitors](/assets/hp8656a/hp8656a_big_capacitors.png)
 
-All are +75%/-10%, so it's clear that the value doesn't matter that much, as long as you don't go lower.
+Since all are +75%/-10%, it's clear that the value doesn't matter that much, as long as you 
+don't go lower.
 
 On my unit, C17 is not 13000uF but a whopping 24000uF. I've seen other repairs where C17
 has this value, so this is something HP seems to have changed in later model. There's no reason
