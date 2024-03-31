@@ -9,9 +9,7 @@ import csv
 req_file    = sys.argv[1]
 resp_file   = sys.argv[2]
 
-print(req_file, resp_file)
-
-
+req_transactions    = {}
 resp_transactions   = {}
 
 WAIT_FIRST_0X40     = 0
@@ -33,6 +31,7 @@ class Message:
 
     msg_len_table = {
         "Aw"    : { 'req':    8,    'resp':   8 },
+        "Bp"    : { 'req':    8,                },  # Replies with Co
         "Co"    : {                 'resp':  29 },
         "Ha"    : { 'req':    8,    'resp': 154 },
         "Hn"    : { 'req':    8,    'resp':  78 },
@@ -44,23 +43,23 @@ class Message:
         "Gj"    : { 'req':    7,    'resp':  21 },
     }
 
-    def __init__(self):
+    def __init__(self, req):
+        self.req        = req
+        self.timestamp  = None
         self.msg_id     = ""
         self.data       = []
         self.checksum   = []
         self.terminator = []
 
-    def req_msg_len(self):
+    def exp_msg_len(self):
         if len(self.msg_id) == 2:
-            return Message.msg_len_table[self.msg_id]['req']
+            if self.req:
+                return Message.msg_len_table[self.msg_id]['req']
+            else:
+                return Message.msg_len_table[self.msg_id]['resp']
         else:
             return None
 
-    def resp_msg_len(self):
-        if len(self.msg_id) == 2:
-            return Message.msg_len_table[self.msg_id]['resp']
-        else:
-            return None
 
     def msg_len(self):
         return 2 + len(self.msg_id) + len(self.data) + len(self.checksum) + len(self.terminator)
@@ -144,6 +143,30 @@ class Message:
 
         return s
 
+    def decodeBjResp(self):
+        leap_s_status       = self.data[0]
+
+        s = f"leap_s_status:{leap_s_status}"
+
+        return s
+
+    def decodeGjResp(self):
+        offset = 0
+        present_leap_s      = self.data[0]
+        future_leap_s       = self.data[1]
+        future_leap_y       = bytes_to_int16(self.data[offset+2:])
+        future_leap_m       = self.data[4]
+        future_leap_d       = self.data[5]
+        current_utc_off_i   = self.data[6]
+        current_utc_off_f   = bytes_to_int32(self.data[offset+7:])
+        future_leap_h       = self.data[11]
+        future_leap_m       = self.data[12]
+        future_leap_s       = self.data[13]
+
+        s = f"present_leap_s:{present_leap_s}, future_leap_s:{future_leap_s}"
+
+        return s
+
     def decodeHnResp(self):
         pulse_on            = bool(self.data[0])
         pulse_sync          = ['UTC', 'GPS'][self.data[1]]
@@ -179,92 +202,104 @@ class Message:
     def __str__(self):
         s = ""
 
-        s += f"{self.msg_id}: {self.data}, {self.checksum}, {self.terminator} - { self.msg_len() }"
+        s += f"{self.msg_id}: {self.data}, {self.checksum}, {self.terminator} - { self.msg_len() } - { self.timestamp }"
 
-        if self.msg_len() == self.resp_msg_len():
-            if self.msg_id == "Ha":
-                s += "\n    " + self.decodeHaResp()
-            if self.msg_id == "Hn":
-                s += "\n    " + self.decodeHnResp()
+        if self.msg_len() == self.exp_msg_len():
+            if self.req:
+                pass
+            else:
+                if self.msg_id == "Ha":
+                    s += "\n    " + self.decodeHaResp()
+                elif self.msg_id == "Hn":
+                    s += "\n    " + self.decodeHnResp()
+                elif self.msg_id == "Gj":
+                    s += "\n    " + self.decodeGjResp()
+                elif self.msg_id == "Bj":
+                    s += "\n    " + self.decodeBjResp()
 
         return s
 
+def process_trace(filename, transactions, req=True):
+    with open(filename) as csv_file: 
+        resp_reader = csv.reader(csv_file, delimiter=",")
+    
+        state = WAIT_FIRST_0X40
+    
+        cur_msg     = None
+        exp_msg_len = None
+    
+        for line_nr,row in enumerate(resp_reader):
+            #print(">", line_nr, len(row), '|'.join(row))
+            if int(line_nr) == 0:
+                continue
+    
+            trans_nr    = int(row[0])
+            timestamp   = float(row[1])
+            data_byte   = int(row[2],16)
+            data_char   = chr(data_byte)
+    
+            #print(state, line_nr, "0x%02x/%c" % (data_byte,data_byte), cur_msg, exp_msg_len)
+    
+            if state == WAIT_FIRST_0X40:
+                if data_byte == 0x40:
+                    cur_msg     = Message(req)
+                    cur_msg.timestamp   = timestamp
 
-with open(resp_file) as csv_file: 
-    resp_reader = csv.reader(csv_file, delimiter=",")
+                    state = WAIT_SECOND_0X40
+                else:
+                    print("Unexpected byte...")
+    
+            elif state == WAIT_SECOND_0X40:
+                if data_byte == 0x40:
+                    state = MESSAGE_ID0
+                else:
+                    state = WAIT_FIRST_0x40
+    
+            elif state == MESSAGE_ID0:
+                cur_msg.msg_id += data_char
+                state = MESSAGE_ID1
+    
+            elif state == MESSAGE_ID1:
+                cur_msg.msg_id += data_char
+                exp_msg_len = cur_msg.exp_msg_len()
+    
+                if exp_msg_len == 7:
+                    state = MESSAGE_CHECKSUM
+                else:
+                    state = MESSAGE_DATA
+    
+            elif state == MESSAGE_DATA:
+                cur_msg.data.append(data_byte)
+    
+                if cur_msg.msg_len() == exp_msg_len-3:
+                    state = MESSAGE_CHECKSUM
+    
+            elif state == MESSAGE_CHECKSUM:
+                cur_msg.checksum.append(data_byte)
+    
+                if cur_msg.calc_checksum() != data_byte:
+                    print(f"Received checksum ({data_byte}) != expected checksum ({cur_msg.calc_checksum()})")
+                    #assert(False)
+                else:
+                    #print(f"Checksum matched!")
+                    pass
+    
+    
+                state = MESSAGE_TERMINATOR0
+    
+            elif state == MESSAGE_TERMINATOR0:
+                cur_msg.terminator.append(data_byte)
+                state = MESSAGE_TERMINATOR1
+    
+            elif state == MESSAGE_TERMINATOR1:
+                cur_msg.terminator.append(data_byte)
+                print(cur_msg)
+                cur_msg     = None
+    
+                state = WAIT_FIRST_0X40
+    
 
-    state = WAIT_FIRST_0X40
-
-    cur_msg     = None
-    exp_msg_len = None
-
-    for line_nr,row in enumerate(resp_reader):
-        #print(">", line_nr, len(row), '|'.join(row))
-        if int(line_nr) == 0:
-            continue
-
-        trans_nr    = int(row[0])
-        timestamp   = float(row[1])
-        data_byte   = int(row[2],16)
-        data_char   = chr(data_byte)
-
-        #print(state, "0x%02x" % data_byte, cur_msg, exp_msg_len)
-
-        if state == WAIT_FIRST_0X40:
-            if data_byte == 0x40:
-                state = WAIT_SECOND_0X40
-            else:
-                print("Unexpected byte...")
-
-        elif state == WAIT_SECOND_0X40:
-            if data_byte == 0x40:
-                state = MESSAGE_ID0
-                cur_msg     = Message()
-            else:
-                state = WAIT_FIRST_0x40
-
-        elif state == MESSAGE_ID0:
-            cur_msg.msg_id += data_char
-            state = MESSAGE_ID1
-
-        elif state == MESSAGE_ID1:
-            cur_msg.msg_id += data_char
-            exp_msg_len = cur_msg.resp_msg_len()
-
-            if exp_msg_len == 7:
-                state = MESSAGE_CHECKSUM
-            else:
-                state = MESSAGE_DATA
-
-        elif state == MESSAGE_DATA:
-            cur_msg.data.append(data_byte)
-
-            if cur_msg.msg_len() == exp_msg_len-3:
-                state = MESSAGE_CHECKSUM
-
-        elif state == MESSAGE_CHECKSUM:
-            cur_msg.checksum.append(data_byte)
-
-            if cur_msg.calc_checksum() != data_byte:
-                print(f"Received checksum ({data_byte}) != expected checksum ({cur_msg.calc_checksum()})")
-                #assert(False)
-            else:
-                #print(f"Checksum matched!")
-                pass
-
-
-            state = MESSAGE_TERMINATOR0
-
-        elif state == MESSAGE_TERMINATOR0:
-            cur_msg.terminator.append(data_byte)
-            state = MESSAGE_TERMINATOR1
-
-        elif state == MESSAGE_TERMINATOR1:
-            cur_msg.terminator.append(data_byte)
-            print(cur_msg)
-            cur_msg     = None
-
-            state = WAIT_FIRST_0X40
-
-
-
+print(f"Processing req file: {req_file}")
+process_trace(req_file, req_transactions, req=True)
+print(f"Processing resp file: {resp_file}")
+process_trace(resp_file, resp_transactions, req=False)
