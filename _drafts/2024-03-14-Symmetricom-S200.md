@@ -20,7 +20,7 @@ I was able to pick up a very low end HP signal generator and Fluke multimeter fo
 at 8:30am, I was on my way back to the car unsatisfied.
 
 Until *that* guy and his wife, late arrivals, started unloading stuff from their trunk
-and spread it on a blanket. There it was, right in front of me, a 
+and onto a blanket. There it was, right in front of me, a 
 [Stanford Research Systems SR620 universal counter](https://thinksrs.com/products/sr620.html). 
 I tried to haggle on the SR620 but was met with a "You know what you're doing and what 
 this is worth." Let's just say that I paid the listed price which was still a crazy good 
@@ -126,7 +126,8 @@ At the bottom left sits a little PCB for the USB and RS-232 ports. There are als
 for the VFD and the buttons.
 
 On the right side we can see a Vectron OCXO that will create a stable 10MHz during
-hold-over and a 512MB CompactFlash card.
+hold-over and a 512MB CompactFlash card. There's still plenty of room for a Rubidium atomic
+clock module.
 
 At the top left sits a Furuno GT-8031H GPS module that is compatible with the Motorola
 M12M modules. There's a bunch of connectors, and, very important 3 unpopulated connector
