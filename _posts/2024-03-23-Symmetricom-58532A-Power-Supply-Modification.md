@@ -65,7 +65,7 @@ able to identify them, and it lacks an LDO.
 The topic of this blog post deals with the last line of the specification: DC power.
 
 Since the antenna contains active elements, it needs to be supplied with power. Instead
-of a separate wire, the power is supplied of the antenna wire itself. The GPS
+of a separate wire, the power is supplied through the antenna wire itself. The GPS
 receiver inserts a DC voltage into the antenna cable, and the antenna extacts the
 DC voltage on its side to power its components.
 
@@ -73,7 +73,7 @@ DC voltage on its side to power its components.
 *Click to enlarge*
 
 The circuit is straightforward. The DC component, traveling from left to right, is blocked by 
-capacitors but passed through by inductors, and the high-frequency GPS signal, going from
+capacitors but passes through the inductors, and the high-frequency GPS signal, going from
 right to left, passes through capacitors but is blocked by inductors.
 
 Almost all GPS receivers supply a voltage of 3.3V or 5V on their antenna connector. My
@@ -87,7 +87,7 @@ though, others have a measured a minimum required voltage of 3.8V:
 ![Minimum voltage](/assets/s58532a/minimum_voltage.png)
 
 But somebody had to be contrarian and create GPS receivers that drive 12V into the antenna.
-That company was... Symmetricom! Their older devices were 5V, but for whatever reason they 
+That company was... Symmetricom! Their older gear was 5V, but for whatever reason they 
 switched to 12V later on. And indeed, one of my Symmetricom devices is still 5V, but two others 
 are 12V, including this SyncServer S200, with a voltage that is even slightly higher:
 
@@ -102,8 +102,9 @@ It is possible to make a 5V antenna work with a 12V GPS receiver by using a so-c
 [![Bias tee with DC blocker schematic](/assets/s58532a/bias_tee_with_DC_blocker_schematic.png)](/assets/s58532a/bias_tee_with_DC_blocker_schematic.png)
 *Click to enlarge*
 
-A bias tee with DC blocker removes the voltage from the 12V receiver and inserts a new one,
-but it requires an external power supply that provides the new voltage.
+A bias tee with DC blocker removes the voltage from the 12V receiver and inserts a new one with
+yet another capacitor/inductor combo but requires an external power supply that provides the 
+new voltage.
 
 You can find them for as low as $12 on [Amazon](https://www.amazon.com/dp/B07Y359TCZ) or less
 than half that on AliExpress. I've tried it, it works, but it's not the topic of this blog post.
@@ -114,7 +115,7 @@ While researching GPS antennas in general, I stumbled on
 [this web page](https://users.ntplx.net/~andrew/gps/58532Amod.html)
 with instructions on how to 
 modify a 58532A so that it support 12V as well. And it's super easy to do because the PCB already 
-has empty footprints.
+has the empty footprints.
 
 The instructions only listed the values of the components, so in this blog post, I illustrate 
 what to do, step by step.
@@ -156,7 +157,7 @@ additional passive components for filtering that I didn't draw.
 
 The LNAs are powered by different voltages. From left to right, the cable goes through what looks like
 a small inductor that's created by the PCB itself. There's a TVS diode that protects against over voltage
-such as those caused by lighting. I didn't measure its value, but its value is supposed to be around 10V. 
+spikes such as those caused by lighting. I didn't measure its value, but it's supposed to be around 10V. 
 After that, you get a resistive divider that brings down the voltages to 4.1V, 3.1V and 2.9V, which are 
 feeding the LNAs.
 
@@ -175,28 +176,29 @@ Here's what the schematic looks like when we include the unpopulated components:
 
 The modification is straightforward:
 
-* Replace the TVS diode with one that kicks in for voltages larger than 12V. Let's say, 15V.
-* Remove the first 47 Ohm resistor that creates a 4.1V voltage from a 5V voltage.
+* Replace the existing TVS diode with one that kicks in for voltages larger than 12V. Let's say, 15V.
+* Remove the first 47 Ohm resistor, R8, that creates a 4.1V voltage from a 5V voltage.
 * Add an LDO that outputs 4.1V and that can sustain input voltages larger than 12V.
 * Add capacitors before and after the LDO.
 
 I used the following components:
 
-| Type                   | Value                                                                    |
+| Compnent               | Type                                                                    |
 |------------------------|--------------------------------------------------------------------------|
 | 15V unidirectional TVS diode | [SMA6J15A-TR](https://www.mouser.com/ProductDetail/511-SMA6J15A-TR)      |
 | 4.1V LDO               | [AP7380-41Y-13](https://www.mouser.com/ProductDetail/621-AP7380-41Y-13)  |
 | 10u/50V input cap      | [C1210C106K5RACTU](https://www.mouser.com/ProductDetail/80-C1210C106K5R) |
 | 10u/25V output cap     | [C1206C106K3RACTU](https://www.mouser.com/ProductDetail/80-C1206C106K3R) |
 
-Total cost: $2.46 on Mouser, if you ignore the $8 shipping cost. Better order this while ordering compnents
+Total cost: $2.46 on Mouser, if you ignore the $8 shipping cost. Better order this while ordering components
 for some other project. You can use the following 
 [Mouser project link](https://www.mouser.com/ProjectManager/ProjectDetail.aspx?AccessID=304ddce47d)
 to add the components to your shopping cart.
 
 The result after the modification is below:
 
-![PCB after modification](/assets/s58532a/voltage_modification.jpg)
+[![PCB after modification](/assets/s58532a/voltage_modification.jpg)](/assets/s58532a/voltage_modification.jpg)
+*Click to enlarge*
 
 Note the removal of the 47 Ohm resistor, and pay attention to the orientation of the TVS diode.
 
@@ -206,7 +208,7 @@ soldering iron temperature set too low.
 # Result
 
 After the mod, I remeasured the voltages before reassembly. They came out pretty much identical to what 
-it was before, but this time for main inputs between 5V and 12V. When I supplied a 3.3V input, the output 
+they were before, but this time for main inputs between 5V and 12V. When I supplied a 3.3V input, the output 
 of the LDO was 3.22V. There's some truth to the low drop-out name.
 
 Time to reassemble the whole thing and check the result:
@@ -257,7 +259,7 @@ Google gives me the following options:
     This one shows up as a hit for AF21. It has an output voltage of 3.3V and
     has a maximum input voltage of 6V.
     
-Chances are that it uses a different LDO that supports 12V, but I wouldn't count on it. 
+It's possible that it uses a different LDO that supports 12V, but I wouldn't count on it. 
 
 # References
 
