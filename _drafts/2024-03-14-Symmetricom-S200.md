@@ -216,7 +216,7 @@ just the same.
 There are [modules for sale](https://prostudioconnection.com/products/symmetricom-syncserver-no-sync-fix-replacement-ublox-gps-receiver-timing-card-module) with a rollover date of 2037, but $248 is too much for what was supposed to be
 a cheap GPSDO.
 
-**These GPS modules communication with a 9600 baud UART. I'm wondering if it's possible to
+**These GPS modules communicate with a 9600 baud serial port. I'm wondering if it's possible to
 create an interposer PCB with a microcontroller that patches the reported timing?**
 
 # Furuno GT-8031H:
