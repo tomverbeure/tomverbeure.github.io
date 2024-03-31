@@ -30,17 +30,17 @@ def bytes_to_int16(data):
 class Message:
 
     msg_len_table = {
-        "Aw"    : { 'req':    8,    'resp':   8 },
-        "Bp"    : { 'req':    8,                },  # Replies with Co
-        "Co"    : {                 'resp':  29 },
-        "Ha"    : { 'req':    8,    'resp': 154 },
-        "Hn"    : { 'req':    8,    'resp':  78 },
-        "Gd"    : { 'req':    8,    'resp':   8 },
-        "Ge"    : { 'req':    8,    'resp':   8 },
-        "Cf"    : { 'req':    7,    'resp':   7 },
-        "Gf"    : { 'req':    9,    'resp':   9 },
-        "Bj"    : { 'req':    8,    'resp':   8 },
-        "Gj"    : { 'req':    7,    'resp':  21 },
+        "Aw"    : { 'req':    8,    'resp':   8, 'name': 'time correction select' },
+        "Bp"    : { 'req':    8,                 'name': 'request utc/ionospheric data' },  # Replies with Co
+        "Bj"    : { 'req':    8,    'resp':   8, 'name': 'leap second status message' },
+        "Cf"    : { 'req':    7,    'resp':   7, 'name': 'set to defaults command' },
+        "Co"    : {                 'resp':  29, 'name': 'utc/ionospheric data input' },
+        "Gd"    : { 'req':    8,    'resp':   8, 'name': 'position control message' },
+        "Ge"    : { 'req':    8,    'resp':   8, 'name': 'time raim select message' },
+        "Gf"    : { 'req':    9,    'resp':   9, 'name': 'time raim alarm message' },
+        "Gj"    : { 'req':    7,    'resp':  21, 'name': 'leap second pending message' },
+        "Ha"    : { 'req':    8,    'resp': 154, 'name': '12 channel position/status/data message' },
+        "Hn"    : { 'req':    8,    'resp':  78, 'name': '12 channel time raim status message' },
     }
 
     def __init__(self, req):
@@ -50,6 +50,12 @@ class Message:
         self.data       = []
         self.checksum   = []
         self.terminator = []
+
+    def msg_name(self):
+        if len(self.msg_id) == 2:
+            return Message.msg_len_table[self.msg_id]['name']
+        else:
+            return None
 
     def exp_msg_len(self):
         if len(self.msg_id) == 2:
@@ -75,6 +81,41 @@ class Message:
 
         return checksum
 
+    def decodeAwResp(self):
+        time_mode           = ['GPS', 'UTC'][self.data[0]]
+
+        s = f"time_mode:{time_mode}"
+
+        return s
+
+    def decodeCfResp(self):
+        s = f"Set-to-defaults Ack"
+
+        return s
+
+
+    def decodeGdResp(self):
+        control_type  = ['normal 3D', 'positiion hold', '2D position', 'auto-survey'][self.data[0]]
+
+        s = f"control_type:{control_type}"
+
+        return s
+
+
+    def decodeGeResp(self):
+        current_time_raim_mode  = self.data[0]
+
+        s = f"current_time_raim_mode:{current_time_raim_mode}"
+
+        return s
+
+    def decodeGfResp(self):
+        # Note: GT-8031H doesn't reply to this command.
+        t_raim_alarm_limit   = bytes_to_int16(self.data[0:])
+
+        s = f"t_raim_alarm_limit:{t_raim_alarm_limit}"
+
+        return s
 
     def decodeHaResp(self):
         offset = 0
@@ -150,6 +191,37 @@ class Message:
 
         return s
 
+    def decodeCoResp(self):
+        offset  = 0
+        alpha0              = self.data[offset+0]
+        alpha1              = self.data[offset+1]
+        alpha2              = self.data[offset+2]
+        alpha3              = self.data[offset+3]
+
+        beta0               = self.data[offset+4]
+        beta1               = self.data[offset+5]
+        beta2               = self.data[offset+6]
+        beta3               = self.data[offset+7]
+
+        offset  += 8
+        A0                  = bytes_to_int32(self.data[offset:])
+        A1                  = bytes_to_int32(self.data[offset+4:])
+
+        offset  += 8
+        delta_tls           = self.data[offset]
+        tot                 = self.data[offset+1]
+        WNt                 = self.data[offset+2]
+        WNlsf               = self.data[offset+3]
+        DN                  = self.data[offset+4]
+        delta_Tlsf          = self.data[offset+5]
+
+        s = f"alpha0:{alpha0}, alpha1:{alpha1}, alhpa2:{alpha2}, alpha3:{alpha3}"
+        s += f"\n    beta0:{beta0}, beta1:{beta1}, alhpa2:{beta2}, beta3:{beta3}"
+        s += f"\n    A0:{A0}, A1:{A1}"
+        s += f"\n    delta_tls:{delta_tls}, tot:{tot}, WNt:{WNt}, WNlsf:{WNlsf}, DN:{DN}, delta_Tlsf:{delta_Tlsf}"
+
+        return s
+
     def decodeGjResp(self):
         offset = 0
         present_leap_s      = self.data[0]
@@ -202,7 +274,7 @@ class Message:
     def __str__(self):
         s = ""
 
-        s += f"{self.msg_id}: {self.data}, {self.checksum}, {self.terminator} - { self.msg_len() } - { self.timestamp }"
+        s += f"{self.msg_id} - {self.msg_name()}: {self.data}, {self.checksum}, {self.terminator} - { self.msg_len() } - { self.timestamp }"
 
         if self.msg_len() == self.exp_msg_len():
             if self.req:
@@ -216,6 +288,20 @@ class Message:
                     s += "\n    " + self.decodeGjResp()
                 elif self.msg_id == "Bj":
                     s += "\n    " + self.decodeBjResp()
+                elif self.msg_id == "Co":
+                    s += "\n    " + self.decodeCoResp()
+                elif self.msg_id == "Aw":
+                    s += "\n    " + self.decodeAwResp()
+                elif self.msg_id == "Gf":
+                    s += "\n    " + self.decodeGfResp()
+                elif self.msg_id == "Ge":
+                    s += "\n    " + self.decodeGeResp()
+                elif self.msg_id == "Gd":
+                    s += "\n    " + self.decodeGdResp()
+                elif self.msg_id == "Cf":
+                    s += "\n    " + self.decodeCfResp()
+                else:
+                    s += "\nUnsupported decode"
 
         return s
 
