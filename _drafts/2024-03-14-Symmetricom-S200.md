@@ -8,48 +8,50 @@ categories:
 # Introduction
 
 The [Silicon Valley Electronics Flea Market](https://www.electronicsfleamarket.com) 
-runs from March to September and then goes quiet for 6 months, so when the new
-March episode hits, there is a ton of pent-up demand... and supply: inevitably,
-some spouse has reached their limit and wants a few of those boat anchors gone.
-
-Trust me: you do not want to miss the first flea market of the year! And you better
+runs every month from March to September and then goes quiet for 6 months, so when 
+the new March episode hits, there is a ton of pent-up demand... and supply: inevitably,
+some spouse has reached their limit during spring cleaning and wants a few of those boat 
+anchors gone. You do not want to miss the first flea market of the year, and you better
 come early, think 6:30am, because the good stuff goes fast.
 
-That fateful March 10th, I saw a broken-but-probably-repairable HP 58503A GPS
+But success is not guaranteed: I saw a broken-but-probably-repairable HP 58503A GPS
 Time and Frequency Reference getting sold right in front of me for just $40. And while
 I was able to pick up a very low end HP signal generator and Fluke multimeter for $10,
 at 8:30am, I was on my way back to the car unsatisfied.
 
-Until *that* guy and his wife, late arrivals, started unloading stuff from the trunk
-and spread it on a blanket. Right in front of me, he unloaded a 
+Until *that* guy and his wife, late arrivals, started unloading stuff from their trunk
+and spread it on a blanket. There it was, right in front of me, a 
 [Stanford Research Systems SR620 universal counter](https://thinksrs.com/products/sr620.html). 
 I tried to haggle on the SR620 but was met with a "You know what you're doing and what 
 this is worth." Let's just say that I paid the listed price which was still a crazy good 
 deal. I even had some cash left in my pocket.
 
-Which is great, because right next to the counter sat pristine looking Symmetricom
+Which is great, because right next to the SR620 sat a pristine looking Symmetricom
 SyncServer S200 with accessories for the ridiculously low price of $60.
 
 [![Flea Market Haul](/assets/s200/fleamarket_haul.jpg)](/assets/s200/fleamarket_haul.jpg)
 
 I've never left the flea market more excited.
 
-I didn't really know what one does with a *network time server*, but since it's a *GPS*
-time server, I hope that it could work as a GPSDO, hopefully with a 10MHz reference
-clock and a 1 pulse-per-second (PPS) synchronization output.
+I didn't really know what one does with a network time server, but since it said *GPS*
+time server, I hoped that it could work as a GPSDO with a 10MHz reference clock and a 1 
+pulse-per-second (PPS) synchronization output.
 
-But even if not, I was sure that I'd be learning something.
+But even if not, I was sure that I'd learn something new, and worst case I'd reuse the
+beautiful rackmount case for some future project.
 
-Turns out that a SyncServer S200 can not be used as a GPSDO out of the box, but its
+Turns out that out of the box a SyncServer S200 can not be used as a GPSDO, but its
 siblings can do it just fine, and it's straightforward to do the conversion. There
 was also an issue with the GPS module that needed to be fixed.
 
 In this blog post, I go through all the steps required to go from a mostly useless
 S200 to a fully functional GPSDO.
 
-Most of what's described here is based on this long 
-*[Symmetricom S200 Teardown/upgrade to S250](https://www.eevblog.com/forum/metrology/symmetricom-s200-teardownupgrade-to-s250)*
-discussion on the EEVblog forum.
+While most of what is described here is based on discussion threads on EEVblog forum
+such as 
+[this one](https://www.eevblog.com/forum/metrology/symmetricom-s200-teardownupgrade-to-s250),
+what I found missing was a step-by-step recipe and a larger context. I hope you'll find
+it useful.
 
 # What was the SyncServer S200 Supposed to be Used For?
 
@@ -85,12 +87,29 @@ The S200 has 3 oscillator options:
 * an OCXO with a drift of 1ms per day
 * a Rubidium atomic clock with drift of 25us (!!!) per day
 
-It's clear that the primary use case of the S200 is not to act as a lab clock or frequency
-reference, but something that belong in a router cabinet.
+Mine is the OCXO option.
 
-# The SyncServer S200
+It's clear that the primary use case of the S200 is not to act as a lab clock or frequency
+reference, but something that belongs in a router cabinet.
+
+# The SyncServer S200 Out- and Inside
+
+The front panel has 2 USB type-A ports, an RS-232 console interface, a 
+[vacuum fluorescent display](https://en.wikipedia.org/wiki/Vacuum_fluorescent_display) (VFD), 
+and a bunch of buttons.
+
+VFDs have a tendency to degrade over time, but mine is in perfect shape.
+
+
 
 [![S200 rear view](/assets/s200/S200_rear_view.jpg)](/assets/s200/S200_rear_view.jpg)
+*Click to enlarge*
+
+In the back, we can see a power switch for the 100-240VAC mains voltage (there are also
+versions for telecom applications that are powered with 40-60 VDC), a GPS antenna connection,
+a Sysplex Timer-Out interface, and 3 LAN ports.
+
+Let's see what's inside:
 
 
 # Furuno GT-8031H:
