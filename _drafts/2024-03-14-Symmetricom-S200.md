@@ -107,6 +107,7 @@ Note that this is despite seeing 9 satellites.
 
 The screen will show 
 
+* Antenna: Good
 * Status: Unlocked
 * Source: None
 * GPS In: Unlocked
