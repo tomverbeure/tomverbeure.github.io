@@ -155,15 +155,68 @@ We are primarily interested in the 10MHz and 1PPS outputs, of course.
 ![Probe on 10MHz output](/assets/s200/probe_on_10MHz_output.jpg)
 
 The BNC connectors may be unpopulated, but the driving circuit is not. When you probe
-the hole for the 10MHz output, you get this abomination of what's supposed to be a
+the hole for the 10MHz output, you get this sorry excuse of what's supposed to be a
 sine wave:
 
 ![10MHz signal on BNC hole](/assets/s200/10MHz_output.png)
 
 There's also a 50% duty cycle 1PPS signal on the other BNC hole.
-We're in business!
 
+# The GPS Week Number Rollover Issue
 
+The original GPS system used a 10-bit number to count the number of weeks, starting from
+January 6, 1980. Every 19.7 years, this number rolls over from 1023 back to 0. 
+The first rollover happened on August 21, 1999, the second on April 6, 2019, and the
+next one will be on November 20, 2038. Check out 
+[this US Naval Observatory presention](https://www.gps.gov/cgsic/meetings/2017/powers.pdf) for
+some more information.
+
+GPS chip manufacturers have dealt with the issue is by using a "dynamic base year" or variable 
+pivot year. When a device is, say, manufactured in 2016, 3 years before the 2019 rollover, it 
+assumes that all week numbers higher than 868, 1024-3*52, are for years 2016 to 2019, and that 
+numbers from 0 to 867 are for the years 2019 and later.
+
+![Dynamic date rollover graph](/assets/s200/dynamic_rollover_graph.png)
+
+Such a device will work fine for 19.7 years from 2016 until 2035.
+
+With a bit of fixed storage state, it is possible to make a GPS unit robust against this kind of 
+rollover: if the current date was 2019 and suddenly you see a date of 1999, you can infer that 
+there was a rollover, but many modules don't do that. The only way to fix the issue is to update 
+the module firmware.
+
+Many SyncServer S2xx devices shipped with a Furuno GT-8031H module which uses a starting
+date of February 2, 2003 and rolled over on September 18, 2022. Some Furuno modules can be
+fixed by sending a command to the module, but the GT-8031H is not one of them. Check out
+this [Furuno technical document](https://furuno.ent.box.com/s/fva29wqbcioqvd6mqxn5rt976dkaxudj) 
+for all the rollover details.
+
+Like all GPSDOs, the SyncServer S200 primarily relies on the 1PPS output that comes out of the 
+module to lock its internal 10MHz to the GPS system, and this 1PPS signal is still present on
+the GT-8031H of my system. But it clearly uses more than just that: my S200 refuses to enter into 
+"GPS Locked" mode. 
+
+# Upgrading to an IL-GPS-0030-B Module
+
+To work around the issue, I purchase a IL-GPS-0030-B as replacement module. They go for
+close to $100 on AliExpress.
+
+![GPS locked with new module](/assets/s200/GPS_locked_with_new_module.jpg)
+
+After replacing the GT-8031H, the S200 now enters into GPS Locked status, which is good,
+but it's only while writing this blog post that I started researching 
+[the rollover date of that module](M12M-2019-roll-over-and-base-dates-C.pdf):
+
+![IL-GPS-0030-B rollover date](/assets/s200/IL-GPS-0030-B rollover.png)
+
+OUCH! A few months from now, on August 17, 2024, this expensive module will become a doorstop 
+just the same. 
+
+There are [modules for sale](https://prostudioconnection.com/products/symmetricom-syncserver-no-sync-fix-replacement-ublox-gps-receiver-timing-card-module) with a rollover date of 2037, but $248 is too much for what was supposed to be
+a cheap GPSDO.
+
+**These GPS modules communication with a 9600 baud UART. I'm wondering if it's possible to
+create an interposer PCB with a microcontroller that patches the reported timing?**
 
 # Furuno GT-8031H:
 
@@ -353,3 +406,5 @@ rm -fr ./bak
 * [EEVblog - Symmetricom Syncserver S350 + Furuno GT-8031 timing GPS + GPS week rollover](https://www.eevblog.com/forum/metrology/symmetricom-syncserver-s350-furuno-gt-8031-timing-gps-gps-week-rollover/)
 
 * [EEVblog - Synserver S200 GPS lock question](https://www.eevblog.com/forum/metrology/synserver-s200-gps-lock-question/msg5339408)
+
+* [Furuno GPS/GNSS Receiver GPS Week Number Rollover](https://furuno.ent.box.com/s/fva29wqbcioqvd6mqxn5rt976dkaxudj)
