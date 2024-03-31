@@ -98,9 +98,10 @@ The front panel has 2 USB type-A ports, an RS-232 console interface, a
 [vacuum fluorescent display](https://en.wikipedia.org/wiki/Vacuum_fluorescent_display) (VFD), 
 and a bunch of buttons.
 
+[![S200 front view](/assets/s200/S200_front_view.jpg)](/assets/s200/S200_front_view.jpg)
+*Click to enlarge*
+
 VFDs have a tendency to degrade over time, but mine is in perfect shape.
-
-
 
 [![S200 rear view](/assets/s200/S200_rear_view.jpg)](/assets/s200/S200_rear_view.jpg)
 *Click to enlarge*
@@ -110,6 +111,58 @@ versions for telecom applications that are powered with 40-60 VDC), a GPS antenn
 a Sysplex Timer-Out interface, and 3 LAN ports.
 
 Let's see what's inside:
+
+[![S200 inside view](/assets/s200/S200_inside_view.jpg)](/assets/s200/S200_inside_view.jpg)
+*Click to enlarge*
+
+Under the heatshink with the the blue heat transfer pad sits an off-the-shelve embedded
+PC motherboard with a 500MHz AMD Geode x86 CPU with 256MB of DRAM. Not all SyncServer S200 
+models use the same motherboard. Some of them use a VIA Eden ESP 400MHz Processor. For some gory
+details about the CPU system, checkout this [`boot.log`](/assets/s200/boot.log) file that
+I recorded. The CPU is running [MontaVista Linux](https://en.wikipedia.org/wiki/MontaVista#Linux), 
+a commercial Linux distribution for embedded devices.
+
+At the bottom left sits a little PCB for the USB and RS-232 ports. There are also two cables 
+for the VFD and the buttons.
+
+On the right side we can see a Vectron OCXO that will create a stable 10MHz during
+hold-over and a 512MB CompactFlash card.
+
+At the top left sits a Furuno GT-8031H GPS module that is compatible with the Motorola
+M12M modules. There's a bunch of connectors, and, very important 3 unpopulated connector
+footprints. Let's have a closer look at those:
+
+[![S200 inside back connectors](/assets/s200/S200_inside_back_connectors.jpg)](/assets/s200/S200_inside_back_connectors.jpg)
+*Click to enlarge*
+
+Of interest are the 6 covered holes for BNC connectors. Let's just cut to the chase and show
+the backside of the SyncServer S250: 
+
+
+![S250_BNC_connectors](/assets/s200/S250_BNC_connectors.png)
+
+![S250_BNC_connectors_diagram](/assets/s200/S250_BNC_connectors_diagram.png)
+
+Those holes are used for the input and output for the
+following 3 signals:
+
+* 10MHz
+* 1PPS
+* IRIG
+
+We are primarily interested in the 10MHz and 1PPS outputs, of course.
+
+![Probe on 10MHz output](/assets/s200/probe_on_10MHz_output.jpg)
+
+The BNC connectors may be unpopulated, but the driving circuit is not. When you probe
+the hole for the 10MHz output, you get this abomination of what's supposed to be a
+sine wave:
+
+![10MHz signal on BNC hole](/assets/s200/10MHz_output.png)
+
+There's also a 50% duty cycle 1PPS signal on the other BNC hole.
+We're in business!
+
 
 
 # Furuno GT-8031H:
@@ -229,10 +282,6 @@ Use the [HDD Raw Copy Tool](https://hddguru.com/software/HDD-Raw-Copy-Tool/).
 * 2.60Vpp AC
 
 ![10MHz output on oscilloscope](/assets/s200/10MHz_output.png)
-
-![S250_BNC_connectors](/assets/s200/S250_BNC_connectors.png)
-
-![S250_BNC_connectors_diagram](/assets/s200/S250_BNC_connectors_diagram.png)
 
 # Satellite status
 
