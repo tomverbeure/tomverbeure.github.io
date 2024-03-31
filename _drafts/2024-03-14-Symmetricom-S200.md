@@ -122,6 +122,8 @@ The screen will show
 | 10 MHz |      |   X  |   X   |
 | IRIG-B |      |   X  |   X   |
 
+# Installing the New Connectors
+
 # IMPORTANT: Using the Right GPS Antenna
 
 GPS signals are incredibly weak, so most GPS antennas are active ones that amplify the received signal 
