@@ -9,8 +9,8 @@ import csv
 req_file    = sys.argv[1]
 resp_file   = sys.argv[2]
 
-req_transactions    = {}
-resp_transactions   = {}
+req_transactions    = []
+resp_transactions   = []
 
 WAIT_FIRST_0X40     = 0
 WAIT_SECOND_0X40    = 1
@@ -274,6 +274,11 @@ class Message:
     def __str__(self):
         s = ""
 
+        if self.req:
+            s += ">>> "
+        else:
+            s += "<<< "
+
         s += f"{self.msg_id} - {self.msg_name()}: {self.data}, {self.checksum}, {self.terminator} - { self.msg_len() } - { self.timestamp }"
 
         if self.msg_len() == self.exp_msg_len():
@@ -379,13 +384,45 @@ def process_trace(filename, transactions, req=True):
     
             elif state == MESSAGE_TERMINATOR1:
                 cur_msg.terminator.append(data_byte)
-                print(cur_msg)
+                #print(cur_msg)
+                transactions.append(cur_msg)
                 cur_msg     = None
     
                 state = WAIT_FIRST_0X40
     
 
+def merge_transactions(list1, list2):
+    merged_list = []
+    index1 = index2 = 0
+
+    # Loop until we reach the end of either list
+    while index1 < len(list1) and index2 < len(list2):
+        if list1[index1].timestamp <= list2[index2].timestamp:
+            merged_list.append(list1[index1])
+            index1 += 1
+        else:
+            merged_list.append(list2[index2])
+            index2 += 1
+
+    # Append any remaining items from either list
+    while index1 < len(list1):
+        merged_list.append(list1[index1])
+        index1 += 1
+
+    while index2 < len(list2):
+        merged_list.append(list2[index2])
+        index2 += 1
+
+    return merged_list
+
 print(f"Processing req file: {req_file}")
 process_trace(req_file, req_transactions, req=True)
 print(f"Processing resp file: {resp_file}")
 process_trace(resp_file, resp_transactions, req=False)
+
+
+transactions = merge_transactions(req_transactions, resp_transactions)
+
+for t in transactions:
+    print(t)
+
