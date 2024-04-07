@@ -178,6 +178,15 @@ sudo apt install gcc-12
 
 **Linux User Drivers**
 
+* Install the `fxload` program
+
+    ```
+sudo apt install fxload
+    ```
+
+    This is a generic tool for devices of the Cypress EZ-USB devices to load
+    new firmware into the device.
+
 * Compile and install the Linux user drivers
 
     ```
@@ -229,7 +238,7 @@ KERNEL=="gpib[0-9]*", MODE="0660", GROUP="tom"
     load the firmware. It does this by matching USB devices that have 0518 as product ID. (See earlier!)
     This, in turn, expects the firmware to be located in `/usr/local/share/usb`.
 
-    `gpib_udev_fxload` should already have been placed where it needs to be, as part of the earlier
+    `gpib_udev_fxloader` should already have been placed where it needs to be, as part of the earlier
     `linux-user` `sudo make install` action.
 
     But you need to make sure the firmware is in place:
