@@ -28,7 +28,8 @@ cmake gettext python3-numpy python3-setuptools libboost-dev build-essential \
 libreadline-dev gawk tcl-dev libffi-dev git \
 graphviz xdot pkg-config python3 libboost-system-dev \
 libboost-python-dev libboost-filesystem-dev zlib1g-dev \
-help2man gnome-tweaks imagemagick libfftw3-dev libxaw7-dev 
+help2man gnome-tweaks imagemagick libfftw3-dev libxaw7-dev \
+libftdi1-2 libftdi1-dev libhidapi-hidraw0 libhidapi-dev libudev-dev
 
 sudo apt install gtkwave bundler
 ```
@@ -116,6 +117,9 @@ sudo make install
 
 # SpinalHDL
 
+[Linux installation instructions](https://spinalhdl.github.io/SpinalDoc-RTD/master/SpinalHDL/Getting%20Started/Install%20and%20setup.html#linux-installation)
+
+Old:
 ```
 sudo add-apt-repository -y ppa:openjdk-r/ppa
 sudo apt-get update
@@ -126,6 +130,16 @@ sudo update-alternatives --config javac
 # Also install SBT: see SpinalHDL README.md
 ```
 
+# Install OSS CAD Suite
+
+[Installation instructions](https://github.com/YosysHQ/oss-cad-suite-build?tab=readme-ov-file#installation)
+Download from here: https://github.com/YosysHQ/oss-cad-suite-build/releases/
+
+```
+cd /opt
+sudo tar xfv ~/Downloads/oss-cad-suite-linux-x64-20240406.tgz
+```
+
 # RISC-V Toolchain
 
 Download `riscv64-elf-ubuntu-22.04-gcc-nightly-2024.03.01-nightly.tar.gz` from here: https://github.com/riscv-collab/riscv-gnu-toolchain/releases
@@ -133,8 +147,8 @@ Download `riscv64-elf-ubuntu-22.04-gcc-nightly-2024.03.01-nightly.tar.gz` from h
 ```
 cd /opt
 sudo tar xfvz ~/Downloads/riscv64-elf-ubuntu-22.04-gcc-nightly-2024.03.01-nightly.tar.gz
-sudo mv riscv riscv64-unknown-elf
-sudo chmod -R og-w ./riscv64-unknown-elf/
+sudo mv riscv riscv64-unknown-elf-toolchain
+sudo chmod -R og-w ./riscv64-unknown-elf-toolchain/
 ```
 
 Old:
@@ -143,6 +157,11 @@ curl https://static.dev.sifive.com/dev-tools/freedom-tools/v2020.12/riscv64-unkn
 sudo tar xfvz ~/Downloads/riscv64-unknown-elf-toolchain-10.2.0-2020.12.8-x86_64-linux-ubuntu14.tar.gz
 sudo chmod 755 /opt/riscv64-unknown-elf-toolchain-10.2.0-2020.12.8-x86_64-linux-ubuntu14/
 ```
+
+# openFPGAloader
+
+* [Repo](https://github.com/trabucayre/openFPGALoader)
+* [Installation instructions](https://trabucayre.github.io/openFPGALoader/guide/install.html)
 
 # CUDA
 ```
