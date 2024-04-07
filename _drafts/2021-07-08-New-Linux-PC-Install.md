@@ -128,8 +128,16 @@ sudo update-alternatives --config javac
 
 # RISC-V Toolchain
 
-Download from here: https://github.com/riscv-collab/riscv-gnu-toolchain/releases
+Download `riscv64-elf-ubuntu-22.04-gcc-nightly-2024.03.01-nightly.tar.gz` from here: https://github.com/riscv-collab/riscv-gnu-toolchain/releases
 
+```
+cd /opt
+sudo tar xfvz ~/Downloads/riscv64-elf-ubuntu-22.04-gcc-nightly-2024.03.01-nightly.tar.gz
+sudo mv riscv riscv64-unknown-elf
+sudo chmod -R og-w ./riscv64-unknown-elf/
+```
+
+Old:
 ```
 curl https://static.dev.sifive.com/dev-tools/freedom-tools/v2020.12/riscv64-unknown-elf-toolchain-10.2.0-2020.12.8-x86_64-linux-ubuntu14.tar.gz > ~/Downloads/riscv64-unknown-elf-toolchain-10.2.0-2020.12.8-x86_64-linux-ubuntu14.tar.gz
 sudo tar xfvz ~/Downloads/riscv64-unknown-elf-toolchain-10.2.0-2020.12.8-x86_64-linux-ubuntu14.tar.gz
