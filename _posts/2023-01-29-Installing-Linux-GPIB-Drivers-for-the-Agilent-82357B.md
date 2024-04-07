@@ -156,7 +156,25 @@ make
 sudo make install
     ```
 
-    This will install the gpib drivers in `/lib/modules/<kernel version>/gpib`:
+    This will install the gpib drivers in `/lib/modules/<kernel version>/gpib`.
+    
+    Depending on your Linux installation, you might run into the following error:
+
+    ```
+warning: the compiler differs from the one used to build the kernel
+  The kernel was built by: x86_64-linux-gnu-gcc-12 (Ubuntu 12.3.0-1ubuntu1~22.04) 12.3.0
+  You are using:           
+  CC [M]  /home/tom/tools/linux-gpib-code/linux-gpib-kernel/drivers/gpib/agilent_82350b/agilent_82350b_init.o
+/bin/sh: 1: gcc-12: not found
+    ```
+    My solution for Ubuntu 22.04 was to simply install gcc-12:
+
+    ```
+sudo apt install gcc-12
+    ```
+
+    After this, the `make` command worked fine.
+
 
 **Linux User Drivers**
 
