@@ -52,7 +52,8 @@ that doesn't initiate commands but just receives data.
 I'm using the following script to record the printing data and save it to 
 a file:
 
-`gpib_talk_only_to_file.py`:
+[`gpib_talk_to_file.py`](/assets/print_file_conversion/gpib_talk_to_file.py):
+*(click to download)*
 ```python
 #! /usr/bin/env python3
 
