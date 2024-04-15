@@ -125,8 +125,9 @@ the process why which an Agilent 82357B must be initialized.
 
 **Linux Kernel Headers**
 
-This is the only step you will need to redo whenever you (or the automated updating system of your
-distribution!) upgrade your kernel to a later version. It's really annoying...
+*This section is the only part you will need to redo over and over again, whenever you 
+(or the automated updating system of your distribution!) upgrades your kernel to a later 
+version. It's really annoying...*
 
 * Install Linux Kernel Headers
 
@@ -152,13 +153,16 @@ cd linux-gpib-code/linux-gpib-kernel
 * Compile and install
 
     ```
+make clean
 make
 sudo make install
     ```
 
-    This will install the gpib drivers in `/lib/modules/<kernel version>/gpib`.
+    This will install the gpib drivers in `/lib/modules/<kernel version>/gpib`. The
+    `make clean` is important. Even a minor kernel update may otherwise result
+    in the following error: `gpib_common: disagrees about version of symbol module_layout`.
     
-    Depending on your Linux installation, you might run into the following error:
+    Depending on your Linux installation, you might also run into the this issue:
 
     ```
 warning: the compiler differs from the one used to build the kernel
