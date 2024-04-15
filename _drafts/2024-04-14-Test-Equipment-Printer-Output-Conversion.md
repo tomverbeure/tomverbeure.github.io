@@ -113,5 +113,52 @@ The end result looks like this:
 
 ![TDS540 screenshot](/assets/print_file_conversion/tds540.crop.png)
 
+# HP 54542A Oscilloscope
 
+This oscilloscope was an ridiculous $20 bargain at the 
+[Silicon Valley Electronics Flea Market](https://www.electronicsfleamarket.com/). It came
+with a GPIB, RS-232, and Centronics port, and all 3 can be used for printing.
 
+I tried for a while to get printing to GPIB to work, but wasn't successful so I switched
+to my always reliable [Fake Parallel Printer](https://tomverbeure.github.io/2023/01/24/Fake-Parallel-Printer-Capture-Tool-HW.html).
+
+The printer settings menu can by accessed by pressing the Utility button and then 
+the top sof-button with the name "HPIB/RS232/CENT CENTRONICS".
+
+![HP 54542A printing options](/assets/print_file_conversion/hp54542a_printing_options.png)
+
+You have the following options:
+
+* ThinkJet
+* DeskJet75dpi, DeskJet100dpi, DeskJet150dpi, DeskJet300dpi
+* LaserJet
+* PaintJet
+* Plotter
+
+Unlike the TDS 540, I wasn't able to get the ThinkJet option to convert into anything but
+the DeskJet75dpi option worked fine with this recipe:
+
+```sh
+~/projects/fake_parallel_printer/fake_printer.py -i -p /dev/ttyACM0 -f hp54542a_ -s thinkjet.pcl -v
+gpcl6 -dNOPAUSE -sOutputFile=hp54542a.png -sDEVICE=png256 -g680x700 -r75x75 hp54542a_0.thinkjet.pcl
+convert hp54542a.png -crop 640x364+19+96 hp54542a.crop.png
+```
+
+The 54542A doesn't just print out the contents of the screen, it also prints the date and adds 
+the settings for the channels that are enabled, trigger options etc. The size of these additional
+values depends on how many channels and other parameters are enabled.
+
+![HP 54542A with additional info](/assets/print_file_conversion/hp54542a_additional_info.png)
+
+When you select PaintJet or Plotter as output device, then you have the option to select
+different colors for regular channels, math channels, graticule, markers etc. So it should
+be possible to create really nice color screenshot from this scope, even if the CRT is
+monochrome. 
+
+So far, I have been able to find a way to decode these printer files.
+
+HPGL:
+
+```
+hp2xx -m png --width 640 --height 480 -c 12345671 -p 99991111 hp54542a_0.hpgl
+```
