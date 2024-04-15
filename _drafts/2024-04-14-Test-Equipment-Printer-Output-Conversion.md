@@ -85,8 +85,8 @@ timeouts are usually avoided.
 # TDS 540 Oscilloscope
 
 My old TDS 540 oscilloscope didn't have a printer port, so I had to make do with
-GPIB. It also didn't have the ability to export bitmaps directly, but it has outputs
-for:
+GPIB. Unlike later version of the TDS series, it also didn't have the ability to 
+export bitmaps directly, but it has outputs for:
 
 * Thinkjet, Deskjet, and Laserjet PCL format
 * Epson in ESC/P format
@@ -109,7 +109,7 @@ gpcl6 -dNOPAUSE -sOutputFile=tds540.png -sDEVICE=png256 -g680x574 -r75x75 tds540
 convert tds540.png -crop 640x480+20+47 tds540.crop.png
 ```
 
-The end result will look like this:
+The end result looks like this:
 
 ![TDS540 screenshot](/assets/print_file_conversion/tds540.crop.png)
 
