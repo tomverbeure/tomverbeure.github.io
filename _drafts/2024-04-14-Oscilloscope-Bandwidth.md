@@ -28,6 +28,8 @@ categories:
 
 # TDS 540 - 500MHz/1Gsps
 
+![TDS 540 photo](/assets/scope_bw/tds540_photo.jpg)
+
 I bought this scope cheap enough and had plans to do some repairs on it, and because
 it had a higher bandwidth than my Siglent 2304X. But soon after a friend gave
 me an HP Infiniium XXX with better specs and this scope ended up in a closet.
@@ -86,6 +88,8 @@ When plotted in a chart, you get this:
 ![TDS540 frequency response graph](/assets/scope_bw/tds540_freq_response.png)
 
 # HP 54542A - 500MHz/2Gsps
+
+![HP 54542A picture](/assets/scope_bw/hp54542a_photo.jpg)
 
 This scope has been a spectacular $20 flea market purchase. I love 
 
