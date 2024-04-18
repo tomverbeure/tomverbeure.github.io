@@ -17,39 +17,41 @@ Siglent 2304X runs out of steam.
 ![TDS 684B](/assets/tds_button/tds684b_front.jpg)
 
 It only had one issue: one of the rotary knobs on the front panel had erratic
-behavior. Not completely broken, but in certain positions, The results were sometime 
+behavior. Not completely broken, but in certain positions the behavior was
 all over the place.
 
-I already had a TDS 540 oscilloscope that has been gathering dust. It has
-a fully working front panel that looks identical to the one of the TDS 684B.
+I already had a TDS 540 oscilloscope that has been gathering dust for years,
+with a fully working front panel that looks identical to the one of the 
+TDS 684B.
 
 The internal connectors are the same too, and the PCB is nearly the same as well,
 so I first tried swapping those panels, but while it worked it little bit, some
 buttons didn't work at all: **the front panels of a TDS 684B and a TDS 540
 are not compatible!** 
 
-Since I didn't use the TDS 540, I decided to swapping the individual rotary
-encoders. That worked!
+The rotary encoders are custom made for Tektronix and can't be bought
+individually.  Since I didn't use the TDS 540, I decided to swap the individual 
+rotary encoders instead. That worked!
 
 In this blog post, I go through the steps of this simple repair.
 
 # Removing the panels
 
-The disassembly instructions can be found in the 
+The front panel disassembly instructions can be found in the 
 [TDS 520B, 540B, 620B, TDS 644B, TDS 680B, TDS 684B, TDS 724A, TDS 744A, & TDS 784A Digitizing Oscilloscope Service Manual](https://w140.com/tekwiki/images/4/41/070-9386-03.pdf) 
-(phew!) but they apply to all scope with that kind of look.
+(phew!) but they apply to all scopes with that kind of look.
 
 I find pictures easier to work off than technical drawings. In this case, the
 procedure is really simple.
 
-The first step is to remove the so-called trim ring. This is the part that
-goes around the whole front panel. It also contains the button that go
-around the screen.
-
 **Trim Ring Removal**
 
-The trim ring click in place at the top and the bottom. I found the easiest
-way is to insert your fingers between the trim ring and the case, pull the
+The first step is to remove the so-called trim ring. This is the part that
+goes around the whole front. It also contains the buttons that surround
+the screen.
+
+The trim ring clicks in place at the top and the bottom. I found it easiest
+to insert your fingers between the trim ring and the case at the top, pull the
 plastic up and then move the top of the trim ring forward.
 
 ![Remove trim ring](/assets/tds_button/remove_front_frame.jpg)
@@ -61,7 +63,7 @@ not necessary for this repair!*
 ![Remove trim ring - viewed from the side](/assets/tds_button/remove_front_frame_from_the_side.jpg)
 
 Once the top of the trim ring is loose,  you can pull off the top entirely and the 
-bottom will follow as well.
+bottom will follow.
 
 You'll now see an orange flex cable around the screen that's used for the screen buttons.
 
@@ -144,7 +146,7 @@ to fix.
 ![Nut and washer around knob](/assets/tds_button/nut_and_washer_removal.jpg)
 
 You can now remove the failing rotary encoder from one board and the replacement
-one from a good board. I tried to do this with a hot air station but got nowhere
+one from the other board. I tried to do this with a hot air station but got nowhere
 and I was afraid of cooking the PCB. It's much easier to just cut them loose!
 
 ![Cutting loose the rotary encoder](/assets/tds_button/cutting_loose_the_encoder.jpg)
