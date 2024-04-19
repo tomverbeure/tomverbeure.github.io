@@ -10,37 +10,51 @@ categories:
 
 # Introduction
 
-I have an HP 8753C that I found on Craigslist. Other than a few smudges and 
-scuffmarks on the handles and case, it's in near perfect shape. 
+I have an HP 8753C vector network analyzer (VNA) that I found on Craigslist. Other 
+than a few smudges and scuffmarks on the handles and case, it's in near perfect shape. 
+
+[![HP 8753C and HP 85046A](/assets/hp8753c/hp8753c.jpg)](/assets/hp8753c/hp8753c.jpg)
 
 Mine is the 300kHz to 3GHz version without any additional options, but it came
-with the matching HP 85046A S-parameter test set. You don't absolutely need this
-test set for mark useful measurements, but if you want to easily measure S11, S21, S22 and
+with the matching HP 85046A S-parameter test set. Strictly speaking, you don't need this
+test set to make useful measurements, but if you want to easily measure S11, S21, S22 and
 S12 parameters without external couplers, it's kind of a necessity.
 
 The HP 8753C has as few additional options (see [data sheet](/assets/hp8753c/HP_8753C Datasheet.pdf)):
 
-* option 002: harmonic analysis, also callsed HP 11883A Harmonic Measurement Upgrade
-* option 006: 6GHz support, also cassed HP 11884A 6GHz Receiver Upgrade
-* option 010: time domain, also called HP 85019B Time Domain Upgrade Kit)
+* option 002: harmonic analysis, aka HP 11883A Harmonic Measurement Upgrade
+* option 006: 6GHz support, aka HP 11884A 6GHz Receiver Upgrade
+* option 010: time domain, aka HP 85019B Time Domain Upgrade Kit
 
 Options 002 and 010 and pure software upgrades. And while option 006 can be enabled 
-just like the software options, you need an HP 85047A (instead of 85046A) for actually use 
-it: the test set contains the frequency doublers that make 6GHz possible. The 8753C 
-just sends commands tot he 85047A to switch those doubles on and off.
+just like the software options, you need an HP 85047A test set, instead of the 85046A, 
+to use it: the test set contains the frequency doublers that make 6GHz possible. The 8753C 
+just sends commands to the 85047A to switch those doublers on and off.
 
 # Getting the option codes
 
-As described in the [Kirkby Microwave](https://www.kirkbymicrowave.co.uk/Everything-you-wanted-to-know-about-the-HP-8753-VNA/)
-website, you just send an email to [caesarv@email.com](mailto:caesarv@email.com) with
-the type ("HP 8753C") and the serial code of your machine.
+HP/Agilent/Keysight has long ago discontinued the sale of these software options, but
+enthousiasts were able to reverse engineers the EEPROM contents on the CPU board of the
+8753C to enable them. This, however, required removing the EEPROMs from the board,
+reprogramming them, and putting them back in. Not rocket science, but not entirely free 
+of risk either.
 
-In my case, the serial code is shown during power up, or through the service menu:
+There is a much better alternative! As described in the 
+[Kirkby Microwave](https://www.kirkbymicrowave.co.uk/Everything-you-wanted-to-know-about-the-HP-8753-VNA/)
+website, you just send an email to [caesarv@email.com](mailto:caesarv@email.com),
+a retired HP employees with the tools to create license keys for these options.
+
+All you need to do is mention the exact type of your machine, "HP 8753C", and its serial
+code.
+
+![HP 8753C serial code](/assets/hp8753c/serial_code.jpg)
+
+The serial code is shown during power up, or you can get it  through the service menu:
 
 System -> Service Menu -> Firmware Revision
 
-In my case the serial number was 10 characters. There are reports from others who aren't
-so lucky. 
+If you serial number is less than 10 characters, you'll need to take additional steps to recover 
+the full number. This wasn't an issue for my case.
 
 It felt a bit weird to ask a total stranger for license codes, but I emailed Ceasar and got 2 codes
 back the next day. Amazing!
@@ -71,6 +85,7 @@ back the next day. Amazing!
 Installing the code was all that was left.
 
 # Installing the codes
+
 
 
 * HP_8753D_Vector_Network_Analyzer__Service_Manual-08753-90405.pdf
