@@ -82,11 +82,57 @@ back the next day. Amazing!
    CV
 ```
 
-Installing the code was all that was left.
+# Removing EEPROM Write Protection
+
+The 8753C are stored in EEPROMs that are located on the CPU board. By default, these
+EEPROMs are write protected. You need to move a jumper to disable this write protection.
+Luckily, it's a very easy procedure.
+
+Unscrew the back screw that holds the top cover in place.
+
+![Top cover screw](/assets/hp8753c/top_cover_screw.jpg)
+
+You can now remove the top cover. There are a bunch of plug-in cards that
+are fixed in place with a metal retainer and a screw.
+
+Remove the screw and the metail retainer. 
+
+*Be careful not to drop the screw into the chassis. The 8753C is a heavy beast and packed 
+with electronics. Fishing for a screw in there would be painful!*
+
+![Plug-in card retainer](/assets/hp8753c/plugin_card_retainer.jpg)
+
+The CPU board is the one with the colorful ribbon cable.
+
+Unplug the cable, then use the levers on the left and right of the board to unplug the
+CPU board.
+
+![Plug-in boards](/assets/hp8753c/plugin_boards.jpg)
+
+The CPU board has a bit honking Motorola 68000 CPU on the left. To the right of
+it are 4 EPROMs with the firmware, mine has version 4.13, the last one for the 8753C.
+In between sits the Xicor X2816 EEPROM that contains the calibration data and
+the option settings. Right below is the jumper bank that controls the write protection
+of the EEPROM.
+
+[![CPU board](/assets/hp8753c/cpu_board.jpg)](/assets/hp8753c/cpu_board.jpg)
+*Click to enlarge*
+
+As explained on page 3-6 of the 8753D service manual, the jumper needs to move from
+the NORMAL position on the left, to the ALTER position on the right.
+
+![Jumper position diagram](/assets/hp8753c/service_manual_jumper_diagram.png)
 
 # Installing the codes
 
+I wasn't able to find a service manual for the 8753C, but Keysight still
+have [the one for the 8753D](https://www.keysight.com/be/en/assets/9018-05273/service-manuals/9018-05273.pdf) 
+available for download on their website.
 
+
+
+
+![HP 8753C options actived](/assets/hp8753c/options_active.jpg)
 
 * HP_8753D_Vector_Network_Analyzer__Service_Manual-08753-90405.pdf
 * Page 3-39: Test 56
