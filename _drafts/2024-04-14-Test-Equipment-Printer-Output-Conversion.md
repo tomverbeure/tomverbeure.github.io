@@ -12,6 +12,52 @@ categories:
 
 # Tools
 
+**Fake Parallel Printer**
+
+There are 6 common ways to transfer screenshots from test equipment to your PC:
+
+* USB
+
+    Usually painless, this only works on modern equipment.
+
+* Ethernet
+
+    Still requires slightly modern equipment, and there's often some configuration pain
+    involved.
+
+* RS-232 serial
+
+    Reliable, but often very slow.
+
+* GPIB
+
+    Requires an expensive interface dongle and I've yet to figure out how to make it
+    work for all equipment. Below, I was able to make it work for the TDS 540, but not for
+    the HP 54532A, for example.
+
+* Parallel printer port
+
+    Available on a lot of old equipment, but it normally can't be captured by a PC.
+    That's why I created [Fake Parallel Printer](/2023/01/24/Fake-Parallel-Printer-Capture-Tool-HW.html),
+    a tool to capture parallel port traffic. You can make one for yourself for around $20.
+
+    We're now more than a year later, and I use it all the time. I find it to be the easiest
+    to use of all the printer interfaces.
+
+**GPIB to USB Dongle**
+
+**ImageMagick**
+
+ImageMagick is the swiss army knife of bitmap file processing. It has a million features,
+but I primarily use it for file format conversion and image cropping.
+
+I doubt that there's any major Linux distribution that doesn't have it as a standard
+package...
+
+```sh
+sudo apt install imagemagick
+```
+
 **GhostPCL**
 
 GhostPCL is used to decode PCL files. On many old machines, these files are created
@@ -50,17 +96,13 @@ It's available as a standard package for Ubuntu:
 sudo apt install hp2xx
 ```
 
-**ImageMagick**
+**HP 8753C Companion**
 
-ImageMagick is the swiss army knife of bitmap file processing. It has a million features,
-but I primarily use it for file format conversion and image cropping.
+This tool is specific to HP 8753 vector network analyzers. It captures HPGL
+plotter commands, extracts the data, recreates what's displayed on the screen,
+and allow you to interact with it.
 
-I doubt that there's any major Linux distribution that doesn't have it as a standard
-package...
-
-```sh
-sudo apt install imagemagick
-```
+It's available on [GitHub](https://github.com/VK2BEA/HP8753-Companion).
 
 # Capturing GPIB data in Talk Only mode
 
@@ -258,4 +300,66 @@ And there's a "Hardcopy" option as well:
 ![TDS 684B screenshot with hardcopy colors](/assets/print_file_conversion/tds684_hardcopy.png)
 
 It's a matter of personal taste, but my preference is the "Normal" option.
+
+# Advantest R3273 Spectrum Analyzer - Parallel Port - PCL Output
+
+Next up is my Advantest R3273 spectrum analyzer.
+
+It has a printer port, a separate parallel port that I don't know what it's used for, a
+serial port, a GPIB port, and floppy drive that refuses to work. However, in the menus,
+I can only configure prints to go to floppy or to the parallel port, so fake parallel
+printer is what I'm using.
+
+The print configuration menu can be reached by pressing: \[Config\] - \[Copy Config\] -> \[Printer\]:
+
+![Advantest R3273 printer configuration screen](/assets/print_file_conversion/advantest_r3273_printer_config.png)
+
+The R3273 supports a bunch of formats, but I had the hardest time getting it create a color bitmap.
+After a lot of trial and error, I ended up with this:
+
+```sh
+~/projects/fake_parallel_printer/fake_printer.py -i -p /dev/ttyACM0 -f r3273_ -s pcl -v
+gpcl6 -dNOPAUSE -sOutputFile=r3273_tmp.png -sDEVICE=png256 -g4000x4000 -r600x600 r3273_0.pcl
+convert r3273_tmp.png -filter point -resize 1000 r3273_filt.png
+rm r3273_tmp.png
+convert r3273_filt.png -crop 640x480+315+94 r3273.png
+rm r3273_filt.png
+```
+
+The conversion loses something in the process. The R3273 hardcopy mimics the shades of 
+depressed buttons with a 4x4 pixel dither pattern:
+
+![R3273 dither pattern](/assets/print_file_conversion/r3273_dither_pattern.png)
+
+If you use a 4x4 pixel box filter and downsample by a factor of 4, this dither pattern converts
+in a nice uniform gray, but the actual spectrum data in that case gets filtered down as well:
+
+![R3273 box filtered](/assets/print_file_conversion/r3273_box_filter.png)
+
+With the recipe above, I'm using 4x4 to 1 pixel point-sampling instead, with a phase that is chosen
+just right so that the black pixels of the dither pattern get picked. The highlighted buttons are now
+solid black and everything looks good.
+
+# HP 8753C Vector Network Analyzer - GPIB - HP 8753 Companion
+
+My HP 8753C VNA only has GPIB interface, so there's not a lot of choice there.
+
+I'm using [HP 8753 Companion](https://github.com/VK2BEA/HP8753-Companion). It can be
+used for much more than just grabbing screenshots: you can save the measured data to
+a filter, upload calibration kit data and so etc.
+
+You can render the screenshot the way it was plotted by the HP 8753C, like this:
+
+![HP 8753C HPGL screenshot](/assets/print_file_conversion/hp8753c_hpgl.png)
+
+Or you can display it as in a high resolution mode, like this:
+
+![HP 8753C high resolution screenshot](/assets/print_file_conversion/hp8753c_hires.png)
+
+Default color settings for the HPGL plot aren't ideal, but everything is configurable.
+
+If you don't have one, the existance of HP 8753 Companion alone is a good reason to buy
+a USB-to-GPIB dongle.
+
+![HP 8753C high resolution Smith chart screenshot](/assets/print_file_conversion/hp8753c_smith_hires.png)
 
