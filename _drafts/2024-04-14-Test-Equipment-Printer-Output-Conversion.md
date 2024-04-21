@@ -97,7 +97,7 @@ only then launch the script above.
 This will work as long as the printing device doesn't go silent while in the middle
 of printing a page.
 
-# TDS 540 Oscilloscope
+# TDS 540 Oscilloscope - GPIB - PCL Output
 
 My old TDS 540 oscilloscope didn't have a printer port, so I had to make do with
 GPIB. Unlike later version of the TDS series, it also didn't have the ability to 
@@ -128,7 +128,7 @@ The end result looks like this:
 
 ![TDS540 screenshot](/assets/print_file_conversion/tds540.crop.png)
 
-# HP 54542A Oscilloscope
+# HP 54542A Oscilloscope - Parallel Port - PCL or HPGL Output
 
 This oscilloscope was an ridiculous $20 bargain at the 
 [Silicon Valley Electronics Flea Market](https://www.electronicsfleamarket.com/). It has
@@ -191,4 +191,60 @@ better with some other options.
 
 [![HP plotter output](/assets/print_file_conversion/hp54542a_0.plotter.png)](/assets/print_file_conversion/hp54542a_0.plotter.png)
 
+# TDS 684B - Parallel Port - PCX Color Output
+
+I replaced my TDS 540 oscilloscope by a TDS 684B. On the outside, they look identical. They also
+have the same core user interface, but it has a color screen, a bandwidth of 1GHz and a sample
+rate of 5 Gsps.
+
+**Print formats**
+
+The 684B also has a lot more output options:
+
+* Thinkjet, Deskjet, DeskjetC (color), Laserjet output in PCL format
+* Epson in ESC/P format
+* DPU thermal printer (???)
+* PC Paintbrush mono and color in PCX file format
+* TIFF file format
+* BMP mono and color format
+* RLE color format
+* EPS mono and color printer format
+* EPS mono and color plotter format
+* Interleaf .img format
+* HPGL color plot
+
+Phew.
+
+Like the HP 54542A, my unit has GPIB, parallel port, and serial port. It can also write out
+the files to floppy drive.
+
+So which one to use?
+
+BMP is an obvious choice, and supported natively by all modern PCs. The only issue is that
+it gets written out without any compression. It takes over 130 seconds to capture with fake printer.
+PCX is a very old bitmap file format but it uses 
+[run length encoding](https://en.wikipedia.org/wiki/Run-length_encoding). It only take 22 seconds
+to print.
+
+I tried the TIFF option and was happy to see that it only took 17 seconds, but the output was 
+monochrome. So for color bitmap file, PCX is the way to go. The recipe:
+
+```sh
+~/projects/fake_parallel_printer/fake_printer.py -i -p /dev/ttyACM0 -f tds684_ -s pcx -v
+convert tds684_0.pcx tds684.png
+```
+
+![TDS 684B PCX screenshot with normal colors](/assets/print_file_conversion/tds684_normal.png)
+
+The screenshot above uses the "Normal" color setting. The scope also the the "Bold" color
+setting:
+
+![TDS 684B screenshot with bold colors](/assets/print_file_conversion/tds684_bold.png)
+
+And there's a "Hardcopy" option as well:
+
+![TDS 684B screenshot with hardcopy colors](/assets/print_file_conversion/tds684_hardcopy.png)
+
+
+It's a matter of personal taste, but my preference is the "Normal" option.
 
