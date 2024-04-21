@@ -50,6 +50,18 @@ It's available as a standard package for Ubuntu:
 sudo apt install hp2xx
 ```
 
+**ImageMagick**
+
+ImageMagick is the swiss army knife of bitmap file processing. It has a million features,
+but I primarily use it for file format conversion and image cropping.
+
+I doubt that there's any major Linux distribution that doesn't have it as a standard
+package...
+
+```sh
+sudo apt install imagemagick
+```
+
 # Capturing GPIB data in Talk Only mode
 
 Some devices will only print to GPIB in Talk Only mode, or sometimes it's just
@@ -244,7 +256,6 @@ setting:
 And there's a "Hardcopy" option as well:
 
 ![TDS 684B screenshot with hardcopy colors](/assets/print_file_conversion/tds684_hardcopy.png)
-
 
 It's a matter of personal taste, but my preference is the "Normal" option.
 
