@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Test Equipment Printer Output Conversion
+title: Test Equipment Printer Output to Bitmap Conversion
 date:   2024-04-14 00:00:00 -1000
 categories:
 ---
