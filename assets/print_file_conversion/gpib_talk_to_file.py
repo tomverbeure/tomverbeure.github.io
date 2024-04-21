@@ -3,6 +3,10 @@
 import sys
 import pyvisa
 
+if len(sys.argv) != 3:
+    print("Usage: gpib_talk_to_file.py <GPIB address> <output filename>")
+    sys.exit(1)
+
 gpib_addr       = int(sys.argv[1])
 output_filename = sys.argv[2]
 

@@ -40,14 +40,25 @@ sudo make install
 A whole bunch of tools will now be available in `/opt/ghostpdl/bin`, including
 `gs` (Ghostscript) and `gpcl6`.
 
+**hp2xx**
+
+hp2xx converts HPGL files, originally intended for HP plotter, to bitmaps, EPS etc.
+
+It's available as a standard package for Ubuntu:
+
+```sh
+sudo apt install hp2xx
+```
+
 # Capturing GPIB data in Talk Only mode
 
 Some devices will only print to GPIB in Talk Only mode, or sometimes it's just
-easier to it that way. In this mode, the PC GPIB interface is a passive observer 
-that doesn't initiate commands but just receives data.
+easier to use that way. 
+
+When the device is in Talk Only mode, the PC GPIB controller becomes a Listen Only device,
+a passive observer that doesn't initiate commands but just receives data.
 
 ![TDS540 in talk-only mode](/assets/print_file_conversion/tds540_talk_only_mode.png)
-
 
 I'm using the following script to record the printing data and save it to 
 a file:
@@ -78,9 +89,13 @@ except pyvisa.VisaIOError as e:
     print(f"Error: {e}")
 ```
 
-Pyvisa can easily time out. When doing a hardcopy print-out, I always first press
-the hardcopy button on the oscilloscope, and then I start the script. This way,
-timeouts are usually avoided.
+Pyvisa will quickly time out when no data arrives in Talk Only mode, but since
+all data transfers happen with valid-ready protocol, you can avoid time-out
+issued by pressing the hardcopy or print button on your oscilloscope first, and
+only then launch the script above.
+
+This will work as long as the printing device doesn't go silent while in the middle
+of printing a page.
 
 # TDS 540 Oscilloscope
 
@@ -88,24 +103,24 @@ My old TDS 540 oscilloscope didn't have a printer port, so I had to make do with
 GPIB. Unlike later version of the TDS series, it also didn't have the ability to 
 export bitmaps directly, but it has outputs for:
 
-* Thinkjet, Deskjet, and Laserjet PCL format
+* Thinkjet, Deskjet, and Laserjet in PCL format
 * Epson in ESC/P format
 * Interleaf format
 * EPS Image format
 * HPGL plotter format
 
-The TDS 540 has a screen resolution of 640x480. I found the Thinkjet output format
-easiest to deal with. It has a DPI of 75x75. A margin of 20 pixels is added to the left,
+The TDS 540 has a screen resolution of 640x480. I found the Thinkjet output format,
+with a DPI of 75x75, easiest to deal with. The device adds a margin of 20 pixels to the left,
 and 47 pixels at the top, but that can be removed with ImageMagick.
 
-The overall recipe looks like this:
+With a GPIB address of 11, the overall recipe looks like this:
 
 ```sh
-# Capture the data
+# Capture the PCL data
 gpib_talk_to_file.py 11 tds540.thinkjet.pcl
-# Convert to png. 
+# Convert PCL to png 
 gpcl6 -dNOPAUSE -sOutputFile=tds540.png -sDEVICE=png256 -g680x574 -r75x75 tds540.thinkjet.pcl
-# Optionally crop the 640x480 image
+# Remove the margins and crop the image to 640x480
 convert tds540.png -crop 640x480+20+47 tds540.crop.png
 ```
 
@@ -116,14 +131,18 @@ The end result looks like this:
 # HP 54542A Oscilloscope
 
 This oscilloscope was an ridiculous $20 bargain at the 
-[Silicon Valley Electronics Flea Market](https://www.electronicsfleamarket.com/). It came
-with a GPIB, RS-232, and Centronics port, and all 3 can be used for printing.
+[Silicon Valley Electronics Flea Market](https://www.electronicsfleamarket.com/). It has
+a GPIB, RS-232, and Centronics port, and all 3 can be used for printing.
 
-I tried for a while to get printing to GPIB to work, but wasn't successful so I switched
-to my always reliable [Fake Parallel Printer](https://tomverbeure.github.io/2023/01/24/Fake-Parallel-Printer-Capture-Tool-HW.html).
+I tried for a while to get printing to GPIB to work, but wasn't successful. I'm able to
+talk to the device and send commands like "\*IDN?" and get a reply just fine, but 
+the GPIB script that works fine with the TDS 540 always times out eventually.
+
+I switched to my always reliable [Fake Parallel Printer](https://tomverbeure.github.io/2023/01/24/Fake-Parallel-Printer-Capture-Tool-HW.html)
+and that worked fine. There's also the option to use the serial cable.
 
 The printer settings menu can by accessed by pressing the Utility button and then 
-the top sof-button with the name "HPIB/RS232/CENT CENTRONICS".
+the top soft-button with the name "HPIB/RS232/CENT CENTRONICS".
 
 ![HP 54542A printing options](/assets/print_file_conversion/hp54542a_printing_options.png)
 
@@ -139,11 +158,10 @@ Unlike the TDS 540, I wasn't able to get the ThinkJet option to convert into any
 the DeskJet75dpi option worked fine with this recipe:
 
 ```sh
-~/projects/fake_parallel_printer/fake_printer.py -i -p /dev/ttyACM0 -f hp54542a_ -s thinkjet.pcl -v
-gpcl6 -dNOPAUSE -sOutputFile=hp54542a.png -sDEVICE=png256 -g680x700 -r75x75 hp54542a_0.thinkjet.pcl
-convert hp54542a.png -crop 640x364+19+96 hp54542a.crop.png
+~/projects/fake_parallel_printer/fake_printer.py -i -p /dev/ttyACM0 -f hp54542a_ -s deskjet.pcl -v
+gpcl6 -dNOPAUSE -sOutputFile=hp54542a.png -sDEVICE=png256 -g680x700 -r75x75 hp54542a_0.deskjet.pcl
+convert hp54542a.png -crop 640x388+19+96 hp54542a.crop.png
 ```
-
 The 54542A doesn't just print out the contents of the screen, it also prints the date and adds 
 the settings for the channels that are enabled, trigger options etc. The size of these additional
 values depends on how many channels and other parameters are enabled.
@@ -151,14 +169,26 @@ values depends on how many channels and other parameters are enabled.
 ![HP 54542A with additional info](/assets/print_file_conversion/hp54542a_additional_info.png)
 
 When you select PaintJet or Plotter as output device, then you have the option to select
-different colors for regular channels, math channels, graticule, markers etc. So it should
+different colors for regular channels, math channels, graticule, markers etc. So it is
 be possible to create really nice color screenshot from this scope, even if the CRT is
 monochrome. 
 
-So far, I have been able to find a way to decode these printer files.
+I tried the PaintJet option, and while gcpl6 was able to extract an image, the output was
+much worse than the DeskJet option.
 
-HPGL:
+I had more success using the Plotter option. It prints out a file in HPGL format that can
+be converted to a bitmap with `hp2xx`. The following recipe worked for me:
 
+```sh
+~/projects/fake_parallel_printer/fake_printer.py -i -p /dev/ttyACM0 -f hp54542a_ -s plotter.hpgl -v
+hp2xx -m png -a 1.4 --width 250 --height 250 -c 12345671 -p 11111111 hp54542a_0.plotter.hpgl
 ```
-hp2xx -m png --width 640 --height 480 -c 12345671 -p 99991111 hp54542a_0.hpgl
-```
+
+
+I'm not smitten with the way it looks, but if you want color, this is your best option. 
+The command line option of `hp2xx` are not intuitive. Maybe it's possible to get this to look a bit
+better with some other options.
+
+[![HP plotter output](/assets/print_file_conversion/hp54542a_0.plotter.png)](/assets/print_file_conversion/hp54542a_0.plotter.png)
+
+
