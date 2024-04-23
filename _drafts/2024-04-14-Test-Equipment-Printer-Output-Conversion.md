@@ -10,6 +10,8 @@ categories:
 
 # Introduction
 
+
+
 # Tools
 
 **Fake Parallel Printer**
@@ -362,4 +364,48 @@ If you don't have one, the existance of HP 8753 Companion alone is a good reason
 a USB-to-GPIB dongle.
 
 ![HP 8753C high resolution Smith chart screenshot](/assets/print_file_conversion/hp8753c_smith_hires.png)
+
+# Siglent SDS 2304X Oscilloscope - Ethernet or USB
+
+My Siglent SDS 2304X was my first oscilloscope. It was designed 20 years later than all
+the other stuff, with a modern UI, and modern interfaces such as USB and Ethernet. There is
+not GPIB, parallel or RS-232 serial port to be found.
+
+I don't love the scope. The UI can become slow when you're displaying a bunch of data on the
+screen, and selecting anything from a menu with a detentless rotary knob can be the most
+infuriating experience. But it's my daily driver because it's not a boat anchor: even on my
+messy desk, I can usually create room to put it down without too much effort.
+
+You'd think that I use USB or Ethernet to grab screenshots, but most of the time I just
+use a USB stick and shuttle it back and forth between the scope and the PC. That's because
+setting up the connection is always a bit of pain.
+
+**Ethernet**
+
+To configure Ethernet, you need to go to \[Utility\] -> \[Next Page\] -> \[I/O\] -> \[LAN\].
+
+Unlike my [HP 1670G logic analyzer](/2023/12/26/Controlling-an-HP-1670G-with-Your-Linux-PC-X-Server.html),
+the Siglent supports DHCP but when writing this blog posts, the scope refused to grab an IP
+address on my network. No amount of rebooting, disabling and ra-eenabling DHCP helped.
+
+I have gotten it to work in the past, but today it just wasn't happening. You'll probably understand
+why using a zero-configuration USB stick becomes an attractive alternative.
+
+**USB**
+
+If you want to use USB, you need an old relic of a USB-B cable. It shows up like this:
+
+```sh
+sudo dmesg -w
+```
+
+```
+[587875.438792] usb 1-9: Product: SDS2304X
+[587875.438794] usb 1-9: Manufacturer: Siglent Technologies Co,. Ltd.
+[587875.438796] usb 1-9: SerialNumber: SDS2XJBD1R2754
+[587875.481628] usbcore: registered new interface driver usbtmc
+```
+
+
+
 
