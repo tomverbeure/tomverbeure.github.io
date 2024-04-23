@@ -352,18 +352,21 @@ a filter, upload calibration kit data and so etc.
 
 You can render the screenshot the way it was plotted by the HP 8753C, like this:
 
-![HP 8753C HPGL screenshot](/assets/print_file_conversion/hp8753c_hpgl.png)
+[![HP 8753C HPGL screenshot](/assets/print_file_conversion/hp8753c_hpgl.png)](/assets/print_file_conversion/hp8753c_hpgl.png)
+*Click to enlarge*
 
 Or you can display it as in a high resolution mode, like this:
 
-![HP 8753C high resolution screenshot](/assets/print_file_conversion/hp8753c_hires.png)
+[![HP 8753C high resolution screenshot](/assets/print_file_conversion/hp8753c_hires.png)](/assets/print_file_conversion/hp8753c_hires.png)
+*Click to enlarge*
 
 Default color settings for the HPGL plot aren't ideal, but everything is configurable.
 
 If you don't have one, the existance of HP 8753 Companion alone is a good reason to buy
 a USB-to-GPIB dongle.
 
-![HP 8753C high resolution Smith chart screenshot](/assets/print_file_conversion/hp8753c_smith_hires.png)
+[![HP 8753C high resolution Smith chart screenshot](/assets/print_file_conversion/hp8753c_smith_hires.png)](/assets/print_file_conversion/hp8753c_smith_hires.png)
+*Click to enlarge*
 
 # Siglent SDS 2304X Oscilloscope - Ethernet or USB
 
