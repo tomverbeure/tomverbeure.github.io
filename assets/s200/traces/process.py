@@ -6,8 +6,6 @@ import csv
 #req_file  = "gt-8031h-rx.csv"
 #resp_file = "gt-8031h-tx.csv"
 
-req_file    = sys.argv[1]
-resp_file   = sys.argv[2]
 
 req_transactions    = []
 resp_transactions   = []
@@ -50,6 +48,7 @@ class Message:
         self.data       = []
         self.checksum   = []
         self.terminator = []
+        self.bytes      = []
 
     def msg_name(self):
         if len(self.msg_id) == 2:
@@ -279,6 +278,13 @@ class Message:
         else:
             s += "<<< "
 
+        s += f"{self.bytes} ({len(self.bytes)})\n"
+
+        if self.req:
+            s += ">>> "
+        else:
+            s += "<<< "
+
         s += f"{self.msg_id} - {self.msg_name()}: {self.data}, {self.checksum}, {self.terminator} - { self.msg_len() } - { self.timestamp }"
 
         if self.msg_len() == self.exp_msg_len():
@@ -316,8 +322,9 @@ def process_trace(filename, transactions, req=True):
     
         state = WAIT_FIRST_0X40
     
-        cur_msg     = None
-        exp_msg_len = None
+        cur_msg         = None
+        exp_msg_len     = None
+        cur_msg_bytes   = []
     
         for line_nr,row in enumerate(resp_reader):
             #print(">", line_nr, len(row), '|'.join(row))
@@ -328,6 +335,8 @@ def process_trace(filename, transactions, req=True):
             timestamp   = float(row[1])
             data_byte   = int(row[2],16)
             data_char   = chr(data_byte)
+
+            cur_msg_bytes.append(data_byte)
     
             #print(state, line_nr, "0x%02x/%c" % (data_byte,data_byte), cur_msg, exp_msg_len)
     
@@ -339,12 +348,14 @@ def process_trace(filename, transactions, req=True):
                     state = WAIT_SECOND_0X40
                 else:
                     print("Unexpected byte...")
+                    cur_msg_bytes   = []
     
             elif state == WAIT_SECOND_0X40:
                 if data_byte == 0x40:
                     state = MESSAGE_ID0
                 else:
                     state = WAIT_FIRST_0x40
+                    cur_msg_bytes   = []
     
             elif state == MESSAGE_ID0:
                 cur_msg.msg_id += data_char
@@ -375,7 +386,6 @@ def process_trace(filename, transactions, req=True):
                     #print(f"Checksum matched!")
                     pass
     
-    
                 state = MESSAGE_TERMINATOR0
     
             elif state == MESSAGE_TERMINATOR0:
@@ -384,11 +394,13 @@ def process_trace(filename, transactions, req=True):
     
             elif state == MESSAGE_TERMINATOR1:
                 cur_msg.terminator.append(data_byte)
+                cur_msg.bytes = cur_msg_bytes
                 #print(cur_msg)
                 transactions.append(cur_msg)
                 cur_msg     = None
     
                 state = WAIT_FIRST_0X40
+                cur_msg_bytes   = []
     
 
 def merge_transactions(list1, list2):
@@ -415,14 +427,38 @@ def merge_transactions(list1, list2):
 
     return merged_list
 
-print(f"Processing req file: {req_file}")
-process_trace(req_file, req_transactions, req=True)
-print(f"Processing resp file: {resp_file}")
-process_trace(resp_file, resp_transactions, req=False)
+
+if True:
+    req_file    = sys.argv[1]
+    resp_file   = sys.argv[2]
+
+    print(f"Processing req file: {req_file}")
+    process_trace(req_file, req_transactions, req=True)
+    print(f"Processing resp file: {resp_file}")
+    process_trace(resp_file, resp_transactions, req=False)
 
 
-transactions = merge_transactions(req_transactions, resp_transactions)
+    transactions = merge_transactions(req_transactions, resp_transactions)
 
-for t in transactions:
-    print(t)
+    for t in transactions:
+     print(t)
 
+if False:
+    data     = [64, 64, 72, 97, 8, 14, 7, 212, 19, 44, 40, 0, 0, 0, 0, 7, 115, 245, 128, 29, 10, 255, 96, 0, 0, 14, 86, 0, 0, 0, 0, 7, 115, 245, 128, 29, 10, 255, 96, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 96, 148, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 0, 0, 0, 80, 101, 110, 116, 97, 114, 251, 13, 10] 
+
+    msg = Message(False)
+
+    msg.msg_id      += chr(data[2])
+    msg.msg_id      += chr(data[3])
+    
+    msg.data        = data[4:-3]
+    msg.checksum    = [ data[-3] ]
+    msg.terminator  = data[-2:]
+
+    print(msg)
+
+    month               = data[0]
+    day                 = data[1]
+    year                = bytes_to_int16(data[2:])
+    
+    
