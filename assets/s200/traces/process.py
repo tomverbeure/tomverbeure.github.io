@@ -355,7 +355,7 @@ def process_trace(filename, transactions, req=True):
                 if data_byte == 0x40:
                     state = MESSAGE_ID0
                 else:
-                    state = WAIT_FIRST_0x40
+                    state = WAIT_FIRST_0X40
                     cur_msg_bytes   = []
     
             elif state == MESSAGE_ID0:
