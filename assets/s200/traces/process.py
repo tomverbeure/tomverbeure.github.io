@@ -243,19 +243,20 @@ class Message:
         pulse_on            = bool(self.data[0])
         pulse_sync          = ['UTC', 'GPS'][self.data[1]]
         time_raim_sol       = self.data[2]
-        svids_removed       = self.data[6] + (self.data[5] << 8) + (self.data[4] << 16)+ (self.data[3] << 24)
-        time_accuracy_est   = self.data[7] + (self.data[8] << 8)
+        time_raim_status    = self.data[3]
+        svids_removed       = self.data[7] + (self.data[6] << 8) + (self.data[5] << 16)+ (self.data[4] << 24)
+        time_accuracy_est   = self.data[9] + (self.data[8] << 8)
 
-        if self.data[9] >= 128:
-            sawtooth_error      = 127-self.data[9]
+        if self.data[10] >= 128:
+            sawtooth_error      = 127-self.data[10]
         else:
-            sawtooth_error      = self.data[9]
+            sawtooth_error      = self.data[10]
 
-        s = f"pulse:{pulse_on}, pulse_sync:{pulse_sync}, time_raim_sol:{time_raim_sol}, svids_removed:{svids_removed}"
+        s = f"pulse:{pulse_on}, pulse_sync:{pulse_sync}, time_raim_sol:{time_raim_sol}, time_raim_status:{time_raim_status}, svids_removed:{svids_removed}"
         s += f", time_accuracy_est:{time_accuracy_est}"
         s += f", sawtooth_error:{sawtooth_error}"
 
-        offset = 10
+        offset = 11
 
         for i in range(12):
             sat_id                  = self.data[offset]

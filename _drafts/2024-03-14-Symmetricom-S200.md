@@ -388,6 +388,44 @@ rm -fr ./bak
 ```
 
 
+# Decoding M12 messages
+
+## Working module
+
+Initial configuration:
+
+* Send @@Cf: set to all defaults
+* Send @@Gf: set time raim alarm to 1000ns
+    Receiver Autonomous Integrity Monitoring
+    Tests whether or not GPS signals from different satellites are consistent.
+* Send @@Aw: time correction select. 
+    Set UTC mode (1) instead of GPS mode (0)
+    This determines what kind of time the @@Ha and the @@Hn message will
+    send back.
+    If no almanac data is present, @@Ha will return GPS time until
+    it receives that data. Then it switches automatically to UTC time.
+* Send @@Bp: request utc/ionospheric data
+    Mode 0: polled mode
+* Send @@Ge: time raim select
+    1: enable
+* Send @@Gd: position control mode
+    3: auto-survey
+
+Before lock:
+
+
+* S200 polls every 8 seconds with Bp message for atmospheric data. Module
+  return Co message. Uses mode 0 - polled.
+* Module automatically sends Ha message (12 channel position/status/data) every second
+* Every 3 seconds there is also an automatic Hn message (time raim status message). The
+  3 second rate was programmed right at the start.
+
+
+After lock:
+* Module polls Bp (atmospheric data, polled) message, Bj message (leap second status, polled), 
+  and a Gj message (leap second pending)
+* Module automatically sends Ha message (12 channel position/status/data) every second
+
 # References
 
 * [Microsemi SyncServer S200 datasheet](/assets/s200/md_microsemi_s200_datasheet_vb_.pdf)
@@ -409,3 +447,10 @@ rm -fr ./bak
 * [EEVblog - Synserver S200 GPS lock question](https://www.eevblog.com/forum/metrology/synserver-s200-gps-lock-question/msg5339408)
 
 * [Furuno GPS/GNSS Receiver GPS Week Number Rollover](https://furuno.ent.box.com/s/fva29wqbcioqvd6mqxn5rt976dkaxudj)
+
+* [USNO GPS Time Transfer](https://www.cnmoc.usff.navy.mil/Our-Commands/United-States-Naval-Observatory/Precise-Time-Department/Global-Positioning-System/USNO-GPS-Time-Transfer/)
+
+    As of December 31st, 2016, GPS is ahead of UTC by 18 leap seconds.
+
+* [What are satellite time, GPS time, and UTC time?](https://aviation.stackexchange.com/questions/90839/what-are-satellite-time-gps-time-and-utc-time)
+
