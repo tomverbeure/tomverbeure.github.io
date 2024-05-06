@@ -161,11 +161,38 @@ class Message:
             iode            = self.data[offset+3]
             chan_status     = bytes_to_int16(self.data[offset+4:])
 
+            used_for_time   = (chan_status >> 11) & 1
+            diff_corr_av    = (chan_status >> 10) & 1
+            invalid_data    = (chan_status >>  9) & 1
+            parity_error    = (chan_status >>  8) & 1
+            used_for_pos_fix= (chan_status >>  7) & 1
+            sat_mom_alert   = (chan_status >>  6) & 1
+            sat_anti_spoof  = (chan_status >>  5) & 1
+            sat_unhealthy   = (chan_status >>  4) & 1
+            sat_accuracy    = (chan_status >>  0) & 15
+
             offset += 6
 
             s += f"\n        svid:{svid},mode:{mode},signal:{signal},iode:{iode},status:{chan_status}"
+            s += f"\n            used_for_time:{used_for_time}, diff_corr_av:{diff_corr_av}, invalid_data:{invalid_data},"
+            s += f"\n            parity_error:{parity_error}, used_for_pos_fix:{used_for_pos_fix}, sat_mom_alert:{sat_mom_alert},"
+            s += f"\n            sat_anti_spoof:{sat_anti_spoof}, sat_unhealthy:{sat_unhealthy}, sat_accuracy:{sat_accuracy}"
+
 
         recv_status         = bytes_to_int16(self.data[offset+0:])
+
+        mode                = [ "rsvd0", "rsvd1", "bad geom", "acq sats", "pos hold", "prop mode", "2d fix", "3d fix" ][ (recv_status>>13)&7 ]
+        fast_acq_pos        = (recv_status >> 9) & 1
+        filter_rst          = (recv_status >> 8) & 1
+        cold_start          = (recv_status >> 7) & 1
+        diff_fix            = (recv_status >> 6) & 1
+        pos_lock            = (recv_status >> 5) & 1
+        autosurvey          = (recv_status >> 4) & 1
+        insufficient_sats   = (recv_status >> 3) & 1
+        antenna_sense       = (recv_status >> 1) & 3
+        code_loc            = (recv_status >> 0) & 1
+        
+
         reserved            = bytes_to_int16(self.data[offset+2:])
         clock_bias          = bytes_to_int16(self.data[offset+4:])
         osc_offset          = bytes_to_int32(self.data[offset+6:])
@@ -177,7 +204,12 @@ class Message:
         offset += 16
         id_tag              = self.data[offset:offset+6]
 
-        s += f"\n    recv_status:{recv_status},reserved:{reserved},clock_bias:{clock_bias},osc_offset:{osc_offset},osc_temp:{osc_temp}"
+        s += f"\n    recv_status:{recv_status}"
+        s += f"\n        recv_mode:{mode}, fast_acq_pos:{fast_acq_pos}, filter_rst:{filter_rst}, cold_start:{cold_start},"
+        s += f"\n        diff_fix:{diff_fix}, pos_lock:{pos_lock}, autosurvey:{autosurvey}, insufficient_sats:{insufficient_sats},"
+        s += f"\n        antenna_sense:{antenna_sense}, code_loc:{code_loc}"
+
+        s += f"\n    reserved:{reserved},clock_bias:{clock_bias},osc_offset:{osc_offset},osc_temp:{osc_temp}"
         s += f"\n    utc_param:{utc_param}:gmt_sign:{gmt_sign},gmt_h_offset:{gmt_h_offset},gmt_m_offset:{gmt_m_offset}"
         s += f"\n    id_tag:{id_tag}"
 

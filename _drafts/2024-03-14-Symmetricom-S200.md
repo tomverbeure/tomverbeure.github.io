@@ -426,6 +426,31 @@ After lock:
   and a Gj message (leap second pending)
 * Module automatically sends Ha message (12 channel position/status/data) every second
 
+
+* Time reports for both old and new traces on 2024/5/5: 2004/9/19. Delta is 1024 weeks...
+* Differences
+
+    * old: Hn: time_accuracy_est of 0, new is 65535.
+    * old: Hn: fract_local_time:0, new: various numbers
+    * old: Ha: iode is 0, new is various values.
+            "Issue Of Data, Ephemeris"
+            Used to identify updated GPS Ephemeris data.
+
+        [Ephemerides](https://www.e-education.psu.edu/geog862/node/1737)
+    * new: Bj starts appearing soon after Hn clock_bias and osc_offset becomes non-zero!
+          cold_start and insufficient_sats also switches from 1 to 0. 
+        In old, all these fields remain 0 or 1 resp. except insufficient_sats which is always.
+    * new: Co has non-zero values for ionospeheric data. Old always has zeros, but I don't
+        think this matters.
+
+* Experiments:
+
+    * old: force cold_start to 0.
+    * new: Hn: force fract_local_time to 0
+    * new: Hn: force time_accuracy_est to 0
+    * new: Ha: force iode to 0
+    * old: Ha: force iode to some random value?
+
 # References
 
 * [Microsemi SyncServer S200 datasheet](/assets/s200/md_microsemi_s200_datasheet_vb_.pdf)
