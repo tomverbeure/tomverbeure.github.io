@@ -19,14 +19,14 @@ Our kitchen has a Zephyr Ravenna kitchen hood that started to behave erratically
 * the LED strip didn't want to switch off entirely
 * the buttons usually worked, but sometimes didn't
 
-The hood was still usable, it didn't give us that warm and fuzzy feeling.
+The hood was still usable, but it didn't give us that warm and fuzzy feeling.
 
-We tried to power cycle the thin by toggling the power breaker, but that didn't help. 
+I tried to power cycle the thin by toggling the power breaker, but that didn't help. 
 In fact, a few times it made things worse: all the blue indicator LEDs would light up for
 15 minutes before it went back to almost working.
 
 I hate working on appliances that are still functional enough: yes, it's possible
-that I can fix it, but there's also a considerably chance that I'll end up with
+that I can fix it, but there's also a considerable chance that I'll end up with
 something worse, and that we'll need to call in a $$$ technician. But my wife wanted
 it to be fixed, so I gave it a try.
 
