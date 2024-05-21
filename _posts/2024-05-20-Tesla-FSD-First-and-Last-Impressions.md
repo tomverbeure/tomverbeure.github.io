@@ -132,7 +132,7 @@ never once asked me to switch off autopilot.
 One would think that autopilot and FSD have the same core lane tracking algorithms, but one way or the other 
 the experience was radically different. I switched back to autopilot. The remaining 3 hours were uneventful.
 
-# Test Ride 3:from West-Valley College to I-85 Entrance (1 mile)
+# Test Ride 3: from West-Valley College to I-85 Entrance (1 mile)
 
 The final test happened yesterday, while driving back from the Silicon Valley Electronics Flea Market 
 back home.
@@ -160,13 +160,13 @@ the most basic mistakes and it makes many of them.
 
 Without FSD, you pay attention to the road and everything else is within your control. With FSD, you still 
 need to pay attention but now there's the additional cognitive load to monitor an unpredictable system over 
-which you don't have direct control. Instead of being focused, you need to be hyper-focused and you need to 
-pay $99 per month or a one time of $12,000 for the privilege. With the limited functionality of autopilot, 
+which you don't have direct control. Forget about just being focused, you need to be hyper-focused, and you 
+need to pay $99 per month or a one time of $12,000 for the privilege. With the limited functionality of autopilot, 
 you hit the sweet spot: adaptive cruise control and lane centering work reliably, and you don't need to 
 worry about any other mischief.
 
-Maybe one day, I'll be able to drive to Lake Tahoe by typing in the address, sit back, take a nap,
-or play on my phone. Until then, it's just a fancy technology demo with little value.
+Maybe one day I'll be able to drive to Lake Tahoe by typing in the address, sit back, take a nap,
+or play on my phone. Until then, it's just a fancy technology demo with little practical value.
 
 
 
