@@ -134,7 +134,8 @@ the experience was radically different. I switched back to autopilot. The remain
 
 # Test Ride 3: from West-Valley College to I-85 Entrance (1 mile)
 
-The final test happened yesterday, while driving back from the Silicon Valley Electronics Flea Market 
+The final test happened yesterday, while driving back from the 
+[Silicon Valley Electronics Flea Market](https://www.electronicsfleamarket.com)
 back home.
 
 These are always held on a Sunday, start very early at 6am, and I'm usually out before 9am, so there's 
