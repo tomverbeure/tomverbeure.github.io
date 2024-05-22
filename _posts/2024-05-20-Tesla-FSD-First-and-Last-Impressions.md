@@ -1,11 +1,9 @@
 ---
 layout: post
-title: Tesla's FSD - First and Last Impressions
+title: Tesla's FSD - a Useless Technology Demo
 date:   2024-05-20 00:00:00 -1000
 categories:
 ---
-
-*TLDR: It's a useless technology demo.*
 
 * TOC
 {:toc}
