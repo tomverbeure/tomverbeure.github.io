@@ -75,7 +75,7 @@ route 267 with a 3 traffic lights. What could possibly go wrong? Well, FSD manag
 
 During the first mistake, instead of turning right at the gas station, it made the decision to prepare 
 to exit one street early, switched on its indicator, and started moving to the right exit lane. Note
-that there is no way to get to the gas station through that first exist.
+that there is no way to get to the gas station through that first exit.
 
 ![Mistake one: go right too early](/assets/fsd/mistake1.jpg)
 
@@ -113,7 +113,7 @@ which should be its best case scenario.
 *Click to open in Google Maps*
 
 It's a bit disconcerting to see the car make a decision to change lanes to pass someone, but I guess 
-that something you'll get used to. 
+that's something you'll get used to. 
 
 But what was baffling was the way in which it behaved worse than autopilot. 
 There were two nearly identical cases, where the 2-lane road was dead straight, with excellent paint marks, 
@@ -160,7 +160,7 @@ the most basic mistakes and it makes many of them.
 Without FSD, you pay attention to the road and everything else is within your control. With FSD, you still 
 need to pay attention but now there's the additional cognitive load to monitor an unpredictable system over 
 which you don't have direct control. Forget about just being focused, you need to be hyper-focused, and you 
-need to pay $99 per month or a one time of $12,000 for the privilege. With the limited functionality of autopilot, 
+need to pay $99 per month or a one time fee of $12,000 for the privilege. With the limited functionality of autopilot, 
 you hit the sweet spot: adaptive cruise control and lane centering work reliably, and you don't need to 
 worry about any other mischief.
 
