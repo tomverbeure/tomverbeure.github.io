@@ -1,14 +1,17 @@
 ---
 layout: post
-title: Converting a Symmetricom SyncServer S200 into a GPSDO
-date:   2024-03-14 00:00:00 -1000
+title: Upgrading Symmetricom SyncServer S200 and Fixing the GPS Week Number Rollover Problem
+date:   2024-06-01 00:00:00 -1000
 categories:
 ---
+
+* TOC
+{:toc}
 
 # Introduction
 
 The [Silicon Valley Electronics Flea Market](https://www.electronicsfleamarket.com) 
-runs every month from March to September and then goes quiet for 6 months, so when 
+runs every month from March to September and then goes on a hiatus for 6 months, so when 
 the new March episode hits, there is a ton of pent-up demand... and supply: inevitably,
 some spouse has reached their limit during spring cleaning and wants a few of those boat 
 anchors gone. You do not want to miss the first flea market of the year, and you better
@@ -20,7 +23,7 @@ I was able to pick up a very low end HP signal generator and Fluke multimeter fo
 at 8:30am, I was on my way back to the car unsatisfied.
 
 Until *that* guy and his wife, late arrivals, started unloading stuff from their trunk
-and onto a blanket. There it was, right in front of me, a 
+onto a blanket. There it was, right in front of me, a 
 [Stanford Research Systems SR620 universal counter](https://thinksrs.com/products/sr620.html). 
 I tried to haggle on the SR620 but was met with a "You know what you're doing and what 
 this is worth." Let's just say that I paid the listed price which was still a crazy good 
@@ -35,20 +38,19 @@ I've never left the flea market more excited.
 
 I didn't really know what one does with a network time server, but since it said *GPS*
 time server, I hoped that it could work as a GPSDO with a 10MHz reference clock and a 1 
-pulse-per-second (PPS) synchronization output.
+pulse-per-second (1PPS) synchronization output.
 
 But even if not, I was sure that I'd learn something new, and worst case I'd reuse the
 beautiful rackmount case for some future project.
 
 Turns out that out of the box a SyncServer S200 can not be used as a GPSDO, but its
-siblings can do it just fine, and it's straightforward to do the conversion. There
+close siblings can do it just fine, and it's straightforward to do the conversion. There
 was also an issue with the GPS module that needed to be fixed.
 
 In this blog post, I go through all the steps required to go from a mostly useless
 S200 to a fully functional GPSDO.
 
-While most of what is described here is based on discussion threads on EEVblog forum
-such as 
+While most of what is described here is based on discussions on EEVblog forum such as 
 [this one](https://www.eevblog.com/forum/metrology/symmetricom-s200-teardownupgrade-to-s250),
 what I found missing was a step-by-step recipe and a larger context. I hope you'll find
 it useful.
@@ -68,9 +70,9 @@ Here's what it says in the first paragraph:
 > many other essential applications.
 
 There's a lot more, but one of the key aspects of a time server like this is that it
-uses the [Network Time Protocol](https://en.wikipedia.org/wiki/Network_Time_Protocol), which
+uses the [Network Time Protocol (NTP)](https://en.wikipedia.org/wiki/Network_Time_Protocol), which...
 
-> is a networking protocol for clock synchronization between computer systems over 
+> ... is a networking protocol for clock synchronization between computer systems over 
 > packet-switched, variable-latency data networks.
 
 The SyncServer S200 is a [Stratum 1](https://en.wikipedia.org/wiki/Network_Time_Protocol#Clock_strata) 
@@ -78,8 +80,9 @@ level device. While it does not act as a Stratum 0 oracle of truth timing refere
 directly derives the time from a Stratum 0 device, in this case the GPS system.
 
 When the GPS signal falls away, a SyncServer falls back to Stratum 2 mode where it retrieves
-the time from other Stratum 1 devices (e.g. other SyncServers on the network) or it switches
-to hold-over mode where it let's an internal oscillator run without adjustments.
+the time from other Stratum 1 devices (e.g. other NTP-capable time servers on the network) or 
+it switches to hold-over mode where it lets an internal oscillator run untethered, without 
+being locked to the GPS system.
 
 The S200 has 3 oscillator options:
 
@@ -87,7 +90,7 @@ The S200 has 3 oscillator options:
 * an OCXO with a drift of 1ms per day
 * a Rubidium atomic clock with drift of 25us (!!!) per day
 
-Mine is the OCXO option.
+Mine has the OCXO option.
 
 It's clear that the primary use case of the S200 is not to act as a lab clock or frequency
 reference, but something that belongs in a router cabinet.
@@ -106,16 +109,18 @@ VFDs have a tendency to degrade over time, but mine is in perfect shape.
 [![S200 rear view](/assets/s200/S200_rear_view.jpg)](/assets/s200/S200_rear_view.jpg)
 *Click to enlarge*
 
-In the back, we can see a power switch for the 100-240VAC mains voltage (there are also
-versions for telecom applications that are powered with 40-60 VDC), a GPS antenna connection,
-a Sysplex Timer-Out interface, and 3 LAN ports.
+In the back, we can see a power switch for the 100-240VAC mains voltage[^1],
+a GPS antenna connection, a [Sysplex Timer-Out](/assets/s200/sysplex_timer.pdf) interface, 
+and 3 LAN ports.
+
+[^1]:There are also versions for telecom applications that are powered with 40-60 VDC.
 
 Let's see what's inside:
 
 [![S200 inside view](/assets/s200/S200_inside_view.jpg)](/assets/s200/S200_inside_view.jpg)
 *Click to enlarge*
 
-Under the heatshink with the the blue heat transfer pad sits an off-the-shelve embedded
+Under the heatshink with the the blue heat transfer pad sits an off-the-shelf embedded
 PC motherboard with a 500MHz AMD Geode x86 CPU with 256MB of DRAM. Not all SyncServer S200 
 models use the same motherboard. Some of them use a VIA Eden ESP 400MHz Processor. For some gory
 details about the CPU system, checkout this [`boot.log`](/assets/s200/boot.log) file that
@@ -125,9 +130,8 @@ a commercial Linux distribution for embedded devices.
 At the bottom left sits a little PCB for the USB and RS-232 ports. There are also two cables 
 for the VFD and the buttons.
 
-On the right side we can see a Vectron OCXO that will create a stable 10MHz during
-hold-over and a 512MB CompactFlash card. There's still plenty of room for a Rubidium atomic
-clock module.
+On the right side we can see a Vectron OCXO that will create 10MHz clock and a 512MB CompactFlash 
+card. There's still plenty of room for a Rubidium atomic clock module. 
 
 At the top left sits a Furuno GT-8031H GPS module that is compatible with the Motorola
 M12M modules. There's a bunch of connectors, and, very important 3 unpopulated connector
@@ -137,8 +141,7 @@ footprints. Let's have a closer look at those:
 *Click to enlarge*
 
 Of interest are the 6 covered holes for BNC connectors. Let's just cut to the chase and show
-the backside of the SyncServer S250: 
-
+the backside of the next model in the SyncServer product line, the S250: 
 
 ![S250_BNC_connectors](/assets/s200/S250_BNC_connectors.png)
 
@@ -163,68 +166,176 @@ sine wave:
 
 There's also a 50% duty cycle 1PPS signal on the other BNC hole.
 
+# IMPORTANT: Use the Right GPS Antenna!
+
+GPS antennas have active elements that amplify the signal at the point of reception
+before sending it down the cable to the GPS unit. Most antennas require 3.3V or 5V power, but the
+Symmetricom S200 supplies 12V on its GPS antenna connector.
+
+**Make sure you are using a 12V GPS antenna!**
+
+Check out [my earlier blog post](/2024/03/23/Symmetricom-58532A-Power-Supply-Modification.html) 
+for more information.
+
+# Installing the Missing BNC Connectors
+
+The first step is to install the missing BNC connectors. The connectors themselves
+are [Amphenol RF 031-6577](https://www.amphenolrf.com/031-6577.html). They are
+expensive: I got 3 of them for [$17.23 a piece from Mouser](https://www.mouser.com/ProductDetail/523-31-6577).
+Chances are that you won't need the IRIG port, so you can make do with only 2 connectors
+to save yourself some money.
+
+![Amphenol RF 031-6577 connector](/assets/s200/amphenol_bnc_connector.jpg)
+
+You'll need to remove the whole main PCB from the case, which is a matter of
+removing all the screws and some easy to disconnect cables and then taking it out. 
+The PCB rests on a bunch of spacers for the screws. When you slide the PCB out, you need 
+to be very careful to not scrape the bottom of the PCB against these spacers!
+
+Next up is opening up the covered holes. The plastic that covers that holes is quite
+strong. I used a box cutter to remove the plastic and it took quite a bit of time to do
+so. 
+
+![6 covered BNC holes](/assets/s200/S200_6_covered_holes.jpg)
+
+The holes are not perfectly round: they have a flat section at the top. You need to
+open up the holes as much as possible because during reassembly the BNC connectors will
+have to go through them and want this to go as smoothly without putting a lot of strain
+on the PCB.
+
+![6 opened-up BNC holes](/assets/s200/S200_6_uncovered_holes.jpg)
+
+The end result isn't exactly commercial product quality, but it's good enough for something
+that will stay hidden at the back of the instrument.
+
+Installing the BNC connectors is easy: plug them in and solder them down...
+
+![BNC connectors installed](/assets/s200/S200_bnc_connectors_installed.jpg)
+
+Due to the imperfectlly cut BNC holes, installing the main PCB back into the chassis will
+be harder than removing it, so, again, be careful about those spacers at the bottom of the
+case damaging the PCB!
+
+The end result looks clean enough:
+
+![S200 backside with new connectors](/assets/s200/S200_backside_with_new_connectors.jpg)
+
+
 # The GPS Week Number Rollover Issue
 
 The original GPS system used a 10-bit number to count the number of weeks, starting from
 January 6, 1980. Every 19.7 years, this number rolls over from 1023 back to 0. 
 The first rollover happened on August 21, 1999, the second on April 6, 2019, and the
 next one will be on November 20, 2038. Check out 
-[this US Naval Observatory presention](https://www.gps.gov/cgsic/meetings/2017/powers.pdf) for
+[this US Naval Observatory presention](/assets/s200/usno_powers.pdf) for
 some more information.
 
-GPS chip manufacturers have dealt with the issue is by using a "dynamic base year" or variable 
+GPS module manufacturers have dealt with the issue is by using a "dynamic base year" or variable 
 pivot year. When a device is, say, manufactured in 2016, 3 years before the 2019 rollover, it 
 assumes that all week numbers higher than 868, 1024-3*52, are for years 2016 to 2019, and that 
 numbers from 0 to 867 are for the years 2019 and later.
 
 ![Dynamic date rollover graph](/assets/s200/dynamic_rollover_graph.png)
 
-Such a device will work fine for 19.7 years from 2016 until 2035.
+Such a device will work fine for the 19.7 years from 2016 until 2035.
 
-With a bit of fixed storage state, it is possible to make a GPS unit robust against this kind of 
-rollover: if the current date was 2019 and suddenly you see a date of 1999, you can infer that 
-there was a rollover, but many modules don't do that. The only way to fix the issue is to update 
-the module firmware.
+With a bit of non-volatile storage, it is possible to make a GPS unit robust against this kind of 
+rollover: if the last seen date by the GPS unit was 2019 and suddenly it sees a date of 1999, 
+it can infer that there was a rollover and record that in the storage, but many modules don't do 
+that. The only way to fix the issue is to update the module firmware.
 
-Many SyncServer S2xx devices shipped with a Furuno GT-8031H module which uses a starting
-date of February 2, 2003 and rolled over on September 18, 2022. Some Furuno modules can be
-fixed by sending a command to the module, but the GT-8031H is not one of them. Check out
-this [Furuno technical document](https://furuno.ent.box.com/s/fva29wqbcioqvd6mqxn5rt976dkaxudj) 
-for all the rollover details.
+Many SyncServer S2xx devices shipped with an Motorola M12 compatible module that is based on a
+Furuno GT-8031 which uses a starting date of February 2, 2003 and rolled over on September 18, 2022. 
+You can send a command to the module that hints the current date and that fixes the issue, 
+but there is no SyncServer S200 firmware that supports that. Check out this 
+[Furuno technical document](https://furuno.ent.box.com/s/fva29wqbcioqvd6mqxn5rt976dkaxudj) 
+for more the rollover details.
 
 Like all GPSDOs, the SyncServer S200 primarily relies on the 1PPS output that comes out of the 
-module to lock its internal 10MHz to the GPS system, and this 1PPS signal is still present on
-the GT-8031H of my system. But it clearly uses more than just that: my S200 refuses to enter into 
-"GPS Locked" mode. 
+module to lock its internal 10MHz oscillator to the GPS system, and this 1PPS signal is still present on
+the GT-8031 of my unit. But there is something in the SyncServer firmware that depends on more than just 
+the 1PPS signal because my S200 refuses to enter into "GPS Locked" mode, and the 10MHz oscillator
+stays in free-running mode at miserable frequency of roughly 9,999,993 Hz.
 
-# Upgrading to an IL-GPS-0030-B Module
+![Unlocked output frequency](/assets/s200/unlocked_output_frequency.jpg)
 
-To work around the issue, I purchase a IL-GPS-0030-B as replacement module. They go for
-close to $100 on AliExpress.
+# Upgrading to an iLotus IL-GPS-0030-B Module
+
+The normal way to work around the week rollover issue is to replace the GT-8031 with a different
+module that has a later rollover date. Over the years, people have used various solutions but
+these have in turn had their own rollover.
+
+I purchased a IL-GPS-0030-B as replacement module. They go for close to $100 on AliExpress.
 
 ![GPS locked with new module](/assets/s200/GPS_locked_with_new_module.jpg)
 
-After replacing the GT-8031H, the S200 now enters into GPS Locked status, which is good,
-but it's only while writing this blog post that I started researching 
-[the rollover date of that module](M12M-2019-roll-over-and-base-dates-C.pdf):
+After replacing the GT-8031H, the S200 enters into GPS Locked status, which is good, but after
+some more research (which I should have done before spending that kind of money on it!) I discovered 
+that it has a [rollover date of August 17, 2024](/assets/s200/M12M-2019-roll-over-and-base-dates-C.pdf):
 
 ![IL-GPS-0030-B rollover date](/assets/s200/IL-GPS-0030-B rollover.png)
 
-OUCH! A few months from now, on August 17, 2024, this expensive module will become a doorstop 
-just the same. 
+But it gets worse: I snooped and decoded the serial data stream from the module to the 
+motherboard and I found that that my module already had its rollover event. 
 
-There are [modules for sale](https://prostudioconnection.com/products/symmetricom-syncserver-no-sync-fix-replacement-ublox-gps-receiver-timing-card-module) with a rollover date of 2037, but $248 is too much for what was supposed to be
-a cheap GPSDO.
+Still, one way or the other, the S200 was able to get into GPS Lock and the 10MHz output clock 
+was nicely in sync with my [TM4313 GPSDO](/2023/07/09/TM4313-GPSDO-Teardown.html). That's definitely
+an improvement over the GT-8031.
 
-**These GPS modules communicate with a 9600 baud serial port. I'm wondering if it's possible to
-create an interposer PCB with a microcontroller that patches the reported timing?**
+So there's contradicting information out there, but there's still the possibility that on August 17, 2024, 
+this expensive module will become a doorstop just the same. 
+
+# Making the Furuno GT-8031 Work Again
+
+There are some aftermarket replacement modules out there with a rollover date that is far into the
+future, but they are priced at $240.
+
+Instead, I wondered if it's possible to make the GT-8031 or IL-GPS-0030-B send the right date to the
+S200 with a hardware interposer that sits between the module and motherboard. There were 2 options:
+
+* intercept the date sent from the GPS module, correct it, and transmit it to the motherboard
+* send a configuration command to the GPS module to set the right date
+
+It took 2 PCB spins, but I eventually came up with the following solution: 
+
+[![GT-8031 Module on top of interposer](/assets/s200/module_on_top_of_interposer.jpg)](/assets/s200/module_on_top_of_interposer.jpg)
+*Click to enlarge*
+
+In the picture above, you see the GT-8031 plugged into an interposer that is in turn plugged into the
+motherboard.
+
+The interposer itself looks like this:
+
+![Interposer without module](/assets/s200/interposer_without_module.jpg)
+
+The design is very simple: a RP2024-zero puts itself in between the serial TX and RX wires that normally
+go between the module and the motherboard. It's up to the software that runs on the RP2040 to determine
+what to do with the data streams that run over those wires.
+
+![Interposer diagram](/assets/s200/interposer_diagram.svg)
+
+There are bunch of other connectors: the one at the bottom right is for observing the signals with
+a logic analyzer. There are also 2 connectors for power. When finally installed, the interposer
+gets powered with a 5V supply that's available on a pin that is conveniently located right behind
+the GPS module. In the picture above, the red wires provides the 5V, the ground is connected through
+the screws that hold the board in place.
+
+The total cost of the board is as follows:
+
+* PCB: $2 for 5 PCBs + $1.50 shipping = $3.50
+* RP2040-zero: $9 on Amazon
+* 2 5x2 connectors: $5 on Mouser + $5 shippingn = $10
+
+Total: $22.50
+
+The full project details can be found my [gps_interposer GitHub repo](https://github.com/tomverbeure/gps_interposer).
+
 
 # Furuno GT-8031H:
 
 When the S200 isn't able to lock its local OCXO to the GPS in, the 10MHz frequency is terribly
 off by 7Hz:
 
-[Unlocked output frequency](/assets/s200/unlocked_output_frequency.jpg)
 
 (For this measurement, I'm using the 10MHz of my TM4313 GPSDO as clock reference.)
 
@@ -250,33 +361,6 @@ The screen will show
 | IRIG-B |      |   X  |   X   |
 
 # Installing the New Connectors
-
-# IMPORTANT: Using the Right GPS Antenna
-
-GPS signals are incredibly weak, so most GPS antennas are active ones that amplify the received signal 
-inside the antenna before the signal is sent over the cable to the GPS receiver. Instead of a separate cable, 
-the power for this amplifier is provided by the GPS receiver through the antenna cable. 
-
-While most GPS receivers insert a 5VDC on the cable, Symmetricom equipment has the honor of being 
-one of the few vendors that powers the GPS antenna with 12VDC. Or even better: this is only
-true for some of their equipment. The SyncServer S200 is one of them. 
-
-If you look for GPS antennas on Amazon, most will be 3V to 5V rated. You can find them for 
-
-You can easily measure this voltage level with a multimeter by connecting the 2 leads to the ground
-and the center pin of the SMA or BNC cable:
-
-
-![Measuring the voltage across the GPS antenna connector](/asset/s200/...)
-
-If you connect a 5V rates GPS cable to a 12V GPS receiver, chances are that you'll damage the antenna.
-
-There are a couple of options to connect an antenna to a 12V GPS receiver:
-
-* Use a 12V rated antenna
-* Use a 5V GPS antenna and a bias tee with DC blocker to insert a seperate 5V 
-* Modify your GPS receiver to output 5V instead of 12V
-* Modify your GPS antenna to support 12V
 
 
 # Cloning the Existing Drive
@@ -478,4 +562,6 @@ After lock:
     As of December 31st, 2016, GPS is ahead of UTC by 18 leap seconds.
 
 * [What are satellite time, GPS time, and UTC time?](https://aviation.stackexchange.com/questions/90839/what-are-satellite-time-gps-time-and-utc-time)
+
+# Footnotes
 
