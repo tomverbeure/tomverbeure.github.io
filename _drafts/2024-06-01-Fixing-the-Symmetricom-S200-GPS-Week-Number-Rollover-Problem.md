@@ -10,89 +10,7 @@ categories:
 
 # Introduction
 
-The [Silicon Valley Electronics Flea Market](https://www.electronicsfleamarket.com) 
-runs every month from March to September and then goes on a hiatus for 6 months, so when 
-the new March episode hits, there is a ton of pent-up demand... and supply: inevitably,
-some spouse has reached their limit during spring cleaning and wants a few of those boat 
-anchors gone. You do not want to miss the first flea market of the year, and you better
-come early, think 6:30am, because the good stuff goes fast.
 
-But success is not guaranteed: I saw a broken-but-probably-repairable HP 58503A GPS
-Time and Frequency Reference getting sold right in front of me for just $40. And while
-I was able to pick up a very low end HP signal generator and Fluke multimeter for $10,
-at 8:30am, I was on my way back to the car unsatisfied.
-
-Until *that* guy and his wife, late arrivals, started unloading stuff from their trunk
-onto a blanket. There it was, right in front of me, a 
-[Stanford Research Systems SR620 universal counter](https://thinksrs.com/products/sr620.html). 
-I tried to haggle on the SR620 but was met with a "You know what you're doing and what 
-this is worth." Let's just say that I paid the listed price which was still a crazy good 
-deal. I even had some cash left in my pocket.
-
-Which is great, because right next to the SR620 sat a pristine looking Symmetricom
-SyncServer S200 with accessories for the ridiculously low price of $60.
-
-[![Flea Market Haul](/assets/s200/fleamarket_haul.jpg)](/assets/s200/fleamarket_haul.jpg)
-
-I've never left the flea market more excited.
-
-I didn't really know what a network time server does, but since it said *GPS*
-time server, I hoped that it could work as a GPSDO with a 10MHz reference clock and a 1 
-pulse-per-second (1PPS) synchronization output. But even if not, I was sure that I'd learn 
-something new, and worst case I'd reuse the beautiful rackmount case for some future project.
-
-Turns out that out of the box a SyncServer S200 can not be used as a GPSDO, but its
-close sibling, the S250, can do it just fine, and it's straightforward to do the conversion. 
-A bigger problem was an issue with the GPS module due to the week number rollover (WNRO)
-problem.
-
-In this blog post, I go through the steps required to bring from a mostly useless
-S200 back to life and how to add the connectors for 10MHz and 1PPS output, which allowed it
-to do double duty as a GPSDO.
-
-Some of what is described here is based on discussions on EEVblog forum such as 
-[this one](https://www.eevblog.com/forum/metrology/symmetricom-s200-teardownupgrade-to-s250).
-I hope you'll find it useful.
-
-# What was the SyncServer S200 Supposed to be Used For?
-
-Symmetricom was acquired by Microsemi, and the SyncServer S200 is now obsolete, but
-Microsemi still has a [data sheet](/assets/s200/md_microsemi_s200_datasheet_vb_.pdf)
-on their website.
-
-Here's what it says in the first paragraph:
-
-> The SyncServer S200 GPS Network Time Server synchronizes clocks on servers for large
-> or expanding IT enterprises and for the ever-demanding high-bandwidth Next Generation
-> Network. Accurately synchronized clocks are critical for network log file accuracy,
-> security, billing systems, electronic transactions, database integrity, VoIP, and
-> many other essential applications.
-
-There's a lot more, but one of the key aspects of a time server like this is that it
-uses the [Network Time Protocol (NTP)](https://en.wikipedia.org/wiki/Network_Time_Protocol), which...
-
-> ... is a networking protocol for clock synchronization between computer systems over 
-> packet-switched, variable-latency data networks.
-
-The SyncServer S200 is a [Stratum 1](https://en.wikipedia.org/wiki/Network_Time_Protocol#Clock_strata) 
-level device. While it does not act as a Stratum 0 oracle of truth timing reference, it
-directly derives the time from a Stratum 0 device, in this case the GPS system.
-
-When the GPS signal disappears, a SyncServer falls back to Stratum 2 mode where it retrieves
-the time from other Stratum 1 devices (e.g. other NTP-capable time servers on the network) or 
-it switches to hold-over mode where it lets an internal oscillator run untethered, without 
-being locked to the GPS system.
-
-The S200 has 3 oscillator options:
-
-* a TCXO with a drift of 21ms per day
-* an OCXO with a drift of 1ms per day
-* a Rubidium atomic clock with drift of 25us (!) per day
-
-Mine has the OCXO option.
-
-It's clear that the primary use case of the S200 is not to act as a lab clock or frequency
-reference, but something that belongs in a router cabinet.
 
 # The SyncServer S200 Outside and Inside
 
@@ -166,19 +84,6 @@ sine wave:
 ![10MHz signal on BNC hole](/assets/s200/10MHz_output.png)
 
 There's also a 50% duty cycle 1PPS signal present on the other BNC footprint.
-
-# IMPORTANT: Use the Right GPS Antenna!
-
-Before continuing, let's interrupt with a short but important service message:
-
-GPS antennas have active elements that amplify the signal at the point of reception
-before sending it down the cable to the GPS unit. Most antennas require 3.3V or 5V power, but the
-Symmetricom S200 supplies 12V on its GPS antenna connector.
-
-**Make sure you are using a 12V GPS antenna!**
-
-Check out [my earlier blog post](/2024/03/23/Symmetricom-58532A-Power-Supply-Modification.html) 
-for more information.
 
 # Installing the Missing BNC Connectors
 
