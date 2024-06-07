@@ -43,7 +43,8 @@ something new, and worst case I'd reuse the beautiful rackmount case for some fu
 
 Turns out that out of the box a SyncServer S200 can not be used as a GPSDO, but its
 close sibling, the S250, can do it just fine, and it's straightforward to do the conversion. 
-A bigger problem was an issue with the GPS module due to the week number rollover problem.
+A bigger problem was an issue with the GPS module due to the week number rollover (WNRO)
+problem.
 
 In this blog post, I go through the steps required to bring from a mostly useless
 S200 back to life and how to add the connectors for 10MHz and 1PPS output, which allowed it
@@ -118,9 +119,9 @@ Let's see what's inside:
 [![S200 inside view](/assets/s200/S200_inside_view.jpg)](/assets/s200/S200_inside_view.jpg)
 *Click to enlarge*
 
-Under the heatshink with the the blue heat transfer pad sits an off-the-shelf embedded
+Under the heatshink with the blue heat transfer pad sits an off-the-shelf embedded
 PC motherboard with a 500MHz AMD Geode x86 CPU with 256MB of DRAM. Not all SyncServer S200 
-models use the same motherboard, some of them use a VIA Eden ESP 400MHz processor. I recorded
+models use the same motherboard, some of them have a VIA Eden ESP 400MHz processor. I recorded
 this [`boot.log`](/assets/s200/boot.log) file that contains some low level details of the system.
 The PC is running [MontaVista Linux](https://en.wikipedia.org/wiki/MontaVista#Linux), 
 a commercial Linux distribution for embedded devices.
@@ -128,8 +129,9 @@ a commercial Linux distribution for embedded devices.
 At the bottom left sits a little PCB for the USB and RS-232 ports. There are also two cables 
 for the VFD and the buttons.
 
-On the right side we can see a Vectron OCXO that will create 10MHz clock and a 512MB CompactFlash 
-card. There's still plenty of room for a Rubidium atomic clock module. 
+On the right side of the main PCB we can see a Vectron OCXO that will create the 10MHz clock 
+and a 512MB CompactFlash card with the operating system. There's still plenty of room for a 
+Rubidium atomic clock module. 
 
 At the top left sits a Furuno GT-8031 GPS module that is compatible with the Motorola
 M12M modules. There's a bunch of connectors, and, very important, 3 unpopulated connector
@@ -163,7 +165,7 @@ sine wave:
 
 ![10MHz signal on BNC hole](/assets/s200/10MHz_output.png)
 
-There's also a 50% duty cycle 1PPS signal on the other BNC hole.
+There's also a 50% duty cycle 1PPS signal present on the other BNC footprint.
 
 # IMPORTANT: Use the Right GPS Antenna!
 
@@ -213,7 +215,7 @@ Installing the BNC connectors is easy: plug them in and solder them down...
 
 ![BNC connectors installed](/assets/s200/S200_bnc_connectors_installed.jpg)
 
-Due to the imperfectlly cut BNC holes, installing the main PCB back into the chassis will
+Due to the imperfectly cut BNC holes, installing the main PCB back into the chassis will
 be harder than removing it, so, again, be careful about those spacers at the bottom of the
 case to prevent damaging the PCB!
 
@@ -263,11 +265,11 @@ stays in free-running mode at the miserable frequency of roughly 9,999,993 Hz.
 
 # Upgrading to an iLotus IL-GPS-0030-B Module
 
-The normal way to work around the week rollover issue is to replace the GT-8031 with a different
-module that has a laiLotus rollover date. Over the years, people have used various solutions but
+The normal way to work around the week number rollover issue is to replace the GT-8031 with a different
+module that has a later rollover date. Over the years, people have used various solutions but
 these have in turn had their own rollover.
 
-I purchased a iLotus IL-GPS-0030-B as replacement module. They go for close to $100 on AliExpress.
+I purchased an iLotus IL-GPS-0030-B as replacement module. They go for close to $100 on AliExpress.
 
 ![GPS locked with new module](/assets/s200/GPS_locked_with_new_module.jpg)
 
@@ -348,15 +350,15 @@ through a decoder script to convert them into readable GPS messages.
 Here are the messages that are exchanged between the motherboard after powering up the unit:
 
 ```
->>> Cf - set to defaults command: [], [37], [13, 10] - 7 - 4919049500.0
->>> Gf - time raim alarm message: [0, 10], [43], [13, 10] - 9 - 4933078500.0
->>> Aw - time correction select: [1], [55], [13, 10] - 8 - 4950998500.0
->>> Bp - request utc/ionospheric data: [0], [50], [13, 10] - 8 - 4967075000.0
->>> Ge - time raim select message: [1], [35], [13, 10] - 8 - 4983049500.0
->>> Gd - position control message: [3], [32], [13, 10] - 8 - 4999023500.0
-<<< Aw - time correction select: [1], [55], [13, 10] - 8 - 6382205000.0
+>>> @@Cf - set to defaults command: [], [37], [13, 10] - 7 
+>>> @@Gf - time raim alarm message: [0, 10], [43], [13, 10] - 9 
+>>> @@Aw - time correction select: [1], [55], [13, 10] - 8 
+>>> @@Bp - request utc/ionospheric data: [0], [50], [13, 10] - 8 
+>>> @@Ge - time raim select message: [1], [35], [13, 10] - 8 
+>>> @@Gd - position control message: [3], [32], [13, 10] - 8 
+<<< @@Aw - time correction select: [1], [55], [13, 10] - 8 
     time_mode:UTC
-<<< Co - utc/ionospheric data input: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [44], [13, 10] - 29 - 6390504500.0
+<<< @@Co - utc/ionospheric data input: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [44], [13, 10] - 29 
     alpha0:0, alpha1:0, alhpa2:0, alpha3:0
     beta0:0, beta1:0, alhpa2:0, beta3:0
     A0:0, A1:0
