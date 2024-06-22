@@ -271,7 +271,7 @@ In my case, the drive is mounted on `/dev/sdb`. It can be different on your mach
 There are 5 different partitions on the flash card. There's a `_boot` partition,
 the read-only `_fsroot` partitions have redundant copies of the OS itself, a
 `_persist` partition contains mutable data such as configuration settings and
-log files, and `_tmparea` is used for intermediate data.
+log files, and `_tmparea` is primarily used to store system upgrade files.
 
 Right now, we don't really care about any of that and just make a copy of the whole
 drive to a file on my Linux machine, like this:
@@ -311,6 +311,24 @@ sudo unmount /dev/sdb
 ```
 
 You're all set now to plug the old or the new CF card back into the S200.
+
+# Reset to Default Settings
+
+Chances are that your SyncServer was used before and that it didn't come in its
+default state. That's a problem when the passwords are different as well. To reset 
+everything to default settings, you need to set jumper JP4 on the motherboard.
+
+The pitch of the pins are smaller than the standard 0.1" so you can't use your
+standard jumper. I used logic analyzer grabbers to make the connection:
+
+![Default settings jumper](/assets/s200/default_settings.jpg)
+
+Install the jumper connection, power up the device, wait for 2 minutes, power the device
+back off, and then remove the connection. When powered up, there won't be any message
+to tell you that defaults have been restored.
+
+I performed the reset procedure after making a copy of the flash drive to make
+sure nothing was changed before I started messing with things.
 
 # Network Setup
 
