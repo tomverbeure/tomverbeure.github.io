@@ -1,7 +1,7 @@
 ---
 layout: post
 title: A Hardware Interposer to Fix the Symmetricom SyncServer S200 GPS Week Number Rollover Problem
-date:   2024-06-01 00:00:00 -1000
+date:   2024-06-23 00:00:00 -1000
 categories:
 ---
 
@@ -10,80 +10,6 @@ categories:
 
 # Introduction
 
-
-
-# The SyncServer S200 Outside and Inside
-
-The front panel has 2 USB type-A ports, an RS-232 console interface, a 
-[vacuum fluorescent display](https://en.wikipedia.org/wiki/Vacuum_fluorescent_display) (VFD), 
-and a bunch of buttons.
-
-[![S200 front view](/assets/s200/S200_front_view.jpg)](/assets/s200/S200_front_view.jpg)
-*Click to enlarge*
-
-VFDs have a tendency to degrade over time, but mine is in perfect shape.
-
-[![S200 rear view](/assets/s200/S200_rear_view.jpg)](/assets/s200/S200_rear_view.jpg)
-*Click to enlarge*
-
-In the back, we can see a power switch for the 100-240VAC mains voltage[^1],
-a GPS antenna connection, a [Sysplex Timer-Out](/assets/s200/sysplex_timer.pdf) interface, 
-and 3 LAN ports.
-
-[^1]:There are also versions for telecom applications that are powered with 40-60 VDC.
-
-Let's see what's inside:
-
-[![S200 inside view](/assets/s200/S200_inside_view.jpg)](/assets/s200/S200_inside_view.jpg)
-*Click to enlarge*
-
-Under the heatshink with the blue heat transfer pad sits an off-the-shelf embedded
-PC motherboard with a 500MHz AMD Geode x86 CPU with 256MB of DRAM. Not all SyncServer S200 
-models use the same motherboard, some of them have a VIA Eden ESP 400MHz processor. I recorded
-this [`boot.log`](/assets/s200/boot.log) file that contains some low level details of the system.
-The PC is running [MontaVista Linux](https://en.wikipedia.org/wiki/MontaVista#Linux), 
-a commercial Linux distribution for embedded devices.
-
-At the bottom left sits a little PCB for the USB and RS-232 ports. There are also two cables 
-for the VFD and the buttons.
-
-On the right side of the main PCB we can see a Vectron OCXO that will create the 10MHz clock 
-and a 512MB CompactFlash card with the operating system. There's still plenty of room for a 
-Rubidium atomic clock module. 
-
-At the top left sits a Furuno GT-8031 GPS module that is compatible with the Motorola
-M12M modules. There's a bunch of connectors, and, very important, 3 unpopulated connector
-footprints. 
-
-When looking at it from a different angle, we can also see 6 covered up holes that line up with those
-3 unpopulated footprints:
-
-[![S200 inside back connectors](/assets/s200/S200_inside_back_connectors.jpg)](/assets/s200/S200_inside_back_connectors.jpg)
-*Click to enlarge*
-
-Let's just cut to the chase and show the backside of the next model in the SyncServer product line, the S250: 
-
-![S250_BNC_connectors](/assets/s200/S250_BNC_connectors.png)
-
-![S250_BNC_connectors_diagram](/assets/s200/S250_BNC_connectors_diagram.png)
-
-Those 6 holes holes are used for the input and output for the following 3 signals:
-
-* 10MHz
-* 1PPS
-* IRIG
-
-We are primarily interested in the 10MHz and 1PPS outputs, of course.
-
-![Probe on 10MHz output](/assets/s200/probe_on_10MHz_output.jpg)
-
-The BNC connectors may be unpopulated, but the driving circuit is not. When you probe
-the hole for the 10MHz output, you get this sorry excuse of what's supposed to be a
-sine wave:
-
-![10MHz signal on BNC hole](/assets/s200/10MHz_output.png)
-
-There's also a 50% duty cycle 1PPS signal present on the other BNC footprint.
 
 # Installing the Missing BNC Connectors
 
