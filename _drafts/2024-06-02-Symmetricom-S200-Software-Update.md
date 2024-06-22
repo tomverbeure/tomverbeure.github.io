@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Setting Up a Symmetricom SyncServer S200 Network Time Protocol Server
-date:   2024-06-02 00:00:00 -1000
+date:   2024-06-22 00:00:00 -1000
 categories:
 ---
 
@@ -315,149 +315,229 @@ You're all set now to plug the old or the new CF card back into the S200.
 # Reset to Default Settings
 
 Chances are that your SyncServer was used before and that it didn't come in its
-default state. That's a problem when the passwords are different as well. To reset 
-everything to default settings, you need to set jumper JP4 on the motherboard.
+default state. That's a problem when the passwords are different as well. 
 
-The pitch of the pins are smaller than the standard 0.1" so you can't use your
+The procedure to reset the device back to factory settings is described on page
+120 of the user manual.
+
+After opening the device, set jumper JP4 on the motherboard. It's located
+at the bottom right of the motherboard, next the CR2032 lithium battery.
+
+The pitch of the jumper pins are smaller than the standard 0.1" so you can't use your
 standard jumper. I used logic analyzer grabbers to make the connection:
 
 ![Default settings jumper](/assets/s200/default_settings.jpg)
 
-Install the jumper connection, power up the device, wait for 2 minutes, power the device
-back off, and then remove the connection. When powered up, there won't be any message
-to tell you that defaults have been restored.
+Install the jumper connection, power up the device, wait for 100 seconds, power the 
+device back off, and remove the connection. When powered up, there won't be any message
+or visual indications to tell you that defaults have been restored, you just have to 
+wait long enough.
 
 I performed the reset procedure after making a copy of the flash drive to make
 sure nothing was changed before I started messing with things.
 
-# Network Setup
+XXX Describe what happens under the hood.
 
+# Setting the IP Address
 
+Configuration of the SyncServer happens through a web interface, so the next
+step is to setup a network connection. The user guide recommends assigning
+static IP addresses instead of DHCP because *NTP associations and authentication
+may rely on static network addresses*, which is good advice because I was never able
+to get the SyncServer to work with DHCP...
 
-Notes:
+While there are 3 LAN ports, only port 1 can be used for web management. You'll need
+to set the IP address, the gateway address mask, and the gateway addresses. I used the
+following settings, because that's how my home is configured:
 
-* DHCP: 
-    * avoid it you can
-    * when enabled but no network cable connect, bootup will hang for a minutes
-    * DHCP lease only negotiated at bootup
-* When not using DHCP, add DNS server. For Comcast, it was 75.75.75.75
-* Management can only happen on LAN port 1
-* Default Symmetricom NTP servers are not operational anymore
-* IL-0030B only shows satellites tracked, not satellites visible, for a long time.
-  But when GPS lock, suddenly satellites are visible.
-* IL-0030B has rechargable 3.3V Varta MC 621 battery. Feeds a 32768kHz oscillator for an RTC clock.
-* IL-0030B is much slower at tracking satellites.
-* Patch Linux distribution to enable root
-* Use JP4 on motherboard for factory default settings (e.g. when misconfigured...)
+* IP address: 192.168.1.201
+* Gateway address mask: 255.255.255.0
+* Gateway IP address: 192.168.1.1
 
-Getting date from server:
+You configure these settings through the front panel. Values for your network may be
+different. 
+
+If your home network uses DHCP for all other devices, it's best to tell your router
+to exclude the static IP address from the list of dynamically assignable IP addresses.
+I explain in 
+[my HP 1670G blog post](/2023/12/26/Controlling-an-HP-1670G-with-Your-Linux-PC-X-Server.html#reserving-a-fixed-ip-address-for-the-logic-analyzer)
+how to this with an Asus router.
+
+Once LAN port 1 has been enabled an configured, plug in a network cable. The network
+LED on the front panel of the device should turn green.
+
+If all went well, you'll be able to ping the SyncServer from your host machine:
+
+```sh
+ping 192.168.1.201
+```
+
+```
+PING 192.168.1.201 (192.168.1.201): 56 data bytes
+64 bytes from 192.168.1.201: icmp_seq=0 ttl=64 time=2.172 ms
+64 bytes from 192.168.1.201: icmp_seq=1 ttl=64 time=3.221 ms
+64 bytes from 192.168.1.201: icmp_seq=2 ttl=64 time=2.195 ms
+...
+```
+
+**Some DHCP notes**
+
+If against the general advice, you still decide to use DHCP, here are some notes:
+
+* when you switch LAN port 1 to DHCP through the front panel for initial configuration, 
+  the web interface won't work. Your first configuration round must happen with
+  a static IP address. It's during that round that you must tell the device that
+  further web configuration is allowed over a DHCP enabled LAN port 1.
+* when DHCP is enabled and a network cable is not plugged in when powering up, the 
+  SyncServer bootup time increase by several minutes. This is because the SyncServer 
+  is waiting for IP address assignment until a certain time-out value is reached. 
+* DHCP IP address assignment only happens at initial bootup. If you plug in the network 
+  cable when the device is already up and running, no IP address will be assigned.
+
+# Accessing the Web Interface
+
+With your browser, you should now be able to access the web interface by going to 
+IP address that you assigned:
+
+XXX show log-in screen while logged out
+
+When using default settings, the following credentials are active:
+
+* Username: admin
+* Password: symmetricom
+
+![Web interface after logging in](/assets/s200/S200_general_status_unlocked.png)
+
+# DNS Configuration
+
+Now is the time to assign DNS servers. This step is crucial if you want your
+SyncServer to work with external NTP servers, since most of them want you to use
+a hostname instead of an IP address.
+
+Using the web interface, go to "NETWORK" and then the "Ethernet" tab, and then
+"Add a DNS Server". I'm using Comcast/Xfinity, which has a DNS server at
+address 75.75.75.75, so that what's I used. You'll need to find the appropriate
+DNS server for your case.
+
+![DNS server configured](/assets/s200/screenshots/S250_Network_Ethernet_green.png)
+
+If you set up the DNS server correctly, you should now be able to ping public
+Internet servers with the "Ping" tab. For the last 35 years, I've used 
+"www.yahoo.com" as my ping testing address.
+
+XXX screenshot testing www.yahoo.com
+
+# External NTP Server Configuration
+
+The default settings of my SyncServer make it use static IP addresses 
+69.25.96.11, 69.25.96.12, and 69.25.96.14 for external NTP requests.
+Symmetricom used to have NTP servers there, but they are not operational anymore!
+
+You must replace these static IP addresses by other NTP servers. A popular
+option is [ntp.org](http://ntp.org) which offers a free NTP server service. Another
+alternative are the NTP servers from the NIST, the National Institute for Standards
+and Technology (XXX check name). Or do like I did, and use both!
+
+For ntp.org, use the following addresses: `0.pool.ntp.org`, `1.pool.ntp.org`, `2.pool.ntp.org`,
+or `0.us.pool.ntp.org`, `1.us.pool.ntp.org`, `2.us.pool.ntp.org` if you want to force
+using a server that is located in the US. For NIST, I used `time.nist.gov`.
+
+Here is how you fill in the panel to add a server:
+
+![NTP server configuration panel](/assets/s200/screenshots/S250_NTP_Config_setup_pool_servers.png)
+
+And here's what things look like after all servers were added:
+
+![All external NTP servers panel](/assets/s200/screenshots/S250_NTP_Config_green.png)
+
+Click "Restart" when all servers have been added.
+
+Check out the "NTP - Sysinfo" to verify that the SyncServer can successfully talk
+to the external servers:
+
+![All external NTP servers panel](/assets/s200/screenshots/S250_NTP_Assoc_green.png)
+
+The "St/Poll" columns shows the stratum level and polling time of the servers. In the
+example above, you can see how the hardware clock is still synchronizing, and 4
+NTP servers with stratum levels 1 and 2 are being polled. The stratum level will
+vary because NTP.org rotates through a pool of servers with different levels.
+
+If there's a configuration issue, you'll see a stratum level of 16.
+
+# Testing your NTP server
+
+After setting up the external NTP servers, your SyncServer can now itself be used as an NTP server.
+
+Using Linux, you can query the date from the SyncServer with the `ntpdate` tool as follows:
 
 ```sh
 ntpdate -q 192.168.1.201
 ```
 
 ```
-server 192.168.1.201, stratum 1, offset -0.002502, delay 0.02988
- 4 Jun 22:28:50 ntpdate[229341]: adjust time server 192.168.1.201 offset -0.002502 sec
-```
-
-* Make backup of compact flash card
-* Reset to default settings
-
-    * Page 120 of manual
-    * Wire up jumper JP4 (not a standard jumper!)
-    * power on
-    * wait for 100s
-    * power off
-    
-    (What goes on under the hood)
-
-* Set up IP address for remote connection
-
-    * Only LAN1 is active
-    * I use static IP 192.168.1.201. The default is 192.168.0.100.
-    * Gateway: 255.255.255.0
-    * LAN1 Gateway: 192.168.1.1
-    * Don't use DHCP for initial configuration. The moment you switch, you can't log on
-      because the web panel is disabled!
-    * Plug in cable. Network LED should go green.
-
-* Connect to web panel
-    * http://192.168.1.201
-    * Username: admin
-    * Password: symmetricom
-
-* Webpanel: configure network:
-
-    * NETWORK -> Ethernet:
-    * Management Port User DNS Servers: Add a DNS server. 
-
-        In the case of Comcast: 75.75.75.75
-
-    * Check with NETWORK -> Ping that you can ping the outside world. E.g yahoo.com
-
-* Set up NTP servers to sync with
-
-    * The default ones don't work!!! 69.25.96.11, 69.25.96.12, 69.25.96.14 
-
-        In NETWORK Assoc, you'll see that all these IP addresses have St(ratum) value of 16.
-        
-    * NTP -> Config
-
-        * Select 69... IP address and delete them.
-        * Add 0.pool.ntp.org
-        * Add 1.pool.ntp.org
-        * Add 2.pool.ntp.org
-        * Add time.nist.gov
-        * RESTART
-
-    * NTP -> Assoc
-
-        Will show various stratum values for the IP addresses.
-
-    * You should be able to query your server now from your PC:
-
-        ```sh
-ntpdate  -q 192.168.1.201
-        ```
-
-        ```
 server 192.168.1.201, stratum 16, offset -0.019111, delay 0.02856
  4 Jun 23:20:32 ntpdate[230482]: no server suitable for synchronization found
-        ```
+```
 
-        Initially, this will show Stratum 16, because the internal clock was not synced to GPS
-        due to the WNRO problem and because it needs time to sync to one of the NTP servers.
+Note how initially, the SyncServer may report itself as an unsynchronized stratum 16 device. 
+This is because NTP server synchronization can take a bit of time.
 
-        After a while (around 15 minutes), you'll get this:
+After around 15 minutes, you'll get this:
 
-        ```sh
+```sh
 ntpdate  -q 192.168.1.201
-        ```
-        ```
+```
+
+```
 server 192.168.1.201, stratum 2, offset -0.034768, delay 0.02989
  4 Jun 23:23:21 ntpdate[230491]: adjust time server 192.168.1.201 offset -0.034768 sec
-        ```
+```
 
-        The Sync status LED and web page indicator will now be yellow instead of red: at
-        least you have *something*, which should be good enogh for pretty much anything!
+The Sync status LED and web page indicator are now be yellow instead of red: you
+now have something that should be good enough for time serving needs that don't require
+nano-second level accuracy.
 
-        On the front panel and on STATUS -> Timing, you'll see that the current
-        sync source is NTP and that the hardware clock status is "Locked".
+![Sync status yellow](/assets/s200/screenshots/S250_Status_General_yellow_sync_stratus2.png)
+
+Don't worry about the NTP LED not being constanstly green: it only light up when the SyncServer
+polls the external server.
+
+On the front panel and on web interface under "STATUS -> Timing", you'll see that the current
+sync source is NTP and that the hardware clock status is "Locked".
+
+![Front panel - NTP locked](/assets/s200/front_panel_ntp_locked.jpg)
+
+# A Complicated Power Hungry Clock
+
+All that's left now to display the correct local time is to set the right time zone.
+You can do this under "Timing" -> "Time Zone".
+
+Once you've done that, you can use your SyncServer as a slightly overcomplicated 
+living room clock:
+
+![Front panel - Clock](/assets/s200/front_panel_clock.jpg)
+
+It's power hungry too: mine pulls roughly 19W from the power socket.
+
+
+
+# Various
+
+Notes:
+
+* IL-0030B only shows satellites tracked, not satellites visible, for a long time.
+  But when GPS lock, suddenly satellites are visible.
+* IL-0030B has rechargable 3.3V Varta MC 621 battery. Feeds a 32768kHz oscillator for an RTC clock.
+* IL-0030B is much slower at tracking satellites.
+* Patch Linux distribution to enable root
+
+
 
         This means that the OCXO is disciplined to an external NTP server. The problem is:
         the output is horrible. In my case: 9,999,901 Hz, a deviation of a whopping
         99Hz, much worse that the 7Hz deviation when the OXCO clock isn't disciplined at all!
 
         And then after a while, it jumped to 10,000,095Hz!
-
-* Set correct time zone
-
-    * TIMING -> Time Zone
-
-        I use America/Los_Angeles
-
-    You have an expensive and quite power hungry clock now!
 
 * Upgrade the system: forget about doing this from the web, the Symmetricom servers have
   been shut down long time ago. But you can do upload a file.
