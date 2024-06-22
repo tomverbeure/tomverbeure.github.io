@@ -75,20 +75,21 @@ uses the [Network Time Protocol (NTP)](https://en.wikipedia.org/wiki/Network_Tim
 > ... is a networking protocol for clock synchronization between computer systems over 
 > packet-switched, variable-latency data networks.
 
-The SyncServer S200 is a [Stratum 1](https://en.wikipedia.org/wiki/Network_Time_Protocol#Clock_strata) 
-level device. While it does not act as a Stratum 0 oracle of truth timing reference, it
-directly derives the time from a Stratum 0 device, in this case the GPS system.
+The SyncServer S200 is a [stratum 1](https://en.wikipedia.org/wiki/Network_Time_Protocol#Clock_strata) 
+level device. The stratum level indicates the hierarchical distance to an authorative atomic 
+reference clock.  While it does not act as a stratum 0 oracle of truth timing reference, it
+can derive the time directly from a stratum 0 device, in this case the GPS system.
 
-When the GPS signal disappears, a SyncServer falls back to Stratum 2 mode where it retrieves
-the time from other Stratum 1 devices (e.g. other NTP-capable time servers on the network) or 
-it switches to hold-over mode where it lets an internal oscillator run untethered, without 
+When the GPS signal disappears, a SyncServer can fall back to stratum 2 mode if it can retrieve
+the time from other stratum 1 devices (e.g. other NTP-capable time servers on the network) or 
+it can switch to hold-over mode, where it lets an internal oscillator run untethered, without 
 being locked to the GPS system.
 
 The S200 has 3 oscillator options:
 
 * a TCXO with a drift of 21ms per day
 * an OCXO with a drift of 1ms per day
-* a Rubidium atomic clock with drift of 25us (!) per day
+* a rubidium atomic clock with drift of only 25us per day
 
 Mine has the OCXO option.
 
@@ -100,13 +101,15 @@ reference, but something that belongs in a router cabinet.
 Before continuing, let's interrupt with a short but important service message:
 
 GPS antennas have active elements that amplify the received signal right at the point of reception
-before sending it down the cable to the GPS unit. Most antennas require 3.3V or 5V power, but the
-Symmetricom S200 supplies 12V on its GPS antenna connector.
+before sending it down the cable to the GPS unit. Most antennas need 3.3V or 5V that is supplied
+through the GPS antenna connector, but Symmetricom S200 supplies 12V!
 
 **Make sure you are using a 12V GPS antenna!**
 
 Check out [my earlier blog post](/2024/03/23/Symmetricom-58532A-Power-Supply-Modification.html) 
 for more information.
+
+![Voltage present on S200 antenna connector](/assets/s58532a/s200_output_voltage.jpg)
 
 # The SyncServer S200 Outside and Inside
 
@@ -123,7 +126,7 @@ VFDs have a tendency to degrade over time, but mine is in perfect shape.
 *Click to enlarge*
 
 In the back, we can see a power switch for the 100-240VAC mains voltage[^1],
-a GPS antenna connection, a [Sysplex Timer-Out](/assets/s200/sysplex_timer.pdf) interface, 
+a BNC connector for the GPS antenna, a [Sysplex Timer-Out](/assets/s200/sysplex_timer.pdf) interface, 
 and 3 LAN ports.
 
 [^1]:There are also versions for telecom applications that are powered with 40-60 VDC.
@@ -135,8 +138,9 @@ Let's see what's inside:
 
 Under the heatshink with the blue heat transfer pad sits an off-the-shelf embedded
 PC motherboard with a 500MHz AMD Geode x86 CPU with 256MB of DRAM. Not all SyncServer S200 
-models use the same motherboard, some of them have a VIA Eden ESP 400MHz processor. I recorded
-this [`boot.log`](/assets/s200/boot.log) file that contains some low level details of the system.
+models use the same motherboard, some of them have a VIA Eden ESP 400MHz processor. Using the
+front panel RS-232 serial port, I recorded this [`boot.log`](/assets/s200/boot.log) file that contains 
+some low level details of the system.
 The PC is running [MontaVista Linux](https://en.wikipedia.org/wiki/MontaVista#Linux), 
 a commercial Linux distribution for embedded devices.
 
@@ -144,15 +148,18 @@ At the bottom left sits a little PCB for the USB and RS-232 ports. There are als
 for the VFD and the buttons.
 
 On the right side of the main PCB we can see a Vectron OCXO, the same brand as the huge
-OCXO that you can find in the [GT300 frequency standard](/2024/04/06/Guide-Tech-GT300-Frequency-Reference-Teardown.html) of my home lab. It creates the 10MHz stable clock that's used for
+OCXO that you can find in the [GT300 frequency standard](/2024/04/06/Guide-Tech-GT300-Frequency-Reference-Teardown.html) 
+of my home lab. It creates the 10MHz stable clock that's used for
 time keeping. A 512MB CompactFlash card contains the operating system. There's still plenty 
 of room for a Rubidium atomic clock module. It should be possible to 
 [upgrade my S200 with a Rubidium standard](https://www.eevblog.com/forum/metrology/symmetricom-s200-teardownupgrade-to-s250/msg2764532/#msg2764532),
 but I didn't try that.
 
+XXX the EEVblog forum post has a ton of other useful information!
 
-At the top left sits a Furuno GT-8031 GPS module that is compatible with a 
-[Motorola OnCore M12 module](/assets/s200/Motorola Oncore M12.pdf). 
+
+At the top left sits a Furuno GT-8031 GPS module that is compatible with
+[Motorola OnCore M12 modules](/assets/s200/Motorola Oncore M12.pdf). 
 There are a bunch of connectors, and, very important, 3 unpopulated connector footprints. 
 
 When looking at it from a different angle, we can also see 6 covered up holes that line up with those
@@ -187,44 +194,48 @@ There's also a 50% duty cycle 1PPS signal present on the other BNC footprint.
 
 # Setting Up a SyncServer S200 from Scratch
 
-My goal was to set up the SyncServer so that it'd be synchronized to the GPS
+My first goal was to set up the SyncServer so that it'd be synchronized to the GPS
 time and display the right time on the display. That should be a pretty simple thing
-to do, but it took months before I got there. There were 3 reasons for that:
+to do, but it took many hours before I got there. There were 3 reasons for that:
 
 * due to the WNRO issue, the SyncServer didn't want to lock onto the GPS time.
-* the default IP addresses on which Symmetricom used to have their NTP servers aren't
-  operational anymore. But that wasn't clear in the status screen.
+* the default IP addresses for the  Symmetricom NTP servers aren't operational anymore. 
+  But that wasn't clear in the status screen.
 * when I tried alternative NTP servers, they couldn't be found because I hadn't
   configured DNS servers.
 * configuring the SyncServer to get its IP using DHCP is a bit of nightmare.
 
-My focus was always first on the GPS and then the NTP part, I'll do things the
-opposite way here, but it should allow you to get somehwere without the kind of
-hardware hacking that I ended up doing.
+My focus was always first on the GPS and then the NTP part, but I'll do things the
+opposite way here to allow you to get somehwere without the kind of hardware hacking 
+that I ended up doing.
 
 # Opening up the SyncServer S200
 
-Just remove the 4 screws at the top of the case and you remove the top cover.
+Just remove the 4 screws at the top of the case and lift the top cover.
 
-I wish other equipment was just as easy.
+*I wish other equipment was just as easy.*
 
 
 # Cloning the CompactFlash Card
 
 The S200 uses a 512MB flash card to store the OS. I wanted to make copy and leave
 the original card unchanged so that I wouldn't have to worry about making crucial
-mistakes. You don't really need a second flash card: a full-disk copy of the contents
-of the original card can be save to your PC and restored from there, but for me it
-was useful to swap back and forth between different flash card while experimenting.
+mistakes. You don't really need a second flash card, a full-disk copy of the contents
+of the original card can be save to your PC and restored from there, but I found it 
+useful to have a second one to swap back and forth between different flash card while 
+experimenting.
 
 ![S200 Flash Card](/assets/s200/S200_flash_card.jpg)
 
-There is a lot of chatter in the EEVBlog forum about which flash card does or doesn't
-work. There's concensus that it must an *industrial* type of CompactFlash card, but
-that's where things end. Some people aren't able even make a 512MB one work. Others
-claim that their 512MB one worked, but larger capacity ones didn't.
+There is a lot of chatter in the EEVBlog forum about which type of flash card does or 
+doesn't work. There's concensus that it must a CompactFlash card with *fixed disk PIO*
+instead of *removable DMA* support. It's also good to use one that is an *industrial*
+type because those have long-life SLC-type flash memory chips that allow more read-write
+operations and a higher temperature range, but that's where things end. Some people aren't able 
+even make a 512MB card. Others claim that their 512MB car worked, but that larger capacity 
+ones didn't.
 
-I bought [this 512MB one](https://www.amazon.com/gp/product/B07HL5F1VX) on Amazon for 
+I bought [this 512MB card](https://www.amazon.com/gp/product/B07HL5F1VX) on Amazon for 
 and it worked fine. This [1GB one](https://www.amazon.com/gp/product/B07HL5F1VX) worked
 fine too?! I ran into none of the issues that other people had. I wonder if it has to
 do with the kind of embedded PC motherboard that I'm using: remember that there are different
@@ -234,9 +245,11 @@ Either way, you'll also need CF card reader. It's kind of ridiculous that
 [the one that I bought](https://www.amazon.com/gp/product/B08P517NW5) is cheaper than
 the flash cards themselves.
 
+![Flash card reader](/assets/s200/flash_card_reader.jpg)
+
 Windows people should use something like 
 [HDD Raw Copy Tool](https://hddguru.com/software/HDD-Raw-Copy-Tool/)
-to make a copy, but I find it to be just as easy using the standard Linux disk
+to make a copy, but I found it to be just as easy using the standard Linux disk
 utilities:
 
 After plugging in the drive:
@@ -261,7 +274,7 @@ the read-only `_fsroot` partitions have redundant copies of the OS itself, a
 log files, and `_tmparea` is used for intermediate data.
 
 Right now, we don't really care about any of that and just make a copy of the whole
-drive, like this:
+drive to a file on my Linux machine, like this:
 
 ```sh
 $ sudo dd if=/dev/sdb of=flash_contents_orig.img bs=1M
@@ -273,8 +286,6 @@ $ sudo dd if=/dev/sdb of=flash_contents_orig.img bs=1M
 488+1 records out
 512483328 bytes (512 MB, 489 MiB) copied, 40.6726 s, 12.6 MB/s
 ```
-
-Note how I'm copying the flash drive contents to a file on my Linux machine.
 
 If you have a second flash card, copying the original contents there is just
 as easy:
@@ -299,7 +310,7 @@ Unmount the drive after copying:
 sudo unmount /dev/sdb
 ```
 
-You're all set now to plug the old or the CF card back into the S200.
+You're all set now to plug the old or the new CF card back into the S200.
 
 # Network Setup
 
