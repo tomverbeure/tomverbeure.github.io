@@ -14,14 +14,14 @@ categories:
 
 ![Zephyr Ravenna](/assets/zephyr/zephyr_ravenna.jpg)
 
-Our kitchen has a Zephyr Ravenna kitchen hood that started to behave erratically:
+Our house has a Zephyr Ravenna kitchen hood that started to behave erratically:
 
 * the LED strip didn't want to switch off entirely
 * the buttons usually worked, but sometimes didn't
 
 The hood was still usable, but it didn't give us that warm and fuzzy feeling.
 
-I tried to power cycle the thin by toggling the power breaker, but that didn't help. 
+I tried to power cycle the thing by toggling the power breaker, but that didn't help. 
 In fact, a few times it made things worse: all the blue indicator LEDs would light up for
 15 minutes before it went back to almost working.
 
@@ -86,7 +86,7 @@ board costs $119, but I didn't order one.
 
 ![Switch assembly 11000119](/assets/zephyr/switch_assembly.jpg)
 
-# Switch of the Breaker!!!
+# Switch off the Breaker!!!
 
 It goes without saying, but I'm saying it anyway: 
 
@@ -110,7 +110,7 @@ it somewhere safe...
 
 # Duct Cover Removal
 
-The duct cover consists of 2 pieces. The top part slides telescopically
+The telescopic duct cover consists of 2 pieces. The top part slides telescopically
 out of the bottom part.
 
 The top part is held in place with 2 screws that are the very top against
@@ -141,8 +141,8 @@ In the manual, the control board box is accessible after removal of the duct cov
 
 ![Technical drawing of the control board box](/assets/zephyr/control_board_box_tech_drawing.png)
 
-In the previous picture, you can see that this is not the case. The white control board
-box is located behind the metal plate.
+In the previous picture, you can see that this is not the case for our unit. The white
+control board box is located behind the metal plate.
 
 ![Control board box behind metal plate](/assets/zephyr/control_box_behind_plate.jpg)
 
@@ -155,8 +155,8 @@ You can now remove the 4 screws to remove the cover of the control box:
 
 There are once again 4 screws that hold the control board in place.
 
-It takes a bit of fiddle work, but I removed those 4 screws before disconnecting the wires, 
-for two reasons:
+It takes a bit of fiddling , but I first removed those 4 screws before disconnecting 
+the wires, for two reasons:
 
 * it allowed me to disconnect a wire and immediately reconnect it to the new board, thus
   avoiding connection mistakes.
@@ -173,18 +173,20 @@ correctly. It did!!! I then toggled the breaker back to off for reassembly.
 
 In theory, reassembly is a matter of doing the previous steps in reverse, but there was
 one step where I needed to call in help from a neighbor: it's almost impossible to hold the
-top part of the duct cover against the ceiling while at the same time screwing down
+top part of the duct cover against the ceiling while at the same time screwing in
 the top screw, and my wife was not tall enough to reach the ceiling.
 
 # Conclusion 
 
 The hood is working again, wife is happy, I'm happy, and all that's left are some touch-ups.
 
-Total time: 2 hours, but that included a lot going back and forth through the manual
+Total repair time: 2 hours, but that included a lot going back and forth through the manual
 and watching irrelevant Youtube videos. A professional could probably do this in 20
 minutes.
 
-It's tempting to try to root cause the problem of the broken controller board, but
-that will probably never happen...
+It's tempting to try to root cause the problem of the broken controller board, though
+that will probably never happen. But if you look as the left bottom of the picture below, 
+you can see thatthe PCB has darker brown burn marks. It's scary to think what could have
+happened in the long run if I hadn't replaced this broken controller.
 
 ![Broken controller board](/assets/zephyr/broken_controller_board.jpg)
