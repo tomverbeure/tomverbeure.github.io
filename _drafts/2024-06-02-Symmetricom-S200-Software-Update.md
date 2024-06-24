@@ -87,6 +87,8 @@ server 192.168.1.201, stratum 1, offset -0.002502, delay 0.02988
         * Add time.nist.gov
         * RESTART
 
+        * [NIST servers](https://tf.nist.gov/tf-cgi/servers.cgi)
+
     * NTP -> Assoc
 
         Will show various stratum values for the IP addresses.
@@ -145,6 +147,10 @@ server 192.168.1.201, stratum 2, offset -0.034768, delay 0.02989
 
 * Power consumption is around 18W. Will be lower for the TCXO and higher for the Rubidium
   version.
+
+* Optional:
+
+    
         
 
 
@@ -241,7 +247,7 @@ Use the [HDD Raw Copy Tool](https://hddguru.com/software/HDD-Raw-Copy-Tool/).
 # Satellite status
 
 ```sh
-ssh admin@192.168.1.201
+ssh -oHostKeyAlgorithms=+ssh-dss admin@192.168.1.201
 gpsstrength
 ```
 
@@ -278,7 +284,10 @@ sudo tar xfz config-1.2.tar.gz
 ```
 
 ```
+# Delete root line
+# Copy admin and rename to root
 sudo gvim etc/shadow
+# PermitRootLogin yes
 sudo gvim etc/ssh/sshd_config
 sudo rm config-1.2.tar.gz
 sudo tar cfz config-1.2.tar.gz ./etc ./var
