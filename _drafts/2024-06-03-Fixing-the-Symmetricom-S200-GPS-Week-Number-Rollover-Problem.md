@@ -1,7 +1,7 @@
 ---
 layout: post
 title: A Hardware Interposer to Fix the Symmetricom SyncServer S200 GPS Week Number Rollover Problem
-date:   2024-06-01 00:00:00 -1000
+date:   2024-06-23 00:00:00 -1000
 categories:
 ---
 
@@ -10,173 +10,6 @@ categories:
 
 # Introduction
 
-The [Silicon Valley Electronics Flea Market](https://www.electronicsfleamarket.com) 
-runs every month from March to September and then goes on a hiatus for 6 months, so when 
-the new March episode hits, there is a ton of pent-up demand... and supply: inevitably,
-some spouse has reached their limit during spring cleaning and wants a few of those boat 
-anchors gone. You do not want to miss the first flea market of the year, and you better
-come early, think 6:30am, because the good stuff goes fast.
-
-But success is not guaranteed: I saw a broken-but-probably-repairable HP 58503A GPS
-Time and Frequency Reference getting sold right in front of me for just $40. And while
-I was able to pick up a very low end HP signal generator and Fluke multimeter for $10,
-at 8:30am, I was on my way back to the car unsatisfied.
-
-Until *that* guy and his wife, late arrivals, started unloading stuff from their trunk
-onto a blanket. There it was, right in front of me, a 
-[Stanford Research Systems SR620 universal counter](https://thinksrs.com/products/sr620.html). 
-I tried to haggle on the SR620 but was met with a "You know what you're doing and what 
-this is worth." Let's just say that I paid the listed price which was still a crazy good 
-deal. I even had some cash left in my pocket.
-
-Which is great, because right next to the SR620 sat a pristine looking Symmetricom
-SyncServer S200 with accessories for the ridiculously low price of $60.
-
-[![Flea Market Haul](/assets/s200/fleamarket_haul.jpg)](/assets/s200/fleamarket_haul.jpg)
-
-I've never left the flea market more excited.
-
-I didn't really know what a network time server does, but since it said *GPS*
-time server, I hoped that it could work as a GPSDO with a 10MHz reference clock and a 1 
-pulse-per-second (1PPS) synchronization output. But even if not, I was sure that I'd learn 
-something new, and worst case I'd reuse the beautiful rackmount case for some future project.
-
-Turns out that out of the box a SyncServer S200 can not be used as a GPSDO, but its
-close sibling, the S250, can do it just fine, and it's straightforward to do the conversion. 
-A bigger problem was an issue with the GPS module due to the week number rollover problem.
-
-In this blog post, I go through the steps required to bring from a mostly useless
-S200 back to life and how to add the connectors for 10MHz and 1PPS output, which allowed it
-to do double duty as a GPSDO.
-
-Some of what is described here is based on discussions on EEVblog forum such as 
-[this one](https://www.eevblog.com/forum/metrology/symmetricom-s200-teardownupgrade-to-s250).
-I hope you'll find it useful.
-
-# What was the SyncServer S200 Supposed to be Used For?
-
-Symmetricom was acquired by Microsemi, and the SyncServer S200 is now obsolete, but
-Microsemi still has a [data sheet](/assets/s200/md_microsemi_s200_datasheet_vb_.pdf)
-on their website.
-
-Here's what it says in the first paragraph:
-
-> The SyncServer S200 GPS Network Time Server synchronizes clocks on servers for large
-> or expanding IT enterprises and for the ever-demanding high-bandwidth Next Generation
-> Network. Accurately synchronized clocks are critical for network log file accuracy,
-> security, billing systems, electronic transactions, database integrity, VoIP, and
-> many other essential applications.
-
-There's a lot more, but one of the key aspects of a time server like this is that it
-uses the [Network Time Protocol (NTP)](https://en.wikipedia.org/wiki/Network_Time_Protocol), which...
-
-> ... is a networking protocol for clock synchronization between computer systems over 
-> packet-switched, variable-latency data networks.
-
-The SyncServer S200 is a [Stratum 1](https://en.wikipedia.org/wiki/Network_Time_Protocol#Clock_strata) 
-level device. While it does not act as a Stratum 0 oracle of truth timing reference, it
-directly derives the time from a Stratum 0 device, in this case the GPS system.
-
-When the GPS signal disappears, a SyncServer falls back to Stratum 2 mode where it retrieves
-the time from other Stratum 1 devices (e.g. other NTP-capable time servers on the network) or 
-it switches to hold-over mode where it lets an internal oscillator run untethered, without 
-being locked to the GPS system.
-
-The S200 has 3 oscillator options:
-
-* a TCXO with a drift of 21ms per day
-* an OCXO with a drift of 1ms per day
-* a Rubidium atomic clock with drift of 25us (!) per day
-
-Mine has the OCXO option.
-
-It's clear that the primary use case of the S200 is not to act as a lab clock or frequency
-reference, but something that belongs in a router cabinet.
-
-# The SyncServer S200 Outside and Inside
-
-The front panel has 2 USB type-A ports, an RS-232 console interface, a 
-[vacuum fluorescent display](https://en.wikipedia.org/wiki/Vacuum_fluorescent_display) (VFD), 
-and a bunch of buttons.
-
-[![S200 front view](/assets/s200/S200_front_view.jpg)](/assets/s200/S200_front_view.jpg)
-*Click to enlarge*
-
-VFDs have a tendency to degrade over time, but mine is in perfect shape.
-
-[![S200 rear view](/assets/s200/S200_rear_view.jpg)](/assets/s200/S200_rear_view.jpg)
-*Click to enlarge*
-
-In the back, we can see a power switch for the 100-240VAC mains voltage[^1],
-a GPS antenna connection, a [Sysplex Timer-Out](/assets/s200/sysplex_timer.pdf) interface, 
-and 3 LAN ports.
-
-[^1]:There are also versions for telecom applications that are powered with 40-60 VDC.
-
-Let's see what's inside:
-
-[![S200 inside view](/assets/s200/S200_inside_view.jpg)](/assets/s200/S200_inside_view.jpg)
-*Click to enlarge*
-
-Under the heatshink with the the blue heat transfer pad sits an off-the-shelf embedded
-PC motherboard with a 500MHz AMD Geode x86 CPU with 256MB of DRAM. Not all SyncServer S200 
-models use the same motherboard, some of them use a VIA Eden ESP 400MHz processor. I recorded
-this [`boot.log`](/assets/s200/boot.log) file that contains some low level details of the system.
-The PC is running [MontaVista Linux](https://en.wikipedia.org/wiki/MontaVista#Linux), 
-a commercial Linux distribution for embedded devices.
-
-At the bottom left sits a little PCB for the USB and RS-232 ports. There are also two cables 
-for the VFD and the buttons.
-
-On the right side we can see a Vectron OCXO that will create 10MHz clock and a 512MB CompactFlash 
-card. There's still plenty of room for a Rubidium atomic clock module. 
-
-At the top left sits a Furuno GT-8031 GPS module that is compatible with the Motorola
-M12M modules. There's a bunch of connectors, and, very important, 3 unpopulated connector
-footprints. 
-
-When looking at it from a different angle, we can also see 6 covered up holes that line up with those
-3 unpopulated footprints:
-
-[![S200 inside back connectors](/assets/s200/S200_inside_back_connectors.jpg)](/assets/s200/S200_inside_back_connectors.jpg)
-*Click to enlarge*
-
-Let's just cut to the chase and show the backside of the next model in the SyncServer product line, the S250: 
-
-![S250_BNC_connectors](/assets/s200/S250_BNC_connectors.png)
-
-![S250_BNC_connectors_diagram](/assets/s200/S250_BNC_connectors_diagram.png)
-
-Those 6 holes holes are used for the input and output for the following 3 signals:
-
-* 10MHz
-* 1PPS
-* IRIG
-
-We are primarily interested in the 10MHz and 1PPS outputs, of course.
-
-![Probe on 10MHz output](/assets/s200/probe_on_10MHz_output.jpg)
-
-The BNC connectors may be unpopulated, but the driving circuit is not. When you probe
-the hole for the 10MHz output, you get this sorry excuse of what's supposed to be a
-sine wave:
-
-![10MHz signal on BNC hole](/assets/s200/10MHz_output.png)
-
-There's also a 50% duty cycle 1PPS signal on the other BNC hole.
-
-# IMPORTANT: Use the Right GPS Antenna!
-
-Before continuing, let's interrupt with a short but important service message:
-
-GPS antennas have active elements that amplify the signal at the point of reception
-before sending it down the cable to the GPS unit. Most antennas require 3.3V or 5V power, but the
-Symmetricom S200 supplies 12V on its GPS antenna connector.
-
-**Make sure you are using a 12V GPS antenna!**
-
-Check out [my earlier blog post](/2024/03/23/Symmetricom-58532A-Power-Supply-Modification.html) 
-for more information.
 
 # Installing the Missing BNC Connectors
 
@@ -213,7 +46,7 @@ Installing the BNC connectors is easy: plug them in and solder them down...
 
 ![BNC connectors installed](/assets/s200/S200_bnc_connectors_installed.jpg)
 
-Due to the imperfectlly cut BNC holes, installing the main PCB back into the chassis will
+Due to the imperfectly cut BNC holes, installing the main PCB back into the chassis will
 be harder than removing it, so, again, be careful about those spacers at the bottom of the
 case to prevent damaging the PCB!
 
@@ -263,11 +96,11 @@ stays in free-running mode at the miserable frequency of roughly 9,999,993 Hz.
 
 # Upgrading to an iLotus IL-GPS-0030-B Module
 
-The normal way to work around the week rollover issue is to replace the GT-8031 with a different
-module that has a laiLotus rollover date. Over the years, people have used various solutions but
+The normal way to work around the week number rollover issue is to replace the GT-8031 with a different
+module that has a later rollover date. Over the years, people have used various solutions but
 these have in turn had their own rollover.
 
-I purchased a iLotus IL-GPS-0030-B as replacement module. They go for close to $100 on AliExpress.
+I purchased an iLotus IL-GPS-0030-B as replacement module. They go for close to $100 on AliExpress.
 
 ![GPS locked with new module](/assets/s200/GPS_locked_with_new_module.jpg)
 
@@ -348,15 +181,15 @@ through a decoder script to convert them into readable GPS messages.
 Here are the messages that are exchanged between the motherboard after powering up the unit:
 
 ```
->>> Cf - set to defaults command: [], [37], [13, 10] - 7 - 4919049500.0
->>> Gf - time raim alarm message: [0, 10], [43], [13, 10] - 9 - 4933078500.0
->>> Aw - time correction select: [1], [55], [13, 10] - 8 - 4950998500.0
->>> Bp - request utc/ionospheric data: [0], [50], [13, 10] - 8 - 4967075000.0
->>> Ge - time raim select message: [1], [35], [13, 10] - 8 - 4983049500.0
->>> Gd - position control message: [3], [32], [13, 10] - 8 - 4999023500.0
-<<< Aw - time correction select: [1], [55], [13, 10] - 8 - 6382205000.0
+>>> @@Cf - set to defaults command: [], [37], [13, 10] - 7 
+>>> @@Gf - time raim alarm message: [0, 10], [43], [13, 10] - 9 
+>>> @@Aw - time correction select: [1], [55], [13, 10] - 8 
+>>> @@Bp - request utc/ionospheric data: [0], [50], [13, 10] - 8 
+>>> @@Ge - time raim select message: [1], [35], [13, 10] - 8 
+>>> @@Gd - position control message: [3], [32], [13, 10] - 8 
+<<< @@Aw - time correction select: [1], [55], [13, 10] - 8 
     time_mode:UTC
-<<< Co - utc/ionospheric data input: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [44], [13, 10] - 29 - 6390504500.0
+<<< @@Co - utc/ionospheric data input: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], [44], [13, 10] - 29 
     alpha0:0, alpha1:0, alhpa2:0, alpha3:0
     beta0:0, beta1:0, alhpa2:0, beta3:0
     A0:0, A1:0

@@ -1,141 +1,30 @@
 ---
 layout: post
-title: Symmetricom SyncServer S200 Software Update
-date:   2024-06-02 00:00:00 -1000
+title: Symmetricom SyncServer S200 Various Notes
+date:   2024-06-24 00:00:00 -1000
 categories:
 ---
 
 * TOC
 {:toc}
 
-# Introduction
+# Various
 
 Notes:
 
-* DHCP: 
-    * avoid it you can
-    * when enabled but no network cable connect, bootup will hang for a minutes
-    * DHCP lease only negotiated at bootup
-* When not using DHCP, add DNS server. For Comcast, it was 75.75.75.75
-* Management can only happen on LAN port 1
-* Default Symmetricom NTP servers are not operational anymore
 * IL-0030B only shows satellites tracked, not satellites visible, for a long time.
   But when GPS lock, suddenly satellites are visible.
 * IL-0030B has rechargable 3.3V Varta MC 621 battery. Feeds a 32768kHz oscillator for an RTC clock.
 * IL-0030B is much slower at tracking satellites.
 * Patch Linux distribution to enable root
-* Use JP4 on motherboard for factory default settings (e.g. when misconfigured...)
 
-Getting date from server:
 
-```sh
-ntpdate -q 192.168.1.201
-```
-
-```
-server 192.168.1.201, stratum 1, offset -0.002502, delay 0.02988
- 4 Jun 22:28:50 ntpdate[229341]: adjust time server 192.168.1.201 offset -0.002502 sec
-```
-
-* Make backup of compact flash card
-* Reset to default settings
-
-    * Page 120 of manual
-    * Wire up jumper JP4 (not a standard jumper!)
-    * power on
-    * wait for 100s
-    * power off
-    
-    (What goes on under the hood)
-
-* Set up IP address for remote connection
-
-    * Only LAN1 is active
-    * I use static IP 192.168.1.201. The default is 192.168.0.100.
-    * Gateway: 255.255.255.0
-    * LAN1 Gateway: 192.168.1.1
-    * Don't use DHCP for initial configuration. The moment you switch, you can't log on
-      because the web panel is disabled!
-    * Plug in cable. Network LED should go green.
-
-* Connect to web panel
-    * http://192.168.1.201
-    * Username: admin
-    * Password: symmetricom
-
-* Webpanel: configure network:
-
-    * NETWORK -> Ethernet:
-    * Management Port User DNS Servers: Add a DNS server. 
-
-        In the case of Comcast: 75.75.75.75
-
-    * Check with NETWORK -> Ping that you can ping the outside world. E.g yahoo.com
-
-* Set up NTP servers to sync with
-
-    * The default ones don't work!!! 69.25.96.11, 69.25.96.12, 69.25.96.14 
-
-        In NETWORK Assoc, you'll see that all these IP addresses have St(ratum) value of 16.
-        
-    * NTP -> Config
-
-        * Select 69... IP address and delete them.
-        * Add 0.pool.ntp.org
-        * Add 1.pool.ntp.org
-        * Add 2.pool.ntp.org
-        * Add time.nist.gov
-        * RESTART
-
-        * [NIST servers](https://tf.nist.gov/tf-cgi/servers.cgi)
-
-    * NTP -> Assoc
-
-        Will show various stratum values for the IP addresses.
-
-    * You should be able to query your server now from your PC:
-
-        ```sh
-ntpdate  -q 192.168.1.201
-        ```
-
-        ```
-server 192.168.1.201, stratum 16, offset -0.019111, delay 0.02856
- 4 Jun 23:20:32 ntpdate[230482]: no server suitable for synchronization found
-        ```
-
-        Initially, this will show Stratum 16, because the internal clock was not synced to GPS
-        due to the WNRO problem and because it needs time to sync to one of the NTP servers.
-
-        After a while (around 15 minutes), you'll get this:
-
-        ```sh
-ntpdate  -q 192.168.1.201
-        ```
-        ```
-server 192.168.1.201, stratum 2, offset -0.034768, delay 0.02989
- 4 Jun 23:23:21 ntpdate[230491]: adjust time server 192.168.1.201 offset -0.034768 sec
-        ```
-
-        The Sync status LED and web page indicator will now be yellow instead of red: at
-        least you have *something*, which should be good enogh for pretty much anything!
-
-        On the front panel and on STATUS -> Timing, you'll see that the current
-        sync source is NTP and that the hardware clock status is "Locked".
 
         This means that the OCXO is disciplined to an external NTP server. The problem is:
         the output is horrible. In my case: 9,999,901 Hz, a deviation of a whopping
         99Hz, much worse that the 7Hz deviation when the OXCO clock isn't disciplined at all!
 
         And then after a while, it jumped to 10,000,095Hz!
-
-* Set correct time zone
-
-    * TIMING -> Time Zone
-
-        I use America/Los_Angeles
-
-    You have an expensive and quite power hungry clock now!
 
 * Upgrade the system: forget about doing this from the web, the Symmetricom servers have
   been shut down long time ago. But you can do upload a file.
