@@ -211,46 +211,23 @@ that I ended up doing.
 
 # Opening up the SyncServer S200
 
-Just remove the 4 screws at the top of the case and lift the top cover.
+Just remove the 4 black screws at the top of the case and lift the top cover.
 
 *I wish other equipment was just as easy.*
 
+# The SyncServer File System on the Flash Card
 
-# Cloning the CompactFlash Card
-
-The S200 uses a 512MB flash card to store the OS. I wanted to make copy and leave
-the original card unchanged so that I wouldn't have to worry about making crucial
-mistakes. You don't really need a second flash card, a full-disk copy of the contents
-of the original card can be save to your PC and restored from there, but I found it 
-useful to have a second one to swap back and forth between different flash card while 
-experimenting.
+The S200 uses a 512MB flash card to store the OS. I wanted to have a look at the
+contents and make a copy as well so that I wouldn't have to worry about making
+crucial mistakes.
 
 ![S200 Flash Card](/assets/s200/S200_flash_card.jpg)
 
-There is a lot of chatter in the EEVBlog forum about which type of flash card does or 
-doesn't work. There's concensus that it must a CompactFlash card with *fixed disk PIO*
-instead of *removable DMA* support. It's also good to use one that is an *industrial*
-type because those have long-life SLC-type flash memory chips that allow more read-write
-operations and a higher temperature range, but that's where things end. Some people aren't able 
-even make a 512MB card. Others claim that their 512MB car worked, but that larger capacity 
-ones didn't.
-
-I bought [this 512MB card](https://www.amazon.com/gp/product/B07HL5F1VX) on Amazon for 
-and it worked fine. This [1GB one](https://www.amazon.com/gp/product/B07HL5F1VX) worked
-fine too?! I ran into none of the issues that other people had. I wonder if it has to
-do with the kind of embedded PC motherboard that I'm using: remember that there are different
-versions out there.
-
-Either way, you'll also need CF card reader. It's kind of ridiculous that 
-[the one that I bought](https://www.amazon.com/gp/product/B08P517NW5) is cheaper than
-the flash cards themselves.
+I bought [the compact flash card reader on Amazon](https://www.amazon.com/gp/product/B08P517NW5)
+for just $8.
 
 ![Flash card reader](/assets/s200/flash_card_reader.jpg)
 
-Windows people should use something like 
-[HDD Raw Copy Tool](https://hddguru.com/software/HDD-Raw-Copy-Tool/)
-to make a copy, but I found it to be just as easy using the standard Linux disk
-utilities:
 
 After plugging in the drive:
 
@@ -261,20 +238,128 @@ $ df
 ```
 /dev/sdb7          97854         2     92720   1% /media/tom/_tmparea
 /dev/sdb2           8571       442      7683   6% /media/tom/_persist
-/dev/sdb1          17047      2510     13597  16% /media/tom/_boot
 /dev/sdb5         173489     69985     94256  43% /media/tom/_fsroot1
 /dev/sdb6         173489     69986     94255  43% /media/tom/_fsroot2
 ```
 
-In my case, the drive is mounted on `/dev/sdb`. It can be different on your machine.
+In my case, the drive is mounted on `/dev/sdb`. It will probably be different for you.
 
-There are 5 different partitions on the flash card. There's a `_boot` partition,
-the read-only `_fsroot` partitions have redundant copies of the OS itself, a
-`_persist` partition contains mutable data such as configuration settings and
-log files, and `_tmparea` is primarily used to store system upgrade files.
+There are 4 different partitions on the flash card. I did some digging to understand
+how the system works.
 
-Right now, we don't really care about any of that and just make a copy of the whole
-drive to a file on my Linux machine, like this:
+**OS partititions `_fsroot1` and `_fsroot2`**
+
+The `_fsroot1` and `_fsroot2` partitions contain copies of the OS itself.
+Before making any changes on my system, I checked the `chronosver` files that reside in the 
+root of each partition:
+
+```sh
+cat _fsroot1/chronosver 
+```
+
+```
+#
+# SyncServer version
+#
+# $Date: 2010-12-08-093436 $
+#
+# The format is Major.Minor
+Version=1.26
+
+#
+# For internal identification
+#
+Revision=$ProjectRevision: Last Checkpoint: 1.666.10.3420934 $
+```
+
+and:
+
+```sh
+cat _fsroot2/chronosver 
+```
+
+```
+#
+# SyncServer version
+#
+# $Date: 2010-12-08-093436 $
+#
+# The format is Major.Minor
+Version=1.26
+
+#
+# For internal identification
+#
+Revision=$ProjectRevision: Last Checkpoint: 1.666.10.3420934 $
+```
+
+Both versions are identical and indicate that version 1.26 of the system
+is installed. There are later versions available, 1.30 and 1.36. When you install
+those, you'll see that only 1 of the partitions gets updated, so what's happening 
+is that one `_fsroot` partition gets updated and the system boots the newest version.
+
+The `_fsroot` partitions on the flash card are always read-only, even after making 
+system configuration changes.
+
+**Persistent configuration partition `_persists`**
+
+The `_persist` partition contains a tar file of the `/var` and `/etc` directories
+with configuration data. When you make changes through the web interface, the changes
+end up here.
+
+```sh
+ll _persist/
+```
+
+```
+total 445
+drwxr-xr-x  2 root root   1024 Jan  2  2006 ./
+drwxr-x---+ 7 root root   4096 Jun 23 17:40 ../
+-rw-r--r--  1 root root   2059 Dec  8  2010 downgradelist
+-rw-r--r--  1 root root     50 Jan  1  2006 persist-1.2.md5
+-rw-r--r--  1 root root 440320 Jan  1  2006 persist-1.2.tar
+-rw-r--r--  1 root root   2062 Dec  8  2010 upgradelist
+```
+
+The `_fsroot` partitions contain `/etc` and `/var` directories as well, but when
+mounted on the real system, the contents of these directories gets overwritten by the
+contents of the tar file. However, when you reset the system back to default values,
+it restores back to the values in the `_fsroot` partition.
+
+**System upgrade staging area `_tmparea`**
+
+The `_tmparea` partition is used as staging area when upgrading the system.
+When you use the web interface to upload a new version, the file gets stored here before
+one of the `_fsroot` directories gets overwritten.
+
+# Cloning the CompactFlash Card
+
+You don't really need a second flash card, a full-disk copy of the contents
+of the original card can be save to your PC and restored from there, but I found it 
+useful to have a second one to swap back and forth between different flash card while 
+experimenting.
+
+
+There is a lot of chatter in the EEVBlog forum about which type of flash card does or 
+doesn't work. There's concensus that it must a CompactFlash card with *fixed disk PIO*
+instead of *removable DMA* support. It's also good to use one that is an *industrial*
+type because those have long-life SLC-type flash memory chips that allow more read-write
+operations and a higher temperature range, but that's where things end. Some people aren't able 
+even make a 512MB card. Others claim that their 512MB car worked, but that larger capacity 
+ones didn't.
+
+I bought [this 512MB card](https://www.amazon.com/gp/product/B07HL5F1VX on Amazon)
+and it worked fine. This [1GB one](https://www.amazon.com/gp/product/B07HL5F1VX) worked
+fine too. I ran into none of the issues that some other people seem to have. I wonder if it 
+has to do with the kind of embedded PC motherboard that my system is using: remember that 
+there are different versions out there.
+
+Windows people should use something like 
+[HDD Raw Copy Tool](https://hddguru.com/software/HDD-Raw-Copy-Tool/)
+to make a copy, but I found it to be just as easy using the standard Linux disk
+utilities:
+
+Copy the whole flash card contents to a file on your Linux machine like this:
 
 ```sh
 $ sudo dd if=/dev/sdb of=flash_contents_orig.img bs=1M
