@@ -57,8 +57,8 @@ I hope you'll find it useful.
 
 # What was the SyncServer S200 Supposed to be Used For?
 
-Symmetricom was acquired by Microsemi, and the SyncServer S200 is now obsolete, but
-Microsemi still has a [data sheet](/assets/s200/md_microsemi_s200_datasheet_vb_.pdf)
+Symmetricom was acquired by [Microsemi](https://www.microsemi.com/) and the SyncServer S200 
+is now obsolete but Microsemi still has a [data sheet](/assets/s200/md_microsemi_s200_datasheet_vb_.pdf)
 on their website.
 
 Here's what it says in the first paragraph:
@@ -82,7 +82,7 @@ from a stratum 0 device, in this case the GPS system.
 
 When the GPS signal disappears, a SyncServer can fall back to stratum 2 mode if it can retrieve
 the time from other stratum 1 devices (e.g. other NTP-capable time servers on the network) or 
-it can switch to hold-over mode, where it lets an internal oscillator run untethered, without 
+it can switch to a hold-over mode where it lets an internal oscillator run untethered, without 
 being locked to the GPS system.
 
 The S200 has 3 oscillator options:
@@ -168,7 +168,7 @@ When looking at it from a different angle, we can also see 6 covered up holes th
 [![S200 inside back connectors](/assets/s200/S200_inside_back_connectors.jpg)](/assets/s200/S200_inside_back_connectors.jpg)
 *Click to enlarge*
 
-Let's just cut to the chase and show the backside of the next model in the SyncServer product line, the S250: 
+Let's cut to the chase and show the backside of the next model in the SyncServer product line, the S250: 
 
 ![S250_BNC_connectors](/assets/s200/S250_BNC_connectors.png)
 
@@ -205,7 +205,7 @@ to do, but it took many hours before I got there. There were 3 reasons for that:
   configured DNS servers.
 * configuring the SyncServer to get its IP using DHCP is a bit of nightmare.
 
-My focus was always first on the GPS and then the NTP part, but I'll do things the
+My focus was first on the GPS and then the NTP part, but I'll do things the
 opposite way here to allow you to get somehwere without the kind of hardware hacking 
 that I ended up doing.
 
@@ -223,8 +223,8 @@ crucial mistakes.
 
 ![S200 Flash Card](/assets/s200/S200_flash_card.jpg)
 
-I bought [the compact flash card reader on Amazon](https://www.amazon.com/gp/product/B08P517NW5)
-for just $8.
+I bought [a compact flash card reader on Amazon](https://www.amazon.com/gp/product/B08P517NW5)
+for $8.
 
 ![Flash card reader](/assets/s200/flash_card_reader.jpg)
 
@@ -242,16 +242,16 @@ $ df
 /dev/sdb6         173489     69986     94255  43% /media/tom/_fsroot2
 ```
 
-In my case, the drive is mounted on `/dev/sdb`. It will probably be different for you.
+In my case, the drive is mounted on `/dev/sdb` but will probably be different for you.
 
-There are 4 different partitions on the flash card. I did some digging to understand
-how the system works.
+The flash card has 4 different partitions. I did some digging to understand how 
+the system works.
 
 **OS partititions `_fsroot1` and `_fsroot2`**
 
 The `_fsroot1` and `_fsroot2` partitions contain copies of the OS itself.
-Before making any changes on my system, I checked the `chronosver` files that reside in the 
-root of each partition:
+Before making any changes on my system, I checked the `chronosver` file that resides in the 
+root directory of each partition:
 
 ```sh
 cat _fsroot1/chronosver 
@@ -293,13 +293,13 @@ Version=1.26
 Revision=$ProjectRevision: Last Checkpoint: 1.666.10.3420934 $
 ```
 
-Both versions are identical and indicate that version 1.26 of the system
-is installed. There are later versions available, 1.30 and 1.36. When you install
+The versions are identical and indicate that version 1.26 of the system
+is installed. Later versions 1.30 and 1.36 are available. When you install
 those, you'll see that only 1 of the partitions gets updated, so what's happening 
 is that one `_fsroot` partition gets updated and the system boots the newest version.
 
-The `_fsroot` partitions on the flash card are always read-only, even after making 
-system configuration changes.
+Except when doing an OS upgrade, the `_fsroot` partitions on the flash card are always 
+mounted as read-only, even when making system configuration changes.
 
 **Persistent configuration partition `_persists`**
 
@@ -322,21 +322,21 @@ drwxr-x---+ 7 root root   4096 Jun 23 17:40 ../
 ```
 
 The `_fsroot` partitions contain `/etc` and `/var` directories as well, but when
-mounted on the real system, the contents of these directories gets overwritten by the
-contents of the tar file. However, when you reset the system back to default values,
-it restores back to the values in the `_fsroot` partition.
+mounted on the real system, the contents of these directories come from the tar file. 
+However, when you reset the system back to default values, it restores back to the values 
+in the `_fsroot` partition.
 
 **System upgrade staging area `_tmparea`**
 
-The `_tmparea` partition is used as staging area when upgrading the system.
+The `_tmparea` partition is used as a staging area when upgrading the system.
 When you use the web interface to upload a new version, the file gets stored here before
 one of the `_fsroot` directories gets overwritten.
 
 # Cloning the CompactFlash Card
 
-You don't really need a second flash card, a full-disk copy of the contents
-of the original card can be save to your PC and restored from there, but I found it 
-useful to have a second one to swap back and forth between different flash card while 
+You don't really need a second flash card: a full disk copy of the contents
+of the original card can be saved to your PC and restored from there, but I found it 
+useful to have a second one to swap back and forth between different flash cards while 
 experimenting.
 
 
@@ -345,7 +345,7 @@ doesn't work. There's concensus that it must a CompactFlash card with *fixed dis
 instead of *removable DMA* support. It's also good to use one that is an *industrial*
 type because those have long-life SLC-type flash memory chips that allow more read-write
 operations and a higher temperature range, but that's where things end. Some people aren't able 
-even make a 512MB card. Others claim that their 512MB car worked, but that larger capacity 
+even make a 512MB card work. Others claim that their 512MB card worked, but that larger capacity 
 ones didn't.
 
 I bought [this 512MB card](https://www.amazon.com/gp/product/B07HL5F1VX on Amazon)
@@ -354,10 +354,9 @@ fine too. I ran into none of the issues that some other people seem to have. I w
 has to do with the kind of embedded PC motherboard that my system is using: remember that 
 there are different versions out there.
 
-Windows people should use something like 
+Windowe people should use something like 
 [HDD Raw Copy Tool](https://hddguru.com/software/HDD-Raw-Copy-Tool/)
-to make a copy, but I found it to be just as easy using the standard Linux disk
-utilities:
+to make a copy, but it's just as easy to use the standard Linux disk utilities.
 
 Copy the whole flash card contents to a file on your Linux machine like this:
 
@@ -372,8 +371,7 @@ $ sudo dd if=/dev/sdb of=flash_contents_orig.img bs=1M
 512483328 bytes (512 MB, 489 MiB) copied, 40.6726 s, 12.6 MB/s
 ```
 
-If you have a second flash card, copying the original contents there is just
-as easy:
+If you have a second flash card, copying the original contents to that one works the same way:
 
 ```sh
 $ sudo dd if=flash_contents_orig.img of=/dev/sdb bs=1M && sync
@@ -400,50 +398,43 @@ You're all set now to plug the old or the new CF card back into the S200.
 # Reset to Default Settings
 
 Chances are that your SyncServer was used before and that it didn't come in its
-default state. That's a problem when the passwords are different as well. 
+default state. That can be a problem, for example when the passwords are different 
+than the default one.
 
 The procedure to reset the device back to factory settings is described on page
-120 of the user manual.
+120 of the user manual. After opening the device, set jumper JP4 on the motherboard. 
+It's located at the bottom right of the motherboard, next the CR2032 lithium battery.
 
-After opening the device, set jumper JP4 on the motherboard. It's located
-at the bottom right of the motherboard, next the CR2032 lithium battery.
-
-The pitch of the jumper pins are smaller than the standard 0.1" so you can't use your
+The jumper pins have a smaller than usual 0.1" pitch so you can't use a
 standard jumper. I used logic analyzer grabbers to make the connection:
 
 ![Default settings jumper](/assets/s200/default_settings.jpg)
 
 Install the jumper connection, power up the device, wait for 100 seconds, power the 
-device back off, and remove the connection. When powered up, there won't be any message
+device back off, and remove the connection. When powered up, there won't be any messages
 or visual indications to tell you that defaults have been restored, you just have to 
 wait long enough.
-
-I performed the reset procedure after making a copy of the flash drive to make
-sure nothing was changed before I started messing with things.
-
-XXX Describe what happens under the hood.
 
 # Setting the IP Address
 
 Configuration of the SyncServer happens through a web interface, so the next
 step is to setup a network connection. The user guide recommends assigning
 static IP addresses instead of DHCP because *NTP associations and authentication
-may rely on static network addresses*, which is good advice because I was never able
+may rely on static network addresses*. This was good advice because I was never able
 to get the SyncServer to work with DHCP...
 
 While there are 3 LAN ports, only port 1 can be used for web management. You'll need
-to set the IP address, the gateway address mask, and the gateway addresses. I used the
-following settings, because that's how my home is configured:
+to set the IP address, the gateway address mask, and the gateway addresses through the
+front panel. I used the following settings, because that's how my home is configured:
 
 * IP address: 192.168.1.201
 * Gateway address mask: 255.255.255.0
 * Gateway IP address: 192.168.1.1
 
-You configure these settings through the front panel. Values for your network may be
-different. 
+Values for your network may be different. 
 
 If your home network uses DHCP for all other devices, it's best to tell your router
-to exclude the static IP address from the list of dynamically assignable IP addresses.
+to exclude the chosen static IP address from the list of dynamically assignable IP addresses.
 I explain in 
 [my HP 1670G blog post](/2023/12/26/Controlling-an-HP-1670G-with-Your-Linux-PC-X-Server.html#reserving-a-fixed-ip-address-for-the-logic-analyzer)
 how to this with an Asus router.
@@ -451,7 +442,7 @@ how to this with an Asus router.
 Once LAN port 1 has been enabled an configured, plug in a network cable. The network
 LED on the front panel of the device should turn green.
 
-If all went well, you'll be able to ping the SyncServer from your host machine:
+If all went well, you can now ping the SyncServer from your host machine:
 
 ```sh
 ping 192.168.1.201
