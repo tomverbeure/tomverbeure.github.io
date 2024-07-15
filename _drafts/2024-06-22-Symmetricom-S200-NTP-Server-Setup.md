@@ -109,7 +109,7 @@ through the GPS antenna connector, but Symmetricom S200 supplies 12V!
 Check out [my earlier blog post](/2024/03/23/Symmetricom-58532A-Power-Supply-Modification.html) 
 for more information.
 
-![Voltage present on S200 antenna connector](/assets/s58532a/s200_output_voltage.jpg)
+![Voltage present on S200 antenna connector](/assets/s200/s200_output_voltage.jpg)
 
 # The SyncServer S200 Outside and Inside
 
@@ -512,6 +512,10 @@ If against the general advice, you still decide to use DHCP, here are some notes
 
 # Accessing the Web Interface
 
+*Going forward, most web interface screenshot will show a header that says "SyncServer
+S250" instead of "S200". Modding the device to an S250 is something that will be discussed
+in a future blog post.*
+
 With your browser, you should now be able to access the web interface by going to 
 IP address that you assigned:
 
@@ -625,7 +629,7 @@ sync source is NTP and that the hardware clock status is "Locked".
 On a S200 you will only see the "GPS Input Status - Unlocked", there won't be any IRIG,
 1 PPS or 10 MHz input status. Those are S250 features that will be unlocked in a later blog post.
 
-# A Complicated Power Hungry Clock
+# A Complicated Power Hungry Clock with a Terrible 10MHz Output
 
 All that's left now to display the correct local time is to set the right time zone.
 You can do this under "Timing" -> "Time Zone".
@@ -637,11 +641,34 @@ living room clock:
 
 It's power hungry too: mine pulls roughly 19W from the power socket.
 
+But what about the 10MHz output? After booting up the S200 when the device is not yet
+locked to NTP, the Vector OCXO is free-running with a frequency of 9,999,993MHz, an
+error of 7Hz[^2] which makes it unusable for the lab.
+
+One would expect this error number to go down when the device is locked to NTP, a bad
+time reference is better than no reference at all, but that's not the case: as soon as
+the device locked to NTP, the 10MHz output locked at 10,000,095Hz. The error increased with
+an order of magnitude! 
+
+
+However, since NTP is part of stratum hierarchy, the time should average
+out to 10MHz, and indeed, the behavior was bimodal: after around 20 minutes, the 10MHz output frequency
+switches to 9,999,001Hz, which doesn't quite average to 10MHz, but that's because the frequency
+counter was connected to a non-disciplined reference clock.
+
+For the SyncServer to be usable as a lab timing reference, it clearly needs that GPS input.
+
+It will also be interesting to check the hold-over behavior of the OCXO after it was first locked
+to the GPS system.
+
+
+[^2]: This number will be different for your unit.
+
 # Coming Up: Make the S200 Lock to GPS
 
 In the next blog post, I'll describe how I was able to make the S200 lock at GPS satellites
 which makes it a stratum 1 device. This took a lot of work and designing an interposer PCB
-to work around the GPS WNRO issue. Stay tunes!
+to work around the GPS WNRO issue. Stay tuned!
 
 
 # References
