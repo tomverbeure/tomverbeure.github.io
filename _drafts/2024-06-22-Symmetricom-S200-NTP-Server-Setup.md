@@ -650,11 +650,14 @@ time reference is better than no reference at all, but that's not the case: as s
 the device locked to NTP, the 10MHz output locked at 10,000,095Hz. The error increased with
 an order of magnitude! 
 
+![Frequency 10,000,095 Hz](/assets/s200/freq_10000095.jpg)
 
 However, since NTP is part of stratum hierarchy, the time should average
 out to 10MHz, and indeed, the behavior was bimodal: after around 20 minutes, the 10MHz output frequency
 switches to 9,999,001Hz, which doesn't quite average to 10MHz, but that's because the frequency
 counter was connected to a non-disciplined reference clock.
+
+![Frequency 999,901 Hz](/assets/s200/freq_9999901.jpg)
 
 For the SyncServer to be usable as a lab timing reference, it clearly needs that GPS input.
 
