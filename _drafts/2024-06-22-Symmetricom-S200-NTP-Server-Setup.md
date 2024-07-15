@@ -182,8 +182,7 @@ We are primarily interested in the 10MHz and 1PPS outputs, of course.
 ![Probe on 10MHz output](/assets/s200/probe_on_10MHz_output.jpg)
 
 The BNC connectors may be unpopulated, but the driving circuit is not. When you probe
-the hole for the 10MHz output, you get this sorry excuse of what's supposed to be a
-sine wave:
+the hole for the 10MHz output, you get this sorry excuse of sine wave:
 
 ![10MHz signal on BNC hole](/assets/s200/10MHz_output.png)
 
@@ -191,27 +190,27 @@ There's also a 50% duty cycle 1PPS signal present on the other BNC footprint.
 
 # Installing the Missing BNC Connectors
 
-The first step is to install the missing BNC connectors. The connectors themselves
-are [Amphenol RF 031-6577](https://www.amphenolrf.com/031-6577.html). They are
-expensive: I got 3 of them for [$17.23 a piece from Mouser](https://www.mouser.com/ProductDetail/523-31-6577).
+The first step is to install the missing BNC connectors. They are
+are expensive [Amphenol RF 031-6577](https://www.amphenolrf.com/031-6577.html). I got 3 of them for 
+[$17.23 a piece from Mouser](https://www.mouser.com/ProductDetail/523-31-6577).
 Chances are that you'll never use the IRIG port, so you can make do with only 2 connectors
 to save yourself some money.
 
 ![Amphenol RF 031-6577 connector](/assets/s200/amphenol_bnc_connector.jpg)
 
-You'll need to remove the whole main PCB from the case, which is a matter of
+You need to remove the whole main PCB from the case, which is a matter of
 removing all the screws and some easy to disconnect cables and then taking it out. 
-The PCB rests on a bunch of spacers for the screws. When you slide the PCB out, you need 
-to be very careful to not scrape the bottom of the PCB against these spacers!
+The PCB rests on a bunch of spacers for the screws. When you slide the PCB out, be very careful 
+to not scrape the bottom of the PCB against these spacers!
 
-Next up is opening up the covered holes. The plastic that covers these holes is very sturdy. 
-I used a box cutter to remove the plastic and it took quite a bit of time to do so. 
+Next up is opening up the covered holes. The plastic that covers these holes is very sturdy. It
+took quite a bit of time to open them up with a box cutter.
 
 ![6 covered BNC holes](/assets/s200/S200_6_covered_holes.jpg)
 
 The holes are not perfectly round: they have a flat section at the top. Open up the holes as 
 much as possible because the BNC connectors will have to go through them during reassembly and 
-want this to go as smoothly without putting strain on the PCB.
+you want this to go smoothly without putting strain on the PCB.
 
 ![6 opened-up BNC holes](/assets/s200/S200_6_uncovered_holes.jpg)
 
@@ -242,11 +241,11 @@ to do, but it took many hours before I got there. There were 3 reasons for that:
 * the default IP addresses for the  Symmetricom NTP servers aren't operational anymore. 
   But that wasn't clear in the status screen.
 * when I tried alternative NTP servers, they couldn't be found because I hadn't
-  configured DNS servers.
+  configured any DNS servers.
 * configuring the SyncServer to get its IP using DHCP is a bit of nightmare.
 
-My focus was first on the GPS and then the NTP part, but I'll do things the
-opposite way here to allow you to get somehwere without the kind of hardware hacking 
+My focus was first on the GPS and then the NTP part, but here I'll do things in the
+opposite order so that you get somehwere without the kind of hardware hacking 
 that I ended up doing.
 
 # Opening up the SyncServer S200
@@ -282,7 +281,7 @@ $ df
 /dev/sdb6         173489     69986     94255  43% /media/tom/_fsroot2
 ```
 
-In my case, the drive is mounted on `/dev/sdb` but will probably be different for you.
+In my case, the drive is mounted on `/dev/sdb` but this will probably be different for you.
 
 The flash card has 4 different partitions. I did some digging to understand how 
 the system works.
@@ -380,21 +379,20 @@ useful to have a second one to swap back and forth between different flash cards
 experimenting.
 
 
-There is a lot of chatter in the EEVBlog forum about which type of flash card does or 
-doesn't work. There's concensus that it must a CompactFlash card with *fixed disk PIO*
-instead of *removable DMA* support. It's also good to use one that is an *industrial*
-type because those have long-life SLC-type flash memory chips that allow more read-write
-operations and a higher temperature range, but that's where things end. Some people aren't able 
-even make a 512MB card work. Others claim that their 512MB card worked, but that larger capacity 
-ones didn't.
+There is a plenty chatter in the EEVBlog forum about which type of flash card does or 
+doesn't work. It must a CompactFlash card with *fixed disk PIO* instead of *removable DMA* support
+and it's also good to use one that is an *industrial* type because those have long-life SLC-type 
+flash memory chips that allow more read-write operations and a higher temperature range, but that's 
+where the concensus ends. Some people aren't able even make a 512MB card work. Others claim that 
+their 512MB card worked, but that larger capacity ones didn't.
 
 I bought [this 512MB card](https://www.amazon.com/gp/product/B07HL5F1VX on Amazon)
-and it worked fine. This [1GB one](https://www.amazon.com/gp/product/B07HL5F1VX) worked
+and it worked fine, and this [1GB one](https://www.amazon.com/gp/product/B07HL5F1VX) worked
 fine too. I ran into none of the issues that some other people seem to have. I wonder if it 
 has to do with the kind of embedded PC motherboard that my system is using: remember that 
 there are different versions out there.
 
-Windowe people should use something like 
+Windows people should use something like 
 [HDD Raw Copy Tool](https://hddguru.com/software/HDD-Raw-Copy-Tool/)
 to make a copy, but it's just as easy to use the standard Linux disk utilities.
 
