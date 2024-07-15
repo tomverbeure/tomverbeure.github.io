@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Setting Up a Symmetricom SyncServer S200 Network Time Protocol Server
-date:   2024-06-22 00:00:00 -1000
+date:   2024-07-14 00:00:00 -1000
 categories:
 ---
 
