@@ -10,51 +10,6 @@ categories:
 
 # Introduction
 
-
-# Installing the Missing BNC Connectors
-
-The first step is to install the missing BNC connectors. The connectors themselves
-are [Amphenol RF 031-6577](https://www.amphenolrf.com/031-6577.html). They are
-expensive: I got 3 of them for [$17.23 a piece from Mouser](https://www.mouser.com/ProductDetail/523-31-6577).
-Chances are that you'll never use the IRIG port, so you can make do with only 2 connectors
-to save yourself some money.
-
-![Amphenol RF 031-6577 connector](/assets/s200/amphenol_bnc_connector.jpg)
-
-You'll need to remove the whole main PCB from the case, which is a matter of
-removing all the screws and some easy to disconnect cables and then taking it out. 
-The PCB rests on a bunch of spacers for the screws. When you slide the PCB out, you need 
-to be very careful to not scrape the bottom of the PCB against these spacers!
-
-Next up is opening up the covered holes. The plastic that covers these holes is quite
-strong. I used a box cutter to remove the plastic and it took quite a bit of time to do
-so. 
-
-![6 covered BNC holes](/assets/s200/S200_6_covered_holes.jpg)
-
-The holes are not perfectly round: they have a flat section at the top. You need to
-open up the holes as much as possible because during reassembly the BNC connectors will
-have to go through them and want this to go as smoothly without putting a lot of strain
-on the PCB.
-
-![6 opened-up BNC holes](/assets/s200/S200_6_uncovered_holes.jpg)
-
-The end result isn't commercial product quality, but it's good enough for something
-that will stay hidden at the back of the instrument.
-
-Installing the BNC connectors is easy: plug them in and solder them down...
-
-![BNC connectors installed](/assets/s200/S200_bnc_connectors_installed.jpg)
-
-Due to the imperfectly cut BNC holes, installing the main PCB back into the chassis will
-be harder than removing it, so, again, be careful about those spacers at the bottom of the
-case to prevent damaging the PCB!
-
-The end result looks clean enough:
-
-![S200 backside with new connectors](/assets/s200/S200_backside_with_new_connectors.jpg)
-
-
 # The GPS Week Number Rollover Issue
 
 The original GPS system used a 10-bit number to count the number of weeks, starting from

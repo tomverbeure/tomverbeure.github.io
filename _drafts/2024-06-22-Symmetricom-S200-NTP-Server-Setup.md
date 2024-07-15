@@ -155,9 +155,6 @@ of room for a Rubidium atomic clock module. It should be possible to
 [upgrade my S200 with a Rubidium standard](https://www.eevblog.com/forum/metrology/symmetricom-s200-teardownupgrade-to-s250/msg2764532/#msg2764532),
 but I didn't try that.
 
-XXX the EEVblog forum post has a ton of other useful information!
-
-
 At the top left sits a Furuno GT-8031 GPS module that is compatible with
 [Motorola OnCore M12 modules](/assets/s200/Motorola Oncore M12.pdf). 
 There are a bunch of connectors, and, very important, 3 unpopulated connector footprints. 
@@ -191,6 +188,49 @@ sine wave:
 ![10MHz signal on BNC hole](/assets/s200/10MHz_output.png)
 
 There's also a 50% duty cycle 1PPS signal present on the other BNC footprint.
+
+# Installing the Missing BNC Connectors
+
+The first step is to install the missing BNC connectors. The connectors themselves
+are [Amphenol RF 031-6577](https://www.amphenolrf.com/031-6577.html). They are
+expensive: I got 3 of them for [$17.23 a piece from Mouser](https://www.mouser.com/ProductDetail/523-31-6577).
+Chances are that you'll never use the IRIG port, so you can make do with only 2 connectors
+to save yourself some money.
+
+![Amphenol RF 031-6577 connector](/assets/s200/amphenol_bnc_connector.jpg)
+
+You'll need to remove the whole main PCB from the case, which is a matter of
+removing all the screws and some easy to disconnect cables and then taking it out. 
+The PCB rests on a bunch of spacers for the screws. When you slide the PCB out, you need 
+to be very careful to not scrape the bottom of the PCB against these spacers!
+
+Next up is opening up the covered holes. The plastic that covers these holes is very sturdy. 
+I used a box cutter to remove the plastic and it took quite a bit of time to do so. 
+
+![6 covered BNC holes](/assets/s200/S200_6_covered_holes.jpg)
+
+The holes are not perfectly round: they have a flat section at the top. Open up the holes as 
+much as possible because the BNC connectors will have to go through them during reassembly and 
+want this to go as smoothly without putting strain on the PCB.
+
+![6 opened-up BNC holes](/assets/s200/S200_6_uncovered_holes.jpg)
+
+The end result isn't commercial product quality, but it's good enough for something
+that will stay hidden at the back of the instrument.
+
+Installing the BNC connectors is easy: plug them in and solder them down...
+
+![BNC connectors installed](/assets/s200/S200_bnc_connectors_installed.jpg)
+
+Due to the imperfectly cut BNC holes, installing the main PCB back into the chassis will
+be harder than removing it, so, again, be careful about those spacers at the bottom of the
+case to prevent damaging the PCB!
+
+The end result looks clean enough:
+
+![S200 backside with new connectors](/assets/s200/S200_backside_with_new_connectors.jpg)
+
+
 
 # Setting Up a SyncServer S200 from Scratch
 
@@ -475,14 +515,14 @@ If against the general advice, you still decide to use DHCP, here are some notes
 With your browser, you should now be able to access the web interface by going to 
 IP address that you assigned:
 
-XXX show log-in screen while logged out
+![S200 Log-in screen](/assets/s200/screenshots/S250_login_screen.png)
 
 When using default settings, the following credentials are active:
 
 * Username: admin
 * Password: symmetricom
 
-![Web interface after logging in](/assets/s200/S200_general_status_unlocked.png)
+![Web interface after logging in](/assets/s200/screenshots/S200_general_status_unlocked.png)
 
 # DNS Configuration
 
@@ -493,7 +533,9 @@ a hostname instead of an IP address.
 Using the web interface, go to "NETWORK" and then the "Ethernet" tab, and then
 "Add a DNS Server". I'm using Comcast/Xfinity, which has a DNS server at
 address 75.75.75.75, so that what's I used. You'll need to find the appropriate
-DNS server for your case.
+DNS server for your case, or you can use 
+[Google's Public DNS service](https://developers.google.com/speed/public-dns) at
+address 8.8.8.8.
 
 ![DNS server configured](/assets/s200/screenshots/S250_Network_Ethernet_green.png)
 
@@ -501,18 +543,18 @@ If you set up the DNS server correctly, you should now be able to ping public
 Internet servers with the "Ping" tab. For the last 35 years, I've used 
 "www.yahoo.com" as my ping testing address.
 
-XXX screenshot testing www.yahoo.com
+![Network Ping](/assets/s200/screenshots/S250_Network_Ping.png)
 
 # External NTP Server Configuration
 
 The default settings of my SyncServer make it use static IP addresses 
 69.25.96.11, 69.25.96.12, and 69.25.96.14 for external NTP requests.
-Symmetricom used to have NTP servers there, but they are not operational anymore!
+Symmetricom used to have NTP servers there, but they are not operational anymore.
 
 You must replace these static IP addresses by other NTP servers. A popular
 option is [ntp.org](http://ntp.org) which offers a free NTP server service. Another
-alternative are the NTP servers from the NIST, the National Institute for Standards
-and Technology (XXX check name). Or do like I did, and use both!
+alternative are the [NTP servers from NIST](https://tf.nist.gov/tf-cgi/servers.cgi), the 
+National Institute for Standards and Technology. Or do like I did, and use both!
 
 For ntp.org, use the following addresses: `0.pool.ntp.org`, `1.pool.ntp.org`, `2.pool.ntp.org`,
 or `0.us.pool.ntp.org`, `1.us.pool.ntp.org`, `2.us.pool.ntp.org` if you want to force
@@ -522,20 +564,17 @@ Here is how you fill in the panel to add a server:
 
 ![NTP server configuration panel](/assets/s200/screenshots/S250_NTP_Config_setup_pool_servers.png)
 
-And here's what things look like after all servers were added:
+And here's how it looks like after all servers were added:
 
-![All external NTP servers panel](/assets/s200/screenshots/S250_NTP_Config_green.png)
+![All external NTP servers panel](/assets/s200/screenshots/S250_NTP_Config_all_pool_servers_green.png)
 
-Click "Restart" when all servers have been added.
-
-Check out the "NTP - Sysinfo" to verify that the SyncServer can successfully talk
-to the external servers:
+Click "Restart" when all servers have been added, and check out "NTP - Sysinfo" to verify that the 
+SyncServer can successfully talk to the external servers:
 
 ![All external NTP servers panel](/assets/s200/screenshots/S250_NTP_Assoc_green.png)
 
 The "St/Poll" columns shows the stratum level and polling time of the servers. In the
-example above, you can see how the hardware clock is still synchronizing, and 4
-NTP servers with stratum levels 1 and 2 are being polled. The stratum level will
+example above, 4 NTP servers with stratum levels 1 and 2 are being polled. The stratum level will
 vary because NTP.org rotates through a pool of servers with different levels.
 
 If there's a configuration issue, you'll see a stratum level of 16.
@@ -555,10 +594,8 @@ server 192.168.1.201, stratum 16, offset -0.019111, delay 0.02856
  4 Jun 23:20:32 ntpdate[230482]: no server suitable for synchronization found
 ```
 
-Note how initially, the SyncServer may report itself as an unsynchronized stratum 16 device. 
-This is because NTP server synchronization can take a bit of time.
-
-After around 15 minutes, you'll get this:
+Initially, the SyncServer may report itself as an unsynchronized stratum 16 device because NTP server 
+synchronization can take a bit of time, but after around 15 minutes, you'll get this:
 
 ```sh
 ntpdate  -q 192.168.1.201
@@ -575,13 +612,18 @@ nano-second level accuracy.
 
 ![Sync status yellow](/assets/s200/screenshots/S250_Status_General_yellow_sync_stratus2.png)
 
-Don't worry about the NTP LED not being constanstly green: it only light up when the SyncServer
-polls the external server.
+Don't worry about the NTP LED not being constanstly green: it only lights up when the SyncServer
+polls the external server and that only happens every some many seconds.
 
 On the front panel and on web interface under "STATUS -> Timing", you'll see that the current
 sync source is NTP and that the hardware clock status is "Locked".
 
 ![Front panel - NTP locked](/assets/s200/front_panel_ntp_locked.jpg)
+
+![Timing Status - NTP Locked](/assets/s200/screenshots/S250_Status_Timing_NTP_locked.png)
+
+On a S200 you will only see the "GPS Input Status - Unlocked", there won't be any IRIG,
+1 PPS or 10 MHz input status. Those are S250 features that will be unlocked in a later blog post.
 
 # A Complicated Power Hungry Clock
 
@@ -594,6 +636,12 @@ living room clock:
 ![Front panel - Clock](/assets/s200/front_panel_clock.jpg)
 
 It's power hungry too: mine pulls roughly 19W from the power socket.
+
+# Coming Up: Make the S200 Lock to GPS
+
+In the next blog post, I'll describe how I was able to make the S200 lock at GPS satellites
+which makes it a stratum 1 device. This took a lot of work and designing an interposer PCB
+to work around the GPS WNRO issue. Stay tunes!
 
 
 # References
