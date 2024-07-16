@@ -8,6 +8,32 @@ categories:
 * TOC
 {:toc}
 
+# Upgrading to an iLotus IL-GPS-0030-B Module
+
+The normal way to work around the week number rollover issue is to replace the GT-8031 with a different
+module that has a later rollover date. Over the years, people have used various solutions but
+these have in turn had their own rollover.
+
+I purchased an iLotus IL-GPS-0030-B as replacement module. They go for close to $100 on AliExpress.
+
+![GPS locked with new module](/assets/s200/GPS_locked_with_new_module.jpg)
+
+After replacing the GT-8031, the S200 enters into GPS Locked status, which is good, but after
+some more research (which I should have done before spending that kind of money on it!) I discovered 
+that it has a [rollover date of August 17, 2024](/assets/s200/M12M-2019-roll-over-and-base-dates-C.pdf):
+
+![IL-GPS-0030-B rollover date](/assets/s200/IL-GPS-0030-B rollover.png)
+
+But it gets worse: I snooped and decoded the serial data stream from the module to the 
+motherboard and I found that that my module already had its rollover event. 
+
+Still, one way or the other, the S200 was able to get into GPS Lock and the 10 MHz output clock 
+was nicely in sync with my [TM4313 GPSDO](/2023/07/09/TM4313-GPSDO-Teardown.html) which is a major
+improvement over the GT-8031.
+
+So there's contradicting information out there, but there's still the possibility that on August 17, 2024, 
+this expensive module will become a doorstop just the same. 
+
 # Various
 
 Notes:

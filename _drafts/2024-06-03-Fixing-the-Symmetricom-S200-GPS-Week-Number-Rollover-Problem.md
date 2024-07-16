@@ -1,7 +1,7 @@
 ---
 layout: post
 title: A Hardware Interposer to Fix the Symmetricom SyncServer S200 GPS Week Number Rollover Problem
-date:   2024-06-23 00:00:00 -1000
+date:   2024-07-16 00:00:00 -1000
 categories:
 ---
 
@@ -9,6 +9,59 @@ categories:
 {:toc}
 
 # Introduction
+
+In [my earlier blog post](/2024/07/14/Symmetricom-S200-NTP-Server-Setup.html),
+I wrote about how to set up a SyncServer S200 as a regular NTP server, and how to 
+install the backside BNC connectors to bring out the 10 MHz and 1PPS outputs. The
+ultimate goal is to use the SyncServer as a lab timing reference.
+
+However, at the end of that blog post, it's clear that NTP is not good enough to get
+a precise 10 MHz clock: the output frequency was off by almost 100Hz! 
+
+To get a more accurate output clock, you need to synchronize the SyncServer to the
+GPS system so that it becomes a GPS disciplined oscillator (GPSDO) and a stratum 1
+time keeping device.
+
+The S200 has a GPS antenna input and a GPS receiver module inside, so in theory this 
+should be a matter of connecting the right GPS antenna. But in practice it was simple
+at all. That's because the GPS module in the SyncServer S200 is so old that it suffers
+from the so-called Week Number Roll-Over problem.
+
+In this blog post, I'll discuss what the problem is all about, and a custom hardware
+solution that fixed the problem for me.
+
+# IMPORTANT: Use the Right GPS Antenna!
+
+Let me once again point out the importance of using the right GPS antenna to avoid damaging
+it permanently due to over-voltage.
+
+GPS antennas have active elements that amplify the received signal right at the point of reception
+before sending it down the cable to the GPS unit. Most antennas need 3.3V or 5V that is supplied
+through the GPS antenna connector, but Symmetricom S200 supplies 12V!
+
+**Make sure you are using a 12V GPS antenna!**
+
+Check out [my earlier blog post](/2024/03/23/Symmetricom-58532A-Power-Supply-Modification.html) 
+for more information.
+
+![Voltage present on S200 antenna connector](/assets/s200/s200_output_voltage.jpg)
+
+# The Problem: SyncServer Refuses to Lock to GPS
+
+When you connect a GPS antenna to a SyncServer in its original configuration, everything goes 
+fine initially. The front panel report the antenna connection as  "Good", the number of satellites 
+detected goes up, and the right location gets reported.
+
+![GPS sees satellites, but unlocked](/assets/s200/GPS_unlocked.jpg)
+
+But the most important "Status" field stays put at "Unlocked". This means that the SyncServer
+refuses to lock its internal clock to the GPS unit.
+
+This issue has been discussed to death in a number of EEVblog forum threads, but conclusion is always
+the same: the Furuno GT-8031 GPS module suffers from the GPS Week Number Roll-Over (WNRO) issue and nothing
+can be done about it other than replacing the GPS module with an after-market replacement one.
+
+Let's first see what the WNRO issue is all about.
 
 # The GPS Week Number Rollover Issue
 
@@ -20,18 +73,18 @@ next one will be on November 20, 2038. Check out
 some more information.
 
 GPS module manufacturers have dealt with the issue is by using a "dynamic base year" or variable 
-pivot year. When a device is, say, manufactured in 2016, 3 years before the 2019 rollover, it 
-assumes that all week numbers higher than 868, 1024-3*52, are for years 2016 to 2019, and that 
-numbers from 0 to 867 are for the years 2019 and later.
+pivot year. When a device is, say, manufactured in 2012, 7 years before the 2019 rollover, it 
+assumes that all week numbers higher than 697 are for years 2012 to 2019, and that numbers from 0 to 
+697 are for the years 2019 and later.
 
 ![Dynamic date rollover graph](/assets/s200/dynamic_rollover_graph.png)
 
-Such a device will work fine for the 19.7 years from 2016 until 2035.
+Such a device will work fine for the 19.7 years from 2012 until 2032.
 
-With a bit of non-volatile storage, it is possible to make a GPS unit robust against this kind of 
+With just a few bits of non-volatile storage, it is possible to make a GPS unit robust against this kind of 
 rollover: if the last seen date by the GPS unit was 2019 and suddenly it sees a date of 1999, 
-it can infer that there was a rollover and record that in the storage, but many modules don't do 
-that. The only way to fix the issue is to update the module firmware.
+it can infer that there was a rollover and record in the storage that the next GPS epoch has started, 
+but many modules don't do that. The only way to fix the issue is to update the module firmware.
 
 Many SyncServer S2xx devices shipped with a Motorola M12 compatible module that is based on a
 [Furuno GT-8031](https://www.furuno.com/en/products/gnss-module/GT-8031) 
@@ -41,46 +94,30 @@ but there is no SyncServer S200 firmware that supports that. Check out this
 [Furuno technical document](https://furuno.ent.box.com/s/fva29wqbcioqvd6mqxn5rt976dkaxudj) 
 for more the rollover details.
 
-Like all GPSDOs, the SyncServer S200 primarily relies on the 1PPS output that comes out of the 
-module to lock its internal 10MHzthe  oscillator to the GPS system, and this 1PPS signal is still present on
-the GT-8031 of my unit. But there is something in the SyncServer firmware that depends on more than just 
-the 1PPS signal because my S200 refuses to enter into "GPS Locked" mode, and the 10MHz oscillator
-stays in free-running mode at the miserable frequency of roughly 9,999,993 Hz.
+Like all GPSDOs, the SyncServer S200 relies on the 1PPS output that comes out of the 
+module to drive a PLL that lock the internal 10 MHz oscillator to the GPS system. This 1PPS signal 
+is still present on the GT-8031 of my unit, and I verified with an oscilloscope that it matches
+the 1PPS output of [my TM4313 GPSDO](/2023/07/09/TM4313-GPSDO-Teardown.html) as soon as it sees
+a copule of satellites.
+
+But there is something in the SyncServer firmware that depends on more than just the 1PPS signal 
+because my S200 refuses to enter into "GPS Locked" mode, and the 10 MHz oscillator stays in free-running 
+mode at the miserable frequency of roughly 9,999,993 Hz.
 
 ![Unlocked output frequency](/assets/s200/unlocked_output_frequency.jpg)
 
-# Upgrading to an iLotus IL-GPS-0030-B Module
-
-The normal way to work around the week number rollover issue is to replace the GT-8031 with a different
-module that has a later rollover date. Over the years, people have used various solutions but
-these have in turn had their own rollover.
-
-I purchased an iLotus IL-GPS-0030-B as replacement module. They go for close to $100 on AliExpress.
-
-![GPS locked with new module](/assets/s200/GPS_locked_with_new_module.jpg)
-
-After replacing the GT-8031, the S200 enters into GPS Locked status, which is good, but after
-some more research (which I should have done before spending that kind of money on it!) I discovered 
-that it has a [rollover date of August 17, 2024](/assets/s200/M12M-2019-roll-over-and-base-dates-C.pdf):
-
-![IL-GPS-0030-B rollover date](/assets/s200/IL-GPS-0030-B rollover.png)
-
-But it gets worse: I snooped and decoded the serial data stream from the module to the 
-motherboard and I found that that my module already had its rollover event. 
-
-Still, one way or the other, the S200 was able to get into GPS Lock and the 10MHz output clock 
-was nicely in sync with my [TM4313 GPSDO](/2023/07/09/TM4313-GPSDO-Teardown.html) which is a major
-improvement over the GT-8031.
-
-So there's contradicting information out there, but there's still the possibility that on August 17, 2024, 
-this expensive module will become a doorstop just the same. 
 
 # Making the Furuno GT-8031 Work Again
 
-There are other aftermarket replacement modules out there with a rollover date that is far into the
-future, but they are priced at $240. Instead, I wondered if it's possible to make the GT-8031 or 
-IL-GPS-0030-B send the right date to the S200 with a hardware interposer that sits between the module 
-and motherboard. There were 2 options:
+There are aftermarket replacement modules out there with a rollover date that is far into the
+future, but they are priced pretty high. There's the iLotus IL-GPS-0030-B Module which goes for
+around $100 in AliExpress but that one has a rollover date on August 2024, and other modules
+go as high as $240. The reason for these high prices is because these modules don't use a $5 
+location GPS chip but chips that are specialized for accurate time keeping, such as the
+[u-blox NEO/LEA series](https://www.u-blox.com/en/product/neolea-m8t-series).
+
+Instead, I wondered if it's possible to make the GT-8031 send the right date to the S200 with a 
+hardware interposer that sits between the module and motherboard. There were 2 options:
 
 * intercept the date sent from the GPS module, correct it, and transmit it to the motherboard
 
@@ -192,7 +229,7 @@ I have.
 
 # The Result
 
-The video below shows the 10MHz output of the S200 being measured by a frequency counter that
+The video below shows the 10 MHz output of the S200 being measured by a frequency counter that
 uses a [calibrated stand-alone frequency standard](/2024/04/06/Guide-Tech-GT300-Frequency-Reference-Teardown.html)
 as reference clock.
 
