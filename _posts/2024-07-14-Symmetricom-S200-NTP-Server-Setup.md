@@ -37,7 +37,7 @@ SyncServer S200 with accessories for the ridiculously low price of $60.
 I've never left the flea market more excited.
 
 I didn't really know what a network time server does, but since it said *GPS*
-time server, I hoped that it could work as a GPSDO with a 10MHz reference clock and a 1 
+time server, I hoped that it could work as a GPSDO with a 10 MHz reference clock and a 1 
 pulse-per-second (1PPS) synchronization output. But even if not, I was sure that I'd learn 
 something new, and worst case I'd reuse the beautiful rackmount case for some future project.
 
@@ -48,7 +48,7 @@ A bigger problem was an issue with the GPS module due to the
 problem.
 
 In this and upcoming blog posts, I go through the steps required to bring a mostly useless
-S200 back to life, how to add the connectors for 10MHz and 1PPS output, which allowed it
+S200 back to life, how to add the connectors for 10 MHz and 1PPS outputs, which allowed it
 to do double duty as a GPSDO, and how to convert it into a full S250.
 
 Some of what is described here is based on discussions on EEVblog forum such as 
@@ -137,8 +137,8 @@ Let's see what's inside:
 *Click to enlarge*
 
 Under the heatshink with the blue heat transfer pad sits an off-the-shelf embedded
-PC motherboard with a 500MHz AMD Geode x86 CPU with 256MB of DRAM. Not all SyncServer S200 
-models use the same motherboard, some of them have a VIA Eden ESP 400MHz processor. Using the
+PC motherboard with a 500 MHz AMD Geode x86 CPU with 256MB of DRAM. Not all SyncServer S200 
+models use the same motherboard, some of them have a VIA Eden ESP 400 MHz processor. Using the
 front panel RS-232 serial port, I recorded this [`boot.log`](/assets/s200/boot.log) file that contains 
 some low level details of the system.
 The PC is running [MontaVista Linux](https://en.wikipedia.org/wiki/MontaVista#Linux), 
@@ -149,7 +149,7 @@ for the VFD and the buttons.
 
 On the right side of the main PCB we can see a Vectron OCXO, the same brand as the huge
 OCXO that you can find in the [GT300 frequency standard](/2024/04/06/Guide-Tech-GT300-Frequency-Reference-Teardown.html) 
-of my home lab. It creates the 10MHz stable clock that's used for
+of my home lab. It creates the 10 MHz stable clock that's used for
 time keeping. A 512MB CompactFlash card contains the operating system. There's still plenty 
 of room for a Rubidium atomic clock module. It should be possible to 
 [upgrade my S200 with a Rubidium standard](https://www.eevblog.com/forum/metrology/symmetricom-s200-teardownupgrade-to-s250/msg2764532/#msg2764532),
@@ -173,18 +173,18 @@ Let's cut to the chase and show the backside of the next model in the SyncServer
 
 Those 6 holes holes are used for the input and output for the following 3 signals:
 
-* 10MHz
+* 10 MHz
 * 1PPS
 * IRIG
 
-We are primarily interested in the 10MHz and 1PPS outputs, of course.
+We are primarily interested in the 10 MHz and 1PPS outputs, of course.
 
-![Probe on 10MHz output](/assets/s200/probe_on_10MHz_output.jpg)
+![Probe on 10 MHz output](/assets/s200/probe_on_10MHz_output.jpg)
 
 The BNC connectors may be unpopulated, but the driving circuit is not. When you probe
-the hole for the 10MHz output, you get this sorry excuse of sine wave:
+the hole for the 10 MHz output, you get this sorry excuse of sine wave:
 
-![10MHz signal on BNC hole](/assets/s200/10MHz_output.png)
+![10 MHz signal on BNC hole](/assets/s200/10MHz_output.png)
 
 There's also a 50% duty cycle 1PPS signal present on the other BNC footprint.
 
@@ -627,7 +627,7 @@ sync source is NTP and that the hardware clock status is "Locked".
 On a S200 you will only see the "GPS Input Status - Unlocked", there won't be any IRIG,
 1 PPS or 10 MHz input status. Those are S250 features that will be unlocked in a later blog post.
 
-# A Complicated Power Hungry Clock with a Terrible 10MHz Output
+# A Complicated Power Hungry Clock with a Terrible 10 MHz Output
 
 All that's left now to display the correct local time is to set the right time zone.
 You can do this under "Timing" -> "Time Zone".
@@ -639,20 +639,22 @@ living room clock:
 
 It's power hungry too: mine pulls roughly 19W from the power socket.
 
-But what about the 10MHz output? After booting up the S200 when the device is not yet
-locked to NTP, the Vector OCXO is free-running with a frequency of 9,999,993MHz, an
+But what about the 10 MHz output? After booting up the S200 when the device is not yet
+locked to NTP, the Vector OCXO is free-running with a frequency of 9,999,993 Hz, an
 error of 7Hz[^2] which makes it unusable for the lab.
+
+![Frequency 9,999,993Hz](/assets/s200/unlocked_output_frequency.jpg)
 
 One would expect this error number to go down when the device is locked to NTP, a bad
 time reference is better than no reference at all, but that's not the case: as soon as
-the device locked to NTP, the 10MHz output locked at 10,000,095Hz. The error increased with
+the device locked to NTP, the 10 MHz output locked at 10,000,095 Hz. The error increased with
 an order of magnitude! 
 
 ![Frequency 10,000,095 Hz](/assets/s200/freq_10000095.jpg)
 
 However, since NTP is part of stratum hierarchy, the time should average
-out to 10MHz, and indeed, the behavior was bimodal: after around 20 minutes, the 10MHz output frequency
-switches to 9,999,001Hz, which doesn't quite average to 10MHz, but that's because the frequency
+out to 10 MHz, and indeed, the behavior was bimodal: after around 20 minutes, the 10 MHz output frequency
+switches to 9,999,001 Hz, which doesn't quite average to 10 MHz, but that's because the frequency
 counter was connected to a non-disciplined reference clock.
 
 ![Frequency 999,901 Hz](/assets/s200/freq_9999901.jpg)
