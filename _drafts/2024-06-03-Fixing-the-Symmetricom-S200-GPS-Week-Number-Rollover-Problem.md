@@ -12,23 +12,23 @@ categories:
 
 In [my earlier blog post](/2024/07/14/Symmetricom-S200-NTP-Server-Setup.html),
 I wrote about how to set up a SyncServer S200 as a regular NTP server, and how to 
-install the backside BNC connectors to bring out the 10 MHz and 1PPS outputs. The
-ultimate goal is to use the SyncServer as a lab timing reference.
+install the backside BNC connectors to bring out the 10 MHz and 1PPS outputs. 
 
-However, at the end of that blog post, it's clear that NTP is not good enough to get
-a precise 10 MHz clock: the output frequency was off by almost 100Hz! 
+The ultimate goal is to use the SyncServer as a lab timing reference, but at the end 
+of that blog post, it's clear that using NTP alone is not good enough to get a precise 10 MHz clock: 
+the output frequency was off by almost 100Hz! 
 
 To get a more accurate output clock, you need to synchronize the SyncServer to the
-GPS system so that it becomes a GPS disciplined oscillator (GPSDO) and a stratum 1
-time keeping device.
+GPS system so that it becomes a [GPS disciplined oscillator (GPSDO)](2024-06-03-Fixing-the-Symmetricom-S200-GPS-Week-Number-Rollover-Problem.md) 
+and a stratum 1 time keeping device.
 
 The S200 has a GPS antenna input and a GPS receiver module inside, so in theory this 
-should be a matter of connecting the right GPS antenna. But in practice it was simple
-at all. That's because the GPS module in the SyncServer S200 is so old that it suffers
-from the so-called Week Number Roll-Over problem.
+should be a matter of connecting the right GPS antenna. But in practice it wasn't simple
+at all because the GPS module in the SyncServer S200 is so old that it suffers from the so-called 
+[Week Number Roll-Over (WNRO) problem](https://en.wikipedia.org/wiki/GPS_week_number_rollover).
 
-In this blog post, I'll discuss what the problem is all about, and a custom hardware
-solution that fixed the problem for me.
+In this blog post, I'll discuss what the WNRO problem is all about and show my custom hardware
+solution that fixed the problem.
 
 # IMPORTANT: Use the Right GPS Antenna!
 
@@ -48,43 +48,42 @@ for more information.
 
 # The Problem: SyncServer Refuses to Lock to GPS
 
-When you connect a GPS antenna to a SyncServer in its original configuration, everything goes 
-fine initially. The front panel report the antenna connection as  "Good", the number of satellites 
-detected goes up, and the right location gets reported.
+When you connect a GPS antenna to a SyncServer in its original configuration, everything seems to go 
+fine initially. The front panel reports the antenna connection as  "Good", a few minutes later the 
+number of satellites detected goes up, and the right location gets reported.
 
 ![GPS sees satellites, but unlocked](/assets/s200/GPS_unlocked.jpg)
 
-But the most important "Status" field stays put at "Unlocked". This means that the SyncServer
+But the most important "Status" field remains stuck in the "Unlocked" state which means that the SyncServer
 refuses to lock its internal clock to the GPS unit.
 
 This issue has been discussed to death in a number of EEVblog forum threads, but conclusion is always
 the same: the Furuno GT-8031 GPS module suffers from the GPS Week Number Roll-Over (WNRO) issue and nothing
 can be done about it other than replacing the GPS module with an after-market replacement one.
 
-Let's first see what the WNRO issue is all about.
-
 # The GPS Week Number Rollover Issue
 
-The original GPS system used a 10-bit number to count the number of weeks, starting from
+The original GPS system used a 10-bit number to count the number of weeks that have elapsed since
 January 6, 1980. Every 19.7 years, this number rolls over from 1023 back to 0. 
 The first rollover happened on August 21, 1999, the second on April 6, 2019, and the
 next one will be on November 20, 2038. Check out 
 [this US Naval Observatory presention](/assets/s200/usno_powers.pdf) for
 some more information.
 
-GPS module manufacturers have dealt with the issue is by using a "dynamic base year" or variable 
-pivot year. When a device is, say, manufactured in 2012, 7 years before the 2019 rollover, it 
-assumes that all week numbers higher than 697 are for years 2012 to 2019, and that numbers from 0 to 
-697 are for the years 2019 and later.
+GPS module manufacturers have dealt with the issue is by using a *dynamic base year* or variable 
+pivot year. Let's say that a device is designed in at the start of 2013 during week 697 of the 19.7 year 
+epoch that started in 1999. The device then assumes that all week numbers higher than 697 are for years 2013 
+to 2019, and that numbers from 0 to 697 are for the years 2019 and later.
 
 ![Dynamic date rollover graph](/assets/s200/dynamic_rollover_graph.png)
 
-Such a device will work fine for the 19.7 years from 2012 until 2032.
+Such a device will work fine for the 19.7 years from 2013 until 2032.
 
-With just a few bits of non-volatile storage, it is possible to make a GPS unit robust against this kind of 
-rollover: if the last seen date by the GPS unit was 2019 and suddenly it sees a date of 1999, 
-it can infer that there was a rollover and record in the storage that the next GPS epoch has started, 
-but many modules don't do that. The only way to fix the issue is to update the module firmware.
+And with just a few bits of non-volatile storage it is even possible to make a GPS unit robust against 
+this kind of rollover forever: if the last seen date by the GPS unit was 2019 and suddenly it sees a 
+date of 1999, it can infer that there was a rollover and record in the storage that the next GPS epoch 
+has started. Unfortunately many modules don't do that. The only way to fix the issue is to either update the 
+module firmware or for some external device to tell the GPS module about the current GPS epoch.
 
 Many SyncServer S2xx devices shipped with a Motorola M12 compatible module that is based on a
 [Furuno GT-8031](https://www.furuno.com/en/products/gnss-module/GT-8031) 
@@ -94,11 +93,22 @@ but there is no SyncServer S200 firmware that supports that. Check out this
 [Furuno technical document](https://furuno.ent.box.com/s/fva29wqbcioqvd6mqxn5rt976dkaxudj) 
 for more the rollover details.
 
-Like all GPSDOs, the SyncServer S200 relies on the 1PPS output that comes out of the 
-module to drive a PLL that lock the internal 10 MHz oscillator to the GPS system. This 1PPS signal 
-is still present on the GT-8031 of my unit, and I verified with an oscilloscope that it matches
-the 1PPS output of [my TM4313 GPSDO](/2023/07/09/TM4313-GPSDO-Teardown.html) as soon as it sees
-a copule of satellites.
+![GT-8031 rollover date](/assets/s200/GT-8031_rollover.png)
+
+The same document also tells us how to adjust the rollover date. It depends on the protocol
+that is supposed by the module.  For a GT-8031, you need to use the `ZDA` command, other modules require the 
+`@@Gb` or the `TIME` command.
+
+![GT-8031 rollover date adjustment](/assets/s200/rollover_date_adjustment.png)
+
+If you want to run a SyncServer for its intended purpose, a time server, it is of course important
+that you get the correct date. But if you don't care about the date because the primary purpose it to use 
+it as a GPSDO then the 1PPS output from the GPS module should be sufficient to drive a PLL that locks 
+the internal 10 MHz oscillator to the GPS system. 
+
+This 1PPS signal is still present on the GT-8031 of my unit and I verified with an oscilloscope that it matches
+the 1PPS output of [my TM4313 GPSDO](/2023/07/09/TM4313-GPSDO-Teardown.html) both in frequency and in phase 
+as soon as it sees a copule of satellites.
 
 But there is something in the SyncServer firmware that depends on more than just the 1PPS signal 
 because my S200 refuses to enter into "GPS Locked" mode, and the 10 MHz oscillator stays in free-running 
@@ -113,11 +123,12 @@ There are aftermarket replacement modules out there with a rollover date that is
 future, but they are priced pretty high. There's the iLotus IL-GPS-0030-B Module which goes for
 around $100 in AliExpress but that one has a rollover date on August 2024, and other modules
 go as high as $240. The reason for these high prices is because these modules don't use a $5 
-location GPS chip but chips that are specialized for accurate time keeping, such as the
+location GPS chip but specialized ones that are designed for accurate time keeping such as the
 [u-blox NEO/LEA series](https://www.u-blox.com/en/product/neolea-m8t-series).
 
-Instead, I wondered if it's possible to make the GT-8031 send the right date to the S200 with a 
-hardware interposer that sits between the module and motherboard. There were 2 options:
+Instead of solving the problem with money, I wondered if it was possible to make the GT-8031 send 
+the right date to the S200 with a hardware interposer that sits between the module and motherboard. 
+There were 2 options:
 
 * intercept the date sent from the GPS module, correct it, and transmit it to the motherboard
 
@@ -126,8 +137,9 @@ hardware interposer that sits between the module and motherboard. There were 2 o
 * send a configuration command to the GPS module to set the right date
 
     This method was [suggested by Alex Forencich on the time-nuts mailing list](https://febo.com/pipermail/time-nuts_lists.febo.com/2024-May/109101.html).
-    He implemented it by patching the firmware of a microcontroller on his SyncServer S350 which
-    might be the best solution eventually, but I made it work with the interposer.
+    He implemented it by patching the firmware of a microcontroller on his SyncServer S350. His
+    solution might be the best one eventually, it doesn't require extra hardware, but by the time
+    he posted his message, my interposer was already up and running on my desk.
 
 It took 2 PCB spins, but I eventually came up with the following solution: 
 
@@ -141,7 +153,7 @@ The interposer itself looks like this:
 
 ![Interposer without module](/assets/s200/interposer_without_module.jpg)
 
-The design is very simple: an 
+The design is straightforward: an 
 [RP2024-zero](https://www.waveshare.com/rp2040-zero.htm), a smaller variant of the Raspberry
 Pico, puts itself in between the serial TX and RX wires that normally
 go between the module and the motherboard. It's up to the software that runs on the RP2040 to determine
@@ -149,7 +161,7 @@ what to do with the data streams that run over those wires.
 
 ![Interposer diagram](/assets/s200/interposer_diagram.svg)
 
-There are bunch of other connectors: the one at the bottom right is for observing the signals with
+There are a few of other connectors: the one at the bottom right is for observing the signals with
 a logic analyzer. There are also 2 connectors for power. When finally installed, the interposer
 gets powered with a 5V supply that's available on a pin that is conveniently located right behind
 the GPS module. In the picture above, the red wires provides the 5V, the ground is connected through
@@ -159,7 +171,7 @@ The total cost of the board is as follows:
 
 * PCB: $2 for 5 PCBs + $1.50 shipping = $3.50
 * RP2040-zero: $9 on Amazon
-* 2 5x2 connectors: $5 on Mouser + $5 shippingn = $10
+* 2 5x2 connectors: $5 on Mouser + $5 shipping = $10
 
 Total: $22.50
 
@@ -193,8 +205,13 @@ The messages above can be seen in the blue and green rectangles of this logic an
 [![DSView logic analyzer screenshot](/assets/s200/dsview_screenshot.png)](/assets/s200/dsview_screenshot.png)
 *Click to enlarge*
 
-Note how the messages arrive at the interposer and immediately get forwarded to the other side. But the
-transacation in red was generated by the interposer itself. It sends the `@@Gb` command. When the GPS module
+Earlier, we saw that the GT-8031 module itself needs the `ZDA` command to set the time. This is an 
+[NMEA](https://en.wikipedia.org/wiki/NMEA_0183) command. The messages above are Motorola M12 commands however.
+On the M12 module that contains the GT-8031 there is also a TI [M430F147](https://www.ti.com/product/MSP430F147) 
+microcontroller that takes care of the conversion between Motorola and NMEA commands.
+
+Note how the messages that arrive at the interposer immediately get forwarded to the other side. But there is
+one transaction marked in red,  generated by the interposer itself, that sends the `@@Gb` command. When the GPS module
 is not yet locked to a satelllite, this command sends an initial estimate of the current date and time. The
 [M12 User Guide](/assets/s200/m12/M12+UsersGuide.pdf) has the following to say about this command:
 
