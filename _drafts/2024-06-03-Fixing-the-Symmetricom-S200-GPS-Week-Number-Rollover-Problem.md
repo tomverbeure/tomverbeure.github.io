@@ -230,6 +230,34 @@ see this on the logic analyzer by an increased rate of serial port traffic:
 [![S200 entering lock](/assets/s200/S200_entering_lock.png)](/assets/s200/S200_entering_lock.png)
 *Click to enlarge*
 
+# Build Instructions
+
+**Disclaimer: it's easy to make mistakes and permanently damage your SyncServer. Build this at your own risk!**
+
+All design assets for this project can be found in my [gps_interposer project on GitHub](https://github.com/tomverbeure/gps_interposer/).
+There is a KiCAD project with schematic, PCB design and gerber files. A PDF with the  schematics 
+can be found [here](/assets/s200/gps_interposer_schematic.pdf). The design consists of a few connectors, 
+some resistors and the RP2024-zero. 
+
+If you just want the Gerbers, you can use [`gps_interposer_v2.zip`](/assets/s200/gps_interposer_v2.zip). 
+
+The interposer is connected to the motherboard and to the M12 module with 2x5 pin 0.050" connectors, one
+male and one female. But because it was difficult to come up with the right height of the male connector, I chose
+to add 2 female connectors, available [here on Mouser](https://www.mouser.com/ProductDetail/200-FLE10501GDV) and 
+used a loose male-to-male connector between them to make the connection.
+
+Under normal circumstances, the board is powered by the 5V rail that's present right next to the GPS module. However,
+**when you plug in the USB-C cable into the RP2040-zero, you need to make sure to remove that connection because
+you'll short out the 5V rail of the S200 otherwise!**
+
+The board has 2 connectors for the 5V: at the front next to the USB-C connector and in the back right above
+the 5V of the motherboard. The goal was to plug in the power there, but it turned out to be easier to use
+a patch wire between the motherboard and the front power connector.
+
+You'll need to the program the RP2024-zero with the firmware of course. You can find it in the `sw/rp2040_v2`
+directory of my [gps_interposer GitHub repo](https://github.com/tomverbeure/gps_interposer/).
+
+
 # The Future: A Software-Only Solution
 
 My solution uses a cheap piece of custom hardware. Alex's solution currently requires patching some 
