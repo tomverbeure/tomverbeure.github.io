@@ -246,6 +246,11 @@ male and one female. But because it was difficult to come up with the right heig
 to add 2 female connectors, available [here on Mouser](https://www.mouser.com/ProductDetail/200-FLE10501GDV) and 
 used a loose male-to-male connector between them to make the connection.
 
+The trickiest part of the build is soldering 2x5 pin connectors that connects to the motherboard: it needs to be
+reasonably well positioned otherwise the alignment of the screw holes will be out of whack. I applied some solder
+past on the solder pads, carefully placed the connector on top of the past, and used a soldering iron to melt the paste
+without moving the connector. It wasn't too bad.
+
 Under normal circumstances, the board is powered by the 5V rail that's present right next to the GPS module. However,
 **when you plug in the USB-C cable into the RP2040-zero, you need to make sure to remove that connection because
 you'll short out the 5V rail of the S200 otherwise!**
