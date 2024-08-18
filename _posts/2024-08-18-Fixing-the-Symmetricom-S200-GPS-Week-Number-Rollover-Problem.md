@@ -230,6 +230,10 @@ see this on the logic analyzer by an increased rate of serial port traffic:
 [![S200 entering lock](/assets/s200/S200_entering_lock.png)](/assets/s200/S200_entering_lock.png)
 *Click to enlarge*
 
+There's also the immense satisfaction to see the GPS status changed to "Locked":
+
+![GPS locked](/assets/s200/GPS_locked_with_new_module.jpg)
+
 # Build Instructions
 
 **Disclaimer: it's easy to make mistakes and permanently damage your SyncServer. Build this at your own risk!**
