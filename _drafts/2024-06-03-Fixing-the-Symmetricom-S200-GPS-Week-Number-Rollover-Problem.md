@@ -246,6 +246,8 @@ male and one female. But because it was difficult to come up with the right heig
 to add 2 female connectors, available [here on Mouser](https://www.mouser.com/ProductDetail/200-FLE10501GDV) and 
 used a loose male-to-male connector between them to make the connection.
 
+![Interposer connector](/assets/s200/interposer_connector.jpg)
+
 The trickiest part of the build is soldering 2x5 pin connectors that connects to the motherboard: it needs to be
 reasonably well positioned otherwise the alignment of the screw holes will be out of whack. I applied some solder
 past on the solder pads, carefully placed the connector on top of the past, and used a soldering iron to melt the paste
@@ -255,6 +257,8 @@ Under normal circumstances, the board is powered by the 5V rail that's present r
 **when you plug in the USB-C cable into the RP2040-zero, you need to make sure to remove that connection because
 you'll short out the 5V rail of the S200 otherwise!**
 
+![5V connection](/assets/s200/5V_connection.jpg)
+
 The board has 2 connectors for the 5V: at the front next to the USB-C connector and in the back right above
 the 5V of the motherboard. The goal was to plug in the power there, but it turned out to be easier to use
 a patch wire between the motherboard and the front power connector.
@@ -262,6 +266,18 @@ a patch wire between the motherboard and the front power connector.
 You'll need to the program the RP2024-zero with the firmware of course. You can find it in the `sw/rp2040_v2`
 directory of my [gps_interposer GitHub repo](https://github.com/tomverbeure/gps_interposer/).
 
+# Power Supply Recapping
+
+If you plan to deploy the SyncServer in alway-on mode, you should seriously consider replacement the
+capacitors in the power supply unit: they are known to be leaky and if things really go wrong they can
+be a fire hazard.
+
+The power supply board can easily be removed with a few screws.
+
+![Power supply board](/assets/s200/power_supply.jpg)
+
+In my version, the capacitors were held in place with some hard sticky goo, so it takes some effort
+to remove them. 
 
 # The Future: A Software-Only Solution
 
