@@ -26,22 +26,48 @@ categories:
 
 # Introduction
 
+I have a bit of an oscilloscope problem. I started out with buying a pretty expensive new one,
+a Siglent 2304X, but somehow that wasn't enough and one way or the other that lonely scope
+multiplied into a rotating stable of old faithfuls.
+
+The scopes have different analog bandwidths and sample rates. I wanted to check out how that's
+visible in practice.
+
+So I connected them to my Rohde & Schwarz SMHU signal generator and checked the recorded the
+measured amplitude for increasing frequency values.
+
+# Measurement Setup
+
+
+# Siglent 2304X
+
+
 # TDS 540 - 500MHz/1Gsps
 
 ![TDS 540 photo](/assets/scope_bw/tds540_photo.jpg)
 
-I bought this scope cheap enough and had plans to do some repairs on it, and because
-it had a higher bandwidth than my Siglent 2304X. But soon after a friend gave
-me an HP Infiniium XXX with better specs and this scope ended up in a closet.
+I bought the TDS 540 cheap enough, knowing that one line item reported a FAIL during power-on
+self test. Emboldened by earlier TDS 420A reverse engineering adventures, I assumed it wouldn't
+be very difficult to fix. Alas, the previous owner of the scope was a fairly prominent test equipment
+repair YouTuber who had already tried and failed to fix the error. I was never able to 
+find an issue with the scope when using it.
+
+At 500Mhz, it has a slightly higher bandwidth than my Siglent 2304X. The sample rate of
+1 Gsps is too low for non-repetitive signals but Tektronix' equivalent time sampling is
+useful enough repetitive ones.
+
+Soon after getting this scope, a friend gave me an HP Infiniium 54825A with better specs all around 
+and this scope ended up in a closet. After making this blog post, I sold the scope through Craigslist
+for only a small loss. Let's have a look at how it performed:
 
 When set to a sample rate of 1Gsps, even a 200MHz become problematic.
-Due to undersampling, the peaks aren't always recorded and so the Vpk-pk
-varies between 1.58V and 1.64V.
+Due to undersampling, the peaks aren't always recorded and the measured Vpk-pk
+values vary between 1.58V and 1.64V.
 
 ![TDS540 200MHz, 1Gsps](/assets/scope_bw/tds540_200MHz_1Gsps.png)
 
 In the image above, the samples are interpolated using a $$\sin(x)/x$$ filter.
-But if you disable interpolation and only look at the dots, you get something
+If you disable interpolation and only look at the dots, you get something
 like this:
 
 ![TDS540 200MHz, 1Gsps, dots](/assets/scope_bw/tds540_200MHz_1Gsps_dots.png)
@@ -51,8 +77,8 @@ work with.
 
 However, the TDS 540 has a feature called 'equivalent time sampling' (ET)
 where the signal is repeatedly sampled at random after the trigger and
-fills up the signal over time. This gets you a lot of detail! And the
-measured peak-to-peak voltage now make more sense to.
+fills up the signal over time. This only works for periodic signals, but it gets you a 
+lot of detail! And the measured peak-to-peak voltage now make more sense too.
 
 Since I want to measure the bandwidth, I'll use ET sampling when it's
 available...
@@ -75,13 +101,14 @@ available...
 | 530             | 50                 | 1.34       |
 | 550             | 100                | Garbage    |
 
-The scope has a rated bandwidth of 500MHz. Somewhere between 530 and 550MHz,
-equivalent time samples suddenly breaks down.
+You'd expect the measured amplitude of the signal to gracefully fade away
+with increasing frequency, but somewhere between 530 and 550MHz, equivalent time 
+samples suddenly breaks down.
 
 ![TDS540 550MHz, 100Gsps ET breakdown](/assets/scope_bw/tds540_550MHz_100Gsps.png)
 
-I think that there's an issue with the trigger logic breaking down: for 
-equivalent time sampling, the trigger needs to be very precise.
+I think the trigger logic stops working around that time: for equivalent 
+time sampling, the trigger needs to be very precise.
 
 When plotted in a chart, you get this:
 
@@ -91,11 +118,17 @@ When plotted in a chart, you get this:
 
 ![HP 54542A picture](/assets/scope_bw/hp54542a_photo.jpg)
 
-This scope has been a spectacular $20 flea market purchase. I love 
+This scope has been a spectacular $20 flea market purchase. I just love the user interface.
+Like the TDS 540 it has a useless numerical keypad, but unlike the TDS 540 those keys
+can also be used to quickly select measurements.
+
+I once again selected Vpk-pk as the main measurement and threw in frequency
+measurement too.
+
 
 ![HP 54542A 500MHz/2Gsps](/assets/scope_bw/hp54542a_500MHz_2Gsps.png)
 
-Let's so how it performs:
+Let's see how it performs:
 
 | Frequency (MHz) | Sample Rate (Gsps) | Vpk-pk (V) |
 |-----------------|--------------------|------------|
@@ -120,4 +153,10 @@ Let's so how it performs:
 | 950             | 2                  | 0.212      |
 | 1000            | 2                  | 0.135 (*)  |
 
+The measured amplitude isn't supposed to increase when going from 200 MHz to 400 MHz,
+but it's not a huge deal. As expected, the amplitude starts going down at 500 MHz and
+it shows a decent sine wave all the way down to 1GHz. 
+
 ![HP 54542A frequency response graph](/assets/scope_bw/hp54542a_freq_response.png)
+
+
