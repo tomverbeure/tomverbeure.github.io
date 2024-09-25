@@ -5,13 +5,30 @@ date:  2021-02-13 00:00:00 -1000
 categories:
 ---
 
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ["\\(", "\\)"] ],
+      displayMath: [ ['$$', '$$'], ["\\[", "\\]"] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+    //,
+    //displayAlign: "left",
+    //displayIndent: "2em"
+  });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
+
 * TOC
 {:toc}
 
 # Introduction
 
 Imagine the following situation: you have a number of different audio sources that
-provide audio in digital from but at different sample rate. Say, one source is
+provide audio in digital from but at different sample rates. Say, one source is
 a CD player which delivers 16-bit PCM samples at 44.1kHz, the other source is
 a BlueRay player with 24-bit PCM samples at 48kHz.
 
@@ -29,8 +46,8 @@ This requires the following:
 * a way to convert the incoming sample streams to one agreed upon shared sample rate
 
 The common clock reference doesn't need to be the same or even some kind of integer
-multiple of the sample clock: what matter is the different audio stream one way or the
-other have drived their sample rate from this reference clock.
+multiple of the sample clock: what matters is that the different audio streams one way or the
+other have derived their sample rate from this reference clock.
 
 In professional audio production, this is done by having a primary clock generator and
 feeding this clock to all other secondary devices. Generating a clock is pretty easy, 
@@ -56,8 +73,8 @@ so something else must be done to work around the lack of sources with a common 
 
 The answer is **asynchronous sample rate conversion** (ASRC).
 
-ASRC is a digital technique that accepts a input signal with one clock, and resamples it to
-a completely independent new clock, while retaining as much as possible the characteristics
+ASRC is a digital technique that accepts an input signal with one clock and resamples it to
+a completely independent new clock while retaining as much as possible the characteristics
 of the original signal.
 
 You can buy audio ASRC chips on Digikey at prices that range between $10 and $20. Good examples
@@ -124,6 +141,45 @@ When using a window, the FFT value must be multiplied by a correction factor.
 This correction factor is different when correction for amplitude than for correcting for energy.
 
 E.g. when calculation RMS value from an FFT -> use energy correction.
+
+# FFT
+
+**DFT Matrix**
+
+$$
+\begin{bmatrix} 
+X_0 \\
+X_1 \\
+X_2 \\
+\vdots \\
+X_{N-1}
+\end{bmatrix} 
+=
+\frac{1}{\sqrt{N}}
+\begin{bmatrix}
+1 & 1 & 1 & \cdots & 1 \\
+1 & \omega & \omega^2 & \cdots & \omega^{N-1} \\
+1 & \omega^2 & \omega^4 & \cdots & \omega^{2(N-1)} \\
+\vdots & \vdots & \vdots & \ddots & \vdots \\
+1 & \omega^{N-1} & \omega^{2(N-1)} & \cdots & \omega^{(N-1)(N-1)}
+\end{bmatrix}
+\begin{bmatrix}
+x_0 \\
+x_1 \\
+x_2 \\
+\vdots \\
+x_{N-1}
+\end{bmatrix}
+$$
+
+where the $$\omega$$ terms are short hand for roots of unity:
+
+$$
+\omega^n = e^{-2 i \pi n / N}
+$$
+
+The presence of the $$ \frac{1}{\sqrt{N}} $$ term depends on convention. Let's drop it for now.
+
 
 # References
 
@@ -264,4 +320,39 @@ dsp.stackexchange.com
 * [Measure the SNR of a signal in the frequency domain?](https://dsp.stackexchange.com/a/14864/52155)
 * [How to calculate the Signal-To-Noise Ratio](https://dsp.stackexchange.com/a/17875/52155)
 
-`
+
+* [Spectrum and spectral density estimation by the Discrete Fourier transform (DFT), including a comprehensive list of window functions and some new flat-top windows](/assets/asrc/GH_FFT.pdf)
+
+    Fantastic overview on how to estimate power spectra etc in the real world. Discusses spectrum scaling,
+    windowing functions, all the basics.
+
+* [Z-transform done quick](https://fgiesen.wordpress.com/2012/08/26/z-transform-done-quick/)
+
+**FFT**
+
+* [The Fast Fourier Transform in Hardware: A Tutorial Based on an FPGA Implementation](/assets/asrc/FFTtutorial121102.pdf)
+
+* [A Survey on Pipelined FFT Hardware Architectures](/assets/asrc/s11265-021-01655-1.pdf) 
+
+* [Real valued FFTs](https://kovleventer.com/blog/fft_real/)
+
+    How to use a standard FFT algorithm to efficiently perform FFTs on input datasets that
+    are real only.
+
+    Blog post that explains everything step by step.
+
+* [Implementing Fast Fourier Transform Algorithms of Real-Valued Sequences With the TMS320 DSP Platform](https://www.ti.com/lit/an/spra291/spra291.pdf)
+
+    TI: How to use a standard FFT algorithm to efficiently perform FFTs on input datasets that
+    are real only.
+
+* [FFT Implementation on the TMS320VC5505, TMS320C5505, and TMS320C5515 DSPs](https://www.ti.com/lit/an/sprabb6b/sprabb6b.pdf)
+
+    Describes the HWAFFT hardware FFT accelerator, how to use it, and also how to do larger FFTs than the ones
+    that are natively supported by the accelerator.
+
+* [Notes on FFTs: for implementers](https://fgiesen.wordpress.com/2023/03/19/notes-on-ffts-for-implementers/)
+* [Notes on FFTs: for users](https://fgiesen.wordpress.com/2023/03/19/notes-on-ffts-for-users/)
+
+
+* [Multidigit multiplication for mathematicians](https://cr.yp.to/papers/m3-20010811-retypeset-20220327.pdf)
