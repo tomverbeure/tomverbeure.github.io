@@ -180,6 +180,200 @@ $$
 
 The presence of the $$ \frac{1}{\sqrt{N}} $$ term depends on convention. Let's drop it for now.
 
+**DFT of size 8**
+
+$$
+\omega^k_8 = e^{-2 i \pi k / 8}
+$$
+
+$$
+\begin{bmatrix} 
+X_0 \\
+X_1 \\
+X_2 \\
+X_3 \\
+X_4 \\
+X_5 \\
+X_6 \\
+X_7 \\
+\end{bmatrix} 
+=
+\begin{bmatrix} 
+1 & 1 & 1 & 1 & 1 & 1 & 1 & 1 \\
+1 & \omega^1_8 & \omega^{ 2}_8  & \omega^{ 3}_8 & \omega^{ 4}_8 & \omega^{ 5}_8 & \omega^{ 6}_8 & \omega^{ 7}_8   \\
+1 & \omega^2_8 & \omega^{ 4}_8  & \omega^{ 6}_8 & \omega^{ 8}_8 & \omega^{10}_8 & \omega^{12}_8 & \omega^{14}_8   \\
+1 & \omega^3_8 & \omega^{ 6}_8  & \omega^{ 9}_8 & \omega^{12}_8 & \omega^{15}_8 & \omega^{18}_8 & \omega^{21}_8   \\
+1 & \omega^4_8 & \omega^{ 8}_8  & \omega^{12}_8 & \omega^{16}_8 & \omega^{20}_8 & \omega^{24}_8 & \omega^{28}_8   \\
+1 & \omega^5_8 & \omega^{10}_8  & \omega^{15}_8 & \omega^{20}_8 & \omega^{25}_8 & \omega^{30}_8 & \omega^{35}_8   \\
+1 & \omega^6_8 & \omega^{12}_8  & \omega^{18}_8 & \omega^{24}_8 & \omega^{30}_8 & \omega^{36}_8 & \omega^{42}_8   \\
+1 & \omega^7_8 & \omega^{14}_8  & \omega^{21}_8 & \omega^{28}_8 & \omega^{35}_8 & \omega^{42}_8 & \omega^{49}_8   \\
+\end{bmatrix}
+\begin{bmatrix}
+x_0 \\
+x_1 \\
+x_2 \\
+x_3 \\
+x_4 \\
+x_5 \\
+x_6 \\
+x_7 \\
+\end{bmatrix}
+$$
+
+As sums:
+
+$$
+\begin{array}{ccrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
+
+X[0] & = x_0 &+&                 x_1 &+&                    x_2 &+&                   x_3 &+&                   x_4 &+&                   x_5 &+&                   x_6 &+&                   x_7 \\
+X[1] & = x_0 &+& \omega^1  \cdot x_1 &+&  \omega^{ 2} \cdot x_2 &+& \omega^{ 3} \cdot x_3 &+& \omega^{ 4} \cdot x_4 &+& \omega^{ 5} \cdot x_5 &+& \omega^{ 6} \cdot x_6 &+& \omega^{ 7} \cdot x_7 \\
+X[2] & = x_0 &+& \omega^2  \cdot x_1 &+&  \omega^{ 4} \cdot x_2 &+& \omega^{ 6} \cdot x_3 &+& \omega^{ 8} \cdot x_4 &+& \omega^{10} \cdot x_5 &+& \omega^{12} \cdot x_6 &+& \omega^{14} \cdot x_7 \\
+X[3] & = x_0 &+& \omega^3  \cdot x_1 &+&  \omega^{ 6} \cdot x_2 &+& \omega^{ 9} \cdot x_3 &+& \omega^{12} \cdot x_4 &+& \omega^{15} \cdot x_5 &+& \omega^{18} \cdot x_6 &+& \omega^{21} \cdot x_7 \\
+X[4] & = x_0 &+& \omega^4  \cdot x_1 &+&  \omega^{ 8} \cdot x_2 &+& \omega^{12} \cdot x_3 &+& \omega^{16} \cdot x_4 &+& \omega^{20} \cdot x_5 &+& \omega^{24} \cdot x_6 &+& \omega^{28} \cdot x_7 \\
+X[5] & = x_0 &+& \omega^5  \cdot x_1 &+&  \omega^{10} \cdot x_2 &+& \omega^{15} \cdot x_3 &+& \omega^{20} \cdot x_4 &+& \omega^{25} \cdot x_5 &+& \omega^{30} \cdot x_6 &+& \omega^{35} \cdot x_7 \\
+X[6] & = x_0 &+& \omega^6  \cdot x_1 &+&  \omega^{12} \cdot x_2 &+& \omega^{18} \cdot x_3 &+& \omega^{24} \cdot x_4 &+& \omega^{30} \cdot x_5 &+& \omega^{36} \cdot x_6 &+& \omega^{42} \cdot x_7 \\
+X[7] & = x_0 &+& \omega^7  \cdot x_1 &+&  \omega^{14} \cdot x_2 &+& \omega^{21} \cdot x_3 &+& \omega^{28} \cdot x_4 &+& \omega^{35} \cdot x_5 &+& \omega^{42} \cdot x_6 &+& \omega^{49} \cdot x_7 \\
+
+\end{array}
+$$
+
+Group even and odd x terms:
+
+$$
+\begin{array}{ccrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
+
+X[0] & = ( x_0 &+&                    x_2 &+&                    x_4 &+&                   x_6) &+& (&                   x_1 &+&                   x_3 &+&                   x_5 &+&                   x_7) \\
+X[1] & = ( x_0 &+& \omega^{ 2}  \cdot x_2 &+&  \omega^{ 4} \cdot x_4 &+& \omega^{ 6} \cdot x_6) &+& (& \omega^{ 1} \cdot x_1 &+& \omega^{ 3} \cdot x_3 &+& \omega^{ 5} \cdot x_5 &+& \omega^{ 7} \cdot x_7) \\
+X[2] & = ( x_0 &+& \omega^{ 4}  \cdot x_2 &+&  \omega^{ 8} \cdot x_4 &+& \omega^{12} \cdot x_6) &+& (& \omega^{ 2} \cdot x_1 &+& \omega^{ 6} \cdot x_3 &+& \omega^{10} \cdot x_5 &+& \omega^{14} \cdot x_7) \\
+X[3] & = ( x_0 &+& \omega^{ 6}  \cdot x_2 &+&  \omega^{12} \cdot x_4 &+& \omega^{18} \cdot x_6) &+& (& \omega^{ 3} \cdot x_1 &+& \omega^{ 9} \cdot x_3 &+& \omega^{15} \cdot x_5 &+& \omega^{21} \cdot x_7) \\
+X[4] & = ( x_0 &+& \omega^{ 8}  \cdot x_2 &+&  \omega^{16} \cdot x_4 &+& \omega^{24} \cdot x_6) &+& (& \omega^{ 4} \cdot x_1 &+& \omega^{12} \cdot x_3 &+& \omega^{20} \cdot x_5 &+& \omega^{28} \cdot x_7) \\
+X[5] & = ( x_0 &+& \omega^{10}  \cdot x_2 &+&  \omega^{20} \cdot x_4 &+& \omega^{30} \cdot x_6) &+& (& \omega^{ 5} \cdot x_1 &+& \omega^{15} \cdot x_3 &+& \omega^{25} \cdot x_5 &+& \omega^{35} \cdot x_7) \\
+X[6] & = ( x_0 &+& \omega^{12}  \cdot x_2 &+&  \omega^{24} \cdot x_4 &+& \omega^{36} \cdot x_6) &+& (& \omega^{ 6} \cdot x_1 &+& \omega^{18} \cdot x_3 &+& \omega^{30} \cdot x_5 &+& \omega^{42} \cdot x_7) \\
+X[7] & = ( x_0 &+& \omega^{14}  \cdot x_2 &+&  \omega^{28} \cdot x_4 &+& \omega^{42} \cdot x_6) &+& (& \omega^{ 7} \cdot x_1 &+& \omega^{21} \cdot x_3 &+& \omega^{35} \cdot x_5 &+& \omega^{49} \cdot x_7) \\
+
+\end{array}
+$$
+
+Extract common factor:
+
+$$
+\begin{array}{ccrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
+
+X[0] & = ( x_0 &+&                    x_2 &+&                    x_4 &+&                   x_6) &+&            (&                   x_1 &+&                   x_3 &+&                   x_5 &+&                   x_7) \\
+X[1] & = ( x_0 &+& \omega^{ 2}  \cdot x_2 &+&  \omega^{ 4} \cdot x_4 &+& \omega^{ 6} \cdot x_6) &+& \omega^{1} (& \omega^{ 0} \cdot x_1 &+& \omega^{ 2} \cdot x_3 &+& \omega^{ 4} \cdot x_5 &+& \omega^{ 6} \cdot x_7) \\
+X[2] & = ( x_0 &+& \omega^{ 4}  \cdot x_2 &+&  \omega^{ 8} \cdot x_4 &+& \omega^{12} \cdot x_6) &+& \omega^{2} (& \omega^{ 0} \cdot x_1 &+& \omega^{ 4} \cdot x_3 &+& \omega^{ 8} \cdot x_5 &+& \omega^{12} \cdot x_7) \\
+X[3] & = ( x_0 &+& \omega^{ 6}  \cdot x_2 &+&  \omega^{12} \cdot x_4 &+& \omega^{18} \cdot x_6) &+& \omega^{3} (& \omega^{ 0} \cdot x_1 &+& \omega^{ 6} \cdot x_3 &+& \omega^{12} \cdot x_5 &+& \omega^{18} \cdot x_7) \\
+X[4] & = ( x_0 &+& \omega^{ 8}  \cdot x_2 &+&  \omega^{16} \cdot x_4 &+& \omega^{24} \cdot x_6) &+& \omega^{4} (& \omega^{ 0} \cdot x_1 &+& \omega^{ 8} \cdot x_3 &+& \omega^{16} \cdot x_5 &+& \omega^{24} \cdot x_7) \\
+X[5] & = ( x_0 &+& \omega^{10}  \cdot x_2 &+&  \omega^{20} \cdot x_4 &+& \omega^{30} \cdot x_6) &+& \omega^{5} (& \omega^{ 0} \cdot x_1 &+& \omega^{10} \cdot x_3 &+& \omega^{20} \cdot x_5 &+& \omega^{30} \cdot x_7) \\
+X[6] & = ( x_0 &+& \omega^{12}  \cdot x_2 &+&  \omega^{24} \cdot x_4 &+& \omega^{36} \cdot x_6) &+& \omega^{6} (& \omega^{ 0} \cdot x_1 &+& \omega^{12} \cdot x_3 &+& \omega^{24} \cdot x_5 &+& \omega^{36} \cdot x_7) \\
+X[7] & = ( x_0 &+& \omega^{14}  \cdot x_2 &+&  \omega^{28} \cdot x_4 &+& \omega^{42} \cdot x_6) &+& \omega^{7} (& \omega^{ 0} \cdot x_1 &+& \omega^{14} \cdot x_3 &+& \omega^{28} \cdot x_5 &+& \omega^{42} \cdot x_7) \\
+
+\end{array}
+$$
+
+$$
+\begin{align}
+
+\omega^{k 8}     &= 1          \\
+\omega^{n + k 8} &= \omega^{n} \\
+
+\end{align}
+$$
+
+$$
+\begin{array}{ccrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
+
+X[0] & = ( x_0 &+&                   x_2 &+&                    x_4 &+&                   x_6) &+&            (&  x_1 &+&                   x_3 &+&                   x_5 &+&                   x_7) \\
+X[1] & = ( x_0 &+& \omega^{ 2} \cdot x_2 &+&  \omega^{ 4} \cdot x_4 &+& \omega^{ 6} \cdot x_6) &+& \omega^{1} (&  x_1 &+& \omega^{ 2} \cdot x_3 &+& \omega^{ 4} \cdot x_5 &+& \omega^{ 6} \cdot x_7) \\
+X[2] & = ( x_0 &+& \omega^{ 4} \cdot x_2 &+&                    x_4 &+& \omega^{ 4} \cdot x_6) &+& \omega^{2} (&  x_1 &+& \omega^{ 4} \cdot x_3 &+&                   x_5 &+& \omega^{ 4} \cdot x_7) \\
+X[3] & = ( x_0 &+& \omega^{ 6} \cdot x_2 &+&  \omega^{ 4} \cdot x_4 &+& \omega^{ 2} \cdot x_6) &+& \omega^{3} (&  x_1 &+& \omega^{ 6} \cdot x_3 &+& \omega^{ 4} \cdot x_5 &+& \omega^{ 2} \cdot x_7) \\
+X[4] & = ( x_0 &+&                   x_2 &+&                    x_4 &+&                   x_6) &+& \omega^{4} (&  x_1 &+&                   x_3 &+&                   x_5 &+&                   x_7) \\
+X[5] & = ( x_0 &+& \omega^{ 2} \cdot x_2 &+&  \omega^{ 4} \cdot x_4 &+& \omega^{ 6} \cdot x_6) &+& \omega^{5} (&  x_1 &+& \omega^{ 2} \cdot x_3 &+& \omega^{ 4} \cdot x_5 &+& \omega^{ 6} \cdot x_7) \\
+X[6] & = ( x_0 &+& \omega^{ 4} \cdot x_2 &+&                    x_4 &+& \omega^{ 4} \cdot x_6) &+& \omega^{6} (&  x_1 &+& \omega^{ 4} \cdot x_3 &+&                   x_5 &+& \omega^{ 4} \cdot x_7) \\
+X[7] & = ( x_0 &+& \omega^{ 6} \cdot x_2 &+&  \omega^{ 4} \cdot x_4 &+& \omega^{ 2} \cdot x_6) &+& \omega^{7} (&  x_1 &+& \omega^{ 6} \cdot x_3 &+& \omega^{ 4} \cdot x_5 &+& \omega^{ 2} \cdot x_7) \\
+
+\end{array}
+$$
+
+$$
+\begin{align}
+
+\omega^{n + 4} &= -1 \cdot \omega^{n} \\
+
+\end{align}
+$$
+
+$$
+\begin{array}{ccrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
+
+X[0] & = ( x_0 &+&                     x_2 &+&                    x_4 &+&                     x_6) &+&              (&  x_1 &+&                     x_3 &+&                   x_5 &+&                     x_7) \\
+X[1] & = ( x_0 &+&   \omega^{ 2} \cdot x_2 &+&  -1          \cdot x_4 &+& - \omega^{ 2} \cdot x_6) &+&   \omega^{1} (&  x_1 &+&   \omega^{ 2} \cdot x_3 &+& -1          \cdot x_5 &+& - \omega^{ 2} \cdot x_7) \\
+X[2] & = ( x_0 &+& - 1           \cdot x_2 &+&                    x_4 &+&   -1          \cdot x_6) &+&   \omega^{2} (&  x_1 &+&   -1          \cdot x_3 &+&                   x_5 &+&   -1          \cdot x_7) \\
+X[3] & = ( x_0 &+& - \omega^{ 2} \cdot x_2 &+&  -1          \cdot x_4 &+&   \omega^{ 2} \cdot x_6) &+&   \omega^{3} (&  x_1 &+& - \omega^{ 2} \cdot x_3 &+& -1          \cdot x_5 &+&   \omega^{ 2} \cdot x_7) \\
+X[4] & = ( x_0 &+&                     x_2 &+&                    x_4 &+&                     x_6) &+&   -1         (&  x_1 &+&                     x_3 &+&                   x_5 &+&                     x_7) \\
+X[5] & = ( x_0 &+&   \omega^{ 2} \cdot x_2 &+&  -1          \cdot x_4 &+& - \omega^{ 2} \cdot x_6) &+& - \omega^{1} (&  x_1 &+&   \omega^{ 2} \cdot x_3 &+& -1          \cdot x_5 &+& - \omega^{ 2} \cdot x_7) \\
+X[6] & = ( x_0 &+& - 1           \cdot x_2 &+&                    x_4 &+&   -1          \cdot x_6) &+& - \omega^{2} (&  x_1 &+&   -1          \cdot x_3 &+&                   x_5 &+&   -1          \cdot x_7) \\
+X[7] & = ( x_0 &+& - \omega^{ 2} \cdot x_2 &+&  -1          \cdot x_4 &+&   \omega^{ 2} \cdot x_6) &+& - \omega^{3} (&  x_1 &+& - \omega^{ 2} \cdot x_3 &+& -1          \cdot x_5 &+&   \omega^{ 2} \cdot x_7) \\
+
+\end{array}
+$$
+
+$$
+\begin{array}{ccrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
+
+X_e[0] & = ( x_0 &+&                   x_2 &+&  x_4 &+&                     x_6) \\
+X_e[1] & = ( x_0 &+& \omega^{ 2} \cdot x_2 &-&  x_4 &-&   \omega^{ 2} \cdot x_6) \\
+X_e[2] & = ( x_0 &-&                   x_2 &+&  x_4 &-&                     x_6) \\
+X_e[3] & = ( x_0 &-& \omega^{ 2} \cdot x_2 &-&  x_4 &+&   \omega^{ 2} \cdot x_6) \\
+\\
+X_o[0] & = ( x_1 &+&                   x_3 &+&  x_5 &+&                     x_7) \\
+X_o[1] & = ( x_1 &+& \omega^{ 2} \cdot x_3 &-&  x_5 &-&   \omega^{ 2} \cdot x_7) \\
+X_o[2] & = ( x_1 &-&                   x_3 &+&  x_5 &-&                     x_7) \\
+X_o[3] & = ( x_1 &-& \omega^{ 2} \cdot x_3 &-&  x_5 &+&   \omega^{ 2} \cdot x_7) \\
+
+\end{array}
+$$
+
+$$
+\begin{array}{ccrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
+
+X[0] & = X_e[0] &+&            X_o[0] \\
+X[1] & = X_e[1] &+& \omega^{1} X_o[1] \\
+X[2] & = X_e[2] &+& \omega^{2} X_o[2] \\
+X[3] & = X_e[3] &+& \omega^{3} X_o[3] \\
+\\
+X[4] & = X_e[0] &-&            X_o[0] \\
+X[5] & = X_e[1] &-& \omega^{1} X_o[1] \\
+X[6] & = X_e[2] &-& \omega^{2} X_o[2] \\
+X[7] & = X_e[3] &-& \omega^{3} X_o[3] \\
+
+\end{array}
+$$
+
+$$
+\begin{array}{ccrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
+
+X_e[0] & = ( x_0 &+& x_4 &+&                   x_2 &+&                      x_6) \\
+X_e[1] & = ( x_0 &-& x_4 &+& \omega^{ 2} \cdot x_2 &-&    \omega^{ 2} \cdot x_6) \\
+X_e[2] & = ( x_0 &+& x_4 &-&                   x_2 &+&                      x_6) \\
+X_e[3] & = ( x_0 &-& x_4 &-& \omega^{ 2} \cdot x_2 &-&    \omega^{ 2} \cdot x_6) \\
+
+\end{array}
+$$
+
+$$
+\begin{array}{ccrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
+
+X_e[0] & = ( x_0 &+& x_4 ) &+&                   ( x_2 &+&    x_6) \\
+X_e[1] & = ( x_0 &-& x_4 ) &+& \omega^{ 2} \cdot ( x_2 &-&    x_6) \\
+X_e[2] & = ( x_0 &+& x_4 ) &-&                   ( x_2 &+&    x_6) \\
+X_e[3] & = ( x_0 &-& x_4 ) &-& \omega^{ 2} \cdot ( x_2 &-&    x_6) \\
+
+\end{array}
+$$
+
+#============================================================
+
 
 # References
 
