@@ -354,5 +354,44 @@ dsp.stackexchange.com
 * [Notes on FFTs: for implementers](https://fgiesen.wordpress.com/2023/03/19/notes-on-ffts-for-implementers/)
 * [Notes on FFTs: for users](https://fgiesen.wordpress.com/2023/03/19/notes-on-ffts-for-users/)
 
+* [Decimation in time and frequency](https://www.slideshare.net/slideshow/decimation-in-time-and-frequency/16032956)
+
+    Slide presentation
+
+* [Cooley - How the FFT Gained Acceptance](https://dl.acm.org/doi/pdf/10.1145/87252.88078)
+
+* [Fast Fourier Transforms-for Fun and Profit](https://www.cis.rit.edu/class/simg716/FFT_Fun_Profit.pdf)
+
+    DIF alternative to Cooley DIT.
+
+* [Stackexchange - Differences between DIT & DIF algorithms](https://dsp.stackexchange.com/questions/53865/differences-between-dit-dif-algorithms)
+
+    Derives the equations for DIT and DIF in small steps.
+
+* [A 1 Million-Point FFT on a Single FPGA](http://liu.diva-portal.org/smash/get/diva2:1367440/FULLTEXT01.pdf)
+
+* [DFT/FFT and Convolution Algorithms: Theory and Implementation](https://www.researchgate.net/publication/234784945_DFTFFT_and_Convolution_Algorithms_Theory_and_Implementation)
+
+    Book on FFT implementation. PDF available.
+
+* [dsprelated.com - DIT & DIF vs. normal & bit-reversed ordering](https://www.dsprelated.com/showthread/comp.dsp/136332-1.php)
+
+* [Implementing the Radix-4 Decimation in Frequency (DIF) Fast Fourier Transform (FFT) Algorithm Using a TMS320C80 DSP](https://www.ti.com/lit/an/spra152/spra152.pdf)
+
+* [Quora - What is the difference between decimation in time and decimation in frequency?](https://www.quora.com/What-is-the-difference-between-decimation-in-time-and-decimation-in-frequency)
+
+* [Fast Fourier Transform (FFT)](https://www.cmlab.csie.ntu.edu.tw/cml/dsp/training/coding/transform/fft.html)
+
+    Short yet quite comprehensive. DIF, DIT, Radix 4, split-radix.
+    
+* [NYU - The Fast Fourier Transform (FFT)](https://eeweb.engineering.nyu.edu/iselesni/EL713/zoom/fft)
+
+    Probably the best derivation for DIF and DIT.
+
+    [All classes of this course](https://eeweb.engineering.nyu.edu/iselesni/EL713/zoom/)
 
 * [Multidigit multiplication for mathematicians](https://cr.yp.to/papers/m3-20010811-retypeset-20220327.pdf)
+
+* [Lyons - The Swiss Army Knife of Digital Networks](https://www.iro.umontreal.ca/~mignotte/IFT3205/Documents/TipsAndTricks/TheSwissArmyKnifeOfDigitNetwork.pdf)
+
+* [List of interesting papers](https://eeweb.engineering.nyu.edu/iselesni/EL713/zoom/paper_report_assignment.txt)
