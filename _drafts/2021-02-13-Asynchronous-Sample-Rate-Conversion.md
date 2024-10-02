@@ -144,7 +144,29 @@ E.g. when calculation RMS value from an FFT -> use energy correction.
 
 # FFT
 
+**DFT Equation**
+
+The standard equation of the DFT is as follows:
+
+$$
+X[k] = \sum_{n=0}^{N-1} x[n] \cdot e^{-2\pi i \frac{kn}{N}}, \quad k = 0, 1, 2, \dots, N-1
+$$
+
+We can write the exponential part as N-th rooth of unity format:
+
+$$
+\omega^n = e^{-2 i \pi n / N}
+$$
+
+Which reduces the DFT equation to this:
+
+$$
+X[k] = \sum_{n=0}^{N-1} x[n] \cdot \omega^{kn}, \quad k = 0, 1, 2, \dots, N-1
+$$
+
 **DFT Matrix**
+
+This can just as well be written as a matrix, like this:
 
 $$
 \begin{bmatrix} 
@@ -155,7 +177,6 @@ X_2 \\
 X_{N-1}
 \end{bmatrix} 
 =
-\frac{1}{\sqrt{N}}
 \begin{bmatrix}
 1 & 1 & 1 & \cdots & 1 \\
 1 & \omega & \omega^2 & \cdots & \omega^{N-1} \\
@@ -172,19 +193,22 @@ x_{N-1}
 \end{bmatrix}
 $$
 
-where the $$\omega$$ terms are short hand for roots of unity:
-
-$$
-\omega^n = e^{-2 i \pi n / N}
-$$
-
-The presence of the $$ \frac{1}{\sqrt{N}} $$ term depends on convention. Let's drop it for now.
-
 **DFT of size 8**
+
+I'm not much of a math head and prefer to work concrete examples instead of manipulating
+generic formulas. So let's try do that for a case where $$N=8$$.
+
+In this case, the $$\omega$$ is defined as follows:
 
 $$
 \omega^k_8 = e^{-2 i \pi k / 8}
 $$
+
+Superscript $$k$$ indicates which of the 8th root it is. Subscript $$8$$ indicates that we're dealing 
+with the 8th roots of unity. For everything that follows, we'll always be dealing with an 8-th root, so
+I will drop it to avoid too much visual clutter.
+
+The full DFT-8 matrix now becomes this one:
 
 $$
 \begin{bmatrix} 
@@ -220,11 +244,10 @@ x_7 \\
 \end{bmatrix}
 $$
 
-As sums:
+We can write this as 8 sums:
 
 $$
 \begin{array}{ccrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
-
 X[0] & = x_0 &+&                 x_1 &+&                    x_2 &+&                   x_3 &+&                   x_4 &+&                   x_5 &+&                   x_6 &+&                   x_7 \\
 X[1] & = x_0 &+& \omega^1  \cdot x_1 &+&  \omega^{ 2} \cdot x_2 &+& \omega^{ 3} \cdot x_3 &+& \omega^{ 4} \cdot x_4 &+& \omega^{ 5} \cdot x_5 &+& \omega^{ 6} \cdot x_6 &+& \omega^{ 7} \cdot x_7 \\
 X[2] & = x_0 &+& \omega^2  \cdot x_1 &+&  \omega^{ 4} \cdot x_2 &+& \omega^{ 6} \cdot x_3 &+& \omega^{ 8} \cdot x_4 &+& \omega^{10} \cdot x_5 &+& \omega^{12} \cdot x_6 &+& \omega^{14} \cdot x_7 \\
@@ -233,15 +256,13 @@ X[4] & = x_0 &+& \omega^4  \cdot x_1 &+&  \omega^{ 8} \cdot x_2 &+& \omega^{12} 
 X[5] & = x_0 &+& \omega^5  \cdot x_1 &+&  \omega^{10} \cdot x_2 &+& \omega^{15} \cdot x_3 &+& \omega^{20} \cdot x_4 &+& \omega^{25} \cdot x_5 &+& \omega^{30} \cdot x_6 &+& \omega^{35} \cdot x_7 \\
 X[6] & = x_0 &+& \omega^6  \cdot x_1 &+&  \omega^{12} \cdot x_2 &+& \omega^{18} \cdot x_3 &+& \omega^{24} \cdot x_4 &+& \omega^{30} \cdot x_5 &+& \omega^{36} \cdot x_6 &+& \omega^{42} \cdot x_7 \\
 X[7] & = x_0 &+& \omega^7  \cdot x_1 &+&  \omega^{14} \cdot x_2 &+& \omega^{21} \cdot x_3 &+& \omega^{28} \cdot x_4 &+& \omega^{35} \cdot x_5 &+& \omega^{42} \cdot x_6 &+& \omega^{49} \cdot x_7 \\
-
 \end{array}
 $$
 
-Group even and odd x terms:
+We can't see it yet, but there are some significant reductions possible. Let's group the even and odd terms of $$x_k$$:
 
 $$
 \begin{array}{ccrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
-
 X[0] & = ( x_0 &+&                    x_2 &+&                    x_4 &+&                   x_6) &+& (&                   x_1 &+&                   x_3 &+&                   x_5 &+&                   x_7) \\
 X[1] & = ( x_0 &+& \omega^{ 2}  \cdot x_2 &+&  \omega^{ 4} \cdot x_4 &+& \omega^{ 6} \cdot x_6) &+& (& \omega^{ 1} \cdot x_1 &+& \omega^{ 3} \cdot x_3 &+& \omega^{ 5} \cdot x_5 &+& \omega^{ 7} \cdot x_7) \\
 X[2] & = ( x_0 &+& \omega^{ 4}  \cdot x_2 &+&  \omega^{ 8} \cdot x_4 &+& \omega^{12} \cdot x_6) &+& (& \omega^{ 2} \cdot x_1 &+& \omega^{ 6} \cdot x_3 &+& \omega^{10} \cdot x_5 &+& \omega^{14} \cdot x_7) \\
@@ -250,15 +271,13 @@ X[4] & = ( x_0 &+& \omega^{ 8}  \cdot x_2 &+&  \omega^{16} \cdot x_4 &+& \omega^
 X[5] & = ( x_0 &+& \omega^{10}  \cdot x_2 &+&  \omega^{20} \cdot x_4 &+& \omega^{30} \cdot x_6) &+& (& \omega^{ 5} \cdot x_1 &+& \omega^{15} \cdot x_3 &+& \omega^{25} \cdot x_5 &+& \omega^{35} \cdot x_7) \\
 X[6] & = ( x_0 &+& \omega^{12}  \cdot x_2 &+&  \omega^{24} \cdot x_4 &+& \omega^{36} \cdot x_6) &+& (& \omega^{ 6} \cdot x_1 &+& \omega^{18} \cdot x_3 &+& \omega^{30} \cdot x_5 &+& \omega^{42} \cdot x_7) \\
 X[7] & = ( x_0 &+& \omega^{14}  \cdot x_2 &+&  \omega^{28} \cdot x_4 &+& \omega^{42} \cdot x_6) &+& (& \omega^{ 7} \cdot x_1 &+& \omega^{21} \cdot x_3 &+& \omega^{35} \cdot x_5 &+& \omega^{49} \cdot x_7) \\
-
 \end{array}
 $$
 
-Extract common factor:
+The right half of each of those 8 equations, the one with the odd $$x$$ elements, has a common $$\omega$$ factor:
 
 $$
 \begin{array}{ccrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
-
 X[0] & = ( x_0 &+&                    x_2 &+&                    x_4 &+&                   x_6) &+&            (&                   x_1 &+&                   x_3 &+&                   x_5 &+&                   x_7) \\
 X[1] & = ( x_0 &+& \omega^{ 2}  \cdot x_2 &+&  \omega^{ 4} \cdot x_4 &+& \omega^{ 6} \cdot x_6) &+& \omega^{1} (& \omega^{ 0} \cdot x_1 &+& \omega^{ 2} \cdot x_3 &+& \omega^{ 4} \cdot x_5 &+& \omega^{ 6} \cdot x_7) \\
 X[2] & = ( x_0 &+& \omega^{ 4}  \cdot x_2 &+&  \omega^{ 8} \cdot x_4 &+& \omega^{12} \cdot x_6) &+& \omega^{2} (& \omega^{ 0} \cdot x_1 &+& \omega^{ 4} \cdot x_3 &+& \omega^{ 8} \cdot x_5 &+& \omega^{12} \cdot x_7) \\
@@ -267,22 +286,32 @@ X[4] & = ( x_0 &+& \omega^{ 8}  \cdot x_2 &+&  \omega^{16} \cdot x_4 &+& \omega^
 X[5] & = ( x_0 &+& \omega^{10}  \cdot x_2 &+&  \omega^{20} \cdot x_4 &+& \omega^{30} \cdot x_6) &+& \omega^{5} (& \omega^{ 0} \cdot x_1 &+& \omega^{10} \cdot x_3 &+& \omega^{20} \cdot x_5 &+& \omega^{30} \cdot x_7) \\
 X[6] & = ( x_0 &+& \omega^{12}  \cdot x_2 &+&  \omega^{24} \cdot x_4 &+& \omega^{36} \cdot x_6) &+& \omega^{6} (& \omega^{ 0} \cdot x_1 &+& \omega^{12} \cdot x_3 &+& \omega^{24} \cdot x_5 &+& \omega^{36} \cdot x_7) \\
 X[7] & = ( x_0 &+& \omega^{14}  \cdot x_2 &+&  \omega^{28} \cdot x_4 &+& \omega^{42} \cdot x_6) &+& \omega^{7} (& \omega^{ 0} \cdot x_1 &+& \omega^{14} \cdot x_3 &+& \omega^{28} \cdot x_5 &+& \omega^{42} \cdot x_7) \\
-
 \end{array}
 $$
 
+The $$\omega$$ values between the parenthesis on the left and right are identical. But that's only
+the first step. The real magic starts when we start simplifying the roots of unity.
+
+Roots of unity are located evenly spaced on a unit circle in the complex plane. When you multiply
+a number with the first root of unity, you rotate that number in the complex plane. After rotating
+an 8th root of unity 8 times, you will end up where you started!
+
+So the following equation is true for our DFT case where $$N=8$$:
+
 $$
 \begin{align}
-
-\omega^{k 8}     &= 1          \\
 \omega^{n + k 8} &= \omega^{n} \\
-
 \end{align}
 $$
 
+Some examples: $$\omega^{12} = \omega^4$$, $$\omega^{37} = \omega^5$$, ...
+
+For the specific case where the exponent is a multiple of 8: $$\omega^{k8} = \omega^0 = 1$$.
+
+After making these exponent reductions on the 8 equations, we get this:
+
 $$
 \begin{array}{ccrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
-
 X[0] & = ( x_0 &+&                   x_2 &+&                    x_4 &+&                   x_6) &+&            (&  x_1 &+&                   x_3 &+&                   x_5 &+&                   x_7) \\
 X[1] & = ( x_0 &+& \omega^{ 2} \cdot x_2 &+&  \omega^{ 4} \cdot x_4 &+& \omega^{ 6} \cdot x_6) &+& \omega^{1} (&  x_1 &+& \omega^{ 2} \cdot x_3 &+& \omega^{ 4} \cdot x_5 &+& \omega^{ 6} \cdot x_7) \\
 X[2] & = ( x_0 &+& \omega^{ 4} \cdot x_2 &+&                    x_4 &+& \omega^{ 4} \cdot x_6) &+& \omega^{2} (&  x_1 &+& \omega^{ 4} \cdot x_3 &+&                   x_5 &+& \omega^{ 4} \cdot x_7) \\
@@ -291,21 +320,33 @@ X[4] & = ( x_0 &+&                   x_2 &+&                    x_4 &+&         
 X[5] & = ( x_0 &+& \omega^{ 2} \cdot x_2 &+&  \omega^{ 4} \cdot x_4 &+& \omega^{ 6} \cdot x_6) &+& \omega^{5} (&  x_1 &+& \omega^{ 2} \cdot x_3 &+& \omega^{ 4} \cdot x_5 &+& \omega^{ 6} \cdot x_7) \\
 X[6] & = ( x_0 &+& \omega^{ 4} \cdot x_2 &+&                    x_4 &+& \omega^{ 4} \cdot x_6) &+& \omega^{6} (&  x_1 &+& \omega^{ 4} \cdot x_3 &+&                   x_5 &+& \omega^{ 4} \cdot x_7) \\
 X[7] & = ( x_0 &+& \omega^{ 6} \cdot x_2 &+&  \omega^{ 4} \cdot x_4 &+& \omega^{ 2} \cdot x_6) &+& \omega^{7} (&  x_1 &+& \omega^{ 6} \cdot x_3 &+& \omega^{ 4} \cdot x_5 &+& \omega^{ 2} \cdot x_7) \\
-
 \end{array}
 $$
 
+Note how the top left half and the bottom left half are identical. This is true as
+well for the parts in parenthesis for the top right half and the bottom right half, though
+the common factor in front is different.
+
+We can make another simplification to the roots of unity: points on the unit circle are point
+symmetric when $$N$$ is even. When you rotate a point by $$N/2$$ units, you get the same value
+but on the other side: the real and the imaginary part are inverted.
+
+Mathematrically, this is written as follows:
+
 $$
 \begin{align}
-
 \omega^{n + 4} &= -1 \cdot \omega^{n} \\
-
 \end{align}
 $$
 
+Some examples: $$\omega^{5} = -\omega^1$$, $$\omega^{6} = \omega^2$$, ...
+
+Note how $$\omega^{4} = -\omega^0 = -1$$.
+
+Applied to the DFT-8 equations:
+
 $$
 \begin{array}{ccrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
-
 X[0] & = ( x_0 &+&                     x_2 &+&                    x_4 &+&                     x_6) &+&              (&  x_1 &+&                     x_3 &+&                   x_5 &+&                     x_7) \\
 X[1] & = ( x_0 &+&   \omega^{ 2} \cdot x_2 &+&  -1          \cdot x_4 &+& - \omega^{ 2} \cdot x_6) &+&   \omega^{1} (&  x_1 &+&   \omega^{ 2} \cdot x_3 &+& -1          \cdot x_5 &+& - \omega^{ 2} \cdot x_7) \\
 X[2] & = ( x_0 &+& - 1           \cdot x_2 &+&                    x_4 &+&   -1          \cdot x_6) &+&   \omega^{2} (&  x_1 &+&   -1          \cdot x_3 &+&                   x_5 &+&   -1          \cdot x_7) \\
@@ -314,13 +355,16 @@ X[4] & = ( x_0 &+&                     x_2 &+&                    x_4 &+&       
 X[5] & = ( x_0 &+&   \omega^{ 2} \cdot x_2 &+&  -1          \cdot x_4 &+& - \omega^{ 2} \cdot x_6) &+& - \omega^{1} (&  x_1 &+&   \omega^{ 2} \cdot x_3 &+& -1          \cdot x_5 &+& - \omega^{ 2} \cdot x_7) \\
 X[6] & = ( x_0 &+& - 1           \cdot x_2 &+&                    x_4 &+&   -1          \cdot x_6) &+& - \omega^{2} (&  x_1 &+&   -1          \cdot x_3 &+&                   x_5 &+&   -1          \cdot x_7) \\
 X[7] & = ( x_0 &+& - \omega^{ 2} \cdot x_2 &+&  -1          \cdot x_4 &+&   \omega^{ 2} \cdot x_6) &+& - \omega^{3} (&  x_1 &+& - \omega^{ 2} \cdot x_3 &+& -1          \cdot x_5 &+&   \omega^{ 2} \cdot x_7) \\
-
 \end{array}
 $$
 
+The common $$\omega$$ factors on the right half are now the same for the top and bottom 4 as well, but
+with opposite sign.
+
+Let's create the following sub-equations for the even and odd side:
+
 $$
 \begin{array}{ccrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
-
 X_e[0] & = ( x_0 &+&                   x_2 &+&  x_4 &+&                     x_6) \\
 X_e[1] & = ( x_0 &+& \omega^{ 2} \cdot x_2 &-&  x_4 &-&   \omega^{ 2} \cdot x_6) \\
 X_e[2] & = ( x_0 &-&                   x_2 &+&  x_4 &-&                     x_6) \\
@@ -330,13 +374,13 @@ X_o[0] & = ( x_1 &+&                   x_3 &+&  x_5 &+&                     x_7)
 X_o[1] & = ( x_1 &+& \omega^{ 2} \cdot x_3 &-&  x_5 &-&   \omega^{ 2} \cdot x_7) \\
 X_o[2] & = ( x_1 &-&                   x_3 &+&  x_5 &-&                     x_7) \\
 X_o[3] & = ( x_1 &-& \omega^{ 2} \cdot x_3 &-&  x_5 &+&   \omega^{ 2} \cdot x_7) \\
-
 \end{array}
 $$
 
+With those, we can rewrite the DFT-8 equations like this:
+
 $$
 \begin{array}{ccrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
-
 X[0] & = X_e[0] &+&            X_o[0] \\
 X[1] & = X_e[1] &+& \omega^{1} X_o[1] \\
 X[2] & = X_e[2] &+& \omega^{2} X_o[2] \\
@@ -346,9 +390,10 @@ X[4] & = X_e[0] &-&            X_o[0] \\
 X[5] & = X_e[1] &-& \omega^{1} X_o[1] \\
 X[6] & = X_e[2] &-& \omega^{2} X_o[2] \\
 X[7] & = X_e[3] &-& \omega^{3} X_o[3] \\
-
 \end{array}
 $$
+
+![DFT-8 DIT as 2 DFT-4](/assets/asrc/FFT-DIT_2xDFT4.svg)
 
 $$
 \begin{array}{ccrrrrrrrrrrrrrrrrrrrrrrrrrrrrr}
