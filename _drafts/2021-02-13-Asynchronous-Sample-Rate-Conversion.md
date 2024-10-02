@@ -292,6 +292,10 @@ $$
 The $$\omega$$ values between the parenthesis on the left and right are identical. But that's only
 the first step. The real magic starts when we start simplifying the roots of unity.
 
+XXX
+The left and right right are DFT-4 after observing that $$\omega_8^k = \omega_4^{k/2}$$. This
+only works when $$k$$ is even, but that's the case for the parts between parenthesis. 
+
 Roots of unity are located evenly spaced on a unit circle in the complex plane. When you multiply
 a number with the first root of unity, you rotate that number in the complex plane. After rotating
 an 8th root of unity 8 times, you will end up where you started!
