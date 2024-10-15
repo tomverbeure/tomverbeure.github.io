@@ -548,7 +548,7 @@ Let's try this out with the same number sequence as before:
 
 * The message word is still $$(2,3,-5,1)$$. These are now considered the result of evaluating
   polynomial $$p(x)$$ for the corresponding values $$(-1, 0, 1, 2)$$ of $$x$$.
-* Construct the polynomial $$p(x)$$ out of these coordinate pairs: $$((-1, 2), (0, 3), (1, 1), (2, 1))$$.
+* Construct the polynomial $$p(x)$$ out of these coordinate pairs: $$((-1, 2), (0, 3), (1, -5), (2, 1))$$.
 
     I found [this website](https://www.dcode.fr/lagrange-interpolating-polynomial) to do that for me.
     It uses the Lagrange interpolation method, but Gaussian elimination would have given the
