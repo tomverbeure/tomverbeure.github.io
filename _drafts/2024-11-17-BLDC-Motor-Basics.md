@@ -50,3 +50,9 @@ BLDC motor characteristics:
 * Modelling a BLDC motor with LTSpice
 
   [LTspice #15: How to Create a Brushless DC Motor Model (Part I)](https://www.youtube.com/watch?v=UEygOGviE2k)
+
+* [Shane Colton - Motor Controllers](https://scolton.blogspot.com/p/motor-controllers.html)
+
+  Tons of good info.
+
+
