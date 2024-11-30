@@ -10,7 +10,7 @@ categories:
 
 # Introduction
 
-Last year, I create [Fake Parallel Printer](/2023/01/24/Fake-Parallel-Printer-Capture-Tool-HW.html),
+Last year, I created [Fake Parallel Printer](/2023/01/24/Fake-Parallel-Printer-Capture-Tool-HW.html),
 a tool to capture the output of the parallel printer port of old-ish test equipment so that
 it can be converted into screenshots for blog posts etc.
 
@@ -20,11 +20,11 @@ It's definitely a niche tool, but of all the projects that I've done, it's defin
 the one that has seen the most amount of use.
 
 One issue is that converting the captured raw printing data to a bitmap requires recipes
-that may need quite a bit of tuning. Some output uses HP PCL, other is Encapsulated 
+that may need quite a bit of tuning. Some equipment uses HP PCL, other Encapsulated 
 Postscript (EPS), if you're lucky the output is a standard bitmap format like PCX.
 
-In the blog post, describe the procedures that I use to create screenshots of the test equipment 
-that I personally own, so that don't need to figure it out again when I use the device a
+In the blog post, I describe the procedures to create screenshots of the test equipment 
+that I personally own, so that I don't need to figure it out again when I use the device a
 year later.
 
 That doesn't make it all that useful for others, but somebody may benefit from it when googling
@@ -85,7 +85,7 @@ and [here](/2023/01/29/Installing-Linux-GPIB-Drivers-for-the-Agilent-82357B.html
 ![Agilent 82357B GPIB to USB dongle](/assets/agilent_gpib/agilent_82357b.jpg)
 
 The biggest take-away is that they're expensive (>$100 second hand) and hard to configure when using
-Linux. And as mentioned above, I have only had limited success and using them in printer mode.
+Linux. And as mentioned above, I have only had limited success at using them in printer mode.
 
 **ImageMagick**
 
@@ -196,11 +196,11 @@ except pyvisa.VisaIOError as e:
     print(f"Error: {e}")
 ```
 
-Pyvisa is a universal library to take to test equipement. I wrote about
+Pyvisa is a universal library to talk to test equipement. I wrote about
 it [here](/2020/06/07/Making-Sense-of-Test-and-Measurement-Protocols.html#visa---one-api-that-rules-them-all).
 It will quickly time out when no data arrives in Talk Only mode, but since
-all data transfers happen with valid-ready protocol, you can avoid time-out
-issued by pressing the hardcopy or print button on your oscilloscope first, and
+all data transfers happen with a valid-ready protocol, you can avoid time-out
+issues by pressing the hardcopy or print button on your oscilloscope first, and
 only then launch the script above.
 
 This will work as long as the printing device doesn't go silent while in the middle
@@ -245,7 +245,7 @@ This oscilloscope was an ridiculous $20 bargain at the
 [Silicon Valley Electronics Flea Market](https://www.electronicsfleamarket.com/)
 and it's the one I love working with the most: the user interface is just so
 smooth and intuitive. Like all other old oscilloscopes, the biggest thing going against
-it is the amount if desk space it requires.
+it is the amount of desk space it requires.
 
 ![HP 54542A oscilloscope](/assets/print_file_conversion/54542A.jpg)
 
@@ -377,7 +377,7 @@ convert tds684_0.pcx tds684.png
 
 ![TDS 684B PCX screenshot with normal colors](/assets/print_file_conversion/tds684_normal.png)
 
-The screenshot above uses the *Normal* color setting. The scope also a *Bold* color
+The screenshot above uses the *Normal* color setting. The scope also has a *Bold* color
 setting:
 
 ![TDS 684B screenshot with bold colors](/assets/print_file_conversion/tds684_bold.png)
@@ -403,7 +403,7 @@ The print configuration menu can be reached by pressing: \[Config\] - \[Copy Con
 
 ![Advantest R3273 printer configuration screen](/assets/print_file_conversion/advantest_r3273_printer_config.png)
 
-The R3273 supports a bunch of formats, but I had the hardest time getting it create a color bitmap.
+The R3273 supports a bunch of formats, but I had the hardest time getting it to create a color bitmap.
 After a lot of trial and error, I ended up with this:
 
 ```sh
@@ -463,13 +463,13 @@ a USB-to-GPIB dongle.
 ![Siglent SDS2304X](/assets/print_file_conversion/siglent_sds2304x.jpg)
 
 My Siglent SDS 2304X was my first oscilloscope. It was designed 20 years later than all
-the other stuff, with a modern UI, and modern interfaces such as USB and Ethernet. There is
+the other stuff, with a modern UI and modern interfaces such as USB and Ethernet. There is
 no GPIB, parallel or RS-232 serial port to be found.
 
 I don't love the scope. The UI can become slow when you're displaying a bunch of data on the
-screen, and selecting anything from a menu with a detentless rotary knob can be the most
+screen and selecting something from a menu with a detentless rotary knob can be the most
 infuriating experience. But it's my daily driver because it's not a boat anchor: even on my
-messy desk, I can usually create room to put it down without too much effort.
+messy desk I can usually create room to put it down without too much effort.
 
 You'd think that I use USB or Ethernet to grab screenshots, but most of the time I just
 use a USB stick and shuttle it back and forth between the scope and the PC. That's because
