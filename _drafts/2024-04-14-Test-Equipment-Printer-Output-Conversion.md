@@ -137,6 +137,18 @@ It's available as a standard package for Ubuntu:
 sudo apt install hp2xx
 ```
 
+**Inkscape**
+
+[Inkscape](https://inkscape.org/) is full-featured vector drawing app, but it can also
+be used as a command line tool to convert vector content to bitmaps. I use it to
+convert Encapsulated Postscript file (EPS) to bitmaps.
+
+Like other well known tools, installation on Ubuntu is simple:
+
+```sh
+sudo apt install inkscape
+```
+
 **HP 8753C Companion**
 
 This tool is specific to HP 8753 vector network analyzers. It captures HPGL
@@ -159,7 +171,7 @@ I wrote the following script to record the printing data and save it to
 a file:
 
 [`gpib_talk_to_file.py`](/assets/print_file_conversion/gpib_talk_to_file.py):
-*(click to download)*
+*(Click to download)*
 ```python
 #! /usr/bin/env python3
 
@@ -232,7 +244,7 @@ The end result looks like this:
 This oscilloscope was an ridiculous $20 bargain at the 
 [Silicon Valley Electronics Flea Market](https://www.electronicsfleamarket.com/)
 and it's the one I love working with the most: the user interface is just so
-smooth an intuitive. Like all other old oscilloscopes, the only thing going against
+smooth and intuitive. Like all other old oscilloscopes, the biggest thing going against
 it is the amount if desk space it requires.
 
 ![HP 54542A oscilloscope](/assets/print_file_conversion/54542A.jpg)
@@ -293,6 +305,28 @@ The command line options of `hp2xx` are not intuitive. Maybe it's possible to ge
 better with some other options.
 
 [![HP plotter output](/assets/print_file_conversion/hp54542a_0.plotter.png)](/assets/print_file_conversion/hp54542a_0.plotter.png)
+*Click to enlarge*
+
+# HP Inifinium 54825A Oscilloscope - Parallel Port - Encapsulated Postscript
+
+![HP 54825A oscilloscope](/assets/tdr/pulse_hp_setup_with_bnc_adaptor.jpg)
+
+This indefinite-loaner-from-a-friend oscilloscope has a small PC in it that runs an old version
+of Windows. It can be connected to Ethernet, but I've never done that: capturing parallel printer
+traffic is just too convenient.
+
+On this oscilloscope, I found that printing things out as Encapsulated Postscript was the
+best option. I then use inkscape to convert the screenshot to PNG:
+
+```sh
+./fake_printer.py --port=/dev/ttyACM0 -t 2 -v --prefix=hp_osc_ -s eps
+inkscape -f ./hp_osc_0.eps -w 1580 -y=255 -e hp_osc_0.png
+convert hp_osc_0.png -crop 1294x971+142+80 hp_osc_0_cropped.png
+```
+
+Ignore the part circled in red, that was added in post for an earlier article:
+
+![HP 54825A screenshot](/assets/tdr/hp_no_probe_short_pulse.png)
 *Click to enlarge*
 
 # TDS 684B - Parallel Port - PCX Color Output
@@ -423,6 +457,7 @@ a USB-to-GPIB dongle.
 [![HP 8753C high resolution Smith chart screenshot](/assets/print_file_conversion/hp8753c_smith_hires.png)](/assets/print_file_conversion/hp8753c_smith_hires.png)
 *Click to enlarge*
 
+
 # Siglent SDS 2304X Oscilloscope - USB Drive, Ethernet or USB
 
 ![Siglent SDS2304X](/assets/print_file_conversion/siglent_sds2304x.jpg)
@@ -494,7 +529,7 @@ sudo udevadm trigger
 
 You can now download screenshots with the following script:
 
-[`siglent_screenshot_usb.py`](assets/print_file_conversion/siglent_screenshot_usb.py): *(click to download)*
+[`siglent_screenshot_usb.py`](assets/print_file_conversion/siglent_screenshot_usb.py): *(Click to download)*
 ```python
 #!/usr/bin/env python3
 
