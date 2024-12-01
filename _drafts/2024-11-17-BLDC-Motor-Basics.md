@@ -55,4 +55,7 @@ BLDC motor characteristics:
 
   Tons of good info.
 
+* [Aaed Musa Youtube channel](https://www.youtube.com/@AaedMusa)
+
+  Amazing motor creations.
 
