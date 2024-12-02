@@ -462,7 +462,7 @@ a USB-to-GPIB dongle.
 
 ![Siglent SDS2304X](/assets/print_file_conversion/siglent_sds2304x.jpg)
 
-My Siglent SDS 2304X was my first oscilloscope. It was designed 20 years later than all
+The Siglent SDS 2304X is my first oscilloscope. It was designed 20 years later than all
 the other stuff, with a modern UI and modern interfaces such as USB and Ethernet. There is
 no GPIB, parallel or RS-232 serial port to be found.
 
@@ -472,7 +472,7 @@ infuriating experience. But it's my daily driver because it's not a boat anchor:
 messy desk I can usually create room to put it down without too much effort.
 
 You'd think that I use USB or Ethernet to grab screenshots, but most of the time I just
-use a USB stick and shuttle it back and forth between the scope and the PC. That's because
+shuttle a USB stick back and forth between the scope and the PC. That's because
 setting up the connection is always a bit of pain. However, if you insist, you can set things 
 up this way:
 
@@ -489,7 +489,7 @@ why using a zero-configuration USB stick becomes an attractive alternative.
 
 **USB**
 
-If you want to use USB, you need an old relic of a USB-B cable. It shows up like this:
+For USB, you need an old relic of a USB-B cable. After plugging it in, it shows up like this:
 
 ```sh
 sudo dmesg -w
@@ -511,7 +511,7 @@ Note 3 key parameters:
 * USB product ID: ee3a
 * Product serial number: SDS2XJBD1R2754
 
-Set udev rules so that you can access this device of USB without requiring root permission by
+Set udev rules so that you can access this USB device without requiring root permission by
 creating an `/etc/udev/rules.d/99-usbtmc.rules` file and adding the following line:
 
 ```
