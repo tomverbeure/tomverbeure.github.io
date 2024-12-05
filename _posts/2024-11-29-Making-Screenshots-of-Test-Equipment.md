@@ -23,12 +23,11 @@ One issue is that converting the captured raw printing data to a bitmap requires
 that may need quite a bit of tuning. Some equipment uses HP PCL, other Encapsulated 
 Postscript (EPS), if you're lucky the output is a standard bitmap format like PCX.
 
-In the blog post, I describe the procedures to create screenshots of the test equipment 
-that I personally own, so that I don't need to figure it out again when I use the device a
-year later.
-
-That doesn't make it all that useful for others, but somebody may benefit from it when googling
-for it... As always, I'm using Linux so the software used below reflects that.
+In this blog post, I describe the procedures to create screenshots of test equipment 
+that I personally own so that I don't need to figure it out again when I use the device a
+year later. That doesn't make it all that useful for others, but somebody may benefit from it when googling
+for it... As always, I'm using an Ubuntu Linux distribution so the software used below 
+reflects that.
 
 
 # Screenshot Capturing Interfaces
@@ -51,28 +50,30 @@ Here are some common ways to transfer screenshots from test equipment to your PC
 
 * RS-232 serial
 
-    Reliable, but often slow.
+    Reliable but slow.
 
 * Floppy disk
 
     I have a bunch of test equipment with a floppy drive and I also have a USB floppy drive
     for my PC. However, the drives on all this equipment is broken, in the sense that it can't
-    correctly write data to a disc. There must be some kind of contamination going on when a
-    floppy drive head isn't used for decades.
+    correctly write data to disk. There must be some kind of contamination going on when the
+    floppy drive head hasn't been used for decades.
 
 * GPIB
 
-    Requires an expensive interface dongle and I've yet to figure out how to make it
+    Requires an expensive interface dongle[^1] and I've yet to figure out how to make it
     work for all equipment. Below, I was able to make it work for a TDS 540 oscilloscope, but not for
     an HP 54532A oscilloscope, for example.
+
+   [^1]:There are some lower cost GPIB dongle available now, and there's even
+   [an open source one](https://github.com/xyphro/UsbGpib) that you can build yourself. I haven't
+   tried any of those though.
 
 * Parallel printer port
 
     Available on a lot of old equipment, but it normally can't be captured by a PC unless
     you use [Fake Parallel Printer](/2023/01/24/Fake-Parallel-Printer-Capture-Tool-HW.html).
-
-    We're now more than a year later, and I use it all the time. I find it to be the easiest
-    to use of all the printer interfaces.
+    I use it all the time: it's often easiest to set up of all the printer interfaces.
 
 # Hardware and Software Tools
 
@@ -84,7 +85,7 @@ and [here](/2023/01/29/Installing-Linux-GPIB-Drivers-for-the-Agilent-82357B.html
 
 ![Agilent 82357B GPIB to USB dongle](/assets/agilent_gpib/agilent_82357b.jpg)
 
-The biggest take-away is that they're expensive (>$100 second hand) and hard to configure when using
+Even if you can find a cheap one, the biggest issue is that they are hard to configure when using
 Linux. And as mentioned above, I have only had limited success at using them in printer mode.
 
 **ImageMagick**
@@ -92,8 +93,8 @@ Linux. And as mentioned above, I have only had limited success at using them in 
 ImageMagick is the swiss army knife of bitmap file processing. It has a million features,
 but I primarily use it for file format conversion and image cropping.
 
-I doubt that there's any major Linux distribution that doesn't have it as a standard
-package...
+I doubt that there's a major Linux distribution that doesn't have it as a standard
+package.
 
 ```sh
 sudo apt install imagemagick
@@ -129,7 +130,7 @@ A whole bunch of tools will now be available in `/opt/ghostpdl/bin`, including
 
 **hp2xx**
 
-hp2xx converts HPGL files, originally intended for HP plotter, to bitmaps, EPS etc.
+hp2xx converts HPGL files, originally intended for HP plotters, to bitmaps, EPS etc.
 
 It's available as a standard package for Ubuntu:
 
@@ -153,7 +154,7 @@ sudo apt install inkscape
 
 This tool is specific to HP 8753 vector network analyzers. It captures HPGL
 plotter commands, extracts the data, recreates what's displayed on the screen,
-and allow you to interact with it.
+and allows you to interact with it.
 
 It's available on [GitHub](https://github.com/VK2BEA/HP8753-Companion).
 
@@ -198,21 +199,21 @@ except pyvisa.VisaIOError as e:
 
 Pyvisa is a universal library to talk to test equipement. I wrote about
 it [here](/2020/06/07/Making-Sense-of-Test-and-Measurement-Protocols.html#visa---one-api-that-rules-them-all).
-It will quickly time out when no data arrives in Talk Only mode, but since
+When in Talk Only mode, the script will quickly time out when no data arrives, but since
 all data transfers happen with a valid-ready protocol, you can avoid time-out
-issues by pressing the hardcopy or print button on your oscilloscope first, and
+issues by pressing the hardcopy or print button on your oscilloscope first and
 only then launch the script above.
 
 This will work as long as the printing device doesn't go silent while in the middle
-of printing a page.
+of printing a page in which case a time out could still happen.
 
 # TDS 540 Oscilloscope - GPIB - PCL Output
 
 ![TDS540 oscilloscope](/assets/print_file_conversion/TDS540.jpg)
 
 My old TDS 540 oscilloscope doesn't have a printer port, so I had to make do with
-GPIB. Unlike later version of the TDS series, it also doesn't have the ability to 
-export bitmaps directly, but it has outputs for:
+GPIB. Unlike later versions of the TDS series, it doesn't have the ability to 
+export bitmaps directly but it has outputs for:
 
 * Thinkjet, Deskjet, and Laserjet in PCL format
 * Epson in ESC/P format
@@ -241,7 +242,7 @@ The end result looks like this:
 
 # HP 54542A Oscilloscope - Parallel Port - PCL or HPGL Output
 
-This oscilloscope was an ridiculous $20 bargain at the 
+This oscilloscope was a ridiculous $20 bargain at the 
 [Silicon Valley Electronics Flea Market](https://www.electronicsfleamarket.com/)
 and it's the one I love working with the most: the user interface is just so
 smooth and intuitive. Like all other old oscilloscopes, the biggest thing going against
@@ -271,8 +272,8 @@ You have the following options:
 * PaintJet
 * Plotter
 
-Unlike the TDS 540 I wasn't able to get the *ThinkJet* option to convert into anything, but
-the *DeskJet75dpi* option worked fine with this recipe:
+The supported formats are definitely HP centric! Unlike the TDS 540 I wasn't able to get
+the *ThinkJet* option to convert into anything, but the *DeskJet75dpi* option worked fine with this recipe:
 
 ```sh
 ~/projects/fake_parallel_printer/fake_printer.py -i -p /dev/ttyACM0 -f hp54542a_ -s deskjet.pcl -v
@@ -462,14 +463,14 @@ a USB-to-GPIB dongle.
 
 ![Siglent SDS2304X](/assets/print_file_conversion/siglent_sds2304x.jpg)
 
-The Siglent SDS 2304X is my first oscilloscope. It was designed 20 years later than all
-the other stuff, with a modern UI and modern interfaces such as USB and Ethernet. There is
+The Siglent SDS 2304X was my first oscilloscope. Designed 20 years later than all
+the other stuff, it has a modern UI and modern interfaces such as USB and Ethernet. There is
 no GPIB, parallel or RS-232 serial port to be found.
 
-I don't love the scope. The UI can become slow when you're displaying a bunch of data on the
-screen and selecting something from a menu with a detentless rotary knob can be the most
+I don't love the scope. The UI slows down when you're displaying a bunch of data on the
+screen and selecting something from a menu with an overly sensitive detentless rotary knob can be the most
 infuriating experience. But it's my daily driver because it's not a boat anchor: even on my
-messy desk I can usually create room to put it down without too much effort.
+messy bench I can usually create room to put it down without too much effort.
 
 You'd think that I use USB or Ethernet to grab screenshots, but most of the time I just
 shuttle a USB stick back and forth between the scope and the PC. That's because
