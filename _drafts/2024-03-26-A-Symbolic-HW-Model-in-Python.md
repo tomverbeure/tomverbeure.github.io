@@ -1,5 +1,5 @@
 ---
-title: A Symbolic HW Model in Python
+title: A Symbolic Reference and Hardware Model in Python
 date: 2024-03-26 00:00:00 -1000
 categories:
 ---
@@ -9,7 +9,7 @@ categories:
 
 # The Traditional Hardware Design and Verification Flow 
 
-In a professional FPGA or ASIC development flow, multiple models are often tested
+In a professional FPGA or ASIC development flow, multiple models are tested
 against each other to ensure that the hardware behaves the way it should.
 
 Common models are:
@@ -105,4 +105,120 @@ Let's design a hardware module with the following characteristics:
 * the output of the block is the input pixels downscaled by a factor of 2 in both directions
 * a 5-tap 2-D filter is used on the input image on every other pixel
 * 
+
+
+
+# The Reference Model
+
+When modelling transformations that work at the picture level, it's extremely convenient
+to just assume that you have no memory size constraints so that you can access to all
+pixel information at all times, no matter where it's located in the image. You don't
+have to worry about how much RAM this would take on silicon: it's up to the designer of
+the micro-architecture to figure out how to be efficient.
+
+It usually results in a huge simplification of the reference model, and that's a good
+thing because you want that reference model to be the source of truth. 
+
+For our example, the reference model simply creates a array of output pixels where
+each output pixels contains the coordinates of all the input pixels that are required
+to calculate its value.
+
+The pseudo code is someting like this:
+
+```python
+for y in range(HEIGHT):
+    for x in range(HEIGHT):
+        if near super block boundary:
+            use 3x3 filter
+        else:
+            use 5x5 filter
+
+        get coordinates of input pixels for filter
+        store coordinates at (x,y) of the output image
+```
+
+The reference model python code is not much more complicated. You can find the
+code [here](XXX). Instead of using a 2-dimensional array, it uses an associative
+key-value store with the output pixel coordinates as key. This is a personal 
+preference, but I find `ref_output_pixels [ (x,y) ]` easier to read than `ref_output_pixels[y][x]`.
+
+When the reference model data creation is complete, the `ref_output_pixels` array will contain
+values like this:
+
+```python
+(0,0) => ( (0,0), (0,0), (1,0), 
+           (0,0), (0,0), (1,0),
+           (0,1), (0,1), (1,1) ),
+(1,0) => ( (0,0), (1,0), (2,0), 
+           (0,0), (1,0), (2,0),
+           (0,1), (1,1), (2,1) ),
+...
+(8,7) => ( (6,5), (7,5), (8,5), (9,5), (10,5), 
+           (6,6), (7,6), (8,6), (9,6), (10,6),
+           (6,7), (7,7), (8,7), (9,7), (10,7),
+           (6,8), (7,8), (8,8), (9,8), (10,8),
+           (6,9), (7,9), (8,9), (9,9), (10,9) ),
+...
+```
+
+Note some output pixels only have 9 input pixels, those are the boundary of a super block,
+while others have 15 input pixels.
+
+The reference value of each output pixel is a list of input pixels. At no point do
+I care about the actual value of the pixels. That's why I call it a symbolic model. 
+
+# The Micro-Architecture Model
+
+For a hardware implemention, area and performance some of the most important considerations,
+and that is something the specification has taken into account. When downscaling images, it's common
+to use line stores: RAMs that store previous lines of the image and that are wide as the maximum
+supported image size. However, the number of line stores required depends on the number of filter taps.
+In our case, we can 5 filter taps, which would require 4 line stores. For a maximum resolution of
+7684 pixels, that's 30KB of RAM, or more if you're using more than 8 bits per pixel.
+
+The specification has a number of features that make it possible to reduce requirements:
+
+* it operates on image in super blocks of 64x64 pixels
+   
+    For pixels inside the super block, that reduces the amount of working line store 
+    memory to 4 times 64 pixels or 256 bytes. It also reduces the bandwidth that is required
+    to handle data that must be managed between super blocks: you still need one or more line stores 
+    of 7684 pixels, but they must only be stored or fetched once for every super block row. In
+    other words, once every 64 lines. That opens up the opportunity to stream this line store
+    data in and out of external DRAM instead of keeping it on-chip.
+
+* reduces filter size for pixels at the boundary of a super blocks
+
+    This reduces the amount of data that must be managed and stores for inter-super block
+    operations. Instead of keeping 4 line stores in external DRAM, we now only need 1, which
+    lowers the line store bandwidth even more.
+
+* 4x4 size pixel tiles
+
+    This allows processing 16 pixels at once, which is great to reduce the clock speed for 
+    high resolution images with high pixel rates.
+
+But it's not all roses! The optimizations above have some negative consequences as well:
+
+* pixels from the super block above must be fetched from DMA and stored in a local memory
+* pixels from the bottom of the current super block must be sent to DMA
+* the right-most border of the current super block must become the left pixels of the next one
+* a 5x5 sized filter is larger than the 4x4 input tiles, which adds some more data movement
+* 4x4 size input tiles get downsampled to 2x2 size output tiles, but they must be sent
+  out again as 4x4 tiles.
+ 
+While the RAM area savings are totally worth it, all this adds a significant amount of data 
+management complexity.  This is the kind of problem where a symbolic micro-architecture model shines.
+
+The source code of the hardware symbolic model can be found [here](XXX).
+
+It works as follows:
+
+* an input stream is generated of 4x4 pixel tiles that are sent super block by super block and then
+  tile by tile
+* the DMA is modelled as a FIFO in which the bottom pixels of a super block area stored and then
+  fetches when the super block of the next row needs the pixels above.
+
+
+
 
