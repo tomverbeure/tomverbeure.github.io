@@ -22,7 +22,7 @@ sudo apt update
 sudo apt upgrade
 
 sudo apt install git vim-gtk3
-sudo apt install curl g++ flex bison clang gperf htop feh pinta autoconf \
+sudo apt install curl g++ flex bison clang gperf htop feh autoconf \
 libtool libusb-dev libzip-dev doxygen libpython3-all-dev \
 cmake gettext python3-numpy python3-setuptools libboost-dev build-essential \
 libreadline-dev gawk tcl-dev libffi-dev git \
@@ -109,6 +109,7 @@ mkdir -p ~/tools
 cd ~/tools
 git clone https://github.com/YosysHQ/yosys.git
 cd yosys
+git submodule update --init
 make config-clang
 echo 'PREFIX := /opt/yosys' >> Makefile.conf
 make -j$(nproc)
