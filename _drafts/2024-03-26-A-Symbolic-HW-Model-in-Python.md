@@ -9,15 +9,23 @@ categories:
 
 # The Traditional Hardware Design and Verification Flow 
 
-In a professional FPGA or ASIC development flow, there are often multiple model that are tested
-against each other to ensure that the final model behaves as it should.
+In a professional FPGA or ASIC development flow, multiple models are often tested
+against each other to ensure that the hardware behaves the way it should.
 
 Common models are:
 
-* a reference model that describes the behavior at the highest level
+* a behavioral reference model that describes the functionality at the highest level
 
     These models are often implemented in Matlab, Python, C++ etc. and are usually
-    completely hardware architecture agnostic.
+    completely hardware architecture agnostic. They are often not bit accurate
+    in their calculated results, by using floating point numbers instead of 
+    the fixed point numbers that are used by the hardware, 
+
+    A good example is the [Floating Point C Model](/rtl/2018/11/26/Racing-the-Beam-Ray-Tracer.html#a-floating-point-c-model)
+    that I used to develop my Racing the Beam Ray Tracer, though in this case, 
+    it later transistioned into a hybrid reference/achitectural model.
+
+    ![Checkered plan with reflecting sphere above it](/assets/rt/fixed_point.png)
 
 * an architectural model
 
@@ -29,24 +37,26 @@ Common models are:
 * source hardware model
 
     This model is the source from which the actual hardware is generated. Traditionally,
-    this was an RTL model written in Verilog or VHDL, but HLS getting some traction as well. 
-    In the case of RTL, this model is cycle accurate. In the case of HLS, it still won't
-    be. The difference between an HLS model and the architectural model is in the level
-    at which the hardware is described: the HLS model will describe every single hardware
-    module of the design. The architectural model will often stop at the level of functional
-    group of hardware models.
+    this was an RTL model written in Verilog or VHDL, but high-level synthesis (HLS) is 
+    getting some traction as well. In the case of RTL, this model is cycle accurate. In 
+    the case of HLS, it still won't be. The difference between an HLS model and the architectural 
+    model is in the level at which the hardware is described: the HLS model will describe every 
+    single hardware module of the design. The architectural model will often stop at the 
+    level of functional group of hardware models.
 
 * RTL model
 
     The Verilog or VHDL model of the design. This can be the same as the source hardware
-    model or it can be generated from HLS
+    model or it can be generated from HLS.
     
 * Gatelevel model
 
     The RTL model synthesized into a gatelevel netlist.
 
 During the ASIC design flow, different models are compared against each other to ensure
-that all of them behave the same way. The results created by each model should be the same.
+that all of them behave the same way. The results created by each model should be the same...
+to a certain extent, since it's not possible to guarantee identical results between floating
+point and fixed point models.
 
 One thing that is constant among these models is that they get fed with, operate on, and output
 actual data values. 
@@ -58,23 +68,21 @@ some filtering algorithm to reduce noise, and the outputs are processed pixels.
 
 To verify the design, the various models will be fed with a combination of generic images, 
 'interesting' images that are expected to hit certain use cases, images with just random pixels, 
-or directed tests that explicity try to trigger corner cases.
+or directed tests that explicity try to trigger corner cases. When there is mismatch between different 
+models, the fun part begins: figuring out the root cause. For complex algorithms that contain a lot 
+of state, the error may have happened tens of thousands of transactions before they manifest themselves 
+at the output.  Tracking down such an issue can be a gigantic pain.
 
-When there is mismatch between different models, the fun part begins: figuring out the root cause.
-For complex algorithms that contain a lot of state, the error may have happened tens of thousands
-of transactions before they manifested themselves on the output.  Tracking down such an issue
-can be a gigantic pain.
+And for some hardware units, the hard part of the design is not the math, but getting the right
+data to the math units at the right time, by making sure that the values are written, read,
+and discarded from internal RAMs and FIFOs in the right order. Even with a detailed microarchitectural
+specification, a major part of the code may consist of using just the correct address calculation or
+multiplixer input under various conditions.
 
-For a certain class of algorithms, the hard part of the design is not the math, but getting the right
-data to the math operators at the right time by making sure that the right values are written, read,
-and discarded from internal RAMs and FIFOs at the right time. Even with a detailed microarchitectural
-specification, a major part of the code may consist of using just the right address calculation under
-various conditions.
-
-For those, I've found symbolic models to be a major win: instead of carrying around data values through
-the various stages of the algorithm, I carry around where the data is coming from. It's not easily possible
-to do so in C++ or RTL, but it's trivial to do so in Python. So I've added two additional models to
-the list:
+For these kind of units, I've found symbolic models to be a major win: instead of carrying around data 
+values through the various stages of the algorithm, I carry around where the data is coming from. It's 
+not easy to do so in C++ or RTL, but it's trivial to do so in Python. So I've added two additional models to
+my arsenal of tools:
 
 * a Python symbolic reference model
 * a Python symbolic hardware model
@@ -90,17 +98,11 @@ Let's design a hardware module with the following characteristics:
 * it uses a 5x5 tap 2D filter for downscaling, except for input pixels that require
   looking over a multiple-of-64 pixels boundary. For those a 3x3 tap filter is used.
 
-
-
-
-
-
-
 * the image is sent to the module in pixel blocks of 64x64 pixels
-* the pixel blocks are send in scan-order, from left to right and from right to left
-* pixels arrive through a 16 pixel wide interface that arranged in 4x4 sized pixel tiles
+* the pixel blocks are send in scan-order, from left to right and from top to bottom
+* pixels arrive through a 16 pixel wide interface that carries pixels in 4x4 pixel tiles
 * these tiles themselves are also transmitted in scan order within the 64x64 pixel block
-* the output of the block is the input pixel downscaled by a factor of 2 in both directions
+* the output of the block is the input pixels downscaled by a factor of 2 in both directions
 * a 5-tap 2-D filter is used on the input image on every other pixel
 * 
 
