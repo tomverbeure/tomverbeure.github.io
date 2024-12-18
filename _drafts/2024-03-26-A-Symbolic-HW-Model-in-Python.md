@@ -89,28 +89,78 @@ my arsenal of tools:
 
 In this blog post, I'll go through an example case where I use such model.
 
-# An Example Design 
+# An Image Downscaler as Example Design
 
-Let's design a hardware module with the following characteristics:
+Let's design a hardware module that is easy enough to not spend too much time on it for
+a blog post, but complex enough to illustrate the benefits of a symbolic model: an
+image downscaler.
 
-* it accepts an 8-bits gray scale image with a maximum resolution of 7680x4320.
-* it downscales the input image by a factor of 2 in both directions.
-* it uses a 5x5 tap 2D filter for downscaling, except for input pixels that require
-  looking over a multiple-of-64 pixels boundary. For those a 3x3 tap filter is used.
+The core functionality is the following:
 
-* the image is sent to the module in pixel blocks of 64x64 pixels
-* the pixel blocks are send in scan-order, from left to right and from top to bottom
-* pixels arrive through a 16 pixel wide interface that carries pixels in 4x4 pixel tiles
-* these tiles themselves are also transmitted in scan order within the 64x64 pixel block
-* the output of the block is the input pixels downscaled by a factor of 2 in both directions
-* a 5-tap 2-D filter is used on the input image on every other pixel
-* 
+* it accepts an 8-bits monochrome image with a maximum resolution of 7680x4320.
+* it downscales the input image with a fixed ratio of 2 in both directions.
+* it uses a 3x3 tap 2D filter kernel for downscaling.
 
+![2:1 downscaling with 3x3 filter kernel](/assets/symbolic_model/symbolic_model-downscaling3x3.svg)
 
+If this downscaler is part of a streaming display pipeline, you don't have
+a lot of flexibility: pixels are coming in left to right and top to bottom
+scan order and you need 2 line stores (memories) because you have 3 vertical taps.
+At least, the line stores can half the horizontal resolution, because of the 2:1
+scaling ratio, but that's still 7680/2 ~ 4KB of RAM just for line buffering. In the
+real world, you'd have to multiply that by 3 to support RGB instead of monochrome.
+And we'll need to read and write from this RAM every clock cycle, so there's no
+chance of off-loading this storage to cheaper memory such as external DRAM.
+
+However, we're lucky: the downscaler is part of a video decoder pipeline and those 
+typically work with super blocks of 32x32, 64x64 or 128x128 pixels that are scanned 
+left-to-right and top-to-bottom. And within each super block, pixels are grouped in
+sets of 4x4 pixels that are scanned the same way within the super block.
+
+In summary, there are 3 nested left-to-right, top-to-bottom scan operations:
+
+* the pixels inside each 4x4 pixel block
+* the pixel blocks inside each super block
+* the super blocks inside each picture
+
+The overall data flow then is something like this:
+
+[![Input image format](/assets/symbolic_model/symbolic_model-input_image.svg)](/assets/symbolic_model/symbolic_model-input_image.svg)
+*(Click to enlarge)*
+
+The output has the same organization of pixels, 4x4 pixel blocks and super blocks, but due to the
+2:1 downsampling in both directions, the size of a super block is 32x32 instead of 64x64.
+incoming number of pixel blocks.
+
+There is a major advantage to having the data flow organized this way: 
+
+<p style="text-align:center;"><b>The downscaler operates on one super block at a time instead of the full image.</b></p>
+   
+For pixels inside the super block, that reduces size of the *active* line stores from 
+7680 to just 64 pixels per line store, or 128 bytes for a 3 pixel high filter kernel. 
+While you still need full picture width line stores when moving from one row of super blocks 
+to the one below it, the the bandwidth that is required to access those line store is but a 
+fraction of the one befire: 1/64th to be exact. That opens up the opportunity to stream line 
+store data in and out of external DRAM instead of keeping it on-chip.
+
+But it's not all roses! There are some negative consequences as well:
+
+* pixels from the super block above must be fetched from DMA and stored in a local memory
+* pixels from the bottom of the current super block must be sent to DMA
+* the right-most column of pixels from the current super block are used in the next super block to
+  when doing the 3x3 filter operation, which adds more data management.
+* 4x4 size input tiles get downsampled to 2x2 size output tiles, but they must be sent
+  out again as 4x4 tiles. This requires some kind of pixel block coalescing operation.
+ 
+While the RAM area savings are totally worth it, all this adds a significant amount of data 
+management complexity.  This is the kind of problem where a symbolic micro-architecture model 
+shines.
+
+[![System block diagram](/assets/symbolic_model/symbolic_model-system_block_diagram.svg)](/assets/symbolic_model/symbolic_model-system_block_diagram.svg)
 
 # The Reference Model
 
-When modelling transformations that work at the picture level, it's extremely convenient
+When modeling transformations that work at the picture level, it's extremely convenient
 to just assume that you have no memory size constraints so that you can access to all
 pixel information at all times, no matter where it's located in the image. You don't
 have to worry about how much RAM this would take on silicon: it's up to the designer of
@@ -126,21 +176,17 @@ to calculate its value.
 The pseudo code is someting like this:
 
 ```python
-for y in range(HEIGHT):
-    for x in range(HEIGHT):
-        if near super block boundary:
-            use 3x3 filter
-        else:
-            use 5x5 filter
-
+for y in range(OUTPUT_HEIGHT):
+    for x in range(OUTPUT_WIDTH):
         get coordinates of input pixels for filter
         store coordinates at (x,y) of the output image
 ```
 
 The reference model python code is not much more complicated. You can find the
 code [here](XXX). Instead of using a 2-dimensional array, it uses an associative
-key-value store with the output pixel coordinates as key. This is a personal 
-preference, but I find `ref_output_pixels [ (x,y) ]` easier to read than `ref_output_pixels[y][x]`.
+key-value array with the output pixel coordinates as key. This is a personal 
+preference: I find `ref_output_pixels [ (x,y) ]` easier to read than `ref_output_pixels[y][x]`
+or `ref_output_pixels[x][y]`.
 
 When the reference model data creation is complete, the `ref_output_pixels` array will contain
 values like this:
@@ -153,62 +199,18 @@ values like this:
            (0,0), (1,0), (2,0),
            (0,1), (1,1), (2,1) ),
 ...
-(8,7) => ( (6,5), (7,5), (8,5), (9,5), (10,5), 
-           (6,6), (7,6), (8,6), (9,6), (10,6),
-           (6,7), (7,7), (8,7), (9,7), (10,7),
-           (6,8), (7,8), (8,8), (9,8), (10,8),
-           (6,9), (7,9), (8,9), (9,9), (10,9) ),
+(8,7) => ( 
+           (7,6), (8,6), (9,6),
+           (7,7), (8,7), (9,7),
+           (7,8), (8,8), (9,8) ),
+          
 ...
 ```
-
-Note some output pixels only have 9 input pixels, those are the boundary of a super block,
-while others have 15 input pixels.
 
 The reference value of each output pixel is a list of input pixels. At no point do
 I care about the actual value of the pixels. That's why I call it a symbolic model. 
 
 # The Micro-Architecture Model
-
-For a hardware implemention, area and performance some of the most important considerations,
-and that is something the specification has taken into account. When downscaling images, it's common
-to use line stores: RAMs that store previous lines of the image and that are wide as the maximum
-supported image size. However, the number of line stores required depends on the number of filter taps.
-In our case, we can 5 filter taps, which would require 4 line stores. For a maximum resolution of
-7684 pixels, that's 30KB of RAM, or more if you're using more than 8 bits per pixel.
-
-The specification has a number of features that make it possible to reduce requirements:
-
-* it operates on image in super blocks of 64x64 pixels
-   
-    For pixels inside the super block, that reduces the amount of working line store 
-    memory to 4 times 64 pixels or 256 bytes. It also reduces the bandwidth that is required
-    to handle data that must be managed between super blocks: you still need one or more line stores 
-    of 7684 pixels, but they must only be stored or fetched once for every super block row. In
-    other words, once every 64 lines. That opens up the opportunity to stream this line store
-    data in and out of external DRAM instead of keeping it on-chip.
-
-* reduces filter size for pixels at the boundary of a super blocks
-
-    This reduces the amount of data that must be managed and stores for inter-super block
-    operations. Instead of keeping 4 line stores in external DRAM, we now only need 1, which
-    lowers the line store bandwidth even more.
-
-* 4x4 size pixel tiles
-
-    This allows processing 16 pixels at once, which is great to reduce the clock speed for 
-    high resolution images with high pixel rates.
-
-But it's not all roses! The optimizations above have some negative consequences as well:
-
-* pixels from the super block above must be fetched from DMA and stored in a local memory
-* pixels from the bottom of the current super block must be sent to DMA
-* the right-most border of the current super block must become the left pixels of the next one
-* a 5x5 sized filter is larger than the 4x4 input tiles, which adds some more data movement
-* 4x4 size input tiles get downsampled to 2x2 size output tiles, but they must be sent
-  out again as 4x4 tiles.
- 
-While the RAM area savings are totally worth it, all this adds a significant amount of data 
-management complexity.  This is the kind of problem where a symbolic micro-architecture model shines.
 
 The source code of the hardware symbolic model can be found [here](XXX).
 
