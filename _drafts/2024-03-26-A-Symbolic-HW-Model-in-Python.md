@@ -160,17 +160,18 @@ shines.
 
 # The Reference Model
 
-When modeling transformations that work at the picture level, it's extremely convenient
-to just assume that you have no memory size constraints so that you can access to all
-pixel information at all times, no matter where it's located in the image. You don't
+When modeling transformations that work at the picture level, it's convenient
+to assume that there are no memory size constraints and that you can access all
+pixels at all times, no matter where they are located in the image. You don't
 have to worry about how much RAM this would take on silicon: it's up to the designer of
 the micro-architecture to figure out how to be efficient.
 
-It usually results in a huge simplification of the reference model, and that's a good
-thing because you want that reference model to be the source of truth. 
+This usually results in a huge simplification of the reference model, and that's a good
+thing because you want that reference model to be the source of truth and try to avoid
+any bugs in it.
 
-For our example, the reference model simply creates a array of output pixels where
-each output pixels contains the coordinates of all the input pixels that are required
+For our downscaler, the reference model creates a array of output pixels where
+each output pixel contains the coordinates of all the input pixels that are required
 to calculate its value.
 
 The pseudo code is someting like this:
@@ -188,7 +189,7 @@ key-value array with the output pixel coordinates as key. This is a personal
 preference: I find `ref_output_pixels [ (x,y) ]` easier to read than `ref_output_pixels[y][x]`
 or `ref_output_pixels[x][y]`.
 
-When the reference model data creation is complete, the `ref_output_pixels` array will contain
+When the reference model data creation is complete, the `ref_output_pixels` array contains
 values like this:
 
 ```python
@@ -222,5 +223,23 @@ It works as follows:
   fetches when the super block of the next row needs the pixels above.
 
 
+When we look at the inputs that are required to calculate the 4 output pixels for each tile of 16
+input pixels, we get the following:
+
+![Tile filter contributors](/assets/symbolic_model/symbolic_model-tile_filter_contributors.drawio.svg)
+
+In addition to pixels from the tile itself, we also need pixels from above, above-left and left
+neighbors. When switching from one super block to the next, buffers must be updated with neighboring
+pixels for the whole width and height of the super block. But instead of storing the values of
+individual pixels, we can store intermediate sums to reduce the number of values:
+
+![Tile filter contributors optimized](/assets/symbolic_model/symbolic_model-tile_filter_contributors_2.drawio.svg)
+
+At first sight, it looks like this reduces the number of values in the above and left neighbors buffers
+by half, but that's only true for the above buffer. The left neighbors can be reduced by half for the current tile,
+the bottom left pixel value is also still needed to calculuate the above value for the 4x4 tiles of the
+next row. So the size of the left buffer is not 1/2 of the size of the super block but 3/4.
+
+![Filter inputs for current and future tiles](/assets/symbolic_model/symbolic_model-input_values_for_current_future_tiles.drawio.svg)
 
 
