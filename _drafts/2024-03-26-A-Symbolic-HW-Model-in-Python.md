@@ -10,24 +10,25 @@ categories:
 # The Traditional Hardware Design and Verification Flow 
 
 In a professional FPGA or ASIC development flow, multiple models are tested
-against each other to ensure that the hardware behaves the way it should.
+against each other to ensure that the final design behaves the way it should.
 
 Common models are:
 
-* a behavioral reference model that describes the functionality at the highest level
+* a behavioral model that describes the functionality at the highest level
 
-    These models are often implemented in Matlab, Python, C++ etc. and are usually
+    These models can be implemented in Matlab, Python, C++ etc. and are usually
     completely hardware architecture agnostic. They are often not bit accurate
-    in their calculated results by using floating point numbers instead of 
-    the fixed point numbers that are used by the hardware, 
+    in their calculated results, for example because they use floating point numbers 
+    instead of fixed point numbers that are more commonly used by the hardware, 
 
-    A good example is the [Floating Point C Model](/rtl/2018/11/26/Racing-the-Beam-Ray-Tracer.html#a-floating-point-c-model)
+    A good example is the 
+    [floating point C model](/rtl/2018/11/26/Racing-the-Beam-Ray-Tracer.html#a-floating-point-c-model)
     that I used to develop my Racing the Beam Ray Tracer, though in this case, 
     the model later transistioned into a hybrid reference/achitectural model.
 
     ![Checkered plan with reflecting sphere above it](/assets/rt/fixed_point.png)
 
-* an architectural model
+* an architectural transaction accurate model
 
     An architectural model is already aware of how the hardware is split into major
     functional groups and models the interfaces between these functional groups
@@ -37,12 +38,17 @@ Common models are:
 * source hardware model
 
     This model is the source from which the actual hardware is generated. Traditionally,
-    and still is most cases, this is a synthesizable RTL model written in Verilog or VHDL, but 
+    and still in most cases, this is a synthesizable RTL model written in Verilog or VHDL, but 
     high-level synthesis (HLS) is getting some traction as well. In the case of RTL, this model 
-    is cycle accurate. In the case of HLS, it still won't be. The difference between an HLS model 
-    and the architectural model is in the level at which the hardware is described: the HLS model 
-    describes every single hardware module of the design. The architectural model will often 
-    stop at the level of functional group of hardware models.
+    is cycle accurate. In the case of HLS, it still won't be. 
+
+    The difference between an HLS C++ model[^1] and an architectural C++ model is in the way it is coded: 
+    HLS code needs to obey coding style restrictions that will otherwise prevent the HLS tool 
+    to convert the code to RTL. The HLS model is usually also split up in much more smaller units 
+    that interact with each other.
+
+    [^1]:Not all HLS code is written with C++. There are other languages as well.
+
 
 * RTL model
 
@@ -53,10 +59,9 @@ Common models are:
 
     The RTL model synthesized into a gatelevel netlist.
 
-During an ASIC design flow, different models are compared against each other to ensure
-that all of them behave the same way. The results created by each model should be the same...
-to a certain extent, since it's not possible to guarantee identical results between floating
-point and fixed point models.
+During the design process, different models are compared against each other. Their outputs 
+should be the same... to a certain extent, since it's not possible to guarantee identical results 
+between floating point and fixed point models.
 
 One thing that is constant among these models is that they get fed with, operate on, and output
 actual data values. 
@@ -70,24 +75,26 @@ To verify the design, the various models are fed with a combination of generic i
 'interesting' images that are expected to hit certain use cases, images with just random pixels, 
 or directed tests that explicity try to trigger corner cases. When there is mismatch between different 
 models, the fun part begins: figuring out the root cause. For complex algorithms that have a lot of 
-internal state, the error may have happened thousands of transactions before it manifested itself
-at the output.  Tracking down such an issue can be a gigantic pain.
+internal state, an error may have happened thousands of transactions before it manifests itself
+at the output. Tracking down such an issue can be a gigantic pain.
 
-For some hardware units, the hard part of the design is not the math, but getting the right
+For many hardware units, the hard part of the design is not the math, but getting the right
 data to the math units at the right time, by making sure that the values are written, read,
-and discarded from internal RAMs and FIFOs in the right order. Even with a detailed microarchitectural
+and discarded from internal RAMs and FIFOs in the right order. Even with a detailed micro-architectural
 specification, a major part of the code may consist of using just the correct address calculation or
 multiplixer input under various conditions.
 
-For these kind of units, I use a different kind of model: instead of carrying around data 
+For these kind of units, I use a different kind of model: instead of passing around and operating on data 
 values through the various stages of the pipeline or algorithm, I carry around where the data is coming from. 
 This is not so easy to do in C++ or RTL, but it's trivial in Python. For lack of a better name, 
 I call these *symbolic models*.
 
-So I've added two additional models to my arsenal of tools:
+There are thus two additional models to my arsenal of tools:
 
-* a Python symbolic reference model
-* a Python symbolic hardware model
+* a reference symbolic model 
+* a hardware symbolic model
+
+These models are both written in Python and their outputs are compared against each other.
 
 In this blog post, I'll go through an example case where I use such model.
 
@@ -99,35 +106,33 @@ image downscaler.
 
 The core functionality is the following:
 
-* it accepts an 8-bits monochrome image with a maximum resolution of 7680x4320.
+* it accepts an monochrome image with a maximum resolution of 7680x4320.
 * it downscales the input image with a fixed ratio of 2 in both directions.
 * it uses a 3x3 tap 2D filter kernel for downscaling.
 
-The figure below shows how an image with a 12x8 resolution gets filtered and
+The figure below shows how an image with a 12x8 resolution that gets filtered and
 downsampled into a 6x4 resolution image. 
 
 ![2:1 downscaling with 3x3 filter kernel](/assets/symbolic_model/symbolic_model-downscaling3x3_no_tiles.drawio.svg)
 
-Each square represents an input pixel, each hatched square an output pixels, and the 
+Each square represents an input pixel, each hatched square an output pixel, and the 
 arrows show how input pixels contribute to the input of the 3x3 filter for the output pixel.
 For pixels that lay against the top or left border, the top and left pixels are repeated
 upward and leftward so that the same 3x3 filter can be used.
 
 If this downscaler is part of a streaming display pipeline that eventually sends pixels
-to a monitor, there is not a lot of flexibility: pixels are coming in a left to right and top 
-to bottom scan order and you need 2 line stores (memories) because you have 3 vertical taps.
+to a monitor, there is not a lot of flexibility: pixels arrive in a left to right and top 
+to bottom scan order and you need 2 line stores (memories) because there are 3 vertical filter taps.
 Due to the 2:1 scaling ratio, the line stores can be half the horizontal resolution, 
 but for an 8K resolution that's still 7680/2 ~ 4KB of RAM just for line buffering. In the
 real world, you'd have to multiply that by 3 to support RGB instead of monochrome.
-And since we need to read and write from this RAM every clock cycle, so there's no
-chance of off-loading this storage to cheaper memory such as external DRAM.
-
-![2:1 downscaling with 3x3 filter kernel](/assets/symbolic_model/symbolic_model-downscaling3x3.svg)
+And since we need to read and write from this RAM every clock cycle, there's no chance of 
+off-loading this storage to cheaper memory such as external DRAM.
 
 However, we're lucky: the downscaler is part of a video decoder pipeline and those 
-typically work with super blocks of 32x32, 64x64 or 128x128 pixels that are scanned 
-left-to-right and top-to-bottom. And within each super block, pixels are grouped in
-tiles of 4x4 pixels that are scanned the same way within the super block.
+typically work with super blocks of 32x32 or 64x64 pixels that are scanned 
+left-to-right and top-to-bottom. Within each super block, pixels are grouped in
+tiles of 4x4 pixels that are scanned the same way.
 
 In other words, there are 3 levels of left-to-right, top-to-bottom scan operations:
 
@@ -135,7 +140,8 @@ In other words, there are 3 levels of left-to-right, top-to-bottom scan operatio
 * the pixel tiles inside each super block
 * the super blocks inside each picture
 
-![Input image format](/assets/symbolic_model/symbolic_model-input_image.svg)](/assets/symbolic_model/symbolic_model-input_image.svg)
+[![Input image format](/assets/symbolic_model/symbolic_model-input_image.svg)](/assets/symbolic_model/symbolic_model-input_image.svg)
+
 *(Click to enlarge)*
 
 The output has the same organization of pixels, 4x4 pixel blocks and super blocks, but due to the
@@ -159,10 +165,10 @@ store data in and out of external DRAM instead of keeping it in expensive on-chi
 
 But it's not all roses! There are some negative consequences as well:
 
-* pixels from the super block above must be fetched from DMA and stored in a local memory
+* pixels from the super block above the current one must be fetched from DMA and stored in a local memory
 * pixels at the bottom of the current super block must be sent to DMA
 * the right-most column of pixels from the current super block are used in the next super block to
-  when doing the 3x3 filter operation, which adds yet more data management.
+  when doing the 3x3 filter operation
 * 4x4 size input tiles get downsampled to 2x2 size output tiles, but they must be sent
   out again as 4x4 tiles. This requires some kind of pixel tile merging operation.
  
@@ -178,9 +184,9 @@ When modeling transformations that work at the picture level, it's convenient
 to assume that there are no memory size constraints and that you can access all
 pixels at all times no matter where they are located in the image. You don't
 have to worry about how much RAM this would take on silicon: it's up to the designer of
-the micro-architecture to figure out how to be efficient.
+the micro-architecture to figure out how to create an area efficient implementation.
 
-This usually results in a huge simplification of the reference model, and which is good
+This usually results in a huge simplification of the reference model, which is good
 because as the source of truth you want to avoid any bugs in it.
 
 For our downscaler, the reference model creates an array of output pixels where
@@ -197,10 +203,11 @@ for y in range(OUTPUT_HEIGHT):
 ```
 
 The reference model python code is not much more complicated. You can find the
-code [here](XXX). Instead of using a 2-dimensional array, it uses an associative
-key-value array with the output pixel coordinates as key. This is a personal 
-preference: I find `ref_output_pixels [ (x,y) ]` easier to read than `ref_output_pixels[y][x]`
-or `ref_output_pixels[x][y]`.
+code [here](https://github.com/tomverbeure/symbolic_model/blob/2462720bbd0391e3015b044f3c70cb36ef4fd6b8/downscaler.py#L36-L64). 
+
+Instead of a 2-dimensional array, it uses a dictionary with the output pixel 
+coordinates as key. This is a personal preference: I think `ref_output_pixels [ (x,y) ]` 
+looks cleaner than `ref_output_pixels[y][x]` or `ref_output_pixels[x][y]`.
 
 When the reference model data creation is complete, the `ref_output_pixels` array contains
 values like this:
@@ -226,23 +233,35 @@ mathematical operation that is applied on these inputs*.
 
 # The Micro-Architecture Model
 
-The source code of the hardware symbolic model can be found [here](XXX).
+The source code of the hardware symbolic model can be found 
+[here](https://github.com/tomverbeure/symbolic_model/blob/2462720bbd0391e3015b044f3c70cb36ef4fd6b8/downscaler.py#L96).
 
-It has the following main data units:
+It has the following main [data buffers and FIFOs](https://github.com/tomverbeure/symbolic_model/blob/2462720bbd0391e3015b044f3c70cb36ef4fd6b8/downscaler.py#L97-L111):
 
-* an input stream is generated of 4x4 pixel tiles that are sent super block by super block and then
-  tile by tile.
-* it creates an output stream of 4x4 pixel tiles with the downsampled image.
-* the DMA FIFO is modelled with simple Python list in which the bottom pixels of a super block area 
+* an input stream, generated by [`gen_input_stream`](https://github.com/tomverbeure/symbolic_model/blob/2462720bbd0391e3015b044f3c70cb36ef4fd6b8/downscaler.py#L71),
+  4x4 pixel tiles that are sent super block by super block and then tile by tile.
+* an output stream of 4x4 pixel tiles with the downsampled image.
+* a DMA FIFO, modelled with simple Python list in which the bottom pixels of a super block area 
   stored and later fetched when the super block of the next row needs the neighboring pixels
   above.
-* there are buffers with above and left neighboring pixels that cover the width and height
+* buffers with above and left neighboring pixels that cover the width and height
   of a super block.
 * an output merge FIFO is used to group a set to 4 2x2 downsampled pixels into a 4x4 tile
   of pixels
 
-After that, the model loops through the super blocks in scan order and then the
-tiles in scan order, and for each 4x4 tile it calculates a 2x2 output tiles.
+The model loops through the super blocks in scan order and then the tiles in scan order, 
+and for each 4x4 tile it calculates a 2x2 output tiles.
+
+```python
+    for sy in range(nr of vertical super block):
+        for sx in range(nr of horizontal super block):
+            for tile_y in range(nr of vertical tiles in a superblock):
+                for tile_x in range(nr of horizontal tiles in a superblock):
+                    fetch 4x4 tile with input pixels
+                    calculate 2x2 output pixels
+                    merge 2x2 output pixels into 4x4 output tiles
+                    data management
+```
 
 When we look at the inputs that are required to calculate the 4 output pixels for each tile of 16
 input pixels, we get the following:
@@ -267,7 +286,26 @@ In the left figure above, the red rectangles contain the components needed for t
 the green for the top-right output pixel etc. The right figure shows the partial sums that must be
 calculated for the left and above neighbors for future 4x4 tiles.
 
-These red, green, blue and purple rectangles have direct corresponding sections in the code.
+These red, green, blue and purple rectangles have 
+[direct corresponding sections in the code](https://github.com/tomverbeure/symbolic_model/blob/2462720bbd0391e3015b044f3c70cb36ef4fd6b8/downscaler.py#L196-L210).
+
+```python
+    p00 = (                      tile_above_pixels[0], 
+            tile_left_pixels[0], input_tile[0], input_tile[1], 
+                                 input_tile[4], input_tile[5] )
+
+    p10 = (                      tile_above_pixels[1], 
+            input_tile[ 1],      input_tile[ 2], input_tile[ 3] , 
+            input_tile[ 5],      input_tile[ 6], input_tile[ 7] ) 
+
+    p01 = (tile_left_pixels[1],  input_tile[ 4], input_tile[ 5] , 
+                                 input_tile[ 8], input_tile[ 9] , 
+                                 input_tile[12], input_tile[13] ) 
+
+    p11 = ( input_tile[ 5],      input_tile[ 6], input_tile[ 7] , 
+            input_tile[ 9],      input_tile[10], input_tile[11] , 
+            input_tile[13],      input_tile[14], input_tile[15] ) 
+```
 
 For each tile, there's quite a bit of bookkeeping of context values, reading and writing to
 buffers to keep everything going.
@@ -276,8 +314,8 @@ buffers to keep everything going.
 
 In traditional models, as soon as intermediate values are calculated, the original values can
 be dropped. In the case of our example, with a filter where all coefficients are 1, the above
-and left values intermediate values of the top-left output pixels are stored as 18 and 11 while
-the original values of (3,9,6) and (5,6) aren't needed anymore. This and the fact the multiple
+and left values intermediate values of the top-left output pixels are summed and stored as 18 and 11, 
+and the original values of (3,9,6) and (5,6) aren't needed anymore. This and the fact the multiple
 inputs might have the same numerical value is what makes traditional models often hard to debug.
 
 ![Intermediate values](/assets/symbolic_model/symbolic_model-intermediate values.drawio.svg)
@@ -304,8 +342,10 @@ removed from the final result. Here is the output result for output pixel (12,10
   ...
 ```
 
-Keeping the intermediate results makes it easier to debug but to compare the output value against
-the reference model, the data must be flattened into this:
+Keeping the intermediate results makes it easier to debug but to compare against the reference model, 
+the data with nested lists must be 
+[flattened](https://github.com/tomverbeure/symbolic_model/blob/2462720bbd0391e3015b044f3c70cb36ef4fd6b8/downscaler.py#L298-L307) 
+into this:
 
 ```python
   ...
@@ -325,7 +365,8 @@ the reference model, the data must be flattened into this:
 
 But even that is not enough to compare: the reference value has the 3x3 input values
 in a scan order that was destroyed due to using intermediate values so there's a final 
-sorting step to restore the scan order:
+[sorting step](https://github.com/tomverbeure/symbolic_model/blob/2462720bbd0391e3015b044f3c70cb36ef4fd6b8/downscaler.py#L294-L296)
+to restore the scan order:
 
 ```python
 ...
@@ -336,8 +377,9 @@ sorting step to restore the scan order:
   )
 ```
 
-Finally, we can go through all the output tiles of the micro-architecture
-model and compare them against the tiles of the reference model.
+Finally, we can go through all the output tiles of the hardware
+model and [compare them](https://github.com/tomverbeure/symbolic_model/blob/2462720bbd0391e3015b044f3c70cb36ef4fd6b8/downscaler.py#L369)
+against the tiles of the reference model.
 
 If all goes well, the script should give the following:
 
@@ -361,7 +403,7 @@ ref:
  Pixel(x=7, y=1),
  Pixel(x=8, y=1),
  Pixel(x=9, y=1)]
-hls:
+hw:
 [Pixel(x=7, y=0),
  Pixel(x=8, y=0),
  Pixel(x=8, y=0),
@@ -384,8 +426,8 @@ a few weeks to develop and debug the Python model yet getting the C++ model runn
 day or two. If the Python model is fully debugged, the only issues encountered are typos made during
 the conversion and signal precision mistakes.
 
-The story is different when using RTL: with HLS, the synthesis-to-Verilog will convert for loops
-to FSMs and take care of pipelining. If you write RTL directly, that will be on you. You could
+The story is different when using RTL: with HLS, the synthesis-to-Verilog will convert *for* loops
+to FSMs and take care of pipelining. When writing RTL directly, that tasks falls on you. You could
 change the Python model and switch to FSMs there to make that step a bit easier. Either way,
 having flushed out all the data management will allow you to focus on just the RTL specific
 tasks while being confident that the core architecture is correct.
@@ -399,7 +441,7 @@ in quad-tree depth-first order.
 
 ![Super block with a coding tree](/assets/symbolic_model/symbolic_model-coding_tree.drawio.svg)
 
-Dealing with this kind of data stream kicks up the complexity a whole lot. For design like this,
+Dealing with this kind of data stream kicks up the complexity a whole lot. For designs like this,
 the combination of a symbolic model and a random coding tree generator is a super power that will
 hit corner case bugs with an efficiency that puts regular models to shame.
 
@@ -411,7 +453,7 @@ and incorrect behavior was discovered long after the hardware model was implemen
 some of the implementation subtleties may have already been forgotten.
 
 It's scary to make changes on a hardware design that has complex data management when corner case
-bugs may require thousands of regression simulations to uncover. If the symbolic model is the initial
+bugs take thousands of regression simulations to uncover. If the symbolic model is the initial
 source of truth, this is usually just not an issue: exhaustive tests can often be run in seconds and
 once the changes pass there, you have confidence that the corresponding changes in the hardware model
 source code are sound. 
@@ -443,6 +485,10 @@ the individual block level or sometimes even sub-block level when dealing with p
 data management cases. My symbolic model script might contain multiple disjoint models that each
 implement a sub-block of the same major block, without interacting with eachother.
 
+# References
+
+* [*symbolic_model* repo on GitHub](https://github.com/tomverbeure/symbolic_model/tree/main)
+
 # Conclusion
 
 Symbolic models in Python have been a major factor in boosting my design productivity and increasing
@@ -450,5 +496,6 @@ my confidence in a micro-architectural implementation.
 
 If you need to architect and implement a hardware block with some tricky data management, give them a
 try, and let me know how it went!
+
 
 
