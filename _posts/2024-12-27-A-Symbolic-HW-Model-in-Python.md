@@ -1,6 +1,6 @@
 ---
 title: Symbolic Reference and Hardware Models in Python
-date: 2024-03-26 00:00:00 -1000
+date: 2024-12-27 00:00:00 -1000
 categories:
 ---
 
