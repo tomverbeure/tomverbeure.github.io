@@ -485,10 +485,6 @@ the individual block level or sometimes even sub-block level when dealing with p
 data management cases. My symbolic model script might contain multiple disjoint models that each
 implement a sub-block of the same major block, without interacting with eachother.
 
-# References
-
-* [*symbolic_model* repo on GitHub](https://github.com/tomverbeure/symbolic_model/tree/main)
-
 # Conclusion
 
 Symbolic models in Python have been a major factor in boosting my design productivity and increasing
@@ -496,6 +492,10 @@ my confidence in a micro-architectural implementation.
 
 If you need to architect and implement a hardware block with some tricky data management, give them a
 try, and let me know how it went!
+
+# References
+
+* [*symbolic_model* repo on GitHub](https://github.com/tomverbeure/symbolic_model/tree/main)
 
 
 
