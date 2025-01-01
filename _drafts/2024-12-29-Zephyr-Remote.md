@@ -12,13 +12,12 @@ categories:
 
 # References
 
-* Remote control
+* [Zephyr - Remote control product page](https://store.zephyronline.com/remote-control-rf-capacitive-touch-14000010)
 
-    https://store.zephyronline.com/remote-control-rf-capacitive-touch-14000010
+* [Zephyr remote control FCC report](https://fcc.report/FCC-ID/VVP-14000010)
 
-* Google for "14000010 remote control fcc"
+    Google for "14000010 remote control fcc"
 
-    https://fcc.report/FCC-ID/VVP-14000010
 
 * [Stack exchange - North American Regulations on 433MHz Radio](https://electronics.stackexchange.com/questions/293639/north-american-regulations-on-433mhz-radio)
 
@@ -38,7 +37,7 @@ categories:
 
 * [CY Wireless Technology - Learning Code Remote Control](https://www.rficy.com/upload/20231204172920.pdf)
 
-* [Qiachip WL102+RX470 Module kit | 433Mhz Superheterodyne RF Receiver and Transmitter Module](https://qiachip.com/products/qiachip-433mhz-superheterodyne-rf-receiver-and-transmitter-module)
+* [Qiachip WL102+RX470 Module kit - 433Mhz Superheterodyne RF Receiver and Transmitter Module](https://qiachip.com/products/qiachip-433mhz-superheterodyne-rf-receiver-and-transmitter-module)
 
 * [scribd - 433MHz Wireless 4 channel RF receiver 1527 learning code decoder](https://www.scribd.com/document/591856607/RX480R-4CH)
 
@@ -50,3 +49,17 @@ categories:
 
 * [components 101 - HT12E RF Encoder IC](https://components101.com/ics/ht12e-encoder-pin-diagram-datasheet)
 
+
+* [Using Fixed Code Remotes with Arduino](https://karooza.net/using-fixed-code-remotes-with-arduino)
+
+* [EV1527 - Special Data Format For RF Senders And Self-Learning Receivers](https://done.land/components/data/datatransmission/wireless/shortrangedevice/am/ask/ev1527/)
+
+* [components 101 -  EV1527 One Time Programmable Encoder IC](https://components101.com/ics/ev1527-encoder-ic-pinout-datasheet-equivalent-circuit-specs)
+
+
+* [instructables - Decoding and Sending 433MHz RF Codes With Arduino and Rc-switch](https://www.instructables.com/Decoding-and-sending-433MHz-RF-codes-with-Arduino-/)
+
+* [The difference between fixed code (PT2262) and learning code (Ev1527)](https://www.burglaryalarmsystem.com/technology-news/the-difference-between-fixed-code-pt2262-and-learning-code-ev1527.html)
+
+
+* 
