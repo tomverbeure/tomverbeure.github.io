@@ -157,7 +157,7 @@ Here's an example of a polynomial of degree 3, $$f(x)=2 + 3x -5x^2 + x^3$$, eval
 *I used the excellent [desmos graphing calculator](https://www.desmos.com/calculator) to create this
 function plot.*
 
-When given the points $$(-1, 7), (0,2), (1, 1), (2, -4)$$, we can fill in the values into 
+When given the points $$(-1, -7), (0,2), (1, 1), (2, -4)$$, we can fill in the values into 
 $$f(x) = c_0 + c_1 x + c_2 x^2 + c_3 x^3$$ for each of point, which results in the following set 
 of 4 linear equations with 4 unknowns:
 
