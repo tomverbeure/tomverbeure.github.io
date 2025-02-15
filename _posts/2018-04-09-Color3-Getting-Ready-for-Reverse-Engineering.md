@@ -32,3 +32,13 @@ I think it's a matter of signal integrity of the USB Blaster clone.
 
 Tomorrow, I'll try again with a high quality Terasic USB Blaster clone that we use at work.
 
+# References
+
+All posts in this series:
+
+* [Hacking the eeColor Color3](/2018/04/08/Hacking-the-eeColor-Color3.html) 
+* [eeColor Color3: Getting Ready for Reverse Engineering](/2018/04/09/Color3-Getting-Ready-for-Reverse-Engineering.html)
+* [eeColor Color3: SiI9136 and SiI9233 Connections to FPGA](/2018/04/11/Color3-Sil9136-and-Sil9233-Connections-to-FPGA.html)
+* [eeColor Color3: HDMI TX is Up!](/2018/04/15/Color3-HDMI-TX-is-Up.html)
+* [eeColor Color3: SiI9233 and SiI9136 I2C Traces](/2018/04/22/Color3-Sil9233-and-Sil9136-I2C-Traces.html)
+* [eeColor Color3: HDMI RX to HDMI TX is UP!!!](/2018/04/23/Color3-HDMI-RX-to-HDMI-TX-is-UP.html)

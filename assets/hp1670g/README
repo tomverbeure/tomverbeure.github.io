@@ -1,0 +1,26 @@
+
+    This file contains instructions for loading the 16500B fonts onto a
+    HP-UX or other unix(r) workstation.  The same fonts can be used with
+    X server packages on PC's. However, the method for installing the fonts
+    on different PC X servers will vary by the vendor, so check with your
+    X documentation for details and instructions.
+     
+
+    TO LOAD THE FONTS FOR USE ON A UNIX SYSTEM:
+
+    1. Move the files lg165.bdf and sm165.bdf from their location on the
+       16500B hard disk (in directory /system) to a desired directory
+       on your Unix system.
+    2. Cd to that directory, and do a "mkfontdir" command.
+    3. Type "xset +fp <dir>", where <dir> is the full path of your font dir.
+    4. Type "xset fp rehash".
+
+
+    That's all there is to it.  Steps (3) and (4) will need to be repeated
+    each time that X11 is restarted.  To overcome this, simply install the 
+    fonts as directed in your X11 font directory, typically found in:
+     
+                  /usr/lib/X11/fonts/misc
+
+    This directory is usually protected so this will require action from 
+    your system administrator.

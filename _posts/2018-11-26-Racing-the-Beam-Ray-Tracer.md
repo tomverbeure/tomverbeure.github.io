@@ -208,7 +208,7 @@ The [code](https://github.com/tomverbeure/rt/blob/cba6c0f1caa04c2797f21d0c4d85c9
 I decided on pure C code without any outside libraries, so I had to create my own vector structs. I made a lot
 of changes to those along the way.
 
-I used the [scratchapixel.com](scratchapixel.com) ray-tracing tutorial code as the base for
+I used the [scratchapixel.com](https://www.scratchapixel.com/) ray-tracing tutorial code as the base for
 [ray/plane](https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-plane-and-ray-disk-intersection)
 and [ray/sphere](https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection) intersection.
 
@@ -420,7 +420,7 @@ This isn't too bad! There are 36 HW multipliers in the FPGA, so that's an exact 
 With all the preliminary work completed, it was time to start with the RTL coding.
 
 After [the excellent experience](https://tomverbeure.github.io/risc-v/2018/11/19/A-Bug-Free-RISC-V-Core-without-Simulation.html)
-with my [MR1](https://github.com/tomverbeure/mr1) RISC-V CPU, [SpinalHDL](https://spinalhdl.github.io/SpinalDoc/)
+with my [MR1](https://github.com/tomverbeure/mr1) RISC-V CPU, [SpinalHDL](https://spinalhdl.github.io/SpinalDoc-RTD/master/index.html)
 is now my hobby RTL language of choice. It even has a fixed point library!
 
 First step is to get [an LED blinking](https://github.com/tomverbeure/rt/blob/2702712aa116c3d1b078ff453b5abaff12b455a1/src/main/scala/rt/Pano.scala#L51-L61).

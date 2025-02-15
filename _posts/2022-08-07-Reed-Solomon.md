@@ -29,10 +29,12 @@ categories:
 I've always been intimidated by coding techniques: encryption and decryption, hashing operations,
 error correction codes, and even compression and decompression techniques. It's not that I
 didn't know what they do, but I often felt that I never quite understood the basics, let alone 
-had an intuitive understanding of how they worked.
+have an intuitive understanding of how they worked.
 
 Reed-Solomon forward error correction (FEC) is one such coding method. Until the discovery of 
-better coding techniques (Turbo codes and low-density parity codes), it was one of the most 
+better coding techniques such as [turbo](https://en.wikipedia.org/wiki/Turbo_code) and 
+[low-density parity check codes (LDPC)](https://en.wikipedia.org/wiki/Low-density_parity-check_code), 
+it was one of the most 
 powerful ways to make data storage or data transmission resilient against corruption: the 
 [Voyager spacecrafts](https://en.wikipedia.org/wiki/Voyager_program) used Reed-Solomon
 coding to 
@@ -44,21 +46,22 @@ The subject is covered in many college-level courses on coding and signal proces
 but a lot of the material online is theoretical, math heavy, and not intuitive. At least not 
 for me...
 
-That changed when found this 
+That changed when I found this 
 [Introduction to Reed-Solomon](https://innovation.vivint.com/introduction-to-reed-solomon-bc264d0794f8)
 article. It explains how polynomials and polynomial evaluation at certain points are a way to
 create a code with redundancy, and how to recover the original message back from it. The article
 is excellent, and it makes some of what I'm covering below unnecessary or redundant (ha!), 
-because some parts of what follows will be a recreation of that material. However my take on it
-has dumbed things down even more, and yet also covers a larger variety of Reed-Solomon codes. 
+because parts of what follows will be a recreation of that material. However my take on it
+has dumbed things down even more yet also covers a larger variety of Reed-Solomon codes. 
 
-One of the best parts of that article is the focus on integer math. Academic literature about 
-coding theory almost always start with the theory of finite fields, also known as Galois fields, and then 
+One of the best aspects of that article is the focus on integer math. Academic literature about 
+coding theory almost always starts with the theory of finite fields, also known as Galois fields, and then 
 build on that when explaining coding algorithms. I found this one of the bigger obstacles in 
-understanding the fundamentals of Reed-Solomon coding (and BCH coding, a close relative) because instead of 
+understanding the fundamentals of Reed-Solomon codes (and 
+[BCH codes](https://en.wikipedia.org/wiki/BCH_code), a close relative) because instead of 
 getting to know one new topic, you now have to tackle two at the same time. 
 
-For this reason, everything in this blog post will be integer math as well. Using integer math
+For this reason, everything in this blog post will use integer math as well. Integer math
 makes Reed-Solomon codes impractical for real world use, but it results in a better understanding
 about the fundamentals, before stepping up to the next level with the introduction of finite field
 math.
@@ -101,8 +104,8 @@ g(x) & = 7 x - x^2 \\
 Addition and subtraction work by adding or subtracting together the coefficients that belong to the same $$x^i$$:
 
 $$\begin{aligned}
-f(x)+g(x) & = (3+0) + (2+7) x + (5-1) x^2 + (4+0) x^3 \\
-          & = 3 + 9 x + 4 x^2 + 4 x^3 \\
+f(x)+g(x) & = (3+0) + (2+7) x + (5-1) x^2 + (-4+0) x^3 \\
+          & = 3 + 9 x + 4 x^2 - 4 x^3 \\
 \end{aligned}$$
 
 You can multiply polynomials:
@@ -271,7 +274,7 @@ theory, but there's a least some commonality between different texts.
     Code words are often indicated with a vector $$s = (s_0, s_1, ... , s_{n-1})$$.
 
     When our message of three 4-symbol message words is converted into three 6-symbol code words, 
-    it looks like this:
+    it could have the following code words:
 
     ('H', 'e', 'l', 'l', 'a', 'b'), ('o', ' ', 'w', 'o', 'g', 't'), ('r', 'l', 'd', ' ', 'm', 'j')
 
@@ -281,7 +284,7 @@ theory, but there's a least some commonality between different texts.
     schemes are systematic in nature, but it's a nice property to have.
 
     For Reed-Solomon codes, the length $$n$$ of a code word must be smaller or equal than the number of
-    values of the alphabet that it uses.
+    values in the alphabet that it uses.
 
 In all the examples below, the message words will have a length of 4, code words will have a length 6,
 and the symbols are using an alphabet of regular, unlimited range integers.
@@ -322,8 +325,8 @@ And that's what the original way of Reed-Solomon coding is all about:
 
 **Creating redundant information by evaluating a polynomial at more values of $$x$$ than is strictly necessary**.
 
-Let's go through a concrete example where I want to setup a communication protocol to transmit information that
-consists of a sequence of numbers, but where I also want to add redundancy so that the message still can be 
+Let's go through a concrete example: I want to setup a communication protocol to transmit information that
+consists of a sequence of numbers, but I also want to add redundancy so that the message still can be 
 recovered after a corruption.
 
 Here's one way to go about it:
@@ -344,8 +347,8 @@ that are not message dependent:
 
 * Agree on how some polynomial $$p(x)$$ should be constructed out of the symbols of the message word.
 
-    In the original paper the message word symbols are used as coefficients of this polynomial.
-    (But that's not always the best choice. See later sections...)
+    In the original paper the message word symbols are used as coefficients of this polynomial,
+    but that's not always the best choice. See later sections...
 
 * Agree on values of $$x$$ for which to evaluate the polynomial $$p(x)$$.
 
@@ -366,7 +369,7 @@ Here's what happens to a message word with a value of $$(2, 3, -5, 1)$$:
 
 **Encoder**
 
-* Create polynomial $$p(x)=2 + 3x -5x^2 + x^3$$.
+* Create polynomial $$p(x)=2 + 3x -5x^2 + x^3$$. It uses the message word symbols as coefficients.
 
     *I'm reusing here the polynomial that I used for the example in a previous section.*
 
@@ -412,7 +415,7 @@ The original Reed-Solomon paper proposes the following algorithm:
 * If there were $$s$$ corruptions or less, the set of coefficients with the highest count will 
   be coefficients of the polynomial that was used by the encoder.
 
-Here's how to works out for our example:
+Here's how that works out for our example:
 
 * The decoder received the following code word: $$(7, 2, 6, -4, -7, -2)$$.
 
@@ -488,13 +491,13 @@ Here's how to works out for our example:
   $$(1, 6),(2, -4),(3, -7),(4, -2) \rightarrow (2, 3, -5, 1)$$
 
 * The coefficients $$(2,3,-5,1)$$ come up 6 times. All other solutions are different
-  from each other, so $$(2,3,-5,1)$$ is the winner, and the correct solution!
+  from each other, so $$(2,3,-5,1)$$ is the winner. This is also the correct solution.
 
-This is a very straightforward error correcting algorithm, but it's not
+This may be a straightforward error correcting algorithm, but it's not
 a usable one: even for this toy example with a message word of size 4 and
 only 2 additional redudant symbols, we need to determine the polynomial coefficients 15 times.
 
-In the real world, a very popular configuration is to have a message word with 223, and a
+In the real world, a popular configuration is to have a message word with 223, and a
 code word with 255 symbols.
 
 The [formula to calculate the number of combinations](https://en.wikipedia.org/wiki/Combination) is: 
@@ -545,7 +548,7 @@ Let's try this out with the same number sequence as before:
 
 * The message word is still $$(2,3,-5,1)$$. These are now considered the result of evaluating
   polynomial $$p(x)$$ for the corresponding values $$(-1, 0, 1, 2)$$ of $$x$$.
-* Construct the polynomial $$p(x)$$ out of these coordinate pairs: $$((-1, 2), (0, 3), (1, 1), (2, 1))$$.
+* Construct the polynomial $$p(x)$$ out of these coordinate pairs: $$((-1, 2), (0, 3), (1, -5), (2, 1))$$.
 
     I found [this website](https://www.dcode.fr/lagrange-interpolating-polynomial) to do that for me.
     It uses the Lagrange interpolation method, but Gaussian elimination would have given the
@@ -590,7 +593,7 @@ Here's a way to create a polynomial with these properties:
     values of $$x_i$$, as many as there are redundant symbols.
 
     $$g(x)$$ expands to $$g_0 + g_1 x + ... + g_{n-k}x^{n-k}$$ and has a degree of $$(n-k)$$.
-    $$g_{n-k}$$ will always be 1 due to the way $$g(x)$$ is constructed.
+    Coefficient $$g_{n-k}$$ will always be 1 due to the way $$g(x)$$ is constructed.
 
 * Perform a polynomial division of $$\frac{p(x)x^{n-k}}{g(x)}$$, such that 
   $$p(x)x^{n-k} = q(x)g(x) + r(x)$$.
@@ -651,7 +654,7 @@ e_0 + e_1 x_{n-k-1} + e_2 x_{n-k-1}^2 ... + e_{n-1} x_{n-k-1}^{n-1} = s_{n-k-1} 
 $$
 
 If we can find a way to derive the $$n$$ coefficients of $$e(x)$$ out of the $$(n-k)$$
-equations, we can derive $$s(x)$$ as $$s'(x)-e(x)$$. This is, of course, not 
+equations, we can derive $$s(x)$$ as $$s'(x)-e(x)$$. This is not 
 generally possible: there are more unknowns than there are equations.
 But it *is* possible when the number of corrupted coefficients is half or less than 
 $$n-k$$, just like it was for the other coding variant.
@@ -796,7 +799,7 @@ be the input, followed by the remainder. So a small modification is required:
 ![Reed Solomon Encoder diagram](/assets/reed_solomon/reed_solomon-reed_solomon_diagram.png)
 
 The *only* difference compared to the hardware of a regular polynomial divider is the addition
-of an output multiplexer that allows us to route the input directly to the output! 
+of an output multiplexer that allows us to route the input directly to the output. 
 `force_zero` and `select_output` can be wired together.
 
 If you do a Google image search for "reed solomon encoder", you'll get a million variations

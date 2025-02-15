@@ -70,7 +70,7 @@ There's also plenty of material of Youtube: teardowns, how to replace the calibr
 calibration data (very important!), how to download and restore calibration data over GPIB, how to clean the 
 display, and so forth.
 
-There's even a work-in-progress [MAME 3478A emulator](https://github.com/mamedev/mame/blob/master/src/mame/drivers/hp3478a.cpp), 
+There's even a work-in-progress [MAME 3478A emulator](https://gitlab.com/mamedev/mame/-/blob/mame0226/src/mame/drivers/hp3478a.cpp)
 which is a great resource to understand some of the internals of the device.
 
 This quote from [discussion thread on the EEVblog forum](https://www.eevblog.com/forum/beginners/is-190$-a-bargain-for-a-hp-2378a-bench-multimeter/)
@@ -351,7 +351,6 @@ This was a fun evening project, and I've learned a bunch about the internal of m
 There's a lot of information out there. I've listed some of it in the references
 below.
 
-
 I've compared a number of measurements between my handheld multimeter and this one, and the
 results are pretty much the same. That said, I have no clue how long it has been since
 the meter was last calibrated, and I don't have any calibrated voltage sources or reference 
@@ -360,6 +359,11 @@ can easily cost $100 or more, I have no plans to do so until I really need 5 dig
 
 For now, the multimeter will take its place back on the shelve. A handheld multimeter is
 more convenient. But if, one day, I'll need an automated measurement setup, it will be ready to go.
+
+*After publishing this blog post, multiple people told me to replace the RIFA capacitors
+and to replace up the permanent battery. It took more than year before I got to that, but
+I write about that in 
+[HP 3478A Multimeter Calibration Data Backup and Battery Replacement](/2022/12/02/HP3478A-Multimeter-Calibration-Data-Backup-and-Battery-Replacement.html).*
 
 # References
 

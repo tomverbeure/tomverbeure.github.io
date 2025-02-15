@@ -1,0 +1,1112 @@
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 37
+Oscillator type: 1
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+10
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 
+
+exiting......
+
+root@SyncServer:/etc# /sbin/seeprom
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 9
+Model: S200: 
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+3
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 3
+checksum okay!
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 5
+ID: 0
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+7
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 11
+Serial: 1318B91909: 
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+13
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: checksum okay!
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 13
+Options: 00000000
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+15
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: ID: 0
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+15
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: ID: 0
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+17
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: ID Extension: 000100
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+19
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: Model: S200: 
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+21
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: Checksum: 532EC214
+..3.
+.
+...
+root@SyncServer:/etc# /sbin/seeprom
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 3
+found 532ec214 but calculated 12ee95f6
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+1
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 37
+Oscillator type: 1
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 3
+found 532ec214 but calculated 12ee95f6
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 21
+LAN0 MAC: 00:A0:69:0B:F8:E5
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 35
+Future: : 
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 19
+LAN0 Data: 0000
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 21
+LAN0 MAC: 00:A0:69:0B:F8:E5
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 15
+Control: 00000000
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 5
+ID: 0
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 7
+ID Extension: 000300
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 
+Broadcast message from root Tue Jan  3 23:05:45 2006...
+
+The system is going down for system halt NOW !!
+Connection to 192.168.1.201 closed by remote host.
+Connection to 192.168.1.201 closed.
+tom@zen:/media$ ssh root@192.168.1.201
+Password: 
+
+
+/*
+ * WARNING
+ *
+ * Authorized uses only.  All activity may be monitored and reported.
+ *
+ */
+
+root@SyncServer:~# /sbin/seeprom 
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 3
+found 532ec214 but calculated 12ee95f6
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+1
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 3
+found 532ec214 but calculated 12ee95f6
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 5
+ID: 0
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 7
+ID Extension: 000300
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 9
+Model: S350: 
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+10
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 
+
+exiting......
+
+root@SyncServer:~# /sbin/seeprom -h
+00:A0:69:0B:F8:E5
+root@SyncServer:~# /sbin/seeprom   
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 10
+Model: S350: Model: S200
+
+:
+Model has been set
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 9Model: S200: Model: Model has been set
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 9
+Model: :: 
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 10
+Model: :: Model: S200:
+Model has been set
+
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<
+9
+
+------------------------------------------------------------------------------
+                         Symmetricom, TTM
+                         SyncServer Nonvolatile Storage
+                         Version 1.0
+-------------------------------------------------------------------------------
+  1. Initialize new seeprom                2.  Set seeprom size     
+  3. Read checksum                         4.  Update checksum      
+  5. Read ID byte                          5.  Set ID byte          
+  7. Read ID extension                     8.  Set ID extension     
+  9. Read Model String                    10.  Set Model String     
+ 11. Read Serial Number                   12.  Set Serial Number    
+ 13. Read options data                    14.  Set options data     
+ 15. Read control data                    16.  Set control data     
+ 17. Read reserved String                 18.  Set reserved String  
+ 19. Read LAN1 Data                       20.  Set LAN1 Data        
+ 21. Read LAN1 MAC                        22.  Set LAN1 MAC         
+ 23. Read LAN2 Data                       24.  Set LAN2 Data        
+ 25. Read LAN2 MAC                        26.  Set LAN2 MAC         
+ 27. Read LAN3 Data                       28.  Set LAN3 Data        
+ 29. Read LAN3 MAC                        30.  Set LAN3 MAC         
+ 31. Read LANG Data                       32.  Set LANG Data        
+ 33. Read LANG MAC                        34.  Set LANG MAC         
+ 35. Read Future String                   36.  Set Future String    
+ 37. Read Oscillator Type                 38.  Set Oscillator Type  
+ 0.  Exit the Program...........................................................
+     Select Option: 9
+Model: S200:: 
+
+>>>>>>>>>>>>>>>>  Press Enter to continue  <<<<<<<<<<<<<<<<<

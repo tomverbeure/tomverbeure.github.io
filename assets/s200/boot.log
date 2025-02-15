@@ -1,0 +1,259 @@
+
+    GNU GRUB  version 0.94  (626K lower / 252608K upper memory)
+
+ +-------------------------------------------------------------------------+
+ | Montavista Linux                                                        |
+ | Montavista Linux fallback                                               |
+ |                                                                         |
+ |                                                                         |
+ |                                                                         |
+ |                                                                         |
+ |                                                                         |
+ |                                                                         |
+ |                                                                         |
+ |                                                                         |
+ |                                                                         |
+ |                                                                         |
+ +-------------------------------------------------------------------------+
+      Use the ^ and v keys to select which entry is highlighted.
+      Press enter to boot the selected OS, 'e' to edit the
+      commands before booting, or 'c' for a command-line.
+
+
+   The highlighted entry will be booted automatically in 1 seconds.
+  Booting 'Montavista Linux'
+
+root (hd0,0)
+ Filesystem type is ext2fs, partition type 0x83
+kernel /bzImage-2.4.20_mvl31-pc_target.chronos.1.670.15.1061924 root=/dev/hda5
+ro hdb=flash console=tty0 console=ttyS0
+   [Linux-bzImage, setup=0xc00, size=0xf315d]
+
+Linux version 2.4.20_mvl31-pc_target.chronos.1.670.15.1061924 (kzhai@sjc-s200.symmetricom.com) (gcc version 3.3.1 (MontaVista 3.3.1-3.0.10.0300532 2003-12-24)) #2 Thu Apr 16 19:26:14 PDT 2015
+BIOS-provided physical RAM map:
+ BIOS-e820: 0000000000000000 - 000000000009c800 (usable)
+ BIOS-e820: 000000000009c800 - 00000000000a0000 (reserved)
+ BIOS-e820: 00000000000f0000 - 0000000000100000 (reserved)
+ BIOS-e820: 0000000000100000 - 000000000f7b0000 (usable)
+ BIOS-e820: 000000000f7b0000 - 000000000f7b3000 (ACPI NVS)
+ BIOS-e820: 000000000f7b3000 - 000000000f7c0000 (ACPI data)
+ BIOS-e820: 00000000ffff0000 - 0000000100000000 (reserved)
+user-defined physical RAM map:
+ user: 0000000000000000 - 000000000009c800 (usable)
+ user: 000000000009c800 - 00000000000a0000 (reserved)
+ user: 00000000000f0000 - 0000000000100000 (reserved)
+ user: 0000000000100000 - 000000000f7b0000 (usable)
+247MB LOWMEM available.
+On node 0 totalpages: 63408
+zone(0): 4096 pages.
+zone(1): 59312 pages.
+zone(2): 0 pages.
+Kernel command line: root=/dev/hda5 ro hdb=flash console=tty0 console=ttyS0 mem=253632K
+ide_setup: hdb=flash
+Initializing CPU#0
+Detected 498.053 MHz processor.
+Console: colour VGA+ 80x25
+Calibrating delay loop... 992.87 BogoMIPS
+Memory: 248284k/253632k available (1389k kernel code, 4948k reserved, 518k data, 88k init, 0k highmem)
+Dentry cache hash table entries: 32768 (order: 6, 262144 bytes)
+Inode cache hash table entries: 16384 (order: 5, 131072 bytes)
+Mount-cache hash table entries: 4096 (order: 3, 32768 bytes)
+Buffer-cache hash table entries: 16384 (order: 4, 65536 bytes)
+Page-cache hash table entries: 65536 (order: 6, 262144 bytes)
+CPU: L1 I Cache: 64K (32 bytes/line), D cache 64K (32 bytes/line)
+CPU: L2 Cache: 128K (32 bytes/line)
+CPU: AMD Geode(TM) Integrated Processor by AMD PCS stepping 02
+Checking 'hlt' instruction... OK.
+POSIX conformance testing by UNIFIX
+mtrr: v1.40 (20010327) Richard Gooch (rgooch@atnf.csiro.au)
+mtrr: detected mtrr type: none
+PCI: PCI BIOS revision 2.10 entry at 0xf9cb0, last bus=0
+PCI: Using configuration type 1
+PCI: Probing PCI hardware
+isapnp: Scanning for PnP cards...
+isapnp: No Plug & Play device found
+Linux NET4.0 for Linux 2.4
+Based upon Swansea University Computer Society NET3.039
+Initializing RT netlink socket
+IA-32 Microcode Update Driver: v1.11 <tigran@veritas.com>
+LSP Revision 1
+ikconfig 0.5 with /proc/ikconfig
+Starting kswapd
+Disabling the Out Of Memory Killer
+Journalled Block Device driver loaded
+devfs: v1.12c (20020818) Richard Gooch (rgooch@atnf.csiro.au)
+devfs: boot_options: 0x1
+parport0: PC-style at 0x378 (0x778) [PCSPP(,...)]
+parport0: irq 7 detected
+parport1: PC-style at 0x278 [PCSPP(,...)]
+pty: 256 Unix98 ptys configured
+Serial driver version 5.05c (2001-07-08) with MANY_PORTS SHARE_IRQ SERIAL_PCI ISAPNP enabled
+ttyS00 at 0x03f8 (irq = 4) is a 16550A
+ttyS01 at 0x02f8 (irq = 3) is a 16550A
+ttyS02 at 0x03e8 (irq = 0) is a 16550A
+ttyS03 at 0x02e8 (irq = 3) is a 16550A
+Real Time Clock Driver v1.10e
+ppdev: user-space parallel port driver
+Uniform Multi-Platform E-IDE driver Revision: 6.31
+ide: Assuming 33MHz system bus speed for PIO modes; override with idebus=xx
+PCI_IDE: unknown IDE controller on PCI bus 00 device 7a, VID=1022, DID=209a
+PCI_IDE: chipset revision 1
+PCI_IDE: not 100% native mode: will probe irqs later
+    ide0: BM-DMA at 0xfd00-0xfd07, BIOS settings: hda:DMA, hdb:pio
+    ide1: BM-DMA at 0xfd08-0xfd0f, BIOS settings: hdc:pio, hdd:pio
+hda: STI Flash 8.0.0, ATA DISK drive
+ide2: ports already in use, skipping probe
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+hda: 1000944 sectors (512 MB), CHS=496/32/63
+Partition check:
+ /dev/ide/host0/bus0/target0/lun0: p1 p2 p4 < p5 p6 p7 >
+floppy0: no floppy controllers found
+RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
+loop: loaded (max 8 devices)
+Universal TUN/TAP device driver 1.5 (C)1999-2002 Maxim Krasnyansky
+SCSI subsystem driver Revision: 1.00
+usb.c: registered new driver usbdevfs
+usb.c: registered new driver hub
+hcd.c: ehci-hcd @ 00:0f.5, PCI device 1022:2095 (Advanced Micro Devices [AMD])
+hcd.c: irq 15, pci mem d0002000
+usb.c: new USB bus registered, assigned bus number 1
+hcd/ehci-hcd.c: USB 2.0 support enabled, EHCI rev 1. 0
+hub.c: USB hub found
+hub.c: 4 ports detected
+usb-uhci.c: $Revision: 1.1 $ time 19:25:13 Apr 16 2015
+usb-uhci.c: High bandwidth mode enabled
+usb-uhci.c: v1.275:USB Universal Host Controller Interface driver
+Initializing USB Mass Storage driver...
+usb.c: registered new driver usb-storage
+USB Mass Storage support registered.
+NET4: Linux TCP/IP 1.0 for NET4.0
+IP Protocols: ICMP, UDP, TCP, IGMP
+IP: routing cache hash table of 2048 buckets, 16Kbytes
+TCP: Hash tables configured (established 16384 bind 32768)
+ip_conntrack version 2.1 (1981 buckets, 15848 max) - 292 bytes per conntrack
+ip_tables: (C) 2000-2002 Netfilter core team
+NET4: Unix domain sockets 1.0/SMP for Linux NET4.0.
+ip6_tables: (C) 2000-2002 Netfilter core team
+ /dev/ide/host0/bus0/target0/lun0: p1 p2 p4 < p5 p6 p7 >
+ /dev/ide/host0/bus0/target0/lun0: p1 p2 p4 < p5 p6 p7 >
+kjournald starting.  Commit interval 5 seconds
+EXT3-fs: mounted filesystem with ordered data mode.
+VFS: Mounted root (ext3 filesystem) readonly.
+Mounted devfs on /dev
+Freeing unused kernel memory: 88k freed
+INIT: version 2.78 booting
+EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
+EXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
+Current configuration size:
+  /etc - 642k
+  /var/log - 258k
+  /var (excluding log) - 3049k
+warning: can't open /etc/mtab: No such file or directory
+warning: can't open /etc/mtab: No such file or directory
+Information: restored configuration successfully.
+Activating swap...
+kjournald starting.  Commit interval 5 seconds
+EXT3 FS 2.4-0.9.19, 19 August 2002 on ide0(3,1), internal journal
+EXT3-fs: mounted filesystem with ordered data mode.
+Checking all file systems...
+fsck 1.27 (8-Mar-2002)
+Remove /var/log/messages... done.
+Remove /var/log/daemon.log... done.
+Remove any script lock files... done.
+Calculating module dependencies... done.
+Loading modules: bonding bond0 registered with MII link monitoring set to 100 ms, in active-backup mode.
+mii eepro100_symm eepro100.c:v1.09j-t 9/29/99 Donald Becker http://www.scyld.com/network/eepro100.html
+eepro100.c: $Revision: 1.3 $ 2000/11/17 Modified by Andrey V. Savochkin <saw@saw.sw.com.sg> and others
+eth0: OEM i82557/i82558 10/100 Ethernet, 00:A0:6D:00:00:01, IRQ 15.
+  Receiver lock-up bug exists -- enabling work-around.
+  Board assembly 000000-000, Physical connectors present: RJ45
+  Primary interface chip i82555 PHY #1.
+  General self-test: passed.
+  Serial sub-system self-test: passed.
+  Internal registers self-test: passed.
+  ROM checksum self-test: passed (0xd0a6c714).
+  Receiver lock-up workaround activated.
+natsemi natsemi dp8381x driver, version 1.07+LK1.0.18, Jun 9, 2004
+  originally by Donald Becker <becker@scyld.com>
+  http://www.scyld.com/network/natsemi.html
+  2.4.x kernel port by Jeff Garzik, Tjeerd Mulder
+  MII and external PHY support by Greg Dowd
+eth1: NatSemi DP8381[56] at 0xd002e000, de:ad:de:ad:de:ad, IRQ 15.
+eth1: silicon revision 0x505.
+e100 Intel(R) PRO/100 Network Driver - version 2.2.21
+Copyright (c) 2003 Intel Corporation
+
+e100: eth2: Intel(R) PRO/100 Network Connection
+  Hardware receive checksums enabled
+
+fpga Warning: loadingINITIALIZING FPGA
+ /boot/modules/2fpga enabled
+.4.20_mvl31-pc_target.chronos.1.670.15.1061924/fpga.o will taint the kernel: non-GPL license - Proprietary
+  See http://www.tux.org/lkml/#export-tainted for information about tainted modules
+Module fpga loaded, with warnings
+
+Initialize the hc12 timing engine: Done.
+Mounting local fEXT2-fs warning: mounting unchecked fs, running e2fsck is recommended
+ilesystems...
+/dev/discs/disc0/part7 on /mnt/upgrade type ext2 (rw)
+none on /tmp type tmpfs (rw,size=4m)
+Cleaning: /etc/network/ifstate.
+Cleaning: /tmp /var/lock /var/run.
+Hostname: SyncServer.
+Setting up IP spoofing protection: rp_filter.
+Enabling TCP/IP SYN cookies: done.
+Disable TCP/IP Explicit Congestion Notification: done.
+Disable TCP/IP source routed packets: done.
+Ignore TCP/IP icmp echo broadcasts: done.
+Log TCP/IP source impossible packets: done.
+Assign eth0 MAC address: done.
+Assign eth1 MAC address: done.
+Assign eth2 MAC address: done.
+Configuring network interfaces: Configuring eth0 ...
+Generate new /etc/resolv.conf: Done.
+Done configuring eth0.
+done.
+
+Setting the System Clock using the Hardware Clock as reference...
+System Clock set. Local time: Fri Mar 29 16:49:27 PDT 2024
+
+Initialize the hc12 timing engine with the System Clock: Done.
+Initializing random number generator... done.
+Recovering nvi editor sessions... done.
+Information: check and update kernel and file system boot information.
+Information: kernel is bzImage-2.4.20_mvl31-pc_target.chronos.1.670.15.1061924.
+Information: file system is /dev/hda5.
+Information: done checking kernel and file system boot information.
+
+/etc/rc.d/rc.loceth0: link up.
+INIT: Entering runlevel: 3
+Starting kernel log daemon: klogd.
+Starting system log daemon: syslogd.
+Starting Alarm daemon: alarmd.
+Starting Display daemon: dispd.
+Starting LED daemon: ledd.
+Starting Software TOD daemon: swclkd.
+/dev/tts/0 at 0x03f8 (irq = 4) is a 16550A
+/dev/tts/1 at 0x02f8 (irq = 3) is a 16550A
+/dev/tts/2 at 0x03e8 (irq = 10) is a 16550A
+/dev/tts/3 at 0x02e8 (irq = 11) is a 16550A
+Starting Sysplex daemon: sysplex.
+Starting web server: apache.
+Add iptables rules: apache.
+Starting network management services: snmpd.
+Add iptables rule: snmpd.
+Add iptables rule: snmptrapd.
+Starting OpenBSD Secure Shell server: sshd.
+Add iptables rule: SSH.
+Starting internet superserver: xinetd.
+Add iptables rule: telnet.
+Add iptables rule: time.
+Add iptables rule: time-udp.
+Add iptables rule: daytime.
+Add iptables rule: daytime-udp.
+Starting NTP server: ntpd.
+Add iptables rule: ntpd.
+Starting Software transferring Linux time to HC12 daemon: TimeToHC12d.
+Starting periodic comman
+SyncServer login:
+
