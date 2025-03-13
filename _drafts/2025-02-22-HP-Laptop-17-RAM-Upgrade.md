@@ -146,4 +146,8 @@ The only minor surprise was that both anti-slip strips became a little bit longe
 
 # References
 
+* [Memory Upgrade for HP 17-cp3005dx Laptop](https://www.memorystock.com/memory/HewlettPackard17cp3005dx.html#:~:text=The%20Laptop%20has%202%20Slots,per%20slot%20for%20your%20Laptop.)
+* [Upgrading Newer HP 17.3" Laptop With New RAM And M.2 NVMe SSD](https://www.youtube.com/watch?v=fQRrwJ3xIR8)
+
+    Different model with Intel CPU but the case is the same.
 
