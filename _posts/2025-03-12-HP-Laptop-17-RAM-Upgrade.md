@@ -1,7 +1,7 @@
 ---
 layout: post
 title: HP Laptop 17 RAM Upgrade
-date:   2025-02-22 00:00:00 -1000
+date:   2025-03-12 00:00:00 -1000
 categories:
 ---
 
@@ -38,7 +38,7 @@ were pretty decent too:
 * Windows 11
 
 Someone at the HP marketing departement spent long hours to come up with a suitable name
-and come up "HP Laptop 17".
+and settled on "HP Laptop 17".
 
 I generally don't pay attention to what's available on the PC laptop market, but it's hard to
 really go wrong for this price so I took the plunge. Worst case, I'd return it.
@@ -47,27 +47,30 @@ We're now 8 weeks later and the laptop is still firmly in my possession. In fact
 it way more than I thought I would. I haven't noticed any performance issues, the screen is pretty
 good, the SSD larger than what I need for the limited use case, and, surprisingly, the
 trackpad is the better than any Windows laptop that I've ever used, though that's not a high
-bar. It doesn't come close to MacBook quality, but palm rejection solid and it's seriously
+bar. It doesn't come close to MacBook quality, but palm rejection is solid and it's seriously
 good at moving the mouse around in CAD applications. 
 
-The two worst parts about it are the keyboard and the limited amount of RAM: 8GB is on the
-low side. I can honestly not quantify it whether or not it has a practical impact, but I decided 
-to upgrade it anyway. In this blog post, I go through the steps of doing this upgrade.
+The two worst parts are the plasticy keyboard and the 8GB of RAM. I can honestly not quantify 
+whether or not it has a practical impact, but I decided to upgrade it anyway. In this blog post, 
+I go through the steps of doing this upgrade.
 
 **Important: there's a good chance that you will damage your laptop when trying this upgade and
 almost certainly void your warranty. Do this at your own risk!**
 
 # Selecting the RAM
 
-The laptop wasn't designed to be upgradable and thus you find any official resources about
+The laptop wasn't designed to be upgradable and thus you can't find any official resources about
 it. And with such a generic name, there's guaranteed to be multiple hardware versions of the same 
 product. To have reasonable confidence that you're buying the correct RAM, check out the 
 full product name first. You can find it on the bottom:
 
+![Product name on the bottom of the laptop](/assets/hp17upgrade/product_name.jpg)
+
 Mine is an *HP Laptop 17-cp3005dx*. 
 
 There's some conflicting information about being able to upgrade the thing. The 
-[BestBuy Q&A section](https://www.bestbuy.com/site/questions/hp-17-3-full-hd-laptop-amd-ryzen-5-8gb-memory-512gb-ssd-natural-silver/6587274/question/50bf44b8-35e1-3f97-8a82-93e23976ad8a)says the following:
+[BestBuy Q&A page](https://www.bestbuy.com/site/questions/hp-17-3-full-hd-laptop-amd-ryzen-5-8gb-memory-512gb-ssd-natural-silver/6587274/question/50bf44b8-35e1-3f97-8a82-93e23976ad8a)
+says:
 
 > The HP 17.3" Laptop Model 17-cp3005dx RAM and Storage are soldered to the motherboard, and 
 > are not upgradeable on this model.
@@ -75,12 +78,11 @@ There's some conflicting information about being able to upgrade the thing. The
 This is flat out wrong for my device.
 
 After a bit of Googling around, I learned that it has a single 8GB DDR4 SODIMM 260-pin RAM stick 
-but that the motherboard has 2 RAM slots and that it can support up to 2x16GB (and probably 2x32GB.) 
+but that the motherboard has 2 RAM slots and that it can support up to 2x32GB.
 
 I bought a kit with 
 [Crucial 2x16GB 3200MHz SODIMMs](https://www.amazon.com/gp/product/B08C4X9VR5/ref=ppx_od_dt_b_asin_title_s01)
 from Amazon. As I write this, the price is $44.
-
 
 # Opening up
 
