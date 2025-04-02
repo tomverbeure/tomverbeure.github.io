@@ -5,6 +5,22 @@ date:   2025-03-29 00:00:00 -1000
 categories:
 ---
 
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ["\\(", "\\)"] ],
+      displayMath: [ ['$$', '$$'], ["\\[", "\\]"] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+    //,
+    //displayAlign: "left",
+    //displayIndent: "2em"
+  });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
 * TOC
 {:toc}
 
@@ -58,7 +74,43 @@ It's not immediately clear from the schematic, but the skew between the 2 output
 the input signal through 2 R/C delay lines with a different capacitance. And these capacitances are created
 by a pair of [varactors](https://en.wikipedia.org/wiki/Varicap), also known as varicap diodes.
 
-# 
+Let's see how to get there.
+
+# An RC Circuit to Delay a Digital Signal
+
+A basic circuit with a series resistance and a capacitor and digital buffer can be used to create 
+a delayed version of an incoming signal. You can see that in the simulation below:
+
+<a href="https://falstad.com/circuit/circuitjs.html?ctz=CQAgjCDMB0YEwFYCmBaMAGE7pwGzoHZIAWAuAsSdATjwIJGOJARc2TTACgA3EcuI0iCBUXAA4s-cOllzMYaBPDQGmbAi4BjRtVxjJxPY2KH+qDFGiRcuSAWJhqCMPnTws0WRHRcA7rr6TIbGpur+gYzimMTCUeEBsYJhQsnGvgDmqZFJLHCSCfxk2aIpvgGl0dllXABOUHCYwjGuDeqMmhXFNpKizVgRfY1tI3ARjvr9RpPD5ZFTxj0DYOKCCPkjuHDM-ZiC2L1WzHPrkgszhVs7w7jds1yNDNMjz6UgAEoAwgD6APIAqgAVB6EEC3QT9cFFZIgAAiAEkAOJ-IG8MEIIJVXAYxitdrEPZSdTQTRZbGYzDklgecKPdFBVpUpbMABq8IAElwAPYycBSeBwahNaDHLzeKSSSyQcD6BSTcBqBVQfjtYaQLhAA" target="_blank">![Basic RC delay circuit](/assets/clock_skew/basic_rc_delay.png)</a>
+*(Click to open the simulator)*
+
+The green waveform is a 10MHz input clock, the red ones is `RC_OUT`, and the orange one `DIG_OUT`, the
+output of a digital buffer. The input and the output have logic levels of 0 and 3.4V. The horizontal
+purple line at 2.0V corresponds to the input tipping point where the output buffer switches its output from
+0V to 3.4V.
+
+If you click on the diagram above, the fantastic Falstad circuit simulator will open with this circuit.
+You can stop the simulation and check the delay between the input signal and the output signal crossing
+the purple line. The delay will be around 10ns.
+
+When fed with a step function, the voltage of an RC circuit is as follows:
+
+$$V_{RC\_OUT} = V_{INPUT} (1-e^{\frac{-t}{RC}})$$
+
+Time it takes to reach a given $$V_{RC_OUT}$$ is:
+
+$$V_{RC\_OUT} = -RC \ln(1-\frac{V_{RC\_OUT}}{V_{INPUT}})$$
+
+If we fill in the values of the circuit above, we get 10.1ns.
+
+# Two RC Delay Circuits
+
+We want to create 2 output `I_DAC_CLK` and  signals from one input signal and while we don't have a way to change
+the capacitors yet, we want 
+
+<a href="https://falstad.com/circuit/circuitjs.html?ctz=CQAgjCBMCmC0YQAwDoCcAWAHAdmwZgFZM8A2QzAyEkddEA+xeuBAKADdxtr09IvqpTCCb8wiCZInhkJYWGTYRI5AVYBjGnxBCt-WsLpgWSZIXRgS6EpHTYCqVLeIqJSVgHc9NLN6xNETwEaTCYwbhpUakCAc2D0KODKYQCg8J5tdJDUryz-P1CRVgAnKFsdSCY+KsrlSrSI3SzqotzG2shylsggi0Fa3n4WwK9BiqYx3UCwTH4CWnGQEkRhYagwxRklPGQ6EZorRcna-eXV2ps6YdZKpWOJ7UhsfRAAJQBhAH0AeQBVABVPgBJG6IJSXRYQp4vIGfAAiAEEvu8ADIAaQ4S3K1joEPQ0gCNA2SkJKDUcTxhzxhVStyxdHxTAhhBeADVPgBZIFwkqLFp9RaidC87r4miWKBioVBUU1OVFTTJHRyeiQQy+BkmFQkcKoCSoPCIVBgPDoeamNytVXq4RK-L7Mb5O00oJK3RK2w5bye8XUH2BOlQsUQsBOGggACK8KRn1RGK8Z0lTPK-tYMzmCx9if96y2eZ2e16hxa8yuJ1daqT9EzUtBd0eYrGoZeHx+AM+Ed6DaYHtrAHsQKhwMowJ09Tpdq5LWF+EO8OAGGEGPOJWFBOAh2E5zp51V5-PK6JVqwgA" target="_blank">![Two RC delay circuits](/assets/clock_skew/two_rc_delay_lines.png)</a>
 
 
 # References
+
+* [Basic RC delay line](https://falstad.com/circuit/circuitjs.html?ctz=CQAgjCDMB0YEwFYCmBaMAGE7pwGzoHZIAWAuAsSdATjwIJGOJARc2TTACgAnRyOFAAczBHCHDmmYtS4A3EHHQSmEpRMgisi8Oj37MYaAyMNM2BFwDGLArkZ7b94rmbM4qMBBiR6xOJAYYNRC5LjU9th6EOhcAO5QuBpaxAKSWPEs4ukIdumxCbn2mqJ5xI4FToyuVTKRmUWMEYkqzZWQSU3FnQjwGQDmLSx9HRIITNqxfKmC4mPZc9oymaPpq4vtnYszikISlWJqeyBJR-uZp7sSl+Xm1ifHtw8qNcxgnpg+HTSI1Mq4CD0CEi0GiGQSNxqNzaF0ezUadXBimUjGIahRiMq6i6Q0xvEUwKgHSgYiJkWRmWxJWRGmJWJRkGJiGKTJWpMZ3Vp9QSq2pvLpXAA9lBwCLyiFdFhQYhtAwpIwRZRtErIIpBJg4IJIFwgA)
