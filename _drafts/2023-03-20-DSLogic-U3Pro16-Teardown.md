@@ -10,30 +10,28 @@ categories:
 
 # Introduction
 
-The year was 2020, and offices all over the world shut down. A house remodel had just
-started, so my work area moved from a comfortably airconditioned corporate building to a very messy 
+The year was 2020 and offices all over the world shut down. A house remodel had just
+started, so my office moved from a comfortably airconditioned corporate building to a very messy 
 garage.
 
 [![A very messy garage](/assets/dslogic/garage.jpg)](/assets/dslogic/garage.jpg)
 
 Since I'm in the business of developing, and debugging, hardware, a few pieces of
-work equipment came along for the ride, including a Saleae Logic Pro 16. There's
-no way around it: they make some of the best USB logic analyzers. Plenty of competitors
-have matched or surpassed their digital features, but none have the ability to record 
-the 16 channels in analog format as well.
-
-While I had the Saleae for work stuff, I may once in a while also have used
-it for some hobby-related activities.
+equipment came along for the ride, including a Saleae Logic Pro 16. And while I had the
+unit for work stuff, I may once in a while have used it for some hobby-related activities 
+too.
 
 ![Probing the pins of an HP 3478A multimeter](/assets/hp3478a/sram_with_probes.jpg)
+
+There's no way around it: Saleae makes some of the best USB logic analyzers around. And while 
+plenty of competitors have matched or surpassed their digital features, none have the ability 
+to record the 16 channels in analog format as well.
 
 But eventually corporate offices reopened, the Saleae went back to its
 original habitat, and I found myself without a good 16-channel USB logic analyzer.
 Buying a Saleae for myself was out of the question: even after 
 the [$150 hobbyist discount](https://blog.saleae.com/saleae-discounts/), I can't justify the $1350
-price tag.
-
-After looking around for a while, I decided to give the 
+price tag. After looking around for a while, I decided to give the 
 [DSLogic U3Pro16](https://www.dreamsourcelab.com/product/dslogic-series/)
 from [DreamSourceLab](https://www.dreamsourcelab.com) a chance. I bought it 
 [on Amazon](https://www.amazon.com/DreamSourceLab-USB-Based-Analyzer-Sampling-Interface/dp/B08C2LCBGL/ref=sr_1_3) 
@@ -53,20 +51,23 @@ DreamSourceLab currently sells 3 logic analyzers:
 * the $299 DSLogic U3Pro16 (16 channels)
 * the $399 DSLogic U3Pro32 (32 channels)
 
-The only functional difference between the U3Pro16 and U3Pro32 is the number of channels; 
-they're otherwise identical. It's tempting to go for the 32 channel version  but I've rarely 
-had the need to record more than 16 channels and if I really need it, I can always fall back 
-to my HP 1670G logic analyzer, a pristine $200 flea market treasure with a whopping 136 channels.
-It even has the digital storage scope option with 2 analog channels, 500MHz bandwidth and 2GSa/s
-sampling rate.
+The DSLogic Plus and U3Pro16 both have 16 channels, but acquisition memory of the Plus is only 
+256Mbits vs 2Gbits for the Pro, and it has to make do with USB 2.0 instead of a USB 3.0 interface, 
+a crucial difference when streaming acquistion data straight to the PC to avoid the limitations 
+of the acquistion memory. There's also a difference in sample rate, 400MHz vs 1GHz, but that's not 
+important in practice.
+
+The only functional difference between the U3Pro16 and U3Pro32 is the number of channels. 
+It's tempting to go for the 32 channel version  but I've rarely had the need to record more than 
+16 channels and if I do, I can always fall back to my HP 1670G logic analyzer, a pristine $200 flea 
+market treasure with a whopping 136 channels[^1].
+
+[^1]:It even has the digital storage scope option with 2 analog channels, 500MHz bandwidth and 2GSa/s
+     sampling rate.
 
 [![HP 1670G](/assets/dslogic/hp1670g.jpg)](/assets/dslogic/hp1670g.jpg)
 
-The DSLogic Plus also has 16 channels, but its acquisition memory is only 256Mbits vs 2Gbits
-for the U3Pro16, and it has to make do with USB 2.0 instead of a USB 3.0 interface, a crucial 
-difference when streaming acquistion data straight to the PC to avoid the limitations of the 
-acquistion memory. There's also a difference in sample rate, 400MHz for the Plus, 1GHz for the 
-U3Pro16, but that's not very important in practice.
+So the U16Pro it is!
 
 # In the Box
 
@@ -78,7 +79,7 @@ The DSLogic comes with a nice, elongated hard case.
 
 Inside, you'll find:
 
-* the device itself, a slick aluminum case
+* the device itself, it has a slick aluminum enclosure
 * a USB-C to USB-A cable
 * 5 4-way probe cables and 1 3-way clock and trigger cable
 * 18 test clips
@@ -86,14 +87,18 @@ Inside, you'll find:
 # Probe Cables and Clips
 
 You read it right, my device came with 5 4-way probe cables, not 4. I don't know if DreamSourceLab added one
-extra in case you lose one, or if they mistakenly included one too much, but it's definitely good 
-to have a spare.
+extra in case you lose one or if they mistakenly included one too much, but it's good to have a spare.
 
 ![DSLogic and 6 sets of probe, clock and trigger wires](/assets/dslogic/DSLogic_and_probe_wires.jpg)
 
-The cables are quite stiff and are not as pliable as those
-that comes with a Saleae. The case has been designed such that the probe cables can
-be stored without the need to bend them. I like it.
+The cables are quite stiff and spring-like and not as pliable as those that comes with a Saleae. 
+When you're probing a signal in tight places, the stiffness of the cables could be a liability because it
+adds a bit more force to the probe point. But they're stiffer because each of the 16 probe wires
+carries both signal and ground, probably a thin coaxial cable, which lowers the inductance of the 
+probe and reduce ringing when measuring signal with fast rise and fall times. In terms of quality,
+the probe cables are a step up from the Saleae ones.
+
+The case has been designed such that the probe cables can be stored without the need to bend them. 
 
 The quality of the test clips is not great, but they are no different than those of the 5 times 
 more expensive Saleae Logic 16 Pro. They're clones of the HP/Agilent logic analyzer grabbers that 
@@ -117,13 +122,13 @@ they aren't any better than the probes that come standard with the DSLogic:
 ![Fake vs original Tek grabber](/assets/dslogic/fake_vs_original_tek.jpg)
 *Fake probe on the left, Tek probe on the right*
 
-The stem of the fake ones is much thicker, and the hooks are different too. 
+The stem of the fake ones is much thicker and the hooks are different too. 
 
-The Tek probe has rounded hooks:
+The Tek probe has rounded hooks with a sharp angle at the tip:
 
 ![Tek probe with rounded hooks](/assets/dslogic/tek_rounded_hooks.jpg)
 
-The hooks of a fake probe are flat, and don't attach as well to their target:
+The hooks of a fake probe are flat and don't attach nearly as well to their target:
 
 ![Fake probe with flat hooks](/assets/dslogic/fake_flat_hooks.jpg)
 
@@ -133,21 +138,22 @@ these [micro clips that I reviewed](/tools/2018/04/29/micro-chip-rw-clip.html) a
 
 # The Controller Hardware
 
-Each cable supports 4 probes and plugs into the main unit with 8 0.05" pins in 4x2 configuration.
-The cable itself has a tiny PCB sticking out that slots into a gap of the aluminum enclosure. This
-way it's not possible to plug in the cable incorectly... unlike the Saleae. It's great.
+Each cable supports 4 probes and plugs into the main unit with 8 0.05" pins in 4x2 configuration, 
+one pin for the signal, one pin for ground. The cable itself has a tiny PCB sticking out that slots 
+into a gap of the aluminum enclosure. This way it's not possible to plug in the cable incorectly... 
+unlike the Saleae. It's great.
 
 ![DSLogic and probe wire plugs](/assets/dslogic/DSLogic_and_probe_wire_plugs.jpg)
 
 ![DSLogic with two cables plugged in](/assets/dslogic/DSLogic_and_two_cables_plugged_in.jpg)
 
-When we open up the device, we can see Infieon (formerly Cypress) CYUSB3014-BZX EZ-USB
+When we open up the device, we can see an Infineon (formerly Cypress) CYUSB3014-BZX EZ-USB
 FX3 SuperSpeed controller. A Saleae Logic Pro uses the same device. 
 
 ![DSLogic opened up](/assets/dslogic/DSLogic_opened_up.jpg)
 
 These are your standard to-go-to USB interface devices when you need a microcontroller in addition
-to the core USB functionatility. They're relatively cheap too, you can get them
+to the core USB3 functionatility. They're relatively cheap too, you can get them
 for [$14 in single digital quantities at LCSC.com](https://www.lcsc.com/product-detail/span-style-background-color-ff0-USB-span-ICs_Cypress-Semicon-CYUSB3014-BZXI_C57294.html).
 
 ![CYUSB3014 block diagram](/assets/dslogic/CYUSB3014.png)
@@ -162,7 +168,7 @@ The big ticket components are:
 * a [Spartan-6](https://www.xilinx.com/products/silicon-devices/fpga/spartan-6.html) XC6SLX16 FPGA
 
     Reponsible data acquisition, triggering, run-length encoding/compression,
-    data storage to DRAM, and sending data to the CYUSB-3014.
+    data storage to DRAM, and sending data to the CYUSB3014.
 
     A Saleae Logic 16 Pro has a smaller Spartan-6 LX9. That makes sense: it's triggering options
     aren't as advanced as the DSLogic and since it doesn't have DDR memory, it doesn't need a
@@ -436,3 +442,5 @@ LVDS comparator
 * [An FPGA-based 7-ENOB 600 MSample/s ADC without any External Components](https://dl.acm.org/doi/abs/10.1145/3431920.3439287)
 * [200 MS/s ADC implemented in a FPGA employing TDCs](https://sps.ewi.tudelft.nl/pubs/Homulle15fpga.pdf)
 
+
+# Footnotes
