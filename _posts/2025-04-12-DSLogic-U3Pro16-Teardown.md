@@ -52,7 +52,7 @@ of 3 logic analyzers:
 * the $399 DSLogic U3Pro32 (32 channels)
 
 The DSLogic Plus and U3Pro16 both have 16 channels, but acquisition memory of the Plus is only 
-256Mbits vs 2Gbits for the Pro, and it has to make do with USB 2.0 instead of a USB 3.0 interface, 
+256Mbits vs 2Gbits for the U3Pro16, and it has to make do with USB 2.0 instead of a USB 3.0 interface, 
 a crucial difference when streaming acquistion data straight to the PC to avoid the limitations 
 of the acquistion memory. There's also a difference in sample rate, 400MHz vs 1GHz, but that's not 
 important in practice.
@@ -67,11 +67,11 @@ a pristine $200 flea market treasure with a whopping 136 channels[^1].
 
 [![HP 1670G](/assets/dslogic/hp1670g.jpg)](/assets/dslogic/hp1670g.jpg)
 
-So the U16Pro it is!
+So the U3Pro16 it is!
 
 # In the Box
 
-The DSLogic U16Pro comes with a nice, elongated hard case. 
+The DSLogic U3Pro16 comes with a nice, elongated hard case. 
 
 [![DSLogic case](/assets/dslogic/dslogic_case.jpg)](/assets/dslogic/dslogic_case.jpg)
 
@@ -272,7 +272,7 @@ can impact the signal itself, he even [builds a simulation model of the whole sy
 and does a [real-world comparison between a DSLogic measurement and a fake-Saleae one](https://youtu.be/xZ5wKYnCNcs?t=1397).
 
 While his measurements are convincing, I wasn't able to repeat his results on a similar setup with
-a DSLogic U3Pro and a Saleae Logic Pro: for both cases, a 200MHz signal was still good enough. I need to
+a DSLogic U3Pro16 and a Saleae Logic Pro: for both cases, a 200MHz signal was still good enough. I need to
 spend a bit more time to better understand the difference between my and his setup...
 
 Either way, I recommend watching this video.
@@ -297,7 +297,7 @@ stands for Output, Input, Clock.
     rate must a factor of 2 or more higher to get an accurate representation of what's going on in the 
     system.
 
-    The DSLogic U16Pro provides the option to sample the data signals at the positive or negative
+    The DSLogic U3Pro16 provides the option to sample the data signals at the positive or negative
     edge of the external clock. On one hand, I would have prefered more options in moving the edge of 
     the clock back and forth. It's something that should be doable with the DLLs that are part of the
     DCMs blocks of a Spartan-6. But on the other, external clocking is not supported at all by Saleae
@@ -320,7 +320,7 @@ stands for Output, Input, Clock.
 
 * Trigger Out
     
-    When a trigger is activated inside the U3Pro, a pulse is generated on this pin.
+    When a trigger is activated inside the U3Pro16, a pulse is generated on this pin.
 
     The manual doesn't give more details, but after futzing around with the horrible oscilloscope UI of my
     1670G, I was able to capture a 500ms trigger-out pulse of 1.8V.
@@ -408,7 +408,7 @@ that DSView is as frictionless and polished as Logic 2.
 # Streaming Data to the Host vs Local Storage in DRAM
 
 The Saleae Logic 16 Pro only supports streaming mode: recorded data is immediately sent to the PC to which the
-device is connected. The U3Pro supports both streaming and buffered mode, where data is written in the
+device is connected. The U3Pro16 supports both streaming and buffered mode, where data is written in the
 DRAM that's on the device and only transported to the host when the recording is complete.
 
 Streaming mode introduces a dependency on the upstream bandwidth. An Infineon FX3 supports USB3 data rates
@@ -419,7 +419,7 @@ In practice, higher rates are possible because both devices support run length e
 technique that reduces sequences of the same value to that value and the length of the sequence. Of course, RLE
 introduces recording uncertainty: high activity rates may result in the exceeding the available bandwidth.
 
-The U3Pro has a 16-bit wide 2Gbit DDR3 DRAM with a maximum data rate of 1.6G samples per second. Theoretically,
+The U3Pro16 has a 16-bit wide 2Gbit DDR3 DRAM with a maximum data rate of 1.6G samples per second. Theoretically,
 make it possible to record 16 channels with a 1.6GHz sample rate, but that assumes accessing DRAM with 100% efficiency,
 which is never the case.
 
@@ -437,7 +437,7 @@ Mac too. But it's not a good look for DSView.
 
 # Triggers
 
-One of the biggest benefits of the U3Pro over a Saleae is their trigger capability. Saleae Logic 2.4.22 offers the following
+One of the biggest benefits of the U3Pro16 over a Saleae is their trigger capability. Saleae Logic 2.4.22 offers the following
 options:
 
 [![Saleae Logic trigger options](/assets/dslogic/Saleae_trigger_options.png)](/assets/dslogic/Saleae_trigger_options.png)
@@ -468,7 +468,7 @@ You don't always need powerful trigger options, but they're great to have when y
 
 # Conclusion
 
-The U3Pro is not perfect. It doesn't have an analog mode, buffered mode doesn't work reliably on my MacBook, and the DSView
+The U3Pro16 is not perfect. It doesn't have an analog mode, buffered mode doesn't work reliably on my MacBook, and the DSView
 GUI is a bit quirky. But it is relatively cheap, it has a huge library of decoding protocols, and the triggering modes are
 excellent.
 
