@@ -16,7 +16,7 @@ garage.
 
 [![A very messy garage](/assets/dslogic/garage.jpg)](/assets/dslogic/garage.jpg)
 
-Since I'm in the business of developing, and debugging, hardware, a few pieces of
+Since I'm in the business of developing and debugging hardware, a few pieces of
 equipment came along for the ride, including a Saleae Logic Pro 16. I had the
 unit for work stuff, I may once in a while have used it for some hobby-related activities 
 too.
