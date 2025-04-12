@@ -1,7 +1,7 @@
 ---
 layout: post
 title: DSLogic U3Pro16 Review and Teardown
-date:   2023-03-20 00:00:00 -1000
+ate:   2023-03-20 00:00:00 -1000
 categories:
 ---
 
@@ -17,21 +17,20 @@ garage.
 [![A very messy garage](/assets/dslogic/garage.jpg)](/assets/dslogic/garage.jpg)
 
 Since I'm in the business of developing, and debugging, hardware, a few pieces of
-equipment came along for the ride, including a Saleae Logic Pro 16. And while I had the
+equipment came along for the ride, including a Saleae Logic Pro 16. I had the
 unit for work stuff, I may once in a while have used it for some hobby-related activities 
 too.
 
 ![Probing the pins of an HP 3478A multimeter](/assets/hp3478a/sram_with_probes.jpg)
 
-There's no way around it: Saleae makes some of the best USB logic analyzers around. And while 
-plenty of competitors have matched or surpassed their digital features, none have the ability 
-to record the 16 channels in analog format as well.
+There's no way around it: Saleae makes some of the best USB logic analyzers around. Plenty of competitors 
+have matched or surpassed their digital features, but none have the ability to record the 16 channels 
+in analog format as well.
 
-But eventually corporate offices reopened, the Saleae went back to its
-original habitat, and I found myself without a good 16-channel USB logic analyzer.
-Buying a Saleae for myself was out of the question: even after 
+After corporate offices reopened, the Saleae went back to its original habitat and I found myself 
+without a good 16-channel USB logic analyzer.  Buying a Saleae for myself was out of the question: even after 
 the [$150 hobbyist discount](https://blog.saleae.com/saleae-discounts/), I can't justify the $1350
-price tag. After looking around for a while, I decided to give the 
+price tag. After looking around for a bit, I decided to give the 
 [DSLogic U3Pro16](https://www.dreamsourcelab.com/product/dslogic-series/)
 from [DreamSourceLab](https://www.dreamsourcelab.com) a chance. I bought it 
 [on Amazon](https://www.amazon.com/DreamSourceLab-USB-Based-Analyzer-Sampling-Interface/dp/B08C2LCBGL/ref=sr_1_3) 
@@ -45,7 +44,8 @@ and I'll also open it up to discover what's inside.
 
 # The DSLogic U3Pro16
 
-DreamSourceLab currently sells 3 logic analyzers: 
+The [DSLogic series](https://www.dreamsourcelab.com/product/dslogic-series/) currently consists 
+of 3 logic analyzers: 
 
 * the $149 DSLogic Plus (16 channels)
 * the $299 DSLogic U3Pro16 (16 channels)
@@ -59,8 +59,8 @@ important in practice.
 
 The only functional difference between the U3Pro16 and U3Pro32 is the number of channels. 
 It's tempting to go for the 32 channel version  but I've rarely had the need to record more than 
-16 channels and if I do, I can always fall back to my HP 1670G logic analyzer, a pristine $200 flea 
-market treasure with a whopping 136 channels[^1].
+16 channels at the same time and if I do, I can always fall back to my HP 1670G logic analyzer, 
+a pristine $200 flea market treasure with a whopping 136 channels[^1].
 
 [^1]:It even has the digital storage scope option with 2 analog channels, 500MHz bandwidth and 2GSa/s
      sampling rate.
@@ -71,7 +71,7 @@ So the U16Pro it is!
 
 # In the Box
 
-The DSLogic comes with a nice, elongated hard case. 
+The DSLogic U16Pro comes with a nice, elongated hard case. 
 
 [![DSLogic case](/assets/dslogic/dslogic_case.jpg)](/assets/dslogic/dslogic_case.jpg)
 
@@ -79,58 +79,59 @@ The DSLogic comes with a nice, elongated hard case.
 
 Inside, you'll find:
 
-* the device itself, it has a slick aluminum enclosure
+* the device itself. It has a slick aluminum enclosure.
 * a USB-C to USB-A cable
 * 5 4-way probe cables and 1 3-way clock and trigger cable
 * 18 test clips
 
 # Probe Cables and Clips
 
-You read it right, my device came with 5 4-way probe cables, not 4. I don't know if DreamSourceLab added one
+You read it right, my unit came with 5 4-way probe cables, not 4. I don't know if DreamSourceLab added one
 extra in case you lose one or if they mistakenly included one too much, but it's good to have a spare.
 
 ![DSLogic and 6 sets of probe, clock and trigger wires](/assets/dslogic/DSLogic_and_probe_wires.jpg)
 
-The cables are quite stiff and spring-like and not as pliable as those that comes with a Saleae. 
-When you're probing a signal in tight places, the stiffness of the cables could be a liability because it
-adds a bit more force to the probe point. But they're stiffer because each of the 16 probe wires
+The cables are slightly stiffer than those that comes with a Saleae but not to the point that it
+adds a meaningful additional strain to the probe point. They're stiffer because each of the 16 probe wires
 carries both signal and ground, probably a thin coaxial cable, which lowers the inductance of the 
 probe and reduce ringing when measuring signal with fast rise and fall times. In terms of quality,
 the probe cables are a step up from the Saleae ones.
 
-The case has been designed such that the probe cables can be stored without the need to bend them. 
+The case is long enough so that the probe cables can be stored without bending them. 
 
 The quality of the test clips is not great, but they are no different than those of the 5 times 
-more expensive Saleae Logic 16 Pro. They're clones of the HP/Agilent logic analyzer grabbers that 
+more expensive Saleae Logic 16 Pro. Both are clones of the HP/Agilent logic analyzer grabbers that 
 I got from eBay and will do the job, but I much prefer the ones from Tektronix.
 
-![4 different grabbers](/assets/dslogic/grabbers.jpg)
-*From left to right: Tektronix, Agilent, Saleae, and DSLogic clips*
+The picture below shows 4 different grabbers. From left to right: Tektronix, Agilent, Saleae and DSLogic ones.
 
-Compared to the other ones, the Tektronix probes are narrow which makes it easier to place multiple
+![4 different grabbers](/assets/dslogic/grabbers.jpg)
+
+Compared to the 3 others, the stem of the Tektronix probe is narrow which makes it easier to place multiple
 ones next to each other one fine-pitch pin arrays.
 
 ![Tek fine pitch grabbers](/assets/dslogic/tek_fine_pitch.jpg)
 
-If you're thinking about upgrading your current probes: stay away from fakes. As I write this,
+If you're thinking about upgrading your current probes to Tektronix ones: stay away from fakes. As I write this,
 you can find packs of 20 probes on eBay for $40 (incl shipping), so around $2 per probe. Search
 for "Tektronix SMG50" or "Tektronix 020-1386-01".
 
 Meanwhile, you can buy a pack of 12 fake ones on Amazon for $16, or $1.3 a piece. They work, but
-they aren't any better than the probes that come standard with the DSLogic:
+they aren't any better than the probes that come standard with the DSLogic.
 
 ![Fake vs original Tek grabber](/assets/dslogic/fake_vs_original_tek.jpg)
 *Fake probe on the left, Tek probe on the right*
 
-The stem of the fake ones is much thicker and the hooks are different too. 
-
-The Tek probe has rounded hooks with a sharp angle at the tip:
+The stem of the fake one is much thicker and the hooks are different too. The Tek probe has rounded 
+hooks with a sharp angle at the tip:
 
 ![Tek probe with rounded hooks](/assets/dslogic/tek_rounded_hooks.jpg)
+*Tektronix hooks*
 
 The hooks of a fake probe are flat and don't attach nearly as well to their target:
 
 ![Fake probe with flat hooks](/assets/dslogic/fake_flat_hooks.jpg)
+*Fake hooks*
 
 If you need to probe targets with a pitch that is smaller than 1.25mm, you should check out
 these [micro clips that I reviewed](/tools/2018/04/29/micro-chip-rw-clip.html) ages ago.
@@ -140,7 +141,7 @@ these [micro clips that I reviewed](/tools/2018/04/29/micro-chip-rw-clip.html) a
 
 Each cable supports 4 probes and plugs into the main unit with 8 0.05" pins in 4x2 configuration, 
 one pin for the signal, one pin for ground. The cable itself has a tiny PCB sticking out that slots 
-into a gap of the aluminum enclosure. This way it's not possible to plug in the cable incorectly... 
+into a gap of the aluminum enclosure. This way it's not possible to plug in the cable incorrectly... 
 unlike the Saleae. It's great.
 
 ![DSLogic and probe wire plugs](/assets/dslogic/DSLogic_and_probe_wire_plugs.jpg)
@@ -152,9 +153,9 @@ FX3 SuperSpeed controller. A Saleae Logic Pro uses the same device.
 
 ![DSLogic opened up](/assets/dslogic/DSLogic_opened_up.jpg)
 
-These are your standard to-go-to USB interface devices when you need a microcontroller in addition
+These are your to-go-to USB interface chips when you need a microcontroller in addition
 to the core USB3 functionatility. They're relatively cheap too, you can get them
-for [$14 in single digital quantities at LCSC.com](https://www.lcsc.com/product-detail/span-style-background-color-ff0-USB-span-ICs_Cypress-Semicon-CYUSB3014-BZXI_C57294.html).
+for [$16 in single digital quantities at LCSC.com](https://www.lcsc.com/product-detail/span-style-background-color-ff0-USB-span-ICs_Cypress-Semicon-CYUSB3014-BZXI_C57294.html).
 
 ![CYUSB3014 block diagram](/assets/dslogic/CYUSB3014.png)
 
@@ -170,21 +171,21 @@ The big ticket components are:
     Reponsible data acquisition, triggering, run-length encoding/compression,
     data storage to DRAM, and sending data to the CYUSB3014.
 
-    A Saleae Logic 16 Pro has a smaller Spartan-6 LX9. That makes sense: it's triggering options
-    aren't as advanced as the DSLogic and since it doesn't have DDR memory, it doesn't need a
-    memory controller on the FPGA.
+    A Saleae Logic 16 Pro has a smaller Spartan-6 LX9. That makes sense: its triggering options
+    aren't as advanced as the DSLogic and since it lacks external DDR memory, it doesn't need a
+    memory controller on the FPGA either.
 
 * a DDR3-1600 DRAM
 
-    It's a [Micron MT41K128M16JT-125](https://www.micron.com/products/dram/ddr3-sdram/part-catalog/mt41k128m16jt-125) 
-    with 2Gbits of storage and a 16-bit data bus.
+    It's a [Micron MT41K128M16JT-125](https://www.micron.com/products/memory/dram-components/ddr3-sdram/part-catalog/part-detail/mt41k128m16jt-125-it-k),
+    marked D9PTK, with 2Gbits of storage and a 16-bit data bus.
 
 * an Analog Devices [ADF4360-7](https://www.analog.com/media/en/technical-documentation/data-sheets/ADF4360-7.pdf) clock generator
 
-    I found this a bit surprising. A Spartan-6 LX16 FPGA has 2 clock managment tiles (CMT) that each have 1 real PLL and
+    I found this a bit surprising. A Spartan-6 LX16 FPGA has 2 clock management tiles (CMT) that each have 1 real PLL and
     2 DCMs (digital clock manager) with delay locked loop, digital frequency synthesizer, etc. The VCO of the PLL can be configured 
     with a frequency up to 1080 MHz which should be sufficient to capture signals at 1GHz, but clearly there was a
-    need for something more or better.
+    need for something better.
 
     The ADF4360-7 can generate an output clock as fast a 1800MHz.
 
@@ -196,13 +197,17 @@ There's obviously an extensive supporting cast:
 
     This is used to configure the FPGA.
 
-* an[SGM2054](http://www.sg-micro.com/uploads/soft/20220506/1651829741.pdf) DDR termination voltage controller
+* an [SGM2054](http://www.sg-micro.com/uploads/soft/20220506/1651829741.pdf) DDR termination voltage controller
 
-* an [LM26480](https://www.ti.com/lit/ds/symlink/lm26480.pdf) FPGA power regulator
+* an [LM26480](https://www.ti.com/lit/ds/symlink/lm26480.pdf) power management unit
+
+  It has two linear voltage regulators and two step-down DC-DC convertors.
 
 * two clock oscillators: 24MHz and 19.2MHz 
 
 * a TI [HD3SS3220](https://www.ti.com/lit/ds/symlink/hd3ss3220.pdf) USB-C Mux
+
+  This the glue logic that makes it possible for USB-C connectors to be orientation independent.
 
 * a [SP3010-04UTG](https://www.arrow.com/en/products/sp3010-04utg/littelfuse) for USB ESD protection 
 
@@ -221,26 +226,26 @@ I spent a bit of time Ohm-ing out the input circuit. Here's what I came up with:
 
 [![DSLogic input schematic](/assets/dslogic/DSLogic_input_schematic.png)](/assets/dslogic/DSLogic_input_schematic.png)
 
-The cable itself has a 100k Ohm series resistor and a 100k Ohm shunt resistor to ground at the entrance of
-the PCB that act as by-two resistive divider. The series resistor also limits the current going into the device.
+The cable itself has a 100k Ohm series resistance. Together with a 100k Ohm shunt resistor to ground at the entrance of
+the PCB it acts as by-two resistive divider. The series resistor also limits the current going into the device.
 
-Before going to a second 33 Ohm series resistor that goes into the FPGA, there's an ESD protection
-device. I'm not 100% sure, but my guess is that it's a [SRV05-4D-TP](https://www.mccsemi.com/pdf/Products/SRV05-4D(SOT23-6L).pdf)
+Before passing through a 33 Ohm series resistor that goes into the FPGA, there's an ESD protection
+device. I'm not 100% sure, but my guess is that it's an [SRV05-4D-TP](https://www.mccsemi.com/pdf/Products/SRV05-4D(SOT23-6L).pdf)
 or some variant thereof.
 
 I'm not 100% sure why the 33 Ohm resistor is there. It's common to have these type of resistors on high
-speed lines to avoid reflection, but since there's already a 100k resistor in the path, I don't think that
+speed lines to avoid reflection but since there's already a 100k resistor in the path, I don't think that
 makes much sense here. It might be there for additional protection of the ESD structure that resides inside
 the FPGA IOs?
 
 A DSLogic has a fully programmable input threshold voltage. If that's the case, then where's the 
-opamp to compare the input voltage against this threshold voltage. (There is such a comparator on a
+opamp to compare the input voltage against this threshold voltage? (There is such a comparator on a
 Saleae Logic Pro!)
 
 The answer to that question is: "it's in the FPGA!"
 
 FPGA IOs can support many different I/O standards: single-ended ones, think CMOS and TTL, and a whole bunch of differential
-standards too. Differential protocols compare a positive and a negative version of the same signal, but nothing 
+standards too. Differential protocols compare a positive and a negative version of the same signal but nothing 
 prevents anyone from assigning a static value to the negative input of a differential pair and making the input
 circuit behave as a regular single-end pair with programmable threshold. Like this:
 
@@ -255,8 +260,8 @@ blog post.
 
 [![DSLogic Pro video](/assets/dslogic/DSLogic_Pro_video.jpg)](/assets/dslogic/DSLogic_Pro_video.jpg)
 
-6 years ago, OpenTechLab [reviewed the DSLogic Plus](https://www.youtube.com/watch?v=xZ5wKYnCNcs), 
-the successor of the DSLogic U3Pro16. Joel
+7 years ago, OpenTechLab [reviewed the DSLogic Plus](https://www.youtube.com/watch?v=xZ5wKYnCNcs), 
+the predecessor of the DSLogic U3Pro16. Joel
 spent a lot of time [looking at its input circuit](https://youtu.be/xZ5wKYnCNcs?t=439). He mentions
 a 7.6k Ohm pull-down resistor at the input, different than the 100k Ohm that I measured. There's
 no mention of a series resistor in the cable or about the way adjustable thresholds are handled, but
@@ -288,9 +293,9 @@ stands for Output, Input, Clock.
 
     Using an external clock that is the same as the one that is used to generate the signals that you 
     want to record is a major benefit: you will always record the signal at the right time as long as 
-    setup and hold requirements are met. When using a free-running internal sampling clock, you must
-    use a sample rate that is a factor of 2 or more higher to get an accurate representation of what's
-    going on in the system.
+    setup and hold requirements are met. When using a free-running internal sampling clock, the sample
+    rate must a factor of 2 or more higher to get an accurate representation of what's going on in the 
+    system.
 
     The DSLogic U16Pro provides the option to sample the data signals at the positive or negative
     edge of the external clock. On one hand, I would have prefered more options in moving the edge of 
@@ -300,13 +305,13 @@ stands for Output, Input, Clock.
 
     The maximum clock speed of the external clock input is 50MHz, significantly lower than the free-running 
     sample speed. This is the usually the case as well for big iron logic analyzers. For example, my
-    old Agilent 1670G has a free running sampling speed of 500MHz and a maxumim state clock speed of 150MHz.
+    old Agilent 1670G has a free running sampling clock of 500MHz and supports a maximum state clock of 150MHz.
 
 * Trigger In
 
     According to the manuals: "TI is the input for an external trigger signal". That's a great
     feature, but I couldn't figure out a way in DSView on how to enable it. After a bit of googling,
-    I found the [following comment in issue on GitHub](https://github.com/DreamSourceLab/DSView/issues/145):
+    I found the [following comment in an issue on GitHub](https://github.com/DreamSourceLab/DSView/issues/145#issuecomment-408728931).
 
     > This "TI" signal has no function now. It's reserved for compatible and further extension.
 
@@ -318,7 +323,7 @@ stands for Output, Input, Clock.
     When a trigger is activated inside the U3Pro, a pulse is generated on this pin.
 
     The manual doesn't give more details, but after futzing around with the horrible oscilloscope UI of my
-    1670G, I was able to capture a 500ms trigger out pulse of 1.8V.
+    1670G, I was able to capture a 500ms trigger-out pulse of 1.8V.
 
 
 # Software: From Saleae Logic to PulseView to DSView
@@ -330,19 +335,18 @@ speed. Logic also added a few protocol decoders, and an C++ API to create your o
 It was the inspiration of [PulseView](https://sigrok.org/wiki/PulseView), 
 an open source equivalent that acts as the front-end
 application of [SigRok](https://sigrok.org/wiki/Main_Page), 
-an open source library and tool that acts as the waveform acquisition
+an open source library and tool that acts as the waveform data acquisition
 backend. 
 
 PulseView supports protocol decoders as well, but it has an easier to use Python
-API, and it allows stacked protocol decoders: a low-level decoder might convert the recorded
-signals into, say, I2C transactions. A higher level I2C EPROM decoder could then decode these
-I2C into read and write operations. PulseView has tons of protocol decoders, from simple
-UART transactions, all the way to USB 2.0 decoders.
-
+API and it allows stacked protocol decoders: a low-level decoder might convert the recorded
+signals into, say, I2C tokens (start/stop/one/zero). A second decoder creates byte-level I2C transactions
+out of the tokens. And I2C EPROM decoder could interpret multiple I2C transactions as read and write operations. 
+PulseView has tons of protocol decoders, from simple UART transactions, all the way to USB 2.0 decoders.
 
 When the DSLogic logic analyzer hit the market after a successful Kickstarter campaign, it shipped 
 with DSView, DreamSourceLab's closed source waveform viewer. However, people soon discovered that it 
-was a reskinned version of PulseView. A big no-no since the latter is developed under a GPL3
+was a reskinned version of PulseView, a big no-no since the latter is developed under a GPL3
 license.
 
 After a bit of drama, DreamSourceLab made [DSView available on GitHub](https://github.com/DreamSourceLab/DSView) 
@@ -353,7 +357,7 @@ changes to the PulseView project, but at least they've legally in the clear for 
 The default choice would be to use DSView to control your DSLogic, but Sigrok/PulseView
 supports DSView as well. 
 
-In the figure below, you can see DSView in demo mode, no hardware device connected, and the example
+In the figure below, you can see DSView in demo mode, no hardware device connected, and an example
 of the 3 stacked protocol described earlier:
 
 [![DSView Stacked Protocol Decoders](/assets/dslogic/DSView_stacked_protocols.png)](/assets/dslogic/DSView_stacked_protocols.png)
@@ -367,9 +371,9 @@ You can find an example decoder [here](https://github.com/saleae/SampleAnalyzer)
 
 # Installing DSView on a Linux Machine
 
-DreamSourceLab provides Windows and MacOS binaries for DSView, but not for Linux.
+DreamSourceLab provides DSView binaries for Windows and MacOS binaries but not for Linux.
 When you click the Download button for Linux, it returns a tar file with the
-source code, which you're expected to compile yourself!
+source code, which you're expected to compile yourself.
 
 I wasn't looking forward to running into the usual issues with package dependencies and build failures, but
 after following the instructions in the [INSTALL file,](https://github.com/DreamSourceLab/DSView/blob/master/INSTALL) 
@@ -378,24 +382,39 @@ I ended up with a working executable on first try.
 # DSView UI
 
 The UI of DSView is straightforward and similar to Saleae Logic 2. There are things that annoy me in both 
-tools but I don't have a strong preference.
+tools but I have a slight preference for Logic 2. Both DSView and Logic2 have a demo mode that allows you to
+play with it without a real device attached. If you want to get a feel of what you like better, just download
+the software and play with it.
 
-DSView can pan and zoom in or out just as fast as Logic 2.
+Some random observations:
 
-You really should try DSView with a Demo Device. It will give you a good feel about what you can do. The stacked protocol
-decoders area amazing. You can export decoded protocols as CSV files, but only one protocol at a time. It would be
-nice if you can export multiple protocols in the same CSV file so that you can easier compare transaction flow
-between interfaces.
+* DSView can pan and zoom in or out just as fast as Logic 2.
+* The way to navigate throug the waveform in DSView really rubs me the wrong way on a MacBook: it uses the pinching
+  gesture on a trackpad to zoom in and out. That seems like the obvious way to do it, but since it's such a common
+  operation to browse through a waveform it slows you down. Logic 2 use the 2 finger slide up and down to zoom in and
+  out which is much faster.
+* The stacked protocol decoders area amazing. 
+* Like Logic 2, DSView can export decoded protocols as CSV files, but only one protocol at a time. It would be nice to be 
+  able to export multiple protocols in the same CSV file so that you can easier compare transaction flow between interfaces.
+* Logic 2 behaves predictably when you navigate through waveforms while the devices is still acquiring new data. DSView
+  behaves a bit erratic.
+* In DSView, you need to double click on the waveform to set a time marker. That's easy enough, but it's not intuitive and
+  since I only use the device occasionally, I need to google every time I take it out of the closet.
+* You can't assign a text label to a DSView cursors/time marker. 
 
+None of the points above disquality DSView: it's a functional and stable piece of software. But I'd be lying if I wrote
+that DSView is as frictionless and polished as Logic 2.
+
+# Streaming to PC vs Local Storage in DRAM
 
 # Triggers
 
-One of the biggest benefit of the DSLogic over a Saleae is their trigger capability. Saleae Logic 2.4.13 offers the following
+One of the biggest benefit of the DSLogic over a Saleae is their trigger capability. Saleae Logic 2.4.22 offers the following
 options:
 
 [![Saleae Logic trigger options](/assets/dslogic/Saleae_trigger_options.png)](/assets/dslogic/Saleae_trigger_options.png)
 
-You can set a rising edge, falling edge, a high or a low level on 1 signal, and in combination with some static values on 
+You can set a rising edge, falling edge, a high or a low level on 1 signal in combination with some static values on 
 other signals, and that's it. There's not even a rising-or-falling edge option. It's frankly a bit embarrasing. When you have a 
 full FPGA at your disposal, triggering functionality is not hard to implement.
 
@@ -418,6 +437,11 @@ and data bits are captured on the rising edge of SCL:
 [![DSLogic serial trigger](/assets/dslogic/DSLogic_serial_trigger.png)](/assets/dslogic/DSLogic_serial_trigger.png)
 
 You don't always need powerful trigger options, but they're great to have when you do.
+
+
+
+# Conclusion
+
 
 # References
 
