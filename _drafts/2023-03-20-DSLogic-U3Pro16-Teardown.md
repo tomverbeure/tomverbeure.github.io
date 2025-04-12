@@ -389,10 +389,10 @@ the software and play with it.
 Some random observations:
 
 * DSView can pan and zoom in or out just as fast as Logic 2.
-* The way to navigate throug the waveform in DSView really rubs me the wrong way on a MacBook: it uses the pinching
+* On a MacBook, the way to navigate through the waveform really rubs me the wrong way: it uses the pinching
   gesture on a trackpad to zoom in and out. That seems like the obvious way to do it, but since it's such a common
-  operation to browse through a waveform it slows you down. Logic 2 use the 2 finger slide up and down to zoom in and
-  out which is much faster.
+  operation to browse through a waveform it slows you down. On my HP Laptop 17, DSView uses the 2 finger slide up 
+  and down to zoom in and out which is much faster. Logic 2 also uses the 2 finger slide up and down.
 * The stacked protocol decoders area amazing. 
 * Like Logic 2, DSView can export decoded protocols as CSV files, but only one protocol at a time. It would be nice to be 
   able to export multiple protocols in the same CSV file so that you can easier compare transaction flow between interfaces.
@@ -405,7 +405,35 @@ Some random observations:
 None of the points above disquality DSView: it's a functional and stable piece of software. But I'd be lying if I wrote
 that DSView is as frictionless and polished as Logic 2.
 
-# Streaming to PC vs Local Storage in DRAM
+# Streaming Data to the Host vs Local Storage in DRAM
+
+The Saleae Logic 16 Pro only supports streaming mode: recorded data is immediately sent to the PC to which the
+device is connected. The U3Pro supports both streaming and buffered mode, where data is written in the
+DRAM that's on the device and only transported to the host when the recording is complete.
+
+Streaming mode introduces a dependency on the upstream bandwidth. An Infineon FX3 supports USB3 data rates
+up 5Gbps, but it's far from certain that those rates are achieved in practice. And if so, it still limits
+recording 16 channels to around 300MHz, assuming no overhead.
+
+In practice, higher rates are possible because both devices support run length encoding (RLE), a compression
+technique that reduces sequences of the same value to that value and the length of the sequence. Of course, RLE
+introduces recording uncertainty: high activity rates may result in the exceeding the available bandwidth.
+
+The U3Pro has a 16-bit wide 2Gbit DDR3 DRAM with a maximum data rate of 1.6G samples per second. Theoretically,
+make it possible to record 16 channels with a 1.6GHz sample rate, but that assumes accessing DRAM with 100% efficiency,
+which is never the case.
+
+![DSView Device Options window](/assets/dslogic/DSView_device_options_window.png)
+
+The GUI has the option of recording 16 signals at 500MHz or 8 signals at 1GHz. Even when recording to the local
+DRAM, RLE compression is still possible. When RLE is disabled and the highest sample rate is selected, 268ms
+of data can be recorded.
+
+When connected to my Windows laptop, buffered mode worked fine, but on my MacBook Air M2 DSView always hangs when
+downloading the data that was recorded at high sample rates and I have to kill the application. 
+
+In practice, I rarely record at high sample rates and I always use streaming mode which works reliably on the
+Mac too. But it's not a good look for DSView.
 
 # Triggers
 
@@ -415,8 +443,8 @@ options:
 [![Saleae Logic trigger options](/assets/dslogic/Saleae_trigger_options.png)](/assets/dslogic/Saleae_trigger_options.png)
 
 You can set a rising edge, falling edge, a high or a low level on 1 signal in combination with some static values on 
-other signals, and that's it. There's not even a rising-or-falling edge option. It's frankly a bit embarrasing. When you have a 
-full FPGA at your disposal, triggering functionality is not hard to implement.
+other signals, and that's it. There's not even a rising-or-falling edge option. It's frankly a bit embarrassing. When you have a 
+FPGA at your disposal, triggering functionality is not hard to implement.
 
 Meanwhile, even in Simple Trigger mode, the DSLogic can trigger on multiple edges at the same time, something that can
 be useful when using an external sampling clock.
@@ -438,10 +466,14 @@ and data bits are captured on the rising edge of SCL:
 
 You don't always need powerful trigger options, but they're great to have when you do.
 
-
-
 # Conclusion
 
+The U3Pro is not perfect. It doesn't have an analog mode, buffered mode doesn't work reliably on my Mac, and the DSView
+GUI is a bit quirky. But it relatively cheap, it has a huge library of decoding protocols, and the triggering modes are
+excellent.
+
+I've used it for a few projects now and it hasn't let me down so far. If you're in the market for a cheap logic analyzer,
+give it a good look.
 
 # References
 
@@ -451,20 +483,10 @@ You don't always need powerful trigger options, but they're great to have when y
 
     Comparison between Saleae Logic Pro 16, Innomaker LA2016, Innomaker LA5016, DSLogic Plus, and DSLogic U3Pro16
 
-LVDS comparator
-
 * [Can I use differential I/O pins of FPGA as high speed comparator?](https://electronics.stackexchange.com/questions/90149/can-i-use-differential-i-o-pins-of-fpga-as-high-speed-comparator)
-* [Logic analyzer with Kintex-7](https://www.reddit.com/r/FPGA/comments/14wx7hg/logic_analyzer_with_kintex7/)
-* [FPGA ADC design](https://sps.ewi.tudelft.nl/fpga_tdc/ADC_basic.html)
+
 * [LVDS inputs on Cyclone II](https://www.fpgarelated.com/showthread/comp.arch.fpga/42373-1.php)
 
     Comments by Xilinx engineer about the design of Spartan 3 LVDS comparator
-
-* [APP NOTE: make an analog to digital converter using FPGA pins](http://dangerousprototypes.com/blog/2019/11/03/app-note-make-an-analog-to-digital-converter-using-fpga-pins/)
-* [TAKING ADVANTAGE OF LVDS INPUT BUFFERS TO IMPLEMENT SIGMA-DELTA A/D CONVERTERS IN FPGAS](http://www.ee.nmt.edu/~erives/531_14/Sigma-Delta.pdf)
-* [A 7.4-Bit ENOB 600 MS/s FPGA-Based Online Calibrated Slope ADC without External Components](https://www.mdpi.com/1424-8220/22/15/5852)
-* [An FPGA-based 7-ENOB 600 MSample/s ADC without any External Components](https://dl.acm.org/doi/abs/10.1145/3431920.3439287)
-* [200 MS/s ADC implemented in a FPGA employing TDCs](https://sps.ewi.tudelft.nl/pubs/Homulle15fpga.pdf)
-
 
 # Footnotes
