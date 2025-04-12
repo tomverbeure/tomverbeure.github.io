@@ -1,7 +1,7 @@
 ---
 layout: post
 title: DSLogic U3Pro16 Review and Teardown
-ate:   2023-03-20 00:00:00 -1000
+ate:   2025-04-12 00:00:00 -1000
 categories:
 ---
 
@@ -437,7 +437,7 @@ Mac too. But it's not a good look for DSView.
 
 # Triggers
 
-One of the biggest benefit of the DSLogic over a Saleae is their trigger capability. Saleae Logic 2.4.22 offers the following
+One of the biggest benefits of the U3Pro over a Saleae is their trigger capability. Saleae Logic 2.4.22 offers the following
 options:
 
 [![Saleae Logic trigger options](/assets/dslogic/Saleae_trigger_options.png)](/assets/dslogic/Saleae_trigger_options.png)
@@ -468,8 +468,8 @@ You don't always need powerful trigger options, but they're great to have when y
 
 # Conclusion
 
-The U3Pro is not perfect. It doesn't have an analog mode, buffered mode doesn't work reliably on my Mac, and the DSView
-GUI is a bit quirky. But it relatively cheap, it has a huge library of decoding protocols, and the triggering modes are
+The U3Pro is not perfect. It doesn't have an analog mode, buffered mode doesn't work reliably on my MacBook, and the DSView
+GUI is a bit quirky. But it is relatively cheap, it has a huge library of decoding protocols, and the triggering modes are
 excellent.
 
 I've used it for a few projects now and it hasn't let me down so far. If you're in the market for a cheap logic analyzer,
@@ -477,16 +477,8 @@ give it a good look.
 
 # References
 
-*Reviews*
-
 * [Logic Analyzer Shopping](https://www.bigmessowires.com/2021/11/21/logic-analyzer-shopping/)
 
     Comparison between Saleae Logic Pro 16, Innomaker LA2016, Innomaker LA5016, DSLogic Plus, and DSLogic U3Pro16
-
-* [Can I use differential I/O pins of FPGA as high speed comparator?](https://electronics.stackexchange.com/questions/90149/can-i-use-differential-i-o-pins-of-fpga-as-high-speed-comparator)
-
-* [LVDS inputs on Cyclone II](https://www.fpgarelated.com/showthread/comp.arch.fpga/42373-1.php)
-
-    Comments by Xilinx engineer about the design of Spartan 3 LVDS comparator
 
 # Footnotes
