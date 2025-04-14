@@ -94,26 +94,26 @@ extra in case you lose one or if they mistakenly included one too much, but it's
 The cables are slightly stiffer than those that comes with a Saleae but not to the point that it
 adds a meaningful additional strain to the probe point. They're stiffer because each of the 16 probe wires
 carries both signal and ground, probably a thin coaxial cable, which lowers the inductance of the 
-probe and reduce ringing when measuring signal with fast rise and fall times. In terms of quality,
+probe and reduces ringing when measuring a signal with fast rise and fall times. In terms of quality,
 the probe cables are a step up from the Saleae ones.
 
 The case is long enough so that the probe cables can be stored without bending them. 
 
 The quality of the test clips is not great, but they are no different than those of the 5 times 
 more expensive Saleae Logic 16 Pro. Both are clones of the HP/Agilent logic analyzer grabbers that 
-I got from eBay and will do the job, but I much prefer the ones from Tektronix.
+I got from eBay and they will do the job, but I much prefer the ones from Tektronix.
 
 The picture below shows 4 different grabbers. From left to right: Tektronix, Agilent, Saleae and DSLogic ones.
 
 ![4 different grabbers](/assets/dslogic/grabbers.jpg)
 
 Compared to the 3 others, the stem of the Tektronix probe is narrow which makes it easier to place multiple
-ones next to each other one fine-pitch pin arrays.
+ones next to each other on fine-pitch pin arrays.
 
 ![Tek fine pitch grabbers](/assets/dslogic/tek_fine_pitch.jpg)
 
 If you're thinking about upgrading your current probes to Tektronix ones: stay away from fakes. As I write this,
-you can find packs of 20 probes on eBay for $40 (incl shipping), so around $2 per probe. Search
+you can find packs of 20 probes on eBay for $40, so around $2 per probe. Search
 for "Tektronix SMG50" or "Tektronix 020-1386-01".
 
 Meanwhile, you can buy a pack of 12 fake ones on Amazon for $16, or $1.3 a piece. They work, but
@@ -140,7 +140,7 @@ these [micro clips that I reviewed](/tools/2018/04/29/micro-chip-rw-clip.html) a
 # The Controller Hardware
 
 Each cable supports 4 probes and plugs into the main unit with 8 0.05" pins in 4x2 configuration, 
-one pin for the signal, one pin for ground. The cable itself has a tiny PCB sticking out that slots 
+4 pins for the signals and 4 pins for ground. The cable itself has a tiny PCB sticking out that slots 
 into a gap of the aluminum enclosure. This way it's not possible to plug in the cable incorrectly... 
 unlike the Saleae. It's great.
 
@@ -148,8 +148,9 @@ unlike the Saleae. It's great.
 
 ![DSLogic with two cables plugged in](/assets/dslogic/DSLogic_and_two_cables_plugged_in.jpg)
 
-When we open up the device, we can see an Infineon (formerly Cypress) CYUSB3014-BZX EZ-USB
-FX3 SuperSpeed controller. A Saleae Logic Pro uses the same device. 
+When we open up the device, we can see an Infineon (formerly Cypress)
+[CYUSB3014-BZX EZ-USB FX3 SuperSpeed controller](https://www.digikey.com/en/products/detail/infineon-technologies/CYUSB3014-BZXI/2827561). 
+A Saleae Logic Pro uses the same device. 
 
 ![DSLogic opened up](/assets/dslogic/DSLogic_opened_up.jpg)
 
@@ -168,7 +169,7 @@ The big ticket components are:
 
 * a [Spartan-6](https://www.xilinx.com/products/silicon-devices/fpga/spartan-6.html) XC6SLX16 FPGA
 
-    Reponsible data acquisition, triggering, run-length encoding/compression,
+    Reponsible for data acquisition, triggering, run-length encoding/compression,
     data storage to DRAM, and sending data to the CYUSB3014.
 
     A Saleae Logic 16 Pro has a smaller Spartan-6 LX9. That makes sense: its triggering options
@@ -201,20 +202,20 @@ There's obviously an extensive supporting cast:
 
 * an [LM26480](https://www.ti.com/lit/ds/symlink/lm26480.pdf) power management unit
 
-  It has two linear voltage regulators and two step-down DC-DC convertors.
+  It has two linear voltage regulators and two step-down DC-DC converters.
 
 * two clock oscillators: 24MHz and 19.2MHz 
 
 * a TI [HD3SS3220](https://www.ti.com/lit/ds/symlink/hd3ss3220.pdf) USB-C Mux
 
-  This the glue logic that makes it possible for USB-C connectors to be orientation independent.
+  This is the glue logic that makes it possible for USB-C connectors to be orientation independent.
 
 * a [SP3010-04UTG](https://www.arrow.com/en/products/sp3010-04utg/littelfuse) for USB ESD protection 
 
     Marked QH4
 
 Two 5x2 pin connectors J7 and J8 on the right size of the PCB are almost certainly used to connect
-programming and debugging cables to the FPGA and the CYUSB-3014. 
+JTAG programming and debugging cables to the FPGA and the CYUSB-3014. 
     
 
 [![DSLogic PCB top side - annotated](/assets/dslogic/DSLogic_PCB_top_side_annotated.jpg)](/assets/dslogic/DSLogic_PCB_top_side_annotated.jpg)
@@ -268,7 +269,7 @@ no mention of a series resistor in the cable or about the way adjustable thresho
 I think that the DSLogic Pro has a simular input circuit.
 
 His review continues with an [in-depth analysis](https://youtu.be/xZ5wKYnCNcs?t=660) of how measuring a signal 
-can impact the signal itself, he even [builds a simulation model of the whole system](https://youtu.be/xZ5wKYnCNcs?t=1142), 
+can impact the signal itself. He even [builds a simulation model of the whole system](https://youtu.be/xZ5wKYnCNcs?t=1142)
 and does a [real-world comparison between a DSLogic measurement and a fake-Saleae one](https://youtu.be/xZ5wKYnCNcs?t=1397).
 
 While his measurements are convincing, I wasn't able to repeat his results on a similar setup with
@@ -280,8 +281,8 @@ Either way, I recommend watching this video.
 # Additional IOs: External Clock, Trigger In, Trigger Out
 
 In addition to the 16 input pins that are used to record data, the DSLogic has 3 special IOs and
-a seperate 3-wire cable to wire them up. They are marked with the character "OIC" above the connector, which
-stands for Output, Input, Clock.
+a seperate 3-wire cable to wire them up. They are marked with the character "OIC" above the connector, short 
+for Output, Input, Clock.
 
 * Clock
 
@@ -309,7 +310,7 @@ stands for Output, Input, Clock.
 
 * Trigger In
 
-    According to the manuals: "TI is the input for an external trigger signal". That's a great
+    According to the manual: "TI is the input for an external trigger signal". That's a great
     feature, but I couldn't figure out a way in DSView on how to enable it. After a bit of googling,
     I found the [following comment in an issue on GitHub](https://github.com/DreamSourceLab/DSView/issues/145#issuecomment-408728931).
 
@@ -330,7 +331,7 @@ stands for Output, Input, Clock.
 
 When Saleae first came to market, they raised the bar for logic analyzer software with
 Logic, which had a GUI that allowed scrolling and zooming in and out of waveforms at blazing 
-speed. Logic also added a few protocol decoders, and an C++ API to create your own decoders.
+speed. Logic also added a few protocol decoders and an C++ API to create your own decoders.
 
 It was the inspiration of [PulseView](https://sigrok.org/wiki/PulseView), 
 an open source equivalent that acts as the front-end
@@ -341,7 +342,7 @@ backend.
 PulseView supports protocol decoders as well, but it has an easier to use Python
 API and it allows stacked protocol decoders: a low-level decoder might convert the recorded
 signals into, say, I2C tokens (start/stop/one/zero). A second decoder creates byte-level I2C transactions
-out of the tokens. And I2C EPROM decoder could interpret multiple I2C transactions as read and write operations. 
+out of the tokens. And an I2C EEPROM decoder could interpret multiple I2C byte transactions as read and write operations. 
 PulseView has tons of protocol decoders, from simple UART transactions, all the way to USB 2.0 decoders.
 
 When the DSLogic logic analyzer hit the market after a successful Kickstarter campaign, it shipped 
