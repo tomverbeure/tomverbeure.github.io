@@ -18,7 +18,7 @@ garage.
 
 Since I'm in the business of developing and debugging hardware, a few pieces of
 equipment came along for the ride, including a Saleae Logic Pro 16. I had the
-unit for work stuff, I may once in a while have used it for some hobby-related activities 
+unit for work stuff and may once in a while have used it for some hobby-related activities 
 too.
 
 ![Probing the pins of an HP 3478A multimeter](/assets/hp3478a/sram_with_probes.jpg)
@@ -53,8 +53,8 @@ of 3 logic analyzers:
 
 The DSLogic Plus and U3Pro16 both have 16 channels, but acquisition memory of the Plus is only 
 256Mbits vs 2Gbits for the U3Pro16, and it has to make do with USB 2.0 instead of a USB 3.0 interface, 
-a crucial difference when streaming acquistion data straight to the PC to avoid the limitations 
-of the acquistion memory. There's also a difference in sample rate, 400MHz vs 1GHz, but that's not 
+a crucial difference when streaming acquisition data straight to the PC to avoid the limitations 
+of the acquisition memory. There's also a difference in sample rate, 400MHz vs 1GHz, but that's not 
 important in practice.
 
 The only functional difference between the U3Pro16 and U3Pro32 is the number of channels. 
@@ -79,7 +79,7 @@ The DSLogic U3Pro16 comes with a nice, elongated hard case.
 
 Inside, you'll find:
 
-* the device itself. It has a slick aluminum enclosure.
+* the device itself. It has a slick aluminum enclosure
 * a USB-C to USB-A cable
 * 5 4-way probe cables and 1 3-way clock and trigger cable
 * 18 test clips
@@ -91,7 +91,7 @@ extra in case you lose one or if they mistakenly included one too much, but it's
 
 ![DSLogic and 6 sets of probe, clock and trigger wires](/assets/dslogic/DSLogic_and_probe_wires.jpg)
 
-The cables are slightly stiffer than those that comes with a Saleae but not to the point that it
+The cables are slightly stiffer than those that come with a Saleae but not to the point that it
 adds a meaningful additional strain to the probe point. They're stiffer because each of the 16 probe wires
 carries both signal and ground, probably a thin coaxial cable, which lowers the inductance of the 
 probe and reduces ringing when measuring a signal with fast rise and fall times. In terms of quality,
@@ -155,12 +155,12 @@ A Saleae Logic Pro uses the same device.
 ![DSLogic opened up](/assets/dslogic/DSLogic_opened_up.jpg)
 
 These are your to-go-to USB interface chips when you need a microcontroller in addition
-to the core USB3 functionatility. They're relatively cheap too, you can get them
+to the core USB3 functionality. They're relatively cheap too, you can get them
 for [$16 in single digital quantities at LCSC.com](https://www.lcsc.com/product-detail/span-style-background-color-ff0-USB-span-ICs_Cypress-Semicon-CYUSB3014-BZXI_C57294.html).
 
 ![CYUSB3014 block diagram](/assets/dslogic/CYUSB3014.png)
 
-The other size of the PCB is much busier.
+The other side of the PCB is much busier.
 
 [![DSLogic PCB top side - not annotated](/assets/dslogic/DSLogic_PCB_top_side_not_annotated.jpg)](/assets/dslogic/DSLogic_PCB_top_side_not_annotated.jpg)
 *(Click to enlarge)*
@@ -169,7 +169,7 @@ The big ticket components are:
 
 * a [Spartan-6](https://www.xilinx.com/products/silicon-devices/fpga/spartan-6.html) XC6SLX16 FPGA
 
-    Reponsible for data acquisition, triggering, run-length encoding/compression,
+    Responsible for data acquisition, triggering, run-length encoding/compression,
     data storage to DRAM, and sending data to the CYUSB3014.
 
     A Saleae Logic 16 Pro has a smaller Spartan-6 LX9. That makes sense: its triggering options
@@ -351,7 +351,7 @@ was a reskinned version of PulseView, a big no-no since the latter is developed 
 license.
 
 After a bit of drama, DreamSourceLab made [DSView available on GitHub](https://github.com/DreamSourceLab/DSView) 
-under the required GPL3 as well, with attribution to the sigrok project. DSView is a hard 
+under the required GPL3 as well, with attribution to the Sigrok project. DSView is a hard 
 fork of PulseView and there are still some bad feelings because DreamSourceLab doesn't push 
 changes to the PulseView project, but at least they've legally in the clear for the past 6 years.
 
