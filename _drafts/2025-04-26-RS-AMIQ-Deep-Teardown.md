@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Rohde & Schwarz AMIQ Deep Teardown
+title: Rohde & Schwarz AMIQ Modulation Generator - Teardown and Analog Deep Dive
 date:   2025-04-26 00:00:00 -1000
 categories:
 ---
@@ -11,13 +11,13 @@ categories:
 # Introduction
 
 Every few months, a local company auctions off all kinds of lab, production and test equipment. 
-I shouldn't be subscribed to their email list but I am, and that another way to end up with more
+I shouldn't be subscribed to their email list but I am, and that's one way I end up with more
 stuff that I don't really need.
 
 During a recent auction, I got my hands on a Rohde & Schwarz AMIQ, an I/Q modulation
 generator, for a grand total of $45. Add to that another 30% for the auction fee and taxes and
 you're still paying much less than what others would pay for a round of golf? But instead of 
-one morning, this thing has the potential to keep me busy for many weekends, so what a deal! 
+one morning of fun, this thing has the potential to keep me busy for many weekends, so what a deal! 
 
 [![AMIQ frontside view](/assets/amiq/amiq_frontside.jpg)](/assets/amiq/amiq_frontside.jpg)
 *(Click to enlarge)*
@@ -27,18 +27,18 @@ to pick up the loot.
 
 The AMIQ has a power on/off button and 3 LEDs and that's in terms of user interface.
 There are no dials, there's no display. So without any other options, I simply powered it up
-and I was immediately greeted by the ominous clicking of a spinning disk hard drive. I was right: 
+and I was immediately greeted by the ominous clicking of a hard drive. I was right: 
 this thing would keep me entertained for at least little bit!
 
 [![AMIQ backside view](/assets/amiq/amiq_backside.jpg)](/assets/amiq/amiq_backside.jpg)
 *(Click to enlarge)*
 
 It took a significant amount of effort to restore the machine back to its working state. I'll
-write about that in a future blog post, but let's start with an overview of the functionality 
-and a teardown of the R&S AMIQ.
+write about that in future blog posts, but let's start with an overview of the functionality
+and a teardown of the R&S AMIQ and then deep dive into some of its analog circuits.
 
 *AMIQ prices on eBay vary wildly, from $129 to $2600 at the time of writing this. If even you
-get one of the higher price, you should expect to get a unit that's close to failing due to
+get one of the higher priced ones, you should expect to get a unit that's close to failing due to
 leaking capacitors and a flaky harddrive!*
 
 # The Rohde & Schwarz AMIQ Modulation Generator
@@ -46,7 +46,7 @@ leaking capacitors and a flaky harddrive!*
 Reduced to an elevator sales pitch, the AMIQ is *a 2-channel arbitrary waveform generator (AWG) 
 with a deep sample buffer*. That's it!
 
-It has a sample streaming buffer that feeds a 2 14-bit DACs at a sample rate of up to 105MHz. 
+It has a streaming buffer that feeds samples to 2 14-bit DACs at a sample rate of up to 105MHz. 
 Two output channels I and Q will typically contain quadrature modulation signals that are sent 
 to an RF vector signal generator such as a Rohde & Schwarz SMIQ for the actual high-frequency 
 modulation. In a typical setup, the AMIQ is used to generate the baseband modulated signal and 
@@ -54,14 +54,14 @@ the SMIQ shifts the baseband signal to an RF frequency.
 
 ![WinIQSIM - AMIQ - SMIQ setup](/assets/amiq/amiq_smiq_setup.png)
 
-Since the AMIQ has no user interface, the waveform data is provided by some external control
-device. This could be a PC that runs R&S WinIQSim software or even a SMIQ because it has the ability 
-to control an AMIQ. You can also create your own waveforms and upload them via floppy disk, GPIB
-or an RS-232 interface using 
+Since the AMIQ has no user interface, the waveform data must provided by an external
+device. This could be a PC that runs R&S WinIQSim software or even the SMIQ itself because it has 
+the ability to control an AMIQ. You can also create your own waveforms and upload them via floppy disk, 
+GPIB or an RS-232 interface using 
 [SCPI control commands](/2020/06/07/Making-Sense-of-Test-and-Measurement-Protocols.html#scpi---the-universal-command-language).
 
 Figure 4-1 of the [AMIQ Operating Manual](/assets/amiq/AMIQ_OperatingManual_en_08.pdf) has a
-simplified block diagram. It is pretty straightforward and similar to the one of my
+simplified block diagram. It is pretty straightforward and somewhat similar to the one of my
 [HP 33120A function generator](/2023/01/02/HP33120A-Repair-Shutting-Down-the-Eye-of-Sauron.html#a-walk-through-the-block-diagram):
 
 [![AMIQ block diagram](/assets/amiq/amiq_block_diagram.png)](/assets/amiq/amiq_block_diagram.png)
@@ -83,11 +83,11 @@ The major blocks are surrounded by a large amount of DACs that are used to contr
 the tuning input of local 10MHz clock oscillator, gain and offset of output signals, clock skew 
 between I and Q signal and much more.
 
-You could do all of this with a modern SDR setup, except that the specifications of the AMIQ units
+You could do some of this with a modern SDR setup, but the specifications of the AMIQ units
 are dialed up a notch. Both channels are completely symmetrical to avoid modulation errors at the
 source. If there's a need to compensate for small delay differences in, for example, the external 
 cables, you can compensate for that by changing the skew between clocks of the output DACs with a 
-precision of 10ps. Similarly, the sample frequency can be programmed with 32-bit precision.
+precision of 10ps. Similarly, the DAC sample frequency can be programmed with 32-bit precision.
 
 [![Backside speciality connectors](/assets/amiq/backside_connectors.jpg)](/assets/amiq/backside_connectors.jpg)
 *(Click to enlarge)*
@@ -105,8 +105,8 @@ In addition to the main I/Q outputs at the front, there are a bunch of secondary
 [![Backside PC connectors](/assets/amiq/backside_pc_connectors.jpg)](/assets/amiq/backside_pc_connectors.jpg)
 *(Click to enlarge)*
 
-Above those speciality inputs and outputs there's the obligatory GPIB connectors and a bunch of generic ones 
-that look suspiciously like this you'd find on an early century PC:
+Above those speciality inputs and outputs are the obligatory GPIB interface and a bunch of generic connectors 
+that look suspiciously like the ones you'd find on an early century PC:
 
 * PS/2 keyboard and mouse
 * Parallel port
@@ -124,11 +124,10 @@ Mine is an AMIQ-04.
 # WinIQSim Software
 
 While it is possible to control the AMIQ over RS-232 or GPIB with your own software, you'd have
-a hard time matching WinIQSim in terms of features. 
+a hard time matching the features of WinIQSim, a R&S Windows application that supports the AMIQ.
 
 [![WinIQSim Main Multi-Carrier window](/assets/amiq/AMIQ_Main_Multi_Carrier_window.png)](/assets/amiq/AMIQ_Main_Multi_Carrier_window.png)
 *(Click to enlarge)*
-
 
 With WinIQSim, you can select one of the popular communication protocols from the late nineties and
 early 2000s, fill in digital framing data, apply all kinds of distortions and interferences, 
@@ -162,9 +161,10 @@ It has 2 major subsystems:
   [![AMIQ signal generation side](/assets/amiq/amiq_siggen_side.jpg)](/assets/amiq/amiq_siggen_side.jpg)
   *(Click to enlarge)*
 
-  It looks incredibly clean and well layed out and I love how they printed the names of different
+  The PCB looks incredibly clean and well layed out and I love how they printed the names of different
   sections on the metal gray shielding plates.
 
+We'll leave the PC system for a future blog post, and focus on the signal generation PCB.
 
 # The Signal Generation PCB
 
@@ -189,7 +189,7 @@ the operating manual and a service manual contains the full schematic!
 Let's dig a bit deeper into the various aspects of the design.
 
 *In what follows I'll be focusing primarily on analog aspects of the design. This is a very personal
-choice: it's not that the digital sections aren't important, it's just that, as digital design engineer,
+choice: not that the digital sections aren't important, it's just that, as digital design engineer,
 they're not particular interesting to me. Buy studing the analog sections, I hope to stumble into
 circuit that I didn't really know a whole lot about before.*
 
@@ -198,13 +198,14 @@ circuit that I didn't really know a whole lot about before.*
 Before digging in for real, for a word about the schematic: they are fantastic.
 
 Each sub-system has a block diagram that is already pretty detailed, with signal names
-that match the schematic and test points. There are plenty of annotations to indicate the voltage or
-frequency range.
+that match the schematic and test points, often with annotations to indicate the voltage or
+frequency range. Here's the block diagram of the reference and DAC clock generation section, for
+example.
 
 [![Block diagram example](/assets/amiq/block_diagram.png)](/assets/amiq/block_diagram.png)
 <center>Schematic page 5 <i>(Click to enlarge)</i></center><br/>
 
-All signals that also exist on other pages are fully referenced. Look at the `SYN_OUT_CLK` signal below:
+Signals that come from or go to other pages are fully referenced. Look at the `SYN_OUT_CLK` signal below:
 
 [![Schematic signal referencees](/assets/amiq/schematic_signal_references.png)](/assets/amiq/schematic_signal_references.png)
 <center>Schematic page 10 <i>(Click to enlarge)</i></center><br/>
@@ -222,33 +223,32 @@ pins, though there are plenty of those too, but full on SMB connectors.
 In addition to these SMD connectors, there are also plenty of jumpers that can be used to interrupt
 the default signal flow and insert your own test signal instead.
 
-# Analog Signal Generation: Fixed vs Variable DAC Clock
+# Analog Signal Generation Architecture: Fixed vs Variable DAC Clock
 
 In the HP 33120A the DAC has a fixed 40 MHz clock. There's a 16 kB waveform RAM that contains, say, one quarter
 period of a 100 Hz sine. If you want to send out a sine wave of 200 Hz, instead of sequentially stepping through
 all the addresses of the waveform RAM, you just skip every other address. One of the benefits of this kind
-of generation scheme is that you can make do a fixed frequency analog anti-aliasing filter: the Nyquist frequency
-is fixed at 20 MHz.
+of generation scheme is that you can make do with a fixed frequency analog anti-aliasing filter: the Nyquist frequency
+is always the same after all.
 
 A major disadvantage, however, is that even if the output signal has a bandwidth of only 1MHz, you still need to 
-feed the DAC at the fixec clock rate. You could insert an upsampling digital filter between the waveform memory and 
-the DAC, but that require significant mathematical DSP fire power, or you'd have to increase the depth of the
+feed the DAC at the fixed clock rate. You could insert an digital upsampling filter between the waveform memory and 
+the DAC, but that requires significant mathematical DSP fire power, or you'd have to increase the depth of the
 waveform memory.
 
 For an arbitrary waveform generator, it makes more sense to run the DAC at whichever clock speed is
-sufficient to meet the Nyquist requirement and provide a number of different filtering options. The AMIQ has 4 options:
-no filter, a 25 MHz, a 2.5 MHz or an external filter.
+sufficient to meet the Nyquist requirement of the desired signal and provide a number of different filtering options. 
+The AMIQ has 4 such options: no filter, a 25 MHz, a 2.5 MHz or a loopback through an external filter.
 
 The DAC sample clock range is huge, from 10 Hz all the way to 105 MHz, though specifications are only guaranteed up 
-to 100 MHz. According to the data sheet, the clock frequency resolution has be set with a precision of 10^-7.
-
+to 100 MHz. According to the data sheet, the clock frequency can be set with a precision of 10^-7.
 
 # Internal Reference Clock Generation
 
 Like all professional test and measurement equipment, the AMIQ uses a 10MHz reference clock that
-can come from outside or it can be generated locally with a 10MHz crystal. It's common for high-end equipment
-to have an oven controlled crystal oscillator (OCXO), but in this case we have to make do with a lower spec'ed
-temperature controlled one (TCXO), a [Milliren Technologies 453-0210](/assets/amiq/milliren_txco_400_series.jpg).
+can come from outside or that can be generated locally with a 10MHz crystal. It's common for high-end equipment
+to have an oven controlled crystal oscillator (OCXO), but AMIQ has a lower spec'ed temperature controlled one (TCXO), 
+a [Milliren Technologies 453-0210](/assets/amiq/milliren_txco_400_series.jpg).
 
 ![Reference clock generation PCB](/assets/amiq/ref_clock_generation_pcb.jpg)
 
@@ -260,8 +260,8 @@ clock always comes from the TCXO (green).
 <center>Schematic page 5 <i>(Click to enlarge)</i></center><br/>
 
 When the internal clock is selected, the TCXO output frequency can be tuned with an analog signal that comes from
-the `VTXCO TUNE` DAC (blue), but when the external reference input is active, TCXO is phase locked to the
-external clock. You can see the phase comperator and low pass filter in red.
+the `VTXCO TUNE` DAC (blue), but when the external reference input is active, the TCXO is phase locked to the
+external clock. You can see the phase comparator and low pass filter in red.
 
 The reason for using a PLL with the internal TCXO as the voltage controlled oscillator is probably to ensure
 that the generated reference clock has the phase noise of the TCXO while tracking the frequency of the
@@ -274,8 +274,8 @@ sense.
 
 # DAC Clock Synthesizer
 
-The clock synthesizer creates a highly programmable DAC clock from the internal reference clock. It should
-come as no surprise that this clock is generated by a PLL as well.
+The clock synthesizer creates a highly programmable DAC clock from the internal reference clock `SYN_REF` from
+previous section. It should come as no surprise that this clock is generated by a PLL as well.
 
 [![Clock synthesizer block diagram](/assets/amiq/clock_synthesizer.png)](/assets/amiq/clock_synthesizer.png)
 <center>Schematic page 5 <i>(Click to enlarge)</i></center><br/>
@@ -289,7 +289,7 @@ There are two speciality components in the clock generation path:
 *(Click to enlarge)*
 
 The VCO has an operating frequency between 100 and 200 MHz. I don't know enough about VCOs to give meaningful
-commentary about the specifications, but based on some comparisons of similar components on Digikey, such
+commentary about the specifications, but based on comparisons with similar components on Digikey, such
 as this [FMVC11009](https://www.digikey.com/en/products/detail/fairview-microwave/FMVC11009/22222673), 
 it's safe to assume that it's an expensive and high quality component.
 
@@ -307,7 +307,7 @@ It works as follows:
 * each clock cycle, the phase of a [numerical controlled oscillator (NCO)](https://en.wikipedia.org/wiki/Numerically_controlled_oscillator)
   accumulates with the programmable 32-bit increment.
 * the upper bits of the phase accumulator serve as the address of a sine waveform table.
-* a 10-bit DAC converts the digital sine wave for analog.
+* a 10-bit DAC converts the digital sine wave to analog.
 * the analog signal is sent through an external low-pass filter.
 * the output of the low-pass filter goes back into the AD9850 and through a comparator to generate a digital output clock.
 
@@ -316,11 +316,11 @@ digital to analog back to digital? In theory, the MSB of the NCO could be used a
 of the clock generator.
 
 The problem is that in such a configuration, the length of each clock period toggles between
-N and N+1 clock cycles, with a ratio so that the average ends up with the right fraction. 
+N and N+1 clock cycles, with a ratio so that the average clock period ends up with the desired value.
 But this creates major spurs in the frequency spectrum of the generated clock. 
 
 When fed into the phase comparator of a PLL, these frequency spurs can show up as jitter at the 
-output of the PLL.
+output of the PLL and thus into the spectrum of the generated I and Q signals.
 
 By converting the signal to analog and using a low pass filter, the spurs can be filtered
 away. The combination of a low pass filter and a comparator acts as an interpolator: the edges of
@@ -369,18 +369,28 @@ Here's what the skewing circuit looks like:
 <center>Schematic page 10 <i>(Click to enlarge)</i></center><br/>
 
 Starting with input signal `DAC_CLK`, the goal is to create `I_DAC_CLK` and `Q_DAC_CLK` that 
-can be moved up to 1ns ahead or behind the other. A signal can be delayed by sending them through 
-the R/C combo. Since we need a variable delay, we need a way to change the value of the R or the C. 
-A varactor or varicap diode is exactly that kind of device: its capacitance changes depending on 
-the reverse bias voltage that is across the diode.
+can be moved up to 1ns ahead or behind the other. Signals can be delayed by sending them through 
+an R/C combo. Since we need a variable delay, we need a way to change the value of either the R 
+or the C.  A varactor or varicap diode is exactly that kind of device: its capacitance changes 
+depending on the reverse bias voltage across the diode.
 
 Static input signal `SKEW_TUNE` comes from a DAC. It goes to the cathode of one varicap and the
-anode of the other. When its voltage increase, the capacitance of those 2 diodes moves the other
-way. A [BB147 varicap](https://www.rf-microwave.com/en/philips/bb147/varicap-diode-30v-20ma-2-4-112pf-sod-323/bb147/)
+anode of the other. When its voltage increase, the capacitance of those 2 diodes moves in opposite
+ways, and so does the R/C delay along the I and Q clock path.
+A [BB147 varicap](https://www.rf-microwave.com/en/philips/bb147/varicap-diode-30v-20ma-2-4-112pf-sod-323/bb147/)
 has a capacitance that varies between 2pF and 112pF depending on the bias voltage.
 
 Capacitances C168 and C619 prevent the relatively high bias voltages from reaching the digital
 signal path.
+
+Does the circuit work? Absolutely!
+
+The scope photos below show the impact of the skewing circuit when dialed to the maximum in both
+directions:
+
+![Oscilloscope pictures of skewed purpse and yellow signals](/assets/amiq/skew_purple_vs_yellow.jpg)
+
+With a 2ns/div horizontal scale, you can see a skew of ~1ns either way.
 
 # Variable Gain Amplifier
 
