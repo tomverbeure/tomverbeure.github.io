@@ -186,7 +186,7 @@ Annotated, it looks like this:
 
 Rohde & Schwarz recently made the terrible decision to lock all their software and manuals behind an approval-only 
 corporate log-in wall, but luckily some of the most important AMIQ assets can be found online elsewhere, including 
-the operating manual and a service manual contains the full schematic!
+the operating manual and a service manual contains the full schematics!
 
 Let's dig a bit deeper into the various aspects of the design.
 
@@ -197,10 +197,10 @@ circuits that I didn't really know a lot about before.*
 
 **Fantastic Schematics**
 
-Before digging in for real, for a word about the schematic: they are fantastic.
+Before digging in for real, a word about the schematics: they are fantastic.
 
 Each sub-system has a block diagram that is already pretty detailed, with signal names
-that match the schematic and test points, often with annotations to indicate the voltage or
+that match the schematics and test points, often with annotations to indicate the voltage or
 frequency range. Here's the block diagram of the reference and DAC clock generation section, for
 example.
 
@@ -234,7 +234,7 @@ of generation scheme is that you can make do with a fixed frequency analog anti-
 is always the same after all.
 
 A major disadvantage, however, is that even if the output signal has a bandwidth of only 1MHz, you still need to 
-feed the DAC at the fixed clock rate. You could insert an digital upsampling filter between the waveform memory and 
+feed the DAC at the fixed clock rate. You could insert a digital upsampling filter between the waveform memory and 
 the DAC, but that requires significant mathematical DSP fire power, or you'd have to increase the depth of the
 waveform memory.
 
@@ -295,7 +295,7 @@ commentary about the specifications, but based on comparisons with similar compo
 as this [FMVC11009](https://www.digikey.com/en/products/detail/fairview-microwave/FMVC11009/22222673), 
 it's safe to assume that it's an expensive and high quality component.
 
-The AD9850 is located in the feedback path of the PLL where it acts as an feedback divider with a 
+The AD9850 is located in the feedback path of the PLL where it acts as a feedback divider with a 
 precision of 32 bits. 
 
 ![AD9850 block diagram](/assets/amiq/ad9850_block_diagram.png)
@@ -397,7 +397,7 @@ With a 2ns/div horizontal scale, you can see a skew of ~1ns either way.
 # Variable Gain Amplifier
 
 The analog signal path starts at the DAC and then goes through the anti-aliasing filters, 
-on output section that does amplification and attenuation, and finally the output connector
+an output section that does amplification and attenuation, and finally the output connector
 board.
 
 It is common for signal generators to have a fixed gain amplification section and then some selectable
@@ -450,7 +450,7 @@ W back into Z either which reduces the functionality to: `W = FILTER_OUT * AMPL_
 `AMPL_VAR` and `OFFSET` are static analog values that are each created by a 12-bit DAC8143,
 just like many other analog configuration signals.
 
-It's almost shame that a powerful little device is asked to perform such a basic operation.
+It's almost shame that this powerful little device is asked to perform such a basic operation.
 
 While researching the AD835, somebody pointed out the 
 [AD8310](https://www.analog.com/media/en/technical-documentation/data-sheets/ad8310.pdf), 
@@ -511,7 +511,7 @@ have their own built-in shift register and are part of the same scan chain.
 <center>Schematic page 19 <i>(Click to enlarge)</i></center><br/>
 
 The schematic above is an example of that. The red scan chain data input goes through the `VTCXO_TUNE` DAC, then 
-the 74HCT4094 after which it exist to some other page of the schematic.
+the 74HCT4094 after which it exist to some other page of the schematics.
 
 # Conclusion
 
