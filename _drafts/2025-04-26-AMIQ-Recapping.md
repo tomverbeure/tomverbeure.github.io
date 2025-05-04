@@ -71,7 +71,7 @@ The PC system on my AMIQ was in bad shape.  It had the following issues:
 
 If you want to do any restoration work on the AMIQ, you'll need to operate it like a PC, with
 a keyboard and a display. I found a Korean keyboard with PS2 on Craigslist for $20. For the video
-card, I found an ATI (bah) Rage XL PCI VGA card, also for $20. I think pretty much any video
+card, I found an ATI (meh) Rage XL PCI VGA card, also for $20. I think pretty much any video
 card with PCI should work as long as they're not some power hungry monster.
 
 The case of the AMIQ sits in the way of the video card, so I had unscrew the motherboard, remove
@@ -100,82 +100,142 @@ the fan from the heatsink and installed just that.
 
 ![Cooler Master cooler](/assets/amiq/cooler_master_cooler.jpg)
 
-# Recapping the motherboard
+# Motherboard Capacitors
 
-It was produced in late nineties and early 2000s, which is right around the time of the
-electrolytic capacitor disaster that hit pretty much all PC electronics back and, boy does
-mine suffer from it! Have a look at some of the pictures below:
+The motherboard was produced in the late nineties and early 2000s, right around the time of the
+electrolytic capacitor disaster that hit pretty much all PC electronics back and mine is no
+exception.
 
-XXXXX
-
-There are around 30 electrolythic caps on the mother board and while it's not possible to
+There are 33 electrolytic caps on the motherboard and while it's not possible to
 visually determine if the smaller ones have issues, all the larger ones have traces of rust
-at the top. I didn't see any signs of leaks, which is great because the fluid inside the cap
-is highly corrosive. It's much easier to replace a capacitor than to reconstruct hairline
-PCB traces that have melted away.
+at the top. There weren't any signs of leaks, which is great because the fluid inside a cap
+is corrosive and will eat away the hairline PCB traces.
 
-Conventional wisdom says that when faulty capacitors are suspected, you should first replace
-all of them before powering on the PC. I was impatient and powered it on anyway. I was immediately
-greeted with a bunch of beeps,  good, because that means that there's still some life in the
-motherboard, and the ominous clicking sound of a failed hard drive.
+Here's the full list:
 
-Recapping is a pretty common process and you can find plenty of videos on Youtube about it.
+| Quantity 	| Capacity 	| Voltage 	| Diameter 	| Spacing 	|
+|:--------:	|---------:	|--------:	|---------:	|--------:	|
+|     2    	|   1500uF 	|     10V 	|     10mm 	|     5mm 	|
+|    10    	|   1000uF 	|    6.3V 	|      8mm 	|   3.5mm 	|
+|     5    	|    470uF 	|     16V 	|      8mm 	|   3.5mm 	|
+|     7    	|    100uF 	|     16V 	|      5mm 	|     2mm 	|
+|     2    	|     47uF 	|     25V 	|      5mm 	|     2mm 	|
+|     7    	|     10uF 	|     25V 	|      4mm 	|   1.5mm 	|
 
-But what's usually missing is a list of all the caps that must be replaced. Here's the
-list of what's needed for the MS-I5619:
+This was my [Mouser shopping list](https://www.mouser.com/Tools/Project/Share?AccessID=875b0d6d85).
 
-When making a purchase list of replacements caps on Mouser, I didn't pay close attention to the
-equivalent series resistance (ESR) of the new caps. When used as part of a switch mode power
-supply, some capacitors will continuously be exposed to high-frequency charge-discharge cycles.
-In such a case, a high series resistance will result in power being wasted inside cap, thus
-reducing power efficiency and higher temperature which will ultimately reduce the life of the new
-caps as well.
+**Use at your own risk** and keep the following in mind:
 
-Low ESR capacitors are only a bit more expensive than general purpose ones, so it's not really worth
-cheaping out on them. On the other hand, how long will you really use this motherboard anyway?
+* The quantities in the shopping list don't match those of the table above. That's because 
+  I ordered one or two more spare ones in case I screwed up. The smaller caps are cheap and harder
+  to handle. In hindsight, I should have bought even a few more spares.
 
-For the recap itself, I used my brand new XXXXX desoldering station, a Xmas gift from my wife.
-She knows me well!
+* Not all capacitors have a low 
+  [equivalent series resistance (ESR)](https://en.wikipedia.org/wiki/Equivalent_series_resistance).
 
-This was my first recap ever and even 25 year old motherboards are already sufficiently advanced
-to make it a delicate operation.
+  Low ESR is important for capacitors that are part of switching voltage
+  regulators because they tend to be exposed to high currents which, in combination
+  with resistance, results in higher power consumption and thus lower power efficiency.
+  It also reduces the lifetime of the capacitor.
+
+  I don't know for which AMIQ capacitors low ESR matters. In the list above,
+  the 1500uF, 1000uF and 470uF ones have a low ESR. The others don't. 
+
+* The voltages don't always match: the ones in the shopping list are sometimes
+  higher than the original because the ones with the original voltage weren't available.
+  Don't worry about it.
+
+# Recapping Tools
+
+I had never done a recap before, but Santa gave me a desoldering station for this project!
+
+![Workbench with recapping tools and motherboard](/assets/amiq/recapping_items.jpg)
+
+I used the following tools:
+
+* Yihua 948 desoldering station
+
+  It has a hollow iron and electrical air pump. It's great to remove the solder from
+  through-hole contact with thicker leads.
+
+* Pinecil soldering iron
+
+  I used this more than the desoldering station. 
+
+* Fake Amtech flux with a syringe plunger
+
+* Solder wick braid
+
+* Solder wire
+
+* Ceramic tweezers
+
+* Isopropyl alcohol
+
+* Medical swab sticks
+
+# Desoldering Techniques Learned Along the Way
+
+Recapping is a pretty common process and you can find plenty of videos on YouTube about it.
 
 Here are some random notes about techniques that I learned along the way:
 
-In an ideal world, you'll be able to suck enough solder out of the through-hole so that you
-can simply insert a replacement cap back and and solder it. In practice, that rarely happens.
-Larger caps such as the 1000uF and 1500uF ones have thicker leads and a larger through-hole
-diameter. For those, there is a decent chances that at least one of the hole will free up. I
-never had a case where both holes were unclogged.
+* Temperature >350C
 
-One of the nice benefits of the heated desoldering pump was that the tip is hollow so it will
-immediately warm up the solder around the whole lead, instead of heating it up at one side
-only.
+  I used a temperature of 350C and higher. A PC motherboard has a lot of copper layers that
+  are excellent at channeling away the heat of a soldering iron. Some capacitors were easy to
+  remove and to replace. Others were a total pain: they just didn't want to come loose. I 
+  think the difference is primarily due to the amount of copper closeby.
 
-It helps to wiggle around the hot tip in circles to loosen up the solder all around.
+* Opening up the through-hole completely is rare
 
-Putting some amount of force on the cap that needs to be removed is inevitable, but you can't
-overdo it because you might strips out the copper lining of the hole itself.
+  In an ideal world, you are able to suck enough solder out of the through-hole so that the
+  hole opens up and you can simply insert a replacement cap back and and solder it. 
+  In practice, that rarely happens.
+  Larger caps such as the 1000uF and 1500uF ones have thicker leads and a larger through-hole
+  diameter. For those, there is a decent chances that at least one of the hole will free up,
+  but I didn't have a case where both holes were open.
 
-First adding instead of immediately removing solder can work wonders. The extra solder can
-increase the contact surface between the solder and the soldering iron tip and make the solder
-heat up much easier.
+* The hollow tip of the desoldering pump
 
-For small capacitors with small lead spacing such as the 10uF and 100uF caps, the desoldering
-pump wasn't very useful. I had best results but adding enough new solder so that it bridged both
-leads, and then after heating it up more, then cap would often just fall out. Gravity for the win!
+  One of the nice benefits of the heated desoldering pump was that the tip is hollow so it will
+  immediately warm up the solder around the whole lead, instead of heating it up at one side
+  only.
 
-There can be a large variance in the effort required to remove a capacitor. Some could be removed
-with almost no effort. Others took ages. It depends on the amount of ground planes and other elements
-that are good at whisking away heat: you just can't heat the thing up fast enough.
+  It helps to wiggle around the hot tip in circles to loosen up the solder all around.
 
-One option that I didn't try is to cut away the capacitor with nose pliers so that only 2 lead
-stubs are left. This way, instead of have to extract 2 leads together, you can remove one at a
-time which is much easier.
+* Desoldered all the old caps intact vs cutting them off
 
-**Inserting new caps**
+  If you want to remove a cap without destroying it, you need to alternate between the 2
+  leads and gradually extract the cap a millimeter or 2 at a time while applying an alternating
+  force. When doing so, you run the risk of stripping away the copper lining of through-hole.
 
-When you can't unclog a solder hole, inserting a new cap won't be as easy. Here are some techniques that
+  I removed all caps intact, but in hindsight that was a mistake. The alternative is to just
+  cut the old cap off the motherboard with micro wire cutter and then desolder the 2 leads
+  one by one. This isn't always the best solution, e.g. when then cap is located in a small
+  space between connectors, having the cap in place where desoldering it gives you something
+  to grip on.
+
+* Adding solder before removing it
+
+  First adding fresh solder before removing it can do wonders. The extra solder can
+  increase the contact surface between the solder and the soldering iron tip and make the solder
+  heat up much easier.
+
+* Making use of gravity
+
+  For small capacitors with small lead spacing such as the 10uF and 100uF caps, the desoldering
+  pump wasn't very useful. I had best results by adding enough new solder so that it bridged both
+  leads. After heating it up the single blog, the cap would often just fall out. Gravity for the win!
+
+* Immediately replacing a removed capacitor with a new one
+
+  Instead of first removing all capacitors and then adding the new ones, I immediately replaced
+  an old one with the new one. This makes it much harder to make a mistake.
+
+# Installing New Caps
+
+When you can't unclog a solder hole, inserting a new cap isn't as easy. Here are some techniques that
 I used.
 
 I shorten the leads first and make one lead around 2mm shorter than the other. The longest lead is
