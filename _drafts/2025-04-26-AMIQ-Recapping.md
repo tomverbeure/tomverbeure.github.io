@@ -10,25 +10,100 @@ categories:
 
 # Introduction
 
+In [my teardown blog post](/2025/04/26/RS-AMIQ-Teardown-Analog-Deep-Dive.html) I used a working AMIQ.
+It wasn't like that when I first received it: I spent many hours to get to that point.
+
+There were 2 major issues:
+
+* all the electrolystic capacitors of the PC motherboard has to be replaced.
+* the hard drive was toast.
 
 # The PC System
 
+The top side of the AMIQ contains a regular early century PC.
+
+[![AMIQ top size with PC motherboard](/assets/amiq/amiq_pc_motherboard_side.jpg)](/assets/amiq/amiq_pc_motherboard_side.jpg)
+*(Click to enlarge)*
 
   We can see the motherboard, power supply, floppy drive and hard drive. On the
   bottom right, an ISA plug-in card connects the motherboard to the signal generation
   PCB.
 
-The signal generation part is for another time, let's start with the motherboard
-because there's almost certainly a bunch of work to do there.
+It has the following components:
 
+* MSI MS-5169 motherboard
 
-The motherboard is an MSI MS-5169. YOu can find a lot of details here, but it's an pretty
-standard late nineties affair with support for a large selection of CPU from Intel, AMD and
-Winchip, SDR UDIMM RAM or 72-pin EDO RAM, 4 PCI, 1 AGP and 2 16 slots, floppy and IDE interface
-and the usually assortment of smaller interfaces for mouse, keyboard serial port etc.
+  You can find the details at 
+  [The Retro Web](https://theretroweb.com/motherboards/s/msi-ms-5169-al9), 
+  but it's an pretty standard late nineties affair with support for a large selection of socket 7 
+  CPUs from Intel, AMD and Winchip, SDR UDIMM RAM or 72-pin EDO RAM, 4 PCI, 1 AGP and 2 16 ISA slots, 
+  floppy and IDE interface and the usually assortment of smaller interfaces for mouse, keyboard,
+  serial port etc.
+
+  My motherboard came with an IDT WinChip C6 CPU and a whopping 64MB of SDRAM. The CPU is rated
+  at 200 MHz, but the boot screen reports a 120 MHz processor clock. I haven't yet tried to increase
+  the clock to 200 MHz.
+
+* IBM TravelStar hard drive
+
+  This drive has a capacity of 6.4GB of which only ~2GB is used for the AMIQ. It uses a parallel
+  IDE interface. This hard drive has a reputation of failing read/write heads, which is probably
+  what happened with mine.
+
+* Power supply
+* 3 1/2" floppy drive
+
+At the bottom right of the image, we can see a PCB that's plugged into the one of the 2 16-bit
+ISA slots. This is the interface that connected the PC system to the signal generation board.
+
+# Assessing the Damage
+
+The PC system on my AMIQ was in bad shape.  It had the following issues:
+
+* bulging electrolytic capacitors with rust spots on top
+* locked CPU fan 
+* broken hard drive
+* CR2032 battery empty
+
+![Capacitors and fan](/assets/amiq/caps_and_fan.jpg)
+
+# Installing a Video Card and Keyboard
+
+If you want to do any restoration work on the AMIQ, you'll need to operate it like a PC, with
+a keyboard and a display. I found a Korean keyboard with PS2 on Craigslist for $20. For the video
+card, I found an ATI (bah) Rage XL PCI VGA card, also for $20. I think pretty much any video
+card with PCI should work as long as they're not some power hungry monster.
+
+The case of the AMIQ sits in the way of the video card, so I had unscrew the motherboard, remove
+the ISA interface board to the signal generation PCB, and awkwardly float the motherboard with
+some insulation foam underneath to prevent short-circuits. A temporary solution at best.
+
+**You are not supposed to power up a device with bad electrolytics**, but I did it anyway.
+This was the first sign of life:
+
+[![First boot image](/assets/amiq/first_boot.jpg)](/assets/amiq/first_boot.jpg)
+*(Click to enlarge)*
+
+For only $3, I bought this [PCI riser adapter from mini-box.com](https://www.mini-box.com/s.nl/it.A/id.289/.f?sc=8&category=1549)
+to make the video card fit when the motherboard is mounted in the case.
+
+[![PCI riser adapter](/assets/amiq/pci_riser_adapter.jpg)](/assets/amiq/pci_riser_adapter.jpg)
+*(Click to enlarge)*
+
+# Locked CPU Fan
+
+The fan was completely locked. I don't know how that happens? I replaced it with a socket 7
+cooler from Cooler Master that I bought on eBay for $20. The new fan comes with a heatsink, but
+I didn't have any thermal paste on hand, so instead of replacing the full assembly, I unscrewed
+the fan from the heatsink and installed just that. 
+(I *should* apply new thermal paste at some point...)
+
+![Cooler Master cooler](/assets/amiq/cooler_master_cooler.jpg)
+
+# Recapping the motherboard
 
 It was produced in late nineties and early 2000s, which is right around the time of the
-electrolythic capacitor disaster that hit pretty much all electronics back and, boy does
+electrolytic capacitor disaster that hit pretty much all PC electronics back and, boy does
 mine suffer from it! Have a look at some of the pictures below:
 
 XXXXX
@@ -43,8 +118,6 @@ Conventional wisdom says that when faulty capacitors are suspected, you should f
 all of them before powering on the PC. I was impatient and powered it on anyway. I was immediately
 greeted with a bunch of beeps,  good, because that means that there's still some life in the
 motherboard, and the ominous clicking sound of a failed hard drive.
-
-# Recapping the motherboard
 
 Recapping is a pretty common process and you can find plenty of videos on Youtube about it.
 
