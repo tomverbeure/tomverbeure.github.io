@@ -236,21 +236,21 @@ a repetitive pattern of ~195 samples.
 
 I don't know why a pattern of 195 samples exists, but it's clear that each of those 195 locations
 have a fixed voltage offset. If the scope measures those offsets during calibration, it can
-subract them during measurement and get a clean signal out.
+subtract them after measurement and get a clean signal out.
 
 **50 kHz square wave**
 
-Next I applied a 50kHz square wave to the input. This frequency was chosen so that for the selected
-sample rate, a single period would cover the 2ms sampling duration.
+Next I applied a 50kHz square wave to the input. This frequency was chosen so that, for the selected
+sample rate, a single period would cover the 15000 sampling points.
 
 ![Square wave - full burst](/assets/tds684b/23_square_wave_full.png)
 
 2 more observations:
 
-* the micro-repetitiveness is still there, irrespective of the voltage offset. That means that
-  subtracting the noise should be fine for different voltage inputs.
+* the micro-repetitiveness is still there, irrespective of the voltage offset due to the input signal. 
+  That means that subtracting the noise should be fine for different voltage inputs.
 * We don't see a clean square wave outline. It looks like there's some kind of address interleaving
-  going one.
+  going on.
 
 **50kHz sawtooth wave**
 
