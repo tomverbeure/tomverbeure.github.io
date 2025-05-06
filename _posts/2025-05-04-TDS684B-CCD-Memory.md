@@ -16,27 +16,28 @@ I have a [Tektronix TDS 684B oscilloscope](/2024/04/17/Tektronix-TDS-Button-Swap
 cheaply at an auction. It has 4 channels, 1 GHz of BW and a sample rate of 5 Gsps. Those are respectable 
 numbers even by today's standards. It's also the main reason why I have it: compared to modern oscilloscopes, 
 the other features aren't nearly as impressive. It can only 
-record 15k samples per channel at a time, for example. But at least the sample doesn't go down when
+record 15k samples per channel at a time, for example. But at least the sample rate doesn't go down when
 you increase the number of recording channels: it's 5 Gsps even all 4 channels are enabled.
 
 I've always wondered how Tektronix managed to reach such high specifications back in the nineties, 
-so in this blog post I take a quick look at the internals,  to figure out how it works, and
+so in this blog post I take a quick look at the internals, figure out how it works, and
 do some measurements along the signal path.
 
 # The TDS600 Series
 
 The first oscilloscopes of the TDS600 series were introduced around 1993. The last one, the 
 TDS694C was released in 2002. The TDS684 version was from sometime 1995. The ICs on my 
-TDS684C have date codes from as early a the first half of 1997.
+TDS684C have date codes from as early as the first half of 1997.
 
 The main characteristic of these scopes was their extreme sample rate for that era, going from
-2Gsps for the TDS620, TDS640 and TDS644, 5Gsps for the TDS654, TDS680 and TDS684, and 10Gsps for
+2 Gsps for the TDS620, TDS640 and TDS644, 5 Gsps for the TDS654, TDS680 and TDS684, and 10 Gsps for
 the TDS694C which was developed under the [*Screamer*](https://w140.com/tekwiki/wiki/TDS694C)
 code name.
 
-The osciloscopes have 2 main parts: 
+The oscilloscopes have 2 main boards: 
 
-* the acquisition board contains all the parts from analog input down to the sample memory as well as some triggering. 
+* the acquisition board contains all the parts from the analog input down to the sample memory as well as some
+  triggering logic.
 
   [![Acquisition board](/assets/tds684b/acquisition_board.jpg)](/assets/tds684b/acquisition_board.jpg)
   *(Click to enlarge)*
@@ -46,12 +47,12 @@ The osciloscopes have 2 main parts:
   [![CPU board](/assets/tds684b/cpu_board.jpg)](/assets/tds684b/cpu_board.jpg)
   *(Click to enlarge)*
 
-2 flat cables and a PCB connect the 2 boards with each other. 
+2 flat cables and a PCB connect the 2 boards. 
 
 ![Interconnections](/assets/tds684b/interconnections.jpg)
 
-The interconnect PCB traces go to memory on the acquisition board. It's safe to assume that
-this interface is used for high-speed data transfer while the flat cables are for lower speed
+The interconnect PCB traces go to the memory on the acquisition board. It's safe to assume that
+this interface is used for high-speed waveform data transfer while the flat cables are for lower speed
 configuration and status traffic.
 
 *If you ever remove the interconnection PCB, make sure to put it back with the same orientation.
@@ -64,11 +65,11 @@ The TDS 684B has 4 identical channels that can easily be identified.
 [![Annotated acquisition board](/assets/tds684b/acquisition_board_annotated.jpg)](/assets/tds684b/acquisition_board_annotated.jpg)
 *(Click to enlarge)*
 
-There are 6 major components in path from input to memory:
+There are 6 major components in the path from input to memory:
 
 * Analog front-end
 
-  Hidden under a shielding cover, but you expect to find a bunch of relays to switch between 
+  Hidden under a shielding cover, but you'd expect to find a bunch of relays there to switch between 
   different configurations: AC/DC, 1Meg/50 Ohm termination, ...
 
   I didn't open it because it requires disassembling pretty much the whole scope.
@@ -76,8 +77,8 @@ There are 6 major components in path from input to memory:
 * Signal Conditioner IC(?)
 
   This is the device with the glued-on heatsink. I left it in place because there's no metal 
-  attachment latch. Reattaching them would be a pain. Since the acquisition board has a bunch 
-  of custom ICs already, chances are that this one is custom as well, so knowing the exact part 
+  attachment latch. Reattaching it would be a pain. Since the acquisition board has a bunch 
+  of custom ICs already, chances are this one is custom as well, so knowing the exact part 
   number wouldn't add a lot of extra info.
 
   We can see one differential pair going from the analog front-end into this IC and a 
@@ -89,12 +90,12 @@ There are 6 major components in path from input to memory:
 
 * [Motorola MC10319DW](/assets/tds684b/MC10319.PDF) 8-bit 25 MHz A/D Converter
 
-  Finally an off-the-shelf device! But why is it only rated for 25MHz?
+  Finally, an off-the-shelf device! But why is it only rated for 25MHz?
 
 * National Semi ADG303 - A Custom Memory Controller Chip
 
-  It receives the 4 8-bit lanes from the 4 ADCs on one side and connects
-  to 4 SRAMs on the other.
+  It receives the four 8-bit lanes from the four ADCs on one side and connects
+  to four SRAMs on the other.
 
 * 4 [Alliance AS7C256-15JC](/assets/tds684b/as7c256.pdf) SRAMs
 
@@ -104,8 +105,8 @@ There are 6 major components in path from input to memory:
   The TDS 684B supports waveform traces of 15k points, so they either only use
   half of the available capacity or they use some kind of double-buffering scheme.
 
-  There are 4 unpopulated memory footprints. In one of my TDS 420A blog posts,
-  I extended the waveform memory 
+  There are four unpopulated memory footprints. In one of my TDS 420A blog posts,
+  I extend the waveform memory 
   [by soldering in extra SRAM chips](/2020/07/11/Option-Hacking-the-Tektronix-TDS-420A.html#in-search-of-the-missing-memory).
   I'm not aware of a TDS 684B option for additional memory, so I'm not optimistic
   about the ability to expand its memory. There's also no such grayed-out option
@@ -122,7 +123,6 @@ comments that confirm this theory.
 
 # Measuring Along the Signal Path
 
-
 Let's verify this by measuring a few signals on the board with a different scope.
 The ADC input pins are large enough to attach a 
 [Tektronix logic analyzer probe](/2025/04/12/DSLogic-U3Pro16-Teardown.html#probe-cables-and-clips):
@@ -135,7 +135,7 @@ With a 1 MHz signal and using a 100Msps sample rate, the input to the ADC looks 
 
 ![1 MHz, 100 Msps waveform at ADC](/assets/tds684b/1_1MHz_100Msps_no_clock.png)
 
-The input to the ADC is clearly already chopped into discrete samples, with a new sample
+The input to the ADC is clearly chopped into discrete samples, with a new sample
 every 120 ns. We can discern a sine wave in the samples, but there's a lot of noise on the
 signal too. Meanwhile the TDS684B CRT shows a nice and clean 1 MHz signal. I haven't
 been able to figure out how that's possible.
@@ -161,7 +161,7 @@ even lower, to 30Hz:
 
 **Sampling burst duration**
 
-The during of a sampling burst is always 2 ms, irrespective of the sample rate
+The duration of a sampling burst is always 2 ms, irrespective of the sample rate
 of the oscilloscope or the number of points acquired! The combination of a
 2 ms burst and 8 MHz sample clock results in 16k samples. So the scope always
 acquires what's probably the full contents of the CCD FIFO and throws a large
@@ -171,7 +171,7 @@ Here's the 1 MHz signal sampled at 100 Msps:
 
 ![Sampling burst of 2ms at 100 Msps](/assets/tds684b/5_1MHz_100Msps_2ms_acq.png)
 
-And here's the same signal sampled at 5Gsps:
+And here's the same signal sampled at 5 Gsps:
 
 ![Sampling burst of 2ms at 5 Gsps](/assets/tds684b/6_1MHz_5Gsps_2ms_acq.png)
 
@@ -197,9 +197,9 @@ I also applied a 200 MHz input signal.
 
 The period is now ~22 samples, as expected.
 
-200 MHz is low enough to measure with my Siglent oscilloscope. To confirm that
+200 MHz is low enough to measure with my 350 MHz bandwidth Siglent oscilloscope. To confirm that
 the ADG286D chip contains the CCD memory, I measured the signal on one of the
-differential pins going into the that chip:
+differential pins going into that chip:
 
 ![Probing the input of ADG286D](/assets/tds684b/probing_input_adg286b.jpg)
 
