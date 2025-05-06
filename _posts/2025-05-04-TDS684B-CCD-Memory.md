@@ -207,11 +207,69 @@ And here it is, a nice 200 MHz signal:
 
 ![200 MHz seen on the input of the ADG286D chip](/assets/tds684b/13_200MHz_going_into_CCD.png)
 
+# A Closer Look at the Noise Issue
+
+After initially publishing this blog post, I had a discussion on Discord about the noise issue
+which made me do a couple more measurements.
+
+**Input connected to ground**
+
+Here's what the ADC input looks like when the input of the scope is connected to ground:
+
+![Input connected to ground - full burst](/assets/tds684b/20_input_to_gnd_full.png)
+
+2 major observations:
+
+* there's a certain amount of repetitiveness to it.
+* there are these major voltage spikes in between each repetition. 
+  They are very faint on the scope shot.
+
+Let's zoom in on that:
+
+![Input connected to ground - zoomed](/assets/tds684b/21_input_to_gnd_zoom.png)
+
+The spikes are still hard to see so I added the arrows, but look how the sample pattern repeats 
+after each spike! 
+
+The time delay between each spike is ~23.6 us. With a sample rate of 120ns, that converts into
+a repetitive pattern of ~195 samples.
+
+I don't know why a pattern of 195 samples exists, but it's clear that each of those 195 locations
+have a fixed voltage offset. If the scope measures those offsets during calibration, it can
+subract them during measurement and get a clean signal out.
+
+**50 kHz square wave**
+
+Next I applied a 50kHz square wave to the input. This frequency was chosen so that for the selected
+sample rate, a single period would cover the 2ms sampling duration.
+
+![Square wave - full burst](/assets/tds684b/23_square_wave_full.png)
+
+2 more observations:
+
+* the micro-repetitiveness is still there, irrespective of the voltage offset. That means that
+  subtracting the noise should be fine for different voltage inputs.
+* We don't see a clean square wave outline. It looks like there's some kind of address interleaving
+  going one.
+
+**50kHz sawtooth wave**
+
+We can see the interleaving even better when applying a sawtooth wavefrom that covers one burst:
+
+![Sawtooth wave - full burst](/assets/tds684b/26_sawtooth_full.png)
+
+Instead of a clean break from high-to-low somewhere in the middle, there is a transition period
+where you get both high and low values. This confirms that some kind of interleaving is happening.
+
 # Conclusion
 
-The TDS684B captures input signals at high speed in an analog memory and digitizes them at 8 MHz.
-The single-ended input to the ADC is very noisy yet it looks clean when displayed on the CRT of the
-scope. The number of samples digitized is always the same, irrespective of the settings in the
+* The TDS684B captures input signals at high speed in an analog memory and digitizes them at 8 MHz.
+* The single-ended input to the ADC is noisy yet the signal looks clean when displayed on the CRT of the
+  scope, likely because the noise pattern is repetitive and predictable. 
+* In addition to noise, there's also an interleaving pattern during the reading out of the analog FIFO 
+  contents. 
+* The number of samples digitized is always the same, irrespective of the settings in the
 horizontal acquisition menu.
 
+*(Not written by ChatGPT, I just like to use bullet points...)*
 
