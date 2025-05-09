@@ -33,26 +33,26 @@ options that I list for later reference:
 
 **But this blog post is not about installing an LCD panel!**
 
-Before going that route, you should try to increase the brightness of the CRT by turning a
-potentiometer on the display board. It sounds like an obvious thing to try, but didn't a lot
-of reference to online. And in my case, it just worked.
+You should first try to increase the brightness of the CRT by turning a potentiometer on the display 
+board. It sounds like an obvious thing to try, but I didn't find a lot of references to it online. 
+And in my case, it just worked.
 
 # Finding the Display Tuning Potentiometers
 
 In the *Display Assembly Adjustment* section of chapter 5 of the *TDS 500D, TDS 600C, TDS 700D and TDS 714L 
 Service Manual*, page 5-23, you'll find the instructions on how to change rotation, brightness and contrast. It
-says to remove the cabinet and then turn some potentiometer, but I just couldn't find them!
+says to remove the enclosure and then turn some potentiometers, but I just couldn't find them!
 
 They're supposed to be next to the fan. Somewhere around there:
 
 ![Left side of the TDS 684C](/assets/tds684c/tds684c_side.jpg)
 
-Well, I couldn't see any. It's only the next day, when I was ready to take the whole thing apart
+Well, I couldn't see any. It's only the next day, when I was ready to take the whole thing apart,
 that I noticed these dust covered holes:
 
-![4 dust covered holes](/assets/tds684c/tds684c_dust.jpg)
+![5 dust covered holes](/assets/tds684c/tds684c_dust.jpg)
 
-A few minutes and a vaccum cleaning operation later reveals 5 glorious potentiometers:
+A vaccum cleaning operation later revealed 5 glorious potentiometers:
 
 ![5 potentiometer](/assets/tds684c/tds684c_no_dust.jpg)
 
@@ -71,7 +71,7 @@ for me!
 
 ![TDS684C with bright CRT image](/assets/tds684c/tds684c_intensity_ok.jpg)
 
-The weird colors in the picture above is a photography artifact that's caused by Tektronix
+The weird colors in the picture above are a photography artifact that's caused by the Tektronix
 NuColor display technology: it uses a monochrome CRT with an R/G/B shutter in front of it.
 You can read more about it in 
 [this Hackaday article](https://hackaday.com/2019/01/17/sharpest-color-crt-display-is-monochrome-plus-a-trick/).
