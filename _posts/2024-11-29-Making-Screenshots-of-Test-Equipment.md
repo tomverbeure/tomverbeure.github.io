@@ -65,9 +65,9 @@ Here are some common ways to transfer screenshots from test equipment to your PC
     work for all equipment. Below, I was able to make it work for a TDS 540 oscilloscope, but not for
     an HP 54532A oscilloscope, for example.
 
-   [^1]:There are some lower cost GPIB dongle available now, and there's even
-   [an open source one](https://github.com/xyphro/UsbGpib) that you can build yourself. I haven't
-   tried any of those though.
+   [^1]:There are some lower cost GPIB dongles available now, and there's even
+        [an open source one](https://github.com/xyphro/UsbGpib) that you can build yourself. I haven't
+        tried any of those though.
 
 * Parallel printer port
 
@@ -584,5 +584,7 @@ Call the script like this:
 If all goes well, you'll get something like this:
 
 ![Siglent SDS2304X screenshot](/assets/print_file_conversion/siglent_screenshot.png)
+
+# Footnotes
 
 
