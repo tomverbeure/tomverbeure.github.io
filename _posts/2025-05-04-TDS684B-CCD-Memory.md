@@ -273,3 +273,16 @@ horizontal acquisition menu.
 
 *(Not written by ChatGPT, I just like to use bullet points...)*
 
+# Fast In, Slow Out
+
+Through the comments on [Hackaday](https://hackaday.com/2025/05/09/oscilloscope-digital-storage-1990s-style/),
+I learned that *FISO* (Fast In, Slow Out) is the magic Google search keyword for this kind of
+technology. Tektronix has a number of patents on it, such as
+[US4648072A](https://patents.google.com/patent/US4648072A/en) 
+and [US6091619A](https://patents.google.com/patent/US6091619A/en). The same keyword will also trigger
+more search hits in various test equipment forums.
+
+
+
+
+
