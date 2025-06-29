@@ -14,7 +14,11 @@ categories:
 * [Explanation](https://hparchive.com/Manuals/HP-10811AB-Manual.pdf) - page 50
 * [Falstad Colpitts](https://www.falstad.com/circuit/e-colpitts.html)
 
-# Basic Colpitts
+# Basic Colpitts - Falstad
+
+`basic_colpitts_falstad.asc`
+
+* Common emitter
 
 * R3 and R4 are measurement resistors.
 * Startup: It's important to have "Start external DC supply voltages at 0V" enabled, that
@@ -41,10 +45,34 @@ Observations:
   keeps going. The peak R2 current is now 2.8mA and the peak R4 current is 2.4mA.
 * If you then increase R2 to 10k, the oscillation stops. Reducing R2 back to 1k (or 2k) 
   make the oscillation work again.
+* The 2 capacitors form a voltage divider, but the center is strapped to ground? 
+  Yes, but if you check the voltages on the capacitors on either side of the coil, you can 
+  see that they behave in opposite phase and that the amplitudes are inverse proportional
+  to the capacitors. There's also a common DC value, but that doesn't matter in the small
+  signal model. When the 2 caps are equal and you add the 2 signals, you see that they
+  *almost* cancel out, though not perfectly.
 
 What's the math to determine whether oscillation will happen or not?
 
 * Vb is a ~sine wave, but Vc is not.
 * Delta between main frequency an second harmonic is 23dB.
 
+# Basic Colpitts - 38: LC tank circuits and the Colpitts oscillator
+
+`basic_colpitts_38_lc_tank_circuits_and_colpitts_oscillator.asc`
+
+* Common emitter
+
+* Very similar, but the feedback is a capacitor instead of a resistor.
+* There is a 1M resistor from Vdd to the base of Q1. Without this resistor, the
+  oscillation starts but then peters out! Why is that?
+
 # References
+
+* [#96: Analysis & Design of a Typical Colpitts Oscillator](https://www.youtube.com/watch?v=TSKq5l7uuz4)
+
+  Excellent, fully worked out example.
+
+* [#38: LC tank circuits and the Colpitts oscillator](https://youtu.be/78qzLAvGHl0?t=712)
+
+  Colpitts example with common emitter (without emitter resistor) and middle point between caps also strapped to ground.
