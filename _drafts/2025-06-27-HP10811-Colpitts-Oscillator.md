@@ -59,6 +59,8 @@ What's the math to determine whether oscillation will happen or not?
 
 # Basic Colpitts - 38: LC tank circuits and the Colpitts oscillator
 
+* [#38: LC tank circuits and the Colpitts oscillator](https://youtu.be/78qzLAvGHl0?t=712)
+
 `basic_colpitts_38_lc_tank_circuits_and_colpitts_oscillator.asc`
 
 * Common emitter
@@ -66,13 +68,44 @@ What's the math to determine whether oscillation will happen or not?
 * Very similar, but the feedback is a capacitor instead of a resistor.
 * There is a 1M resistor from Vdd to the base of Q1. Without this resistor, the
   oscillation starts but then peters out! Why is that?
+  I think it's there to bias the transistor, but in most standard circuits, there
+  are 2 bias transistors and an input DC blocking capacitor. Here, it's only a single
+  resistor.
+  Capacitor C3 is a DC blocking capacitor, but its capacitance is very low. If we increase
+  its value just by a factor of 10 to 0.01uF then it takes ages before the oscillation
+  peters out, but it still does. 
+  In general, it's probably better to always use an amplifier that is correctly biased.
+
+# Basic Colpitts - Colpitts Oscillator Circuit Analysis (7 - Oscillators)
+
+* [Colpitts Oscillator Circuit Analysis (7 - Oscillators)](https://www.youtube.com/watch?v=ES-kcNR4Ln0)
+* [Demonstration and Discussion of Colpitts Oscillator (8 - Oscillators)](https://www.youtube.com/watch?v=wC_uKxu_3AA)
+
+* Common emitter
+* Uses standard biasing with DC blocking input cap and 2 resistors.
+* Also uses collector and emitter resistors (and emitter capacitor) to regular the gain
+  of the amplifier.
+* Full mathematical analysis
+* Builds a circuit
+
+* Basic Colpitts - Colpits and Hartley Oscillators - Solid-state Devices and Analog Circuits - Day 6, Part 7
+
+* [Colpits and Hartley Oscillators - Solid-state Devices and Analog Circuits - Day 6, Part 7](https://www.youtube.com/watch?v=bb5MMgNZ-OU)
+
+* Common emitter
+* Interesting because it talks about phase shift in an intuitive way.
+
 
 # References
 
 * [#96: Analysis & Design of a Typical Colpitts Oscillator](https://www.youtube.com/watch?v=TSKq5l7uuz4)
 
-  Excellent, fully worked out example.
+  * Excellent, fully worked out example.
+  * Uses a common collector/emitter follower circuit.
+  * One side of the coil is strapped to ground.
 
 * [#38: LC tank circuits and the Colpitts oscillator](https://youtu.be/78qzLAvGHl0?t=712)
 
   Colpitts example with common emitter (without emitter resistor) and middle point between caps also strapped to ground.
+
+
