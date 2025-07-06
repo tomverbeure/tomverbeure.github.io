@@ -23,7 +23,7 @@ reference clock input so that all devices in the lab can use the same time refer
 
 ![Racal Dana 1992 external reference clock input](/assets/tm4313/external_ref_clock.jpg)
 
-Such a 10MHz clock be created by different kinds of devices: I have a GTI300 frequency standard,
+Such a 10MHz clock can be created by different kinds of devices: I have a GT300 frequency standard,
 for example, and ultra-stable Rubidium atomic clock modules can be found on eBay for less 
 than $500, but ultimately you need to calibrate such a standard against a golden 
 reference.  For almost all hobbyists, the
@@ -70,8 +70,8 @@ oven, with a control circuit to keep the inside of the oven at a constant
 temperature to combat the temperature dependency of the oscillator frequency.
 
 OCXO specifications vary a lot (and so does the cost) but they tend to
-have excellent short term jitter phase noise characteristics.  However, they are subject 
-to various drift mechanism. There are some of them: 
+have excellent short term jitter or phase noise characteristics. However, they are subject 
+to various drift mechanisms. Here are some of them: 
 
 * despite their built-in oven to keep the temperature stable, the output frequency 
   still changes when the ambient temperature changes.
@@ -127,7 +127,7 @@ outputs, and a 1-pulse-per-second (1PPS) output.
 
 ![TM4313 Back](/assets/tm4313/TM4313_back.jpg)
 
-There's no standard about the signaling of a 10MHz reference clocks. Most common, they are an
+There's no standard about the signaling of a 10MHz reference clocks. They are either an
 AC sine wave or a digital square wave.
 The benefit of a sine wave is the lack of strong harmonics in the signal but on a digital
 square wave the edges are better defined.  The TM4313
@@ -151,7 +151,7 @@ on large OCXOs with a high thermal capacity, but it's very fast on the TM4313: i
 ![TM4313 startup power](/assets/tm4313/TM4313_startup_power.jpg)
 
 Since it can take hours for a GPSDO to reach their true stable state, it's common
-for them to be stuck in a closet while powered on permanently. It's important to keep the
+for them to be stuck in a closet while powered on permanently, so it's important to keep the
 power consumption to an minimum.
 
 # Inside the TM4313
@@ -189,8 +189,9 @@ And there's bunch of components soldered in between them:
 *(Click to enlarge)*
 
 It's common practice to leave a gap between an OCXO and the PCB to prevent the PCB from
-acting as a heat sink. Many OCXOs have small glass-like spacers to enforce such
-a gap. But it's unusual to see additional components squeezed in between. 
+acting as a heat sink and thus changing the temperature time constant. Many OCXOs have small 
+glass-like spacers to enforce such a gap but it's unusual to see additional components squeezed 
+in-between. 
 
 The urge to know what was below was too strong, so I desoldered the OCXO. This is the
 result:
@@ -222,7 +223,7 @@ for a GPSDO:
 * The other branch buffers the 10MHz signal as well and sends it to the microcontroller.
 * The GPS unit creates a 1PPS signal that also goes to the microcontroller
 * The microcontroller does its magic and generates an OCXO tuning value. It uses
-  pulse width modulation an R/C filter, and an opamp to create a slow but 
+  pulse width modulation, an R/C filter, and an opamp to create a slow but 
   precise discrete D/A converter (DAC).
 * The DAC output goes to the OCXO tuning input and the loop is closed.
 
@@ -734,7 +735,7 @@ Building your own GPSDO is a bit of rite of passage for many hobbyists, and
 something I've been researching for quite a bit. But with commercial
 GPSDOs being available for less than $100, it's tempting to just buy one.
 
-For now, the TM4313 seems good enough to a reference clock for my frequency counters,
+The TM4313 seems good enough to a reference clock for my frequency counters,
 spectrum analyzer, and signal generators, or to calibrate the OCXOs that are
 living inside them.
 
