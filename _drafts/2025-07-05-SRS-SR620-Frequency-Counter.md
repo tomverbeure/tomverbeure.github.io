@@ -131,6 +131,36 @@ have access to all the components.
 
 * [SR620/PM66xx/CNT-90 input stages](https://www.febo.com/pipermail/time-nuts/2017-June/106000.html)
 
+* [Frequency Counter Choice](https://febo.com/pipermail/time-nuts_lists.febo.com/2020-October/101833.html)
+
+  [Compares different HP counters](https://febo.com/pipermail/time-nuts_lists.febo.com/2020-October/101837.html)
+
+  [Mentions the SR620 as metrology workhorse](https://febo.com/pipermail/time-nuts_lists.febo.com/2020-October/101848.html)
+  
+* [SR620 fails in Self Calibration routine 07](https://febo.com/pipermail/time-nuts/2008-October/033674.html)
+
+  Talks about the time to amplitude converter and what kind of capacitor is used.
+
+* [Looking for good SR620 setup to compare GPS and rubidium](https://febo.com/pipermail/time-nuts_lists.febo.com/2006-September/004297.html)
+
+  How to use the SR620 to measure the quality of output of a Rb oscillator.
+  Main suggestion is to do 500 1PPS acquisitions and display MEAN and JITTER.
+
+  Also talks about a [PTS50 distribution amplifier](https://www.ptsyst.com/PTS50-B.pdf)  
+  that has a built-in clock divider to generate a 1PPS out of it.
+
+*  [SRS SR620 counter problem](https://febo.com/pipermail/time-nuts_lists.febo.com/2010-October/033712.html)
+
+  Test error 3: battery problem?
+
+* [High-end GPSDO's](https://febo.com/pipermail/time-nuts_lists.febo.com/2018-August/093602.html)
+
+  Mentions that the interpolator of an SR620 is better than one of the FS740.
+
+* [ADEV from phase or frequency measurement](https://febo.com/pipermail/time-nuts_lists.febo.com/2014-March/065653.html)
+
+  Uses an SR620 to measure ADEV through phase and frequency.
+
 
 
 **Miscellaneous**
@@ -138,4 +168,13 @@ have access to all the components.
 * [A Physical Sine-to-Square Converter Noise Model](https://people.mpi-inf.mpg.de/~adogan/pubs/IFCS2018_comparator_noise.pdf)
 
   How to convert a sine wave clock reference to a digital signal.
+
+* [[time-nuts] Favorite counters (current production)?](https://febo.com/pipermail/time-nuts_lists.febo.com/2017-November/089966.html)
+
+  Review of FS740 schematic.
+
+* [Architecture, Design Aspects, and Performance of a New Cesium Beam Frequency Standard](http://leapsecond.com/corby/5071comb.pdf)
+
+* [A NARROW BAND HIGH-RESOLUTION SYNTHESIZER USING A DIRECT DIGITAL SYNTHESIZER FOLLOWED BY REPEATED DIVIDING AND MIXING](http://www.karlquist.com/FCS95.pdf)
+
 
