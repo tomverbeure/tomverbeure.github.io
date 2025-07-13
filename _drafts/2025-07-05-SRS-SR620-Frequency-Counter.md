@@ -60,6 +60,10 @@ have access to all the components.
 **Time-Nuts topics**
 
 * [SR620 calibration](https://www.febo.com/pipermail/time-nuts/2011-February/054929.html)
+
+  Discusses last digital of SR620 being off. Detailed procedure is listed 
+  [here](https://febo.com/pipermail/time-nuts_lists.febo.com/2011-February/037194.html).
+
 * [Anyone familiar with SR-620 repair?](https://febo.com/pipermail/time-nuts_lists.febo.com/2012-March/047729.html)
 * [Convert Stanford Research SR620 time-interval counter to SR625 ???](https://febo.com/pipermail/time-nuts_lists.febo.com/2014-November/071361.html)
 * [time interval measurement on SR620](https://febo.com/pipermail/time-nuts_lists.febo.com/2022-March/105214.html)
@@ -160,6 +164,12 @@ have access to all the components.
 * [ADEV from phase or frequency measurement](https://febo.com/pipermail/time-nuts_lists.febo.com/2014-March/065653.html)
 
   Uses an SR620 to measure ADEV through phase and frequency.
+
+* [mixers for frequency measurement](https://www.febo.com/pipermail/time-nuts/2012-January/062873.html)
+
+  Mentions SR620 high resolution mode
+
+
 
 
 
