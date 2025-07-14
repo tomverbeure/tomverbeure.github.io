@@ -38,7 +38,7 @@ The specifications are still pretty decent, especially for a hobbyist:
 
 You can see the power-on behavior in the video below:
 
-<iframe width="680" height="400" src="https://youtu.be/pgqye6YGhBY" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<iframe width="680" height="480" src="https://www.youtube.com/embed/pgqye6YGhBY?si=J_VlCNSirvTlY0vj" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 Of note is that lightly touching the power button changes the behavior and sometimes makes it get
 all the way through the power-on sequence. This made me hopeful that the switch itself was bad,
