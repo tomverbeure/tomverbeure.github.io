@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Repair of a Stanford Research Systems SR620 Frequency Counter
+title: Simple Repair of an SR620 Universal Time Interval Counter
 date:   2025-07-05 00:00:00 -1000
 categories:
 ---
@@ -11,9 +11,11 @@ categories:
 # Introduction
 
 A little over a year ago, I was found 
-[an SRS SR620 frequency counter](https://tomverbeure.github.io/2024/07/14/Symmetricom-S200-NTP-Server-Setup.html#introduction)
-at the Silicon Valley Electronics Flea Market. It had a big sticker "Passed Self-Test" 
-and "Tested 3//9/24" (the day before the flea market) on it so I took the gamble and spent
+[an Stanford Research Systems SR620 frequency counter](https://tomverbeure.github.io/2024/07/14/Symmetricom-S200-NTP-Server-Setup.html#introduction)
+at the 
+[Silicon Valley Electronics Flea Market](https://www.electronicsfleamarket.com). 
+It had a big sticker "Passed Self-Test" 
+and "Tested 3/9/24" (the day before the flea market) on it so I took the gamble and spent
 an ungodly $400 on it.
 
 [![Flea Market Haul](/assets/s200/fleamarket_haul.jpg)](/assets/s200/fleamarket_haul.jpg)
@@ -25,14 +27,20 @@ got into some weird behavior after pressing the power-on switch.
 
 The SR620 was designed sometime in the mid-1980s. Mine has a rev C PCB with a date of July 1988,
 37 year old! The manual lists 1989, 2006, 2019 and 2025 revisions. I don't know if there were any
-major changes along the way, but I doubt it. It's still for sale on the SRS website.
+major changes along the way, but I doubt it. It's still for sale on the 
+[SRS website](https://www.thinksrs.com/products/sr620.html), starting at $5150.
 
 The specifications are still pretty decent, especially for a hobbyist: 
 
-* 25ps time resolution
-* 1.3GHz frequency range
+* 25 ps single shot time resolution
+* 1.3 GHz frequency range
 * 11-digit resolution over a 1 s measurement interval
 
+The SR620 is not perfect, one notable issue is its thermal design. It simply doesn't have enough
+ventilation holes, the heat-generating power regulators are located close to the high precision
+time-to-analog converters, and the temperature sensor for the fan is inexplicably placed right
+next to the fan, which is not close at all to the power regulators. The Signal Path has 
+[an SR620 repair video](https://youtu.be/sDecJDgStcI?t=416) that talks about this.
 
 # Repairing the SR620
 
@@ -45,8 +53,112 @@ all the way through the power-on sequence. This made me hopeful that the switch 
 something that should be easy to fix.
 
 Unlike my broken SRS DG535, another flea market buy, which has the most cursed assembly, the SR620
-has a trivial construction: after removing the 4 side screws, you can remove the top of the case and
-have access to all the components.
+s a dream to work on: after removing the 4 side screws, you can remove the top of the case and
+have access to all the components from the top. To get access to the solder side of the PCB,  
+just remove another 4 screws to remove the bottom panel: you can desolder components without the 
+need to remove the main PCB out of the enclosure.
+
+The switch is located at the right of the front panel. It has 2 black and 2 red wires. When
+the unit is powered on, the 2 black wires and the 2 red wires are connected to each other.
+
+![Switch with wires](/assets/sr620/switch_with_wires.jpg)
+
+To make sure that the switch itself was the problem, I soldered the wires together to make a
+permanently connection:
+
+![Wires soldered together](/assets/sr620/wires_soldered_together.jpg)
+
+After this, the SR620 worked totall fine! All that's left now is replacing the switch.
+
+Unscrewing 4 more screws and pull the knobs of the 3 potentiometer and
+power switch to get rid of the front panel:
+
+![Front panel removed](/assets/sr620/front_panel_removed.jpg)
+
+A handful of additional screws to remove the front PCB from the chassis, and you have access to the
+switch:
+
+![Power switch exposed](/assets/sr620/power_switch_exposed.jpg)
+
+The switch is an ITT Schadow NE15 T70. Unsurprisingly, there are not produced anymore, but
+you can still find them on eBay. I paid $7.5 + shipping, the price increased to $9.5 immediately
+after that.
+
+![Old and new switch](/assets/sr620/old_and_new_switch.jpg)
+
+The old switch (bottom) has 6 contact points vs only 4 of the new one (top), but that wasn't an
+issue since only 4 were used. Both switches also have a metal screw plate, but they were oriented
+differently. However, you can easily reconfigure the screw plate by straightening 4 metal prongs.
+
+![SR620 powered up without front panel cover](/assets/sr620/sr620_without_front_cover_powered_up.jpg)
+
+You need to bend the contact points a bit to get the switch through the narrow hole. After soldering
+the wires back in place, the SR620 powered on reliably. 
+
+# Replacing the Backup 3V Lithium Battery
+
+The SR620 uses a non-recharchable 3V Panasonic BR-2/3A lithium battery to retain calibration and
+settings data in SRAM. You can find this battery in many old pieces of test equipment, I already
+[replaced one such battery in my HP 3478A multimeter](/2022/12/02/HP3478A-Multimeter-Calibration-Data-Backup-and-Battery-Replacement.html#replacement-3v-battery).
+These batteries last almost forever, but mine had a 1987 date code and 38 years is really pushing things,
+so I replaced it with [this new one from Digikey](https://www.digikey.com/en/products/detail/panasonic-energy/BR-2-3AE2SP/64350).
+
+Old version of this battery had 1 pin on each side. The new ones have a side with 2 pins, so you need
+to cut one of those pins and install the battery slightly crooked back onto the PCB.
+
+![Replacement battery installed](/assets/sr620/battery_replacement.jpg)
+
+When you first power up the SR620 after replacing the battery, you might get a "Test Error 3". 
+According to the manual:
+
+> Test error 3 is usually "self-healing". The instrument settings will be returned to their 
+> default values and factory calibration data will be recalled from ROM. Test Error 3 will 
+> recur if the Lithium battery or RAM is defective.
+
+After power cycling the device again, the test error was gone and everything worked, but with
+a precision that was slightly lower than before: before the battery replacement, when feeding the 
+10 MHz output reference clock into channel A and measuring frequency with a 1s gate time, I'd get a 
+read-out of 10,000,000.000*N* MHz. In other words: around a milli-Hz accuracy. After the replacment, 
+the accuracy was about an order of magnitude worse. That's just not acceptable!
+
+This is because the auto-calibration parameters were lost. Luckily, this is easy to fix.
+
+# Switching to an External Reference Clock
+
+My SR620 has the cheap TCXO option which gives frequency measurement results that are about
+one order of magnitude less accurate than using an external OCXO based reference clock. So
+I always switch to an external reference clock. The SR620 doesn't do that automatically, 
+you need to manually change that in the settings which goes as follows:
+
+* SET -> "*ctrl* cal out scn"
+* SEL -> "ctrl *cal* out scn"
+* SET -> "auto cal"
+* SET -> "cloc source int"
+* Down arrow -> "clock source rear"
+* SET -> "clock fr 10000000"
+* SET
+
+If you have a 5 MHz reference clock, use the down or up arrow to switch between 1000000
+and 5000000.
+
+# Running Auto-Calibration
+
+You can rerun auto-calibration manually from the front panel without opening up the device
+with this sequence:
+
+* SET -> "*ctrl* cal out scn"
+* SEL -> "ctrl *cal* out scn"
+* SET -> "auto cal"
+* START
+
+The auto-calibration will take around 2 minutes. Make sure you do it once the device has been running
+for a while to make use it has warmed up. The manual recommends 30 minutes.
+
+After doing auto-calibration, feeding back the reference clock into channel A and measuring
+frequency with a 1 s gate time gave me a result that oscillated around 10 MHz.
+
+# Fine Tuning the Frequency Measurement
+
 
 
 # References
