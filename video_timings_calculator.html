@@ -19,6 +19,8 @@
                 bpc: null,
                 color_fmt: null,
                 video_opt: null,
+                custom_hblank: null,
+                custom_vblank: null
             }
             if (is_number(search_params.get('horiz_pixels'))) {
                 search_params_values.horiz_pixels = Number(search_params.get('horiz_pixels'));
@@ -44,6 +46,12 @@
             if (search_params.get('video_opt') == "true" || search_params.get('video_opt') == "false") {
                 search_params_values.video_opt = search_params.get('video_opt') == "true" ? "y" : "n";
             }
+            if (search_params.get('custom_hblank') == "true" || search_params.get('custom_hblank') == "false") {
+                search_params_values.custom_hblank = search_params.get('custom_hblank') == "true" ? "y" : "n";
+            }
+            if (search_params.get('custom_vblank') == "true" || search_params.get('custom_vblank') == "false") {
+                search_params_values.custom_vblank = search_params.get('custom_vblank') == "true" ? "y" : "n";
+            }
     
             if (!Object.values(search_params_values).includes(null)) {
                 $('#horiz_pixels').val(search_params_values.horiz_pixels);
@@ -54,6 +62,8 @@
                 $('#bpc').val(search_params_values.bpc);
                 $('#color_fmt').val(search_params_values.color_fmt);
                 $('#video_opt').val(search_params_values.video_opt);
+                $('#custom-hblank').val(search_params_values.custom_hblank);
+                $('#custom-vblank').val(search_params_values.custom_vblank);
                 history.replaceState(null, '', '?' + search_params.toString());
             }
         </script>
@@ -1226,6 +1236,8 @@
                     var bpc                 = Number($('#bpc').val());
                     var color_fmt           = $('#color_fmt').val();
                     var video_opt           = $('#video_opt').val()  == "y";
+                    var custom_hblank       = Number($('#custom-hblank').val());
+                    var custom_vblank       = Number($('#custom-vblank').val());
 
                     var search_params = new URLSearchParams();
                     search_params.set('horiz_pixels', horiz_pixels);
@@ -1236,6 +1248,8 @@
                     search_params.set('bpc', bpc);
                     search_params.set('color_fmt', color_fmt);
                     search_params.set('video_opt', video_opt);
+                    search_params.set('custom_hblank', custom_hblank);
+                    search_params.set('custom_vblank', custom_vblank);
                     history.replaceState(null, '', '?' + search_params.toString());
 
                     var color_fmt_multiplier = (color_fmt == "rgb444") ? 3   :
