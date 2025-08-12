@@ -5,6 +5,58 @@
         <script src="assets/javascript/jquery-3.4.1.min.js" type="text/javascript"></script>
         <script src="assets/video_timings/dmt_timings.js" type="text/javascript"></script>
         <script src="assets/video_timings/vic_timings.js" type="text/javascript"></script>
+		<script>
+			function is_number(value) {
+				return !isNaN(Number(value));
+			}
+			const search_params = new URLSearchParams(window.location.search);
+			const search_params_values = {
+				horiz_pixels: null,
+				vert_pixels: null,
+				refresh_rate: null,
+				margins: null,
+				interlaced: null,
+				bpc: null,
+				color_fmt: null,
+				video_opt: null,
+			}
+			if (is_number(search_params.get('horiz_pixels'))) {
+				search_params_values.horiz_pixels = Number(search_params.get('horiz_pixels'));
+			}
+			if (is_number(search_params.get('vert_pixels'))) {
+				search_params_values.vert_pixels = Number(search_params.get('vert_pixels'));
+			}
+			if (is_number(search_params.get('refresh_rate'))) {
+				search_params_values.refresh_rate = Number(search_params.get('refresh_rate'));
+			}
+			if (search_params.get('margins') == "true" || search_params.get('margins') == "false") {
+				search_params_values.margins = search_params.get('margins') == "true" ? "y" : "n";
+			}
+			if (search_params.get('interlaced') == "true" || search_params.get('interlaced') == "false") {
+				search_params_values.interlaced = search_params.get('interlaced') == "true" ? "y" : "n";
+			}
+			if (is_number(search_params.get('bpc'))) {
+				search_params_values.bpc = Number(search_params.get('bpc'));
+			}
+			if (search_params.get('color_fmt') == "rgb444" || search_params.get('color_fmt') == "yuv444" || search_params.get('color_fmt') == "yuv422" || search_params.get('color_fmt') == "yuv420") {
+				search_params_values.color_fmt = search_params.get('color_fmt');
+			}
+			if (search_params.get('video_opt') == "true" || search_params.get('video_opt') == "false") {
+				search_params_values.video_opt = search_params.get('video_opt') == "true" ? "y" : "n";
+			}
+	
+			if (!Object.values(search_params_values).includes(null)) {
+				$('#horiz_pixels').val(search_params_values.horiz_pixels);
+				$('#vert_pixels').val(search_params_values.vert_pixels);
+				$('#refresh_rate').val(search_params_values.refresh_rate);
+				$('#margins').val(search_params_values.margins);
+				$('#interlaced').val(search_params_values.interlaced);
+				$('#bpc').val(search_params_values.bpc);
+				$('#color_fmt').val(search_params_values.color_fmt);
+				$('#video_opt').val(search_params_values.video_opt);
+				history.replaceState(null, '', '?' + search_params.toString());
+			}
+		</script>
     </head>
     <body style="margin:2%">
         <script>
@@ -1174,6 +1226,17 @@
                     var bpc                 = Number($('#bpc').val());
                     var color_fmt           = $('#color_fmt').val();
                     var video_opt           = $('#video_opt').val()  == "y";
+					
+					var search_params = new URLSearchParams();
+					search_params.set('horiz_pixels', horiz_pixels);
+					search_params.set('vert_pixels', vert_pixels);
+					search_params.set('refresh_rate', refresh_rate);
+					search_params.set('margins', margins);
+					search_params.set('interlaced', interlaced);
+					search_params.set('bpc', bpc);
+					search_params.set('color_fmt', color_fmt);
+					search_params.set('video_opt', video_opt);
+					history.replaceState(null, '', '?' + search_params.toString());
 
                     var color_fmt_multiplier = (color_fmt == "rgb444") ? 3   :
                                                (color_fmt == "yuv444") ? 3   :
