@@ -274,7 +274,7 @@
                     TOTAL_PIXELS = RB_H_BLANK + TOTAL_ACTIVE_PIXELS;
 
                     //ACT_PIXEL_FREQ = CLOCK_STEP * Math.floor( (V_FIELD_RATE_RQD * TOTAL_V_LINES * TOTAL_PIXELS / 1000000) / CLOCK_STEP) * REFRESH_MULTIPLIER;
-                    ACT_PIXEL_FREQ = Math.floor( (V_FIELD_RATE_RQD * TOTAL_V_LINES * TOTAL_PIXELS * CLOCK_STEP_INV / 1000000) * REFRESH_MULTIPLIER / CLOCK_STEP_INV;  
+                    ACT_PIXEL_FREQ = Math.floor( V_FIELD_RATE_RQD * TOTAL_V_LINES * TOTAL_PIXELS * CLOCK_STEP_INV / 1000000) * REFRESH_MULTIPLIER / CLOCK_STEP_INV;  
                     
                     if (reduced_blanking == "cvt_rb2"){
                         V_BLANK = ACT_VBI_LINES;
