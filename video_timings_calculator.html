@@ -1454,12 +1454,12 @@
                                 str = "<font color=\"red\">RGB only</font>";
                             }
                             else{
-                                ok = (peak_bw < t_info['bw']);
+                                ok = (peak_bw <= t_info['bw']);
                                 str = ok ? "<font color=\"green\">Ok</font>" : "<font color=\"red\">No</font>" ;
                                 str += " (" + Math.round(peak_bw/t_info['bw']*100) + "%)"
 
                                 if (!ok && t_info['dsc']){
-                                    dsc_ok  = (peak_bw_dsc < t_info['bw']);
+                                    dsc_ok  = (peak_bw_dsc <= t_info['bw']);
                                     dsc_bpp = Math.round(t_info['bw'] / pclock * 4)/4;
 
                                     if (dsc_ok){
