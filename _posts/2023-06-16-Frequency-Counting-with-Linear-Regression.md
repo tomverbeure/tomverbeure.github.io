@@ -513,6 +513,12 @@ forum discussions and more.
     Discusses different weighing functions. Math heavy and way out of scope for this
     blog post.
 
+* [Least-Square Fit, Omega Counters, and Quadratic Variance](https://www.researchgate.net/publication/274732320_Least-Square_Fit_O_Counters_and_Quadratic_Variance)
+
+    Another mathematical derivation of the variance of different kinds of counters.
+
+* [On the measurement of frequency and of its sample variance with high-resolution counters](https://rubiola.org/pdf-articles/journal/2005rsi-hi-res-freq-counters.pdf)
+
 **Frequency counter basics**
 
 * [HP App Note 200 - Fundamentals of Electronic Counters](/assets/freq_counter/an200-fundamentals_of_electronic_counters.pdf)

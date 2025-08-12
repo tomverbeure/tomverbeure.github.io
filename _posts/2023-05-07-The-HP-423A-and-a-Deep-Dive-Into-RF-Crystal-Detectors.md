@@ -139,7 +139,7 @@ the signal generator through its automatic level control (ALC) input.
 
 # Diode Square Law Behavior
 
-A little bit of theory about diodes now will go a long way in understand what comes later.
+A little bit of theory about diodes now will go a long way to understand what comes later.
 
 A diode is often simplified to a device that blocks current when the voltage
 across its junction is less than a certain threshold level, and that passes current
@@ -182,7 +182,7 @@ Compared to an ideal diode, there is:
 * a smooth transition region to go from almost no current to *a lot* of current
 * the reverse breakdown voltage
 
-There are a bunch of factors in the general equation:
+There are a bunch of parameters in the general equation:
 
 * $$V_d$$ is the junction voltage, the voltage across the diode terminals.
 * $$T$$ is the absolute temperature.
@@ -215,7 +215,7 @@ But let's zoom in on what happens below the threshold:
 
 The real I/V curve is still exponential, of course, but below 0.3V, it can
 be approximated very well with a quadratic curve. In this case, the
-exponential curve has been aproximated by $$I(V_d)=1.055V_d^2+0.219x$$.
+blue exponential curve has been aproximated by orange curve $$I(V_d)=1.055V_d^2+0.219x$$.
 
 The quadratic behavior can be explained with a little bit of high school calculus.
 The [Taylor series](https://en.wikipedia.org/wiki/Taylor_series) of an exponential function is: 
@@ -233,7 +233,7 @@ $$
 I(V_d) \approx I_S[(\frac{V_d}{nV_T}) + \frac{1}{2}(\frac{V_d}{nV_T})^2]
 $$
 
-That's nice, but there's still a linear and a power-of-two term. Are there cases
+That's nice, but in addition to the power-of-two term there is still a linear term too. Are there cases
 where there's just the power-of-two term left? There is!
 
 Here's what happens when the voltage across the diode is a sine wave with amplitude
@@ -260,12 +260,12 @@ amplitude of the sine wave.**
 ![Schematic with AC source, diode and RC filter](/assets/hp423a/diode_rc_schematic.png)
 
 The quadratic approximation is not only heavily dependent on temperature, but
-also on the silicon. You can buy 2 diodes of the same type, and keep them
+also on the silicon characteristics. You could buy 2 diodes of the same type and keep them
 at the same temperature, yet their I/V curves might still be shifted quite
 a bit from each other. 
 
 That's less of a problem when the diode is operating in the region above the threshold, 
-the resistance is too low to matter, but subthreshold, the resistance will much higher, 
+the resistance is too low to matter, but subthreshold, the resistance will be much higher, 
 often higher than the resistance that's in series with the diode.
 
 We'll soon get back to square law behavior.
@@ -400,7 +400,7 @@ excursion is larger to compensate for times where the amplitude is lower.*
 Without a load resistor, or better, with a very weak load resistor of 1M&#937;, the square law
 region of the detector goes from around -50dBm to around -20dBm. There's nothing much we can do about
 the lower bound of -50dBm: below that you're essentially measuring noise. But it is possible to increase 
-the square law region upwards to -10dBm, by adding a load resistor at the output of the detector.
+the square law region upwards to -10dBm by adding a load resistor at the output of the detector.
 
 [![Measurement Setup 2](/assets/hp423a/measurement_setup2.png)](/assets/hp423a/measurement_setup2.png)
 
@@ -437,7 +437,7 @@ we can have a better look at the output signal:
 
 It's clear that there's a lot of variation on the detector signal output.
 
-We can see what happen when we change the timebase of the scope from 200us, perfect to
+We can see what happens when we change the timebase of the scope from 200us, perfect to
 observe the 1kHz amplitude modulated envelope, to 5ns, which is needed to observe the
 100MHz RF carrier:
 
@@ -486,8 +486,8 @@ detector runs up to -20dBm with a 1M&#937; load resistor, why does it shift upwa
 a load resistor with a much lower value?
 
 With a lower load resistor, the voltage across the diode will increase, not decrease, which
-means that you'll much quicker reach the point where the diode I/V curve behaves
-quadratically?
+means that you'll reach the point where the diode I/V curve behaves
+quadratically much quicker?
 
 I had to run a couple of [ngspice](https://ngspice.sourceforge.io/) simulations before I figured
 it out. First with a real AM signal, which matched my scope shots nicely.

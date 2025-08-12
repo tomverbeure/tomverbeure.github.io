@@ -543,6 +543,19 @@ painful. It will be convered in a future blog post.
 If you can't wait, you can find the key points in 
 [Converting a Parallel Port Captured File](https://github.com/tomverbeure/fake_parallel_printer#converting-a-parallel-port-captured-file).
 
+
+# Printed case
+
+*A year later...*
+
+I never got around producing the PCB for version 2, and probably never will, but I'm
+using v1 all the time. And my friend Joshua created a 3D printed enclosure!
+
+![3D printed case](/assets/parallelprintcap/printed_case.jpg)
+
+The models was designed with Onshape. You can get it [here](https://cad.onshape.com/documents/ece60dcef8e2c78038ea26a1/w/2330f01e252a0cbd0d2ca4f5/e/7b5ee21cb773965af4c89790).
+
+
 # References
 
 * [fake_parallel_printer repo on GitHub](https://github.com/tomverbeure/fake_parallel_printer/).
