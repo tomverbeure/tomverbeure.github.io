@@ -11,12 +11,15 @@ categories:
 # Introduction
 
 A little over a year ago, I found 
-[a Stanford Research Systems SR620 frequency counter](https://tomverbeure.github.io/2024/07/14/Symmetricom-S200-NTP-Server-Setup.html#introduction)
+[a Stanford Research Systems SR620 universal time interval counter](https://tomverbeure.github.io/2024/07/14/Symmetricom-S200-NTP-Server-Setup.html#introduction)
 at the 
 [Silicon Valley Electronics Flea Market](https://www.electronicsfleamarket.com). 
-It had a big sticker "Passed Self-Test" 
+It had a big sticker "Passes Self-Test" 
 and "Tested 3/9/24" (the day before the flea market) on it so I took the gamble and spent
-an ungodly $400 on it.
+an ungodly $400[^cost] on it.
+
+[^cost]: This time, the gamble paid off, and the going rate of a good second hand SR620
+         is quite a bit higher. But I don't think I'll ever do this again!
 
 [![Flea Market Haul](/assets/s200/fleamarket_haul.jpg)](/assets/s200/fleamarket_haul.jpg)
 
@@ -56,21 +59,21 @@ Unlike my still broken [SRS DG535](https://www.thinksrs.com/products/dg535.html)
 another flea market buy with the most cursed assembly, the SR620 is a dream to work on: 
 4 side screws is all it takes to remove the top of the case and have access to all the components from 
 the top. Another 4 screws to remove the bottom panel and you have access to the solder side of the PCB.
-You can desolder components without the need to remove the main PCB out of the enclosure.
+You can desolder components without lifting the PCB out of the enclosure.
 
-Like [my HP 5370A](/2025/08/10/HP-5370A-Repair.html), the power switch of the SR620 toggles
-selects between power on and standby mode. Just like the 5370A, the SR620 keeps a 15V rail 
-enabled at all times to keep a local TCXO or OCXO warmed up.
+Like [my HP 5370A](/2025/08/10/HP-5370A-Repair.html), the power switch of the SR620
+selects between power on and standby mode. The SR620 enables the 15V rail at all times to 
+keep a local TCXO or OCXO warmed up.
 
-The switch is located at the right of the front panel. It has 2 black and 2 red wires. When
+The power switch is located at the right of the front panel. It has 2 black and 2 red wires. When
 the unit is powered on, the 2 black wires and the 2 red wires are connected to each other.
 
 ![Switch with wires](/assets/sr620/switch_with_wires.jpg)
 
 ![SR620 power switch schematic](/assets/sr620/sr620_power_switch_schematic.jpg)
 
-To make sure that the switch itself was the problem, I soldered the wires together to make a
-permanently connection:
+To make sure that the switch itself was the problem, I soldered the wires together to create a
+permanent connection:
 
 ![Wires soldered together](/assets/sr620/wires_soldered_together.jpg)
 
@@ -86,7 +89,7 @@ switch:
 
 ![Power switch exposed](/assets/sr620/power_switch_exposed.jpg)
 
-The switch is an ITT Schadow NE15 T70. Unsurprisingly, there are not produced anymore, but
+The switch is an ITT Schadow NE15 T70. Unsurprisingly, these are not produced anymore, but
 you can still find them on eBay. I paid $7.5 + shipping, the price increased to $9.5 immediately
 after that. According to 
 [this EEVblog forum post](https://www.eevblog.com/forum/repair/schadow-ne15-(hp)-power-switch-replacement-or-alternative/msg4342096/#msg4342096),
@@ -187,8 +190,8 @@ mHz digits always 000 or 999.[^precision]
 <iframe width="640" height="480" src="https://www.youtube.com/embed/s0IHz3gXhrE?si=1_HjJGFwSBJaZ5iH" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 It's possible to fine-tune the SR620 beyond the auto-calibration settings. One reason 
-why might want to do this is if you used the internal oscillator and want to correct
-drift. To enable this kind of tuning, you need to 
+why one might want to do this is to correct for drift of the internal oscillator 
+To enable this kind of tuning, you need to move a jumper inside the case.
 The time-nuts email list has a couple of discussions about this, here is
 [one such post](https://febo.com/pipermail/time-nuts_lists.febo.com/2011-February/037194.html).
 Page 69 of the [SR620 manual](https://www.thinksrs.com/downloads/pdfs/manuals/SR620m.pdf) 
@@ -210,7 +213,7 @@ school analog oscilloscope[^calibration]:
 *(Click to enlarge)*
 
 The result is much better on the analog scope, but still very hard to read. When you really 
-need all the data you can get from the SR620, just use the GPIB interface.
+need all the data you can get from the SR620, just use the GPIB or RS232 interface.
 
 # References
 
