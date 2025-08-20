@@ -10,8 +10,8 @@ categories:
 
 # Introduction
 
-A little over a year ago, I was found 
-[an Stanford Research Systems SR620 frequency counter](https://tomverbeure.github.io/2024/07/14/Symmetricom-S200-NTP-Server-Setup.html#introduction)
+A little over a year ago, I found 
+[a Stanford Research Systems SR620 frequency counter](https://tomverbeure.github.io/2024/07/14/Symmetricom-S200-NTP-Server-Setup.html#introduction)
 at the 
 [Silicon Valley Electronics Flea Market](https://www.electronicsfleamarket.com). 
 It had a big sticker "Passed Self-Test" 
@@ -52,16 +52,20 @@ Of note is that lightly touching the power button changes the behavior and somet
 all the way through the power-on sequence. This made me hopeful that the switch itself was bad,
 something that should be easy to fix.
 
-Unlike my broken SRS DG535, another flea market buy, which has the most cursed assembly, the SR620
-s a dream to work on: after removing the 4 side screws, you can remove the top of the case and
-have access to all the components from the top. To get access to the solder side of the PCB,  
-just remove another 4 screws to remove the bottom panel: you can desolder components without the 
-need to remove the main PCB out of the enclosure.
+Unlike my still broken [SRS DG535](https://www.thinksrs.com/products/dg535.html), 
+another flea market buy with the most cursed assembly, the SR620 is a dream to work on: 
+4 side screws is all it takes to remove the top of the case and have access to all the components from 
+the top. Another 4 screws to remove the bottom panel and you have access to the solder side of the PCB.
+You can desolder components without the need to remove the main PCB out of the enclosure.
 
 The switch is located at the right of the front panel. It has 2 black and 2 red wires. When
 the unit is powered on, the 2 black wires and the 2 red wires are connected to each other.
 
 ![Switch with wires](/assets/sr620/switch_with_wires.jpg)
+
+Like [my HP 5370A](/2025/08/10/HP-5370A-Repair.html), the power switch of the SR620 toggles
+selects between power on and standby mode. Just like the 5370A, the SR620 keeps a 15V rail
+enabled at all times to keep a local TCXO or OCXO warmed up and running.
 
 To make sure that the switch itself was the problem, I soldered the wires together to make a
 permanently connection:
