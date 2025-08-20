@@ -1,7 +1,7 @@
 ---
 layout: post
-title: Power Switch and Battery Replacement of an SR620 Universal Time Interval Counter
-date:   2025-08-19 00:00:00 -1000
+title: Simple Repair of an SR620 Universal Time Interval Counter
+date:   2025-07-05 00:00:00 -1000
 categories:
 ---
 
@@ -194,23 +194,6 @@ The time-nuts email list has a couple of discussions about this, here is
 Page 69 of the [SR620 manual](https://www.thinksrs.com/downloads/pdfs/manuals/SR620m.pdf) 
 has detailed calibration instructions.
 
-# Oscilloscope Display Mode
-
-When the 16 7-segment LEDs on the front panel are just not enough, the SR620 has this interesting
-way of (ab)using an oscilloscope as general display: it uses XY mode to paint the data.
-
-I had tried this mode in the past with my Sigilent digital oscilloscope, but the result was
-unreadable: for this kind of rendering, having a CRT beam that lights up all the phosphor
-from one point to the next is a feature, not a bug. This time, I tried it with an old
-school analog oscilloscope[^calibration]:
-
-[^calibration]: I find it amazing that this scope was calibrated as recently as April 2023.
-
-[![oscilloscope on top of an SR620 showing a rendered image](/assets/sr620/sr620_oscilloscope_mode.jpg)](/assets/sr620/sr620_oscilloscope_mode.jpg)
-*(Click to enlarge)*
-
-The result is much better on the analog scope, but still very hard to read. When you really 
-need all the data you can get from the SR620, just use the GPIB interface.
 
 # References
 
@@ -221,8 +204,6 @@ need all the data you can get from the SR620, just use the GPIB interface.
   The rest of this page has a bunch of other interesting SR620 related comments.
 
 **Time-Nuts topics**
-
-The SR620 is mentioned in tons of threads on the time-nuts emaiml list. Here are just a few interesting posts:
 
 * [This post](https://www.febo.com/pipermail/time-nuts/2012-December/072305.html) talks about some thermal
   design mistakes in the SR620. E.g. the linear regulators and heat sink are placed right next to the
@@ -235,6 +216,122 @@ The SR620 is mentioned in tons of threads on the time-nuts emaiml list. Here are
 
 * [This comment](https://www.febo.com/pipermail/time-nuts/2012-December/072369.html) talks about warm-up
   time needed depending on the desired accuracy. It also has some graphs.
+
+
+* [SR620 calibration](https://www.febo.com/pipermail/time-nuts/2011-February/054929.html)
+
+  Discusses last digital of SR620 being off. Detailed procedure is listed 
+  [here](https://febo.com/pipermail/time-nuts_lists.febo.com/2011-February/037194.html).
+
+* [Anyone familiar with SR-620 repair?](https://febo.com/pipermail/time-nuts_lists.febo.com/2012-March/047729.html)
+* [Convert Stanford Research SR620 time-interval counter to SR625 ???](https://febo.com/pipermail/time-nuts_lists.febo.com/2014-November/071361.html)
+* [time interval measurement on SR620](https://febo.com/pipermail/time-nuts_lists.febo.com/2022-March/105214.html)
+* [SR620 binary dump](https://www.febo.com/pipermail/time-nuts/2014-March/083445.html)
+* [SRS SR620 External Source Issue -- Help Request](https://www.febo.com/pipermail/time-nuts/2007-February/024397.html)
+
+  Discussion about measured frequency not being exactly 10 MHz when ref is fed into input.
+
+  This [reply](https://www.febo.com/pipermail/time-nuts/2007-February/024413.html) mentions the use of 2
+  synchronzing ECL FFs that will still introduce some mismatch.
+
+  [Potential solution](https://www.febo.com/pipermail/time-nuts/2007-February/024458.html) to fix the 
+  average input issue. [This post](https://www.febo.com/pipermail/time-nuts/2007-February/024431.html) also
+  talks about that.
+
+
+* [buying a time interval counter](https://www.febo.com/pipermail/time-nuts/2016-June/098747.html)
+
+  [Some comments](https://www.febo.com/pipermail/time-nuts/2016-June/098757.html) with links about
+  how to make 1E12 measurements in a second that are linked earlier.
+
+* [SR620 - any gotchas buying a used one?](https://febo.com/pipermail/time-nuts/2014-November/088659.html)
+
+* [ocxo](https://febo.com/pipermail/time-nuts/2014-November/088661.html)
+
+   Discusses OCXOs related to SR620
+
+* [Help me make some sense of adev measurements of SR620's own clock](https://febo.com/pipermail/time-nuts/2015-January/090649.html)
+
+* [Can one update firmware of Stanford Research Systems SR620 time interval counter?](https://febo.com/pipermail/time-nuts/2015-January/090276.html)
+
+  Version 1.48 is the latest version.
+
+* [Replacement fan in SR620](https://www.febo.com/pipermail/time-nuts/2014-February/082536.html)
+
+  [This post](https://www.febo.com/pipermail/time-nuts/2014-February/082542.html) discusses moving
+  the thermistor. While it improves startup behavior, it doesn't change the fact that the fan almost
+  always runs at full speed, so it's largely cosmetic.
+
+  General conclusion: there's not much to be done: not enough gaps for airflow. Heatsinks outside
+  the case where the linear power regulators are might help a bit.
+
+* [What is maximum digits that can SR620 display?](https://febo.com/pipermail/time-nuts_lists.febo.com/2015-July/075399.html)
+
+* [Timelab, two SR620s and losing samples](https://febo.com/pipermail/time-nuts/2016-January/095462.html)
+
+* [Stanford Research SR620 Measurement Bias](https://febo.com/pipermail/time-nuts_lists.febo.com/2009-October/023459.html)
+
+  Continuation of some other thread where they discuss the bias.
+
+* [SR620 TCXO calibration](https://www.febo.com/pipermail/time-nuts/2017-June/105976.html)
+
+* [SR620 Failure Code.](https://febo.com/pipermail/time-nuts/2016-December/102786.html)
+
+  Info about common test error 34.
+
+* [SR620/PM66xx/CNT-90 input stages](https://www.febo.com/pipermail/time-nuts/2017-June/106000.html)
+
+* [Frequency Counter Choice](https://febo.com/pipermail/time-nuts_lists.febo.com/2020-October/101833.html)
+
+  [Compares different HP counters](https://febo.com/pipermail/time-nuts_lists.febo.com/2020-October/101837.html)
+
+  [Mentions the SR620 as metrology workhorse](https://febo.com/pipermail/time-nuts_lists.febo.com/2020-October/101848.html)
+  
+* [SR620 fails in Self Calibration routine 07](https://febo.com/pipermail/time-nuts/2008-October/033674.html)
+
+  Talks about the time to amplitude converter and what kind of capacitor is used.
+
+* [Looking for good SR620 setup to compare GPS and rubidium](https://febo.com/pipermail/time-nuts_lists.febo.com/2006-September/004297.html)
+
+  How to use the SR620 to measure the quality of output of a Rb oscillator.
+  Main suggestion is to do 500 1PPS acquisitions and display MEAN and JITTER.
+
+  Also talks about a [PTS50 distribution amplifier](https://www.ptsyst.com/PTS50-B.pdf)  
+  that has a built-in clock divider to generate a 1PPS out of it.
+
+*  [SRS SR620 counter problem](https://febo.com/pipermail/time-nuts_lists.febo.com/2010-October/033712.html)
+
+  Test error 3: battery problem?
+
+* [High-end GPSDO's](https://febo.com/pipermail/time-nuts_lists.febo.com/2018-August/093602.html)
+
+  Mentions that the interpolator of an SR620 is better than one of the FS740.
+
+* [ADEV from phase or frequency measurement](https://febo.com/pipermail/time-nuts_lists.febo.com/2014-March/065653.html)
+
+  Uses an SR620 to measure ADEV through phase and frequency.
+
+* [mixers for frequency measurement](https://www.febo.com/pipermail/time-nuts/2012-January/062873.html)
+
+  Mentions SR620 high resolution mode
+
+
+
+
+
+**Miscellaneous**
+
+* [A Physical Sine-to-Square Converter Noise Model](https://people.mpi-inf.mpg.de/~adogan/pubs/IFCS2018_comparator_noise.pdf)
+
+  How to convert a sine wave clock reference to a digital signal.
+
+* [[time-nuts] Favorite counters (current production)?](https://febo.com/pipermail/time-nuts_lists.febo.com/2017-November/089966.html)
+
+  Review of FS740 schematic.
+
+* [Architecture, Design Aspects, and Performance of a New Cesium Beam Frequency Standard](http://leapsecond.com/corby/5071comb.pdf)
+
+* [A NARROW BAND HIGH-RESOLUTION SYNTHESIZER USING A DIRECT DIGITAL SYNTHESIZER FOLLOWED BY REPEATED DIVIDING AND MIXING](http://www.karlquist.com/FCS95.pdf)
 
 # Footnotes
 
