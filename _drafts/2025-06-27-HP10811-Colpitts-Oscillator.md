@@ -21,6 +21,22 @@ the workins of essential transistor topologics and how they are used in oscillat
 
 This blog post are a synthesis of what I've learned. 
 
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ["\\(", "\\)"] ],
+      displayMath: [ ['$$', '$$'], ["\\[", "\\]"] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+    //,
+    //displayAlign: "left",
+    //displayIndent: "2em"
+  });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_HTML" type="text/javascript"></script>
+
 # Oscillator Theory - the Barkenhausen Criterion
 
 An oscillator is a circuit that generates a repetitive signal. It does so with a positive
@@ -97,10 +113,24 @@ of the amplifier.[^series_resistor]
 [![Bode plots of previous schematic, AC simulation](/assets/hp10811/l_double_c_with_center_to_ground_ac_schematic_bode.png)](/assets/hp10811/l_double_c_with_center_to_ground_ac_schematic_bode.png)
 *(Click to enlarge)*
 
-There are 2 important things to note:
+There are a few things to note:
 
 * the resonance frequency is 1.84 MHz.
+* at the resonance frequency, the gain is 0 dB.[^resonance_attn]
 * the phase shift at the resonance frequency is 180 degrees.
+
+[^resonance_attn]: it's not quite 0 dB because LTspice uses a default series resistance of
+                   1 mOhm for inductors and because the simulation does the resonance
+                   frequency perfectly. 
+
+In the L/C tank, capacitors C1 and C2 are in series, resulting in an equivalent
+capacitance of $$C=\frac{C1 + C2}{(C1 * C2}$$. The resonance frequency can be calculated
+as follows: $$f = \frac{1}{2 \pi \sqrt{LC} }$$.
+
+We can play with the gain at the output by playing with the ratio of C1 and C2, while keeping the 
+resonance frequency the same.
+
+For example, if we use values ..., the gain is ...
 
 
 We can also see that the amplitude ratio between either side of the inductor
