@@ -68,7 +68,7 @@ These 3 configuration are all used to build oscillators, but the common emitter 
 is the most popular: it can have a high voltage gain which make it easier to start up
 the oscillator.
 
-# Different Phase Shifts of an LC Tanks with 2 Capacitors
+# Simulating an LC Tanks with 2 Capacitors
 
 The key characteristic of a Colpitts oscillator is that it has an LC tank with 
 one inductor and 2 capacitors in the feedback loop. There are different ways
@@ -79,8 +79,16 @@ to configure this tank, which results in a different phase shift.
 One configuration has the center point between the 2 capacitors strapped
 to the ground. In a Colpitts schematic, it's often drawn like this:
 
+![Inductor with 2 capacitors, center is strapped to ground](/assets/hp10811/l_double_c_with_center_to_ground.png)
+
 But I find it more intuitive to redraw it in a way that make it the input and
-the output more obvious:
+the output more obvious. Let's also add an AC source so that we can do a small signal
+AC simulation in LTspice:
+
+![Inductor with 2 capacitors, center is strppaed to ground, AC simulation](/assets/hp10811/l_double_c_with_center_to_ground_ac_schematic.png)
+
+
+![Bode plots of previous schematic, AC simulation](/assets/hp10811/l_double_c_with_center_to_ground_ac_schematic_bode.png)
 
 
 When there's energy in the components and we free-run the circuit without loss,

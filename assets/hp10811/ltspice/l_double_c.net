@@ -1,0 +1,10 @@
+* C:\Users\tom_v\projects\tomverbeure.github.io\assets\hp10811\ltspice\l_double_c.asc
+L1 in out 1µ
+C1 in 0 15n
+C2 out 0 15n
+V1 N001 0 SINE(0 1 1.8meg) AC 1 0
+R1 N001 in 1000
+.ac dec 10000 100k 10meg
+* L = 1uH\nC1,2 = 15n -> C = 7.5nF\nfreq = 1/(2pi sqrt(LC) ) = 1.84 MHz
+.backanno
+.end
