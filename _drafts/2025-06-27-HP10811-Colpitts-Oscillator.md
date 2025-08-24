@@ -87,12 +87,21 @@ AC simulation in LTspice:
 
 ![Inductor with 2 capacitors, center is strppaed to ground, AC simulation](/assets/hp10811/l_double_c_with_center_to_ground_ac_schematic.png)
 
+I added a series 1000 Ohm resistor after the AC source to simulate the output impedance
+of the amplifier.[^series_resistor]
 
-![Bode plots of previous schematic, AC simulation](/assets/hp10811/l_double_c_with_center_to_ground_ac_schematic_bode.png)
+[^series_resistor]: When this resistor becomes very small, it impacts the resonance frequency of
+                    the LC tank because at that point, the AC source essentially cancels capacitor
+                    C1 and the resonance is determined by the values of L1 and C2 only.
 
+[![Bode plots of previous schematic, AC simulation](/assets/hp10811/l_double_c_with_center_to_ground_ac_schematic_bode.png)](/assets/hp10811/l_double_c_with_center_to_ground_ac_schematic_bode.png)
+*(Click to enlarge)*
 
-When there's energy in the components and we free-run the circuit without loss,
-we can see that there's a 180 phase shift between the both sides of the inductor.
+There are 2 important things to note:
+
+* the resonance frequency is 1.84 MHz.
+* the phase shift at the resonance frequency is 180 degrees.
+
 
 We can also see that the amplitude ratio between either side of the inductor
 depends on the ratio of the 2 capacitors.
