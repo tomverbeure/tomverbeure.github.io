@@ -101,14 +101,17 @@ But I find it more intuitive to redraw it in a way that make it the input and
 the output more obvious. Let's also add an AC source so that we can do a small signal
 AC simulation in LTspice:
 
-![Inductor with 2 capacitors, center is strppaed to ground, AC simulation](/assets/hp10811/l_double_c_with_center_to_ground_ac_schematic.png)
+![Inductor with 2 capacitors, center is strapped to ground, AC simulation](/assets/hp10811/l_double_c_with_center_to_ground_ac_schematic.png)
 
 I added a series 1000 Ohm resistor after the AC source to simulate the output impedance
-of the amplifier.[^series_resistor]
+of the amplifier.[^series_resistor] A 1k output impedance is in the ballpark of what
+you'd expect for a common-emitter transistor amplifier.
 
 [^series_resistor]: When this resistor becomes very small, it impacts the resonance frequency of
                     the LC tank because at that point, the AC source essentially cancels capacitor
                     C1 and the resonance is determined by the values of L1 and C2 only.
+
+The Bode plot of the small signal AC simulation looks like this:
 
 [![Bode plots of previous schematic, AC simulation](/assets/hp10811/l_double_c_with_center_to_ground_ac_schematic_bode.png)](/assets/hp10811/l_double_c_with_center_to_ground_ac_schematic_bode.png)
 *(Click to enlarge)*
@@ -116,12 +119,44 @@ of the amplifier.[^series_resistor]
 There are a few things to note:
 
 * the resonance frequency is 1.84 MHz.
-* at the resonance frequency, the gain is 0 dB.[^resonance_attn]
+* at the resonance frequency, the output voltage is 0 dB which corresponds to 1V.[^resonance_attn]
 * the phase shift at the resonance frequency is 180 degrees.
 
 [^resonance_attn]: it's not quite 0 dB because LTspice uses a default series resistance of
                    1 mOhm for inductors and because the simulation does the resonance
                    frequency perfectly. 
+
+We can verify these results in the time domain by running a transient simulation. It's
+important to specify a small enough simulation time step, otherwise the output amplitude
+can be much smaller than expected.
+
+After powering up, it take a while for the simulation to reach a steady state, but once
+that happens, the output amplitude is ~1 V, just like the AC simulation:
+
+[![Transient simulation of the previous schematic](/assets/hp10811/l_double_c_with_center_to_ground_ac_schematic_transient.png)](/assets/hp10811/l_double_c_with_center_to_ground_ac_schematic_transient.png)
+
+When we zoom in, we can see that there's indeed a 180 degree phase difference between input and output:
+
+[![Transient simulation of the previous schematic, zoomed in](/assets/hp10811/l_double_c_with_center_to_ground_ac_schematic_transient_zoom.png)](/assets/hp10811/l_double_c_with_center_to_ground_ac_schematic_transient_zoom.png)
+
+In the L/C tank, capacitors C1 and C2 are in series, resulting in an equivalent
+capacitance of $$C=\frac{C1 + C2}{(C1 * C2}$$. The resonance frequency can be calculated
+as follows: $$f = \frac{1}{2 \pi \sqrt{LC} }$$.
+
+We can play with the gain at the output by playing with the ratio of C1 and C2, while keeping the 
+resonance frequency the same.
+
+For example, if we use values ..., the gain is ...
+
+
+We can also see that the amplitude ratio between either side of the inductor
+depends on the ratio of the 2 capacitors.
+
+
+
+
+# HP 10811
+
 
 In the L/C tank, capacitors C1 and C2 are in series, resulting in an equivalent
 capacitance of $$C=\frac{C1 + C2}{(C1 * C2}$$. The resonance frequency can be calculated
