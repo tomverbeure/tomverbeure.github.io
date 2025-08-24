@@ -8,6 +8,90 @@ categories:
 * TOC
 {:toc}
 
+# Introduction
+
+I have a bunch of test equipment that uses a high-stability HP 10811 OCXO as reference 
+oscillator. Recently, someone on the All Electronics Patreon discussion board asked as question
+about how it worked.
+
+The service manual mentions that it's a Colpitts oscillator and even goes in some amount of
+detail about how it works, but I didn't get it at all. So I decided to dive into the topic,
+which became a bit of a bike shedding project, with learning about the basics of oscillators,
+the workins of essential transistor topologics and how they are used in oscillators.
+
+This blog post are a synthesis of what I've learned. 
+
+# Oscillator Theory - the Barkenhausen Criterion
+
+An oscillator is a circuit that generates a repetitive signal. It does so with a positive
+feedback loop, where the output of the amplifier is fed back into the input and conditions
+are such that there is a 360 degree phase shift along the way.
+
+The minimum necessary conditions for continued oscillation were formulated by 
+[Heinrich Barkenhausen](https://en.wikipedia.org/wiki/Heinrich_Barkhausen). They are known
+as the [Barkenhausen stability criterion](https://en.wikipedia.org/wiki/Barkhausen_stability_criterion),
+usually shorted to the *Barkenhausen cirterion*.
+
+Paraphrasing Wikipedia, the criterion says the following:
+
+Given an amplifier with gain A and a feedback path with transfer
+function $$\beta(j\omega)$$, the circuit will sustain steady-state oscillations only at
+frequencies for which:
+
+1. the loop gain is equal to unity in absolute magnitude
+2. the phase shift around the loop is zero or an integer multiple of 360 degrees 
+
+In a simple block diagram, it looks like this:
+
+XXX
+
+# Oscillator Startup
+
+When having a gain of 1, it's possible to find a state where the oscillator
+doesn't oscillate but 
+
+
+# The Amplifier
+
+You can build an amplifier with an opamp, but opamps tend to be more expensive than
+individual transistors. And that's especially true for higher frequencies, where you'll
+run into the bandwidth limitations of the opamp.
+
+So for the remainder of this blog post, I'll stick single transistor solutions. There
+are 3 standard transistor configurations:
+
+* common emitter
+* common collector
+* common base
+
+These 3 configuration are all used to build oscillators, but the common emitter configuration 
+is the most popular: it can have a high voltage gain which make it easier to start up
+the oscillator.
+
+# Different Phase Shifts of an LC Tanks with 2 Capacitors
+
+The key characteristic of a Colpitts oscillator is that it has an LC tank with 
+one inductor and 2 capacitors in the feedback loop. There are different ways
+to configure this tank, which results in a different phase shift.
+
+**LC Tank with 180 Degree Phase Shift**
+
+One configuration has the center point between the 2 capacitors strapped
+to the ground. In a Colpitts schematic, it's often drawn like this:
+
+But I find it more intuitive to redraw it in a way that make it the input and
+the output more obvious:
+
+
+When there's energy in the components and we free-run the circuit without loss,
+we can see that there's a 180 phase shift between the both sides of the inductor.
+
+We can also see that the amplitude ratio between either side of the inductor
+depends on the ratio of the 2 capacitors.
+
+
+
+
 # HP 10811
 
 * [Schematic](http://www.leapsecond.com/museum/10811a/10811a.pdf) - page 70
