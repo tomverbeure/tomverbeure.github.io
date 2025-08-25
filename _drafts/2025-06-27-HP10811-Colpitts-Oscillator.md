@@ -192,6 +192,8 @@ Note now $$H(j\omega)$$ consists of 2 cascaded voltage dividers: first the one b
 impedance that consists of all reactances $$L$$, $$C_1$$, and $$C_2$$. And the second one, a voltage divider between
 $$Z_L$$ and $$C_2$$.
 
+Let's fill in the values for R = 1000, L = 1 uH, C1 = 30 nF,  C2 = 10 nF and $$\omega$$ = 1.838 MHz.
+
 The complexity increases when you make the inductor non-ideal and start including its equivalent series resistance (ESR),
 which makes the resonance frequency dependent on the AC source impedance, though it only matters for small values of
 R.
