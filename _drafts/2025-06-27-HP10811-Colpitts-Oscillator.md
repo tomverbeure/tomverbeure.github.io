@@ -321,4 +321,12 @@ What's the math to determine whether oscillation will happen or not?
 
   Colpitts example with common emitter (without emitter resistor) and middle point between caps also strapped to ground.
 
+* [Radio Design 101 - RF Oscillators (Episode 4)](https://www.youtube.com/watch?v=oJQONLdFC20)
+
+  Nice overview of different oscillators. Shows schematics of some old school receivers
+  and identifies the Colpitts oscillator in it. Very little math. The whole
+  [Radio Design 101 series](Radio Design 101) is worth watching. 
+  See also [ecefiles.org](https://ecefiles.org).
+
+# Footnotes
 
