@@ -198,6 +198,105 @@ The complexity increases when you make the inductor non-ideal and start includin
 which makes the resonance frequency dependent on the AC source impedance, though it only matters for small values of
 R.
 
+Let's derive the transfer function the circuit. For easy reference, here's the schematic again with the
+component values removed:
+
+![Inductor with 2 capacitors, center is strapped to ground, no component values](/assets/hp10811/l_double_c_with_center_to_ground_no_values.png)
+
+We'll use impedances $$Z_{L_1}$$, $$Z_{C_1}$$, $$Z_{C_2}$$, and $$Z_{R_1}$$. Point A is the junction between 
+$$Z_{R_1}$$, $$Z_{L_1}$$ and $$Z_{C_1}$$.
+
+Using [Kirchhoff's current law (KCL)](https://en.wikipedia.org/wiki/Kirchhoff%27s_circuit_laws#Kirchhoff's_current_law)
+at point A and at the output:
+
+$$
+\frac{ V_\mathrm{a} - V_\mathrm{in}}{ Z_{R_1} } + \frac{ V_\mathrm{a} }{Z_{C_1}} + \frac{ V_\mathrm{a} - V_\mathrm{out} }{Z_{L_1}} = 0
+$$
+
+$$
+\frac{ V_\mathrm{out} - V_\mathrm{a}}{ Z_{L_1} } + \frac{ V_\mathrm{out} }{Z_{C_2}} = 0
+$$
+
+From the second equation, we get:
+
+$$
+V_\mathrm{a} = V_\mathrm{out} \left( 1 + \frac{Z_{L_1}}{Z_{C_2}} \right)
+$$
+
+Fill that into the first equation:
+
+$$
+  \frac{V_\mathrm{out} \left( 1 + \frac{Z_{L_1}}{Z_{C_2}} \right) - V_\mathrm{in}}{Z_{R_1}} 
++ \frac{V_\mathrm{out} \left( 1 + \frac{Z_{L_1}}{Z_{C_2}} \right)}{Z_{C_1}}
++ \frac{V_\mathrm{out} \left( 1 + \frac{Z_{L_1}}{Z_{C_2}} \right) - V_\mathrm{out}}{Z_{L_1}}
+= 0
+$$
+
+Multiply by $$Z_{R_1}$$ and collect all the $$V_\mathrm{out}$$ terms:
+
+$$
+\Bigg[\left(1+\frac{Z_{L_1}}{Z_{C_2}}\right)\left(1+\frac{Z_{R_1}}{Z_{C_1}}\right)
++ \frac{Z_{R_1}}{Z_{C_2}}\Bigg] V_\mathrm{out} \;-\; V_\mathrm{in} \;=\; 0
+$$
+
+Which gets us the transfer function:
+
+$$
+H(j\omega)
+= \frac{V_\mathrm{out}}{V_\mathrm{in}}
+= \frac{1}{\left(1+\frac{Z_{L_1}}{Z_{C_2}}\right)\left(1+\frac{Z_{R_1}}{Z_{C_1}}\right)
+  + \frac{Z_{R_1}}{Z_{C_2}}}
+= \frac{Z_{C1} \, Z_{C2}}
+{Z_{C_1}Z_{C_2} \;+\; Z_{L_1}Z_{C_1} \;+\; Z_{R_1}Z_{C_1} \;+\; Z_{R_1}Z_{C_2} \;+\; Z_{R_1}Z_{L1} }
+$$
+
+with:
+
+$$
+Z_{L_1} = j \omega L_1, \quad Z_{C_1} = \frac{1}{j \omega C_1} = - \frac{j}{\omega C_1}, \quad Z_{C_2} = \frac{1}{j \omega C_2} = - \frac{j}{\omega C_2}
+$$
+
+
+
+
+
+
+
+```python
+#! /usr/bin/env python3
+
+import numpy as np
+
+def transfer_ratio(R1, L1, C1, C2, f):
+    """Compute Vout/Vin for given component values and frequency."""
+    w = 2 * np.pi * f
+    
+    ZR1 = R1
+    ZL1 = 1j * w * L1
+    ZC1 = 1 / (1j * w * C1)
+    ZC2 = 1 / (1j * w * C2)
+    
+    numerator = ZC1 * ZC2
+    denominator = ZC1 * ZC2 + ZL1 * ZC1 + ZR1 * ZC1 + ZR1 * ZC2 + ZR1 * ZL1
+    
+    return numerator / denominator
+
+# Example usage
+if __name__ == "__main__":
+    # Example values
+    R1 = 1000       # Ohms
+    L1 = 1e-6       # Henries
+    C1 = 15e-9      # Farads
+    C2 = 15e-9      # Farads
+    f  = 1.8e6      # Hz
+    
+    H = transfer_ratio(R1, L1, C1, C2, f)
+    print("Vout/Vin =", H)
+    print("Magnitude =", abs(H))
+    print("Phase (deg) =", np.angle(H, deg=True))
+```
+
+
 # HP 10811
 
 
