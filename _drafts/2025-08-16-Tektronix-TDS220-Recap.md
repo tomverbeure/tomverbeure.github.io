@@ -14,13 +14,14 @@ I found a [Tektronix TDS220 oscilloscope](https://w140.com/tekwiki/wiki/TDS220) 
 [electronics flea market](https://www.electronicsfleamarket.com). 
 The seller told me that it worked but that the screen flickered a bit and that
 this model is known to have issues with leaking capacitors. He asked $25 which 
-would be an great price for an evening of entertainment even if an oscilloscope
-wasn't part of the deal.
+would be a great price for any evening of entertainment even if an oscilloscope
+wasn't part of the deal, so I bought it.
 
 Wise men claim that you should not power up an old device that might have issues with
-leaking capacitors, but it obviously did that anyway. It powered up nicely with
-some occasional flickering at the bottom of the LCD. When connected to a signal generator 
-it showed 2 sine waves:
+leaking capacitors, but I obviously did that anyway. It powered up nicely with
+some occasional flickering at the bottom of the LCD, as promised. 
+
+When connected to a signal generator it showed 2 sine waves:
 
 ![TDS220 showing 2 sine waves](/assets/tds220/tds220_2_sine_waves.jpg)
 
@@ -161,7 +162,7 @@ not included.
 
 ![PCB glue-like substance](/assets/tds220/pcb_glue.jpg)
 
-On my unit, all capacitors were fixed to the PCB with a soft, glue-like substance.
+On my unit, most capacitors were fixed to the PCB with a soft, glue-like substance.
 Use an Exacto knife to cut it loose before desoldering a capacitor.
 
 
