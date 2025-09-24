@@ -97,7 +97,7 @@
         ! nRAMCS = !A17 & !A18 & !A19 & A20 & !nLDS & !nMS ;
         nRAMCS.oe = 'b' 1 ;
         
-        // nROMCS   = (!nLDS && !nMS) && (A[20:17] == 1'b1xxx)
+        // nROMCS   = !( (!nLDS && !nMS) && (A[20:17] == 4'b0xxx) )
         //
         ! nROMCS = !A20 & !nLDS  & !nMS ;
         nROMCS.oe = 'b' 1 ;
@@ -114,13 +114,13 @@
         IO6_DATA.oe = 'b' 1 ;
         
         // Fake GPIB/UART drive data bus
-        // IO4_CE = (!nLDS && !nMS) && RnW && ( A[20:17] == 4'b010x || A[20:17] = 4'b0010 ) 
+        // IO4_CE = !( (!nLDS && !nMS) && RnW && ( A[20:17] == 4'b101x || A[20:17] = 4'b1101 ) )
         !IO4_CE = RnW & A18 & !A19 & A20 & !nLDS & !nMS 
             # A17 & RnW & !A18 & A19 & A20 & !nLDS & !nMS ;
         IO4_CE.oe = 'b' 1;
         
         // Condition to clock D3 -> write operation
-        // IO5_CLK = (!nLDS && !nMS) && !RnW && A[20:17] == 4'b0100
+        // IO5_CLK = (!nLDS && !nMS) && !RnW && A[20:17] == 4'b1011
         IO5_CLK = A17 & !RnW & A18 & !A19 & A20 & !nLDS & !nMS;
         IO5_CLK.oe = 'b' 1 ;
         

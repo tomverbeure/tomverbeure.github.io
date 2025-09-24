@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Refurbishing a Tektronix TDS220 Oscilloscope 
+title: Fixing LCD Screen Corruption of a Tektronix TDS220 Oscilloscope 
 date:   2025-08-16 00:00:00 -1000
 categories:
 ---
@@ -17,9 +17,16 @@ this model is known to have issues with leaking capacitors. He asked $25 which
 would be a great price for any evening of entertainment even if an oscilloscope
 wasn't part of the deal, so I bought it.
 
-Wise men claim that you should not power up an old device that might have issues with
-leaking capacitors, but I obviously did that anyway. It powered up nicely with
-some occasional flickering at the bottom of the LCD, as promised. 
+Wise men claim that you should not power up an old device that with leaking capacitors, 
+but I obviously did that anyway. The scope booted up nicely with some occasional screen 
+corruption, as promised. 
+
+![Screen corruption](/assets/tds220/screen_corruption.jpg)
+
+[This video](https://youtu.be/Np21eQKw6sw?si=13aY1BOcO3j50V-m) give a better idea about the 
+corruption. It's intermittent and depends on the kind of content that is shown on the
+screen. It also less prevalent when the scope has warmed up. All in all, it's not a deal
+breaker. The scope is perfectly usable as is, but it would obviously nice to fix it.
 
 When connected to a signal generator it showed 2 sine waves:
 
@@ -38,8 +45,8 @@ Alright, maybe I'd get more than just an evening of fun out of it.
 
 The TDS220 was introduced in 1997. It was a low cost oscilloscope with a limited
 number of features, but with a weight of just 1.5kg/3.25lb and a small size, it was
-great for technicians and education. I'm not sure if it was Tektronix' first oscilloscope
-with an LCD but, if not, it was definitely one of the early ones.
+great for technicians and for educational use. I'm not sure if it was Tektronix' first 
+oscilloscope with an LCD but, if not, it was definitely one of the early ones.
 
 Some key characteristics:
 
@@ -48,8 +55,8 @@ Some key characteristics:
 * 2500 sample points per channel
 * Only a few measurements: period, frequency, cycle RMS, mean and peak-to-peak voltage
 
-With an extension board, you could add parallel and GPIB port and FFT functionality, but
-even with those, it's reallly a bare bones scope.
+With an extension board, you can add a parallel, serial and GPIB port and FFT functionality, 
+but even with those, it's reallly a bare bones scope.
 
 And yet, I expect that I'll be using it quite a bit: it's so portable and the
 footprint is so small that it's perfect for a quick measurement on a "busy" workbench.
@@ -65,8 +72,8 @@ a bit of bending-the-plastic involved.
 
 ![TDS220 handle and power button](/assets/tds220/tds220_handle_and_power_button.jpg)
 
-The handle must lay flat against the case to wide and remove it. The white
-knob can simply be pulled off.
+The handle must lay flat against the case to widen it and remove it. Also pull off the white
+knob.
 
 **Remove the 2 screws**
 
@@ -78,7 +85,7 @@ them with a Torx 15 screwdriver.
 If you have a TDS2CM or TDS2MM expansion module, you need to remove it because
 otherwise will block the case from coming off.
 
-It took me longer than I care to admit before I figured it out how to do this. 
+It took me longer than I care to admit to figure out how to do this. 
 There is no need to play with the tab at the top of the module, just forcefully slide 
 the thing upwards until it disconnects from the connector at the bottom.
 
@@ -86,16 +93,16 @@ the thing upwards until it disconnects from the connector at the bottom.
 
 **Pry off the back case**
 
-This is the part that I always hate, because you need to figure the the best location
-where to jam screwdriver between 2 pieces of pastic and hope for the best. And based
-on the scuff marks in the picture below, others have struggled with it as well.
+This is the part that I always hate, because you need to figure which location is the
+best to jam a screwdriver between 2 pieces of plastic. And based on the scuff marks in 
+the picture below, others have struggled with it as well.
 
 ![Remove back cover](/assets/tds220/tds220_remove_back_cover.jpg)
 
 But I think I found the best way to go about it now. At the right side, insert the
 screwdriver horizontally between the blue and the white plastic and then lift the blue 
 part. Insert a smaller screwdriver in the gap that you just made to prevent it from closing again
-and repeat the same operation in the middle and the left.
+and repeat the same operation in the middle and the left. 
 
 **Inside exposed**
 
@@ -120,6 +127,10 @@ Here are the most common TDS220 issues:
 * mechanical stress around the BNC connectors
 * LCD backlight too weak or not working
 
+Not so common issue:
+
+* LCD screen corruption
+
 # Replacing the power supply capacitors
 
 I didn't take pictures of it, but the solder side of the power supply PCB was drenched
@@ -135,7 +146,7 @@ to remove all electrolytic capacitors with new ones. There are 11 of them, liste
 table below:
 
 **I used these components for my TDS220 recapping, but there is absolutely no guarantee
-that these are the right components. You need to double check everything yourself! Recapping
+that these are the right ones. You need to double check everything yourself! Recapping
 the scope is done at your own risk!**
 
 | **#** | **Indicator** | **Capacitance** | **Voltage** | **Location**          |
@@ -165,72 +176,69 @@ not included.
 On my unit, most capacitors were fixed to the PCB with a soft, glue-like substance.
 Use an Exacto knife to cut it loose before desoldering a capacitor.
 
+The PCB has markers for capacitor polarity. For smaller ones, it uses regular + and -
+notation. For larger ones, a black circle indicates negative polarity.
 
-# Recapping
+![Capacitor polarity](/assets/tds220/capacitor_polarity.jpg)
 
-* Opening up [Youtube video](https://www.youtube.com/watch?v=PHB2XC_l7Eg)
-* Remove back. Insert screwdriver as shown in picture
-* Remove 2 connectors
-* Remove PCB by pulling back 2 tabs
+All in all, the PSU recapping process is pretty straightforward and took around
+1 hours to complete.
 
-Capacitor list:
+However, after power the scope back on, the screen corruption was still there!
 
-* 1x 47 uF - 450 V              
-    * C22 - largest cap
+# LCD Panel Corruption
 
-    * old 43uF / 0.92 Ohm
-    * new 44uF / 0.11 Ohm
+The LCD screen corruption is content specific and it happens for a while pixel row
+at a time. I thought that it was caused by some signal corruption on the flat cable
+between the main PCB and the LCD panel, but this was not case. I googled around
+a bit, but couldn't find any references to the issue that I was seeing, so I asked
+on the EEVblog Repair forum. A few hours later, I got 
+[the following reply](https://www.eevblog.com/forum/repair/tds220-lcd-content-dependent-screen-corruption/msg6027427/#msg6027427):
 
-* 3x 2200 uF - 6.3 V
-    * C13 - next to connector CN2
-    * C12 - next to C13
-    * C11 - next to C12
+> Please refer to the link above, the problem that occurs is very similar to your problem
 
+It included a link a Chinese forum that requires an account to get access to
+photos and any pages beyond the first one, but *daisizhou* helpfully
+posted those pictures in the EEVblog forum thread:
 
-    * old 1800 uF 0.0 Ohm (120 Hz)
-    * old 1883 uF 0.0 Ohm (120 Hz)
-    * old 1753 uF 0.0 Ohm (120 Hz)
-    
+**You need to replace some capacitors that are inside the LCD panel!**
 
-* 1x 1000 uF - 6.3 V
-    * C14 - next to C11
+# Extracting the LCD Panel
 
-    * old 843 u/f 0.2 Ohm (120 Hz)
+Replacing the LCD panel capacitors is not complicated, but since an LCD panel assembly
+is a bit fragile, you need to be careful to not destroy anything. Let's first extract
+the panel from the case.
 
+**Remove the front panel knobs**
 
-* 1x 470 uF - 6.3V
-    * C15 - next to IC3
+The panel knobs are the main components that are still keeping the front enclosure
+attached to the main body. You can just pull them off.
 
-    * old 415 uF 0.4 Ohm (120 Hz)
-    * new 440 uF 0.2 Ohm (120 Hz)
+![Remove front panel knobs](/assets/tds220/tds220_remove_front_buttons.jpg)
 
+**Remove buttons PCB** 
 
-* 1x 47 uF - 16 V
-    * C21 - next to AULT KOREA
+![Unplug buttons PCB connector](/assets/tds220/tds220_unplug_button_connector.jpg)
 
-    * old 45uF 2.2 Ohm (120 Hz)
+![Front panel removed](/assets/tds220/tds220_front_panel_removed.jpg)
 
-* 2x 22 uF - 35 V
-    * C18 - next to connecter CN2
-    * C6 - next to IC1 
+**Remove LCD protector**
 
-    * old 19 uF 10 Ohm (120 Hz)
-    * old 20 uF 7 Ohm (120 Hz)
+![LCD protector](/assets/tds220/LCD_protector.jpg)
 
-* 1x 4.7 uF - 50 V
-    * C17 - next to C16
+![Front with only LCD panel left](/assets/tds220/tds220_front_with_only_LCD_panel.jpg)
 
-    * old 4.7 uF 6.4 Ohm (120 Hz)
+**LCD frame clips**
 
-* 1x 2.2 uF - 50 V
-    * C10 - next to CN2
+![LCD frame clips](/assets/tds220/LCD_frame_clips.jpg)
 
-    * 2.2 uF 15 Ohm (120 Hz)
+![LCD PCB exposed](/assets/tds220/LCD_PCB_exposed.jpg)
 
-
-* Can't update the firmware without a programmer: https://www.eevblog.com/forum/testgear/reverse-engineering-tds2cmtds2mm/msg4396288/#msg4396288
+![LCD PCB zoom](/assets/tds220/LCD_PCB_zoom.jpg)
 
 # References
+
+* Can't update the firmware without a programmer: https://www.eevblog.com/forum/testgear/reverse-engineering-tds2cmtds2mm/msg4396288/#msg4396288
 
 * [Tony Albus - Tektronix TDS220 Backlight Replace and Restore](https://www.youtube.com/watch?v=weUSGjzEoVM)
 
