@@ -248,8 +248,12 @@ attached to the main body. You can just pull them off.
 
 * [EEVblog forum - Recap list](https://www.eevblog.com/forum/testgear/tektronix-tds210-teardown-and-bnc-replacement/msg1722653/#msg1722653)
 
+* [EEVblog forum - TDS 2002B repair](https://www.eevblog.com/forum/repair/tektronix-tds-220-repair/)
+
 * Scope with same probe compensation issue:
   https://www.eevblog.com/forum/repair/tektronix-tds-2002b-repair/msg5170455/#msg5170455
 
   Looks like a bad BNC connector.
+
+* [NFM - Tektronix TDS210 TDS220 Oscilloscope Recall and Loose BNC Fix](https://www.youtube.com/watch?v=9N8UKwn4okM)
 
