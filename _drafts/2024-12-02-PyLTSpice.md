@@ -22,6 +22,16 @@ Issue:
   to a comment (and it becomes blue.) You can also right click on an analysis
   comment, then click "Cancel and Edit Text Directly" and then switch between
   text comment or Spice directive.
+* simulation log file is a modal window.
+
+* LTspice.exe can be found here: C:\Users\tom_v\AppData\Local\Programs\ADI\LTspice\LTspice.exe
+  Also: ~/AppData/Local/Programs/ADI/LTspice/LTspice.exe in git bash or powershell.
+
+* Convert .asc to .net: ..../LTspice.exe -netlist rc_schematic.asc
+* Batch execution: ..../LTspice.exe -b -Run rc_schematic.asc
+* .meas is done after execution. You can run new .meas scripts on raw data in the waveform
+  window.
+* requires versions: PyLTSpice 5.4.4 and spicelib 1.4.6
 
 
 # References
