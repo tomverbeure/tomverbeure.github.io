@@ -16,11 +16,8 @@ else:
     # Only works on my system when PyLTSpice issue #151 is fixed
     netlist = PyLTSpice.SpiceEditor(asc_filename.name)
         
-R1_values   = [ '1k', '2k', '5k', '10k' ]
-C1_values   = [ '1u', '2u', '5u', '10u' ]
-
 R1_values   = [ '1k', '2k', '4k' ]
-C1_values   = [ '1u', '3u' ]
+C1_values   = [ '1u', '3u', '5u' ]
 
 sims = [
         { "name": "tran", "instruction": ".tran 50m startup" }, 
@@ -33,6 +30,7 @@ for sim in sims:
     sim_name        = sim["name"]
     sim_instruction = sim["instruction"]
 
+    # This overrides the simulation instructions that were already in the .asc file
     netlist.add_instructions(sim_instruction)
 
     for R1_value in R1_values:
@@ -49,7 +47,7 @@ for sim in sims:
 
 runner.wait_completion()
 
-figure, axes_list = plt.subplots(len(C1_values),len(R1_values))
+figure, axes_list = plt.subplots(len(C1_values),len(R1_values), figsize=(10,8))
 print(axes_list)
 
 axes_cnt     = 0
@@ -92,11 +90,15 @@ for raw_filename, log_filename in runner:
         axes.axvline(x=start_rise, color='red', linestyle='--', linewidth=1)
         axes.axvline(x=end_rise, color='red', linestyle='--', linewidth=1)
         axes.set_title(f"R1={R1_values[r1_idx]}, C1={C1_values[c1_idx]}")
-        axes.text(0.98, 0.05, f"rise time: {round(rise_time * 1000, 1)} ms", transform=axes.transAxes, ha='right', va='bottom')
+        axes.text(0.95, 0.05, 
+                    f"rise time: {round(rise_time * 1000, 1)} ms", 
+                    transform=axes.transAxes, ha='right', va='bottom', 
+                    bbox=dict(facecolor='white', alpha=1.0, edgecolor='black') )
 
         axes_cnt    += 1
 
-figure.suptitle("Rise time of R/C circuit")
+figure.suptitle("Rise time of an R/C circuit")
 figure.tight_layout()
+plt.savefig("plot.png", dpi=100)
 plt.show()
 
