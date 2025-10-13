@@ -1,9 +1,53 @@
 ---
 layout: post
-title: PyLTSpice for LTspice project management
+title: Using PyLTSpice for Automated and Repeatable LTSpice Simulations
 date:   2025-10-05 00:00:00 -1000
 categories:
 ---
+
+* TOC
+{:toc}
+
+# Introduction
+
+I've been dabbling with a bunch of analog projects in the past years, and while some
+of that was done on real hardware, most of it happened in a 
+[SPICE](https://en.wikipedia.org/wiki/SPICE) 
+simulator. I started out with the fully open source [ngspice](https://ngspice.sourceforge.io/)
+but I soon ran into so many issues with simulations that wouldn't converge that I gave
+up and switched to [LTspice](https://www.analog.com/en/resources/design-tools-and-calculators/ltspice-simulator.html).
+Not open source at all, but it's 100% free, comes with a gigantic component library,
+and it never gave up with a non-converging simulation.[^time_step_too_large]
+Since LTspice only runs on Windows, I bought 
+[the cheapest laptop](/2025/03/12/HP-Laptop-17-RAM-Upgrade.html) I could find just
+for this purpose.
+
+[^time_step_too_large]: That doesn't mean that it never has simulation issues.
+   A few times, I got [very strange results](https://electronics.stackexchange.com/questions/754308/understand-mismatch-between-small-signal-ac-amplitude-and-transient-amplitude-a) 
+   that were solved by making the minimal simulation time step smaller.
+
+LTspice is a little bit quirky. The GUI is opinionated and takes some time to get used to
+and the waveform viewer has some annoying limitations when dealing with multiple
+results.
+
+But what bothers me the most in the total lack of tools to help with managing
+a project and dealing with multiple simulations that are associasted with it.
+
+When I create plots for documentation or blog posts, I like to create an automated pipeline
+that allows me to regenerate everything by just launching a command. I often also
+want to check cases with different component values to explore what gives the best result.
+Out of the box, LTspice is not well equiped for that. 
+
+There is a friendly LTspice forum on Groups.io where I asked how others dealt with these kind 
+of issues, but I didn't really get [the answers](https://groups.io/g/LTspice/topic/115566583#msg162688) 
+that I was looking for.
+
+# Some 
+
+
+
+
+
 
 Issue:
 
@@ -35,3 +79,5 @@ Issue:
 
 
 # References
+
+# Footnotes
