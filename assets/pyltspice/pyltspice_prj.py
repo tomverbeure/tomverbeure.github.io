@@ -24,8 +24,14 @@ sims = [
         { "name": "ac",   "instruction": ".ac dec 10 1 100k" } 
     ]
 
+# PyLTSpice can launch multiple simulations in parallel. 8 is a number that worked for me,
+# but it depends on your machine and on the design that you're simulating.
 runner = PyLTSpice.SimRunner(output_folder=output_dir, simulator=PyLTSpice.LTspice, parallel_sims=8)
 
+# These 'measurements' are used to pass-through side-band data from the simulator
+# to the log file and thus to the code that post-processes the result.
+# r1_idx and c1_idx are indices in the r1_value and c1_values lists that were
+# defined earlier.
 netlist.add_instructions(".meas r1_idx_val PARAM r1_idx")
 netlist.add_instructions(".meas c1_idx_val PARAM c1_idx")
 
@@ -51,12 +57,13 @@ for sim in sims:
             netlist.set_parameters(c1_idx=c1_idx)
     
             # Send a simulation to the run queue. Each simulation must have a unique
-            # filename, otherwise results may be overwritten.
+            # filename, otherwise multiple simulators running parallal trample on each
+            # other and overwrite different results.
             run_netlist_filename = f"{asc_filename.stem}_R1={r1_value}_C1={c1_value}_{sim_name}.run.net"
             runner.run(netlist, run_filename=run_netlist_filename)
 
 # Wait until all simulations have finished. This is just one way of doing things.
-# An alternative way is to specificy a callback function the gets called when
+# An alternative way is to specify a callback function that gets called when
 # a simulation has completed.
 runner.wait_completion()
 
@@ -64,13 +71,17 @@ runner.wait_completion()
 # all R and C combinations get their own graph.
 figure, ax_list = plt.subplots(len(c1_values),len(r1_values), figsize=(10,8))
 
+# Post-process all the simulation results...
 for raw_filename, log_filename in runner:
     print(log_filename)
 
+    # Extract all the data from the log and raw result files.
     log_info    = PyLTSpice.LTSpiceLogReader(log_filename)
     raw_info    = PyLTSpice.RawRead(raw_filename)
 
-    # if 'time' is part of the trace names, then it contains the results of
+    print(raw_info.get_trace_names())
+
+    # if 'time' is part of the trace_names, then it contains the results of
     # a TRAN simulation, not an AC simulation.
     if 'time' in raw_info.get_trace_names():
 
@@ -80,8 +91,6 @@ for raw_filename, log_filename in runner:
         end_rise    = log_info.dataset["end_rise"][0]
         print(rise_time, start_rise, end_rise)
         print(log_info.dataset)
-
-        print(raw_info.get_trace_names())
 
         vin_info    = raw_info.get_trace('V(in)')
         vout_info   = raw_info.get_trace('V(out)')
