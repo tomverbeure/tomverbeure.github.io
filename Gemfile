@@ -32,3 +32,4 @@ gem "kramdown"
 gem 'jekyll-sitemap'
 gem 'csv'
 gem 'webrick'
+gem 'nokogiri', "~> 1.18.9"
