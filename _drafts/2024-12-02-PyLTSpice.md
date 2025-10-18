@@ -10,12 +10,43 @@ categories:
 
 # Introduction
 
-I've been dabbling with a bunch of analog projects in the past years, and while some
-of that was done on real hardware, most of it happened in a 
-[SPICE](https://en.wikipedia.org/wiki/SPICE) 
-simulator. I started out with the fully open source [ngspice](https://ngspice.sourceforge.io/)
-but I soon ran into so many issues with simulations that wouldn't converge that I gave
-up and switched to [LTspice](https://www.analog.com/en/resources/design-tools-and-calculators/ltspice-simulator.html).
+When I write a blog post, I want my simulation results or plots to be recreatable 
+and this should be as easy as running a single script. My blog post about 
+[CIC filters](/2020/09/30/Moving-Average-and-CIC-Filters.html)
+is a good example. The Python script that generated all the plots can be found 
+[here](https://github.com/tomverbeure/pdm/blob/master/modeling/cic_filters/cic_filters.py).
+
+There are a number of benefits to this kind of approach:
+
+* Easy tweaking of results
+
+  I have new insights while writing a blog post, and that may change details
+  about what I want to simulate. A single script will conveniently update all results.
+
+* Fast iteration of presentation
+
+  The title of a plot, colors, line types... I'll keep on changing those until
+  I'm happy with how they look. You just don't do that if there's too much
+  effort involved.
+
+* They serve as a how-to
+
+  I often write about topics about which I'm not an expert. Neither am I
+  an expert of the tools that I use. Previously written scripts are a great reference
+  for when I need to do something similar many years later in, say, Numpy or
+  Matplotlib.
+
+It's easy to do so for tools that have a built-in scripting language, but I've been dabbling
+a bunch of analog projects in the past years, and while some of that was done on real hardware, 
+most of it happened in a [SPICE](https://en.wikipedia.org/wiki/SPICE) 
+simulator. 
+
+[![Sony CRT 60W power supply schematic and waveform in LTspice GUI](/assets/pyltspice/sonly_crt_60w_ltspice.png)](/assets/pyltspice/sonly_crt_60w_ltspice.png)
+
+I started out with the fully open source [ngspice](https://ngspice.sourceforge.io/)
+but I soon ran into insurmountable issues with simulations that wouldn't converge. I gave
+up and switched to 
+[LTspice](https://www.analog.com/en/resources/design-tools-and-calculators/ltspice-simulator.html).
 Not open source at all, but it's 100% free, comes with a gigantic component library,
 and it never gave up with a non-converging simulation.[^time_step_too_large]
 Since LTspice only runs on Windows, I bought 
@@ -31,12 +62,7 @@ and the waveform viewer has some annoying limitations when dealing with multiple
 results.
 
 But what bothers me the most in the total lack of tools to help with managing
-a project and dealing with multiple simulations that are associasted with it.
-
-When I create plots for documentation or blog posts, I like to create an automated pipeline
-that allows me to regenerate everything by just launching a command. I often also
-want to check cases with different component values to explore what gives the best result.
-Out of the box, LTspice is not well equiped for that. 
+a project and dealing with multiple simulations that are associated with it.
 
 There is a friendly LTspice forum on Groups.io where I asked how others dealt with these kind 
 of issues, but I didn't really get [the answers](https://groups.io/g/LTspice/topic/115566583#msg162688) 
