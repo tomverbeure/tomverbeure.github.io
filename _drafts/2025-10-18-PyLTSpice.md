@@ -92,10 +92,35 @@ I want to:
 * check the effect of the Zener diode for different input voltages
 * create a plots to compare different cases
 
+Let's add a few directives to prepare the schematic for simulation:
+
+![Schematic with R and C as parameters and .meas instructions](/assets/pyltspice/rc_schematic_with_params_and_meas.png)
+
+* the values of R1 and C1 have been replaced by parameters `{r}` and `{c}`.
+* for transient simulations, input voltage source V1 has been assigned a
+  piecewise linear function that's 0 V at the start and quickly rises
+  to 1 V after 2 ms.
+* 3 `.meas` directives measure `start_rise`, `end_rise`, and `rise_time`.
+  These are the timestamps where the output waveform crosses 0.1 V and 0.9 V,
+  and the time difference between those 2 points.
+
 # Some Alternatives that don't Require Scripting
 
+**Use up to 2 .step directives**
 
+If we only need to go through a list of values for 2 parameters, we 
+can add the `.step` directive to the schematic. Like this:
 
+```
+.step param r list 1k 2k 4k
+.step param c list 1u 3u 5u
+```
+
+When you simulate this as a transient simulation, click on the `out` net and you'll
+see something like this:
+
+[![RC schematic with plot window that has 6 waveforms](/assets/pyltspice/rc_schematic_params_and_step.png)](/assets/pyltspice/rc_schematic_params_and_step.png)
+*(Click to enlarge)*
 
 
 
@@ -103,6 +128,8 @@ I want to:
 Issue:
 
 * PyLTSpice instead of PyLTspice 
+* When you save a schematic in LTspice, you have to specify ".asc" even if that's
+  already specified in the file dialog.
 * If you have a project `rc_schematic.asc` and run a simulation, it creates
   an `rc_schematic.net` file. But when you close the project, it deletes that file.
 * There is no way in PyLTSpice to specify the LTspice installation path.
