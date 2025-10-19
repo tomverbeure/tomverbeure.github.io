@@ -122,6 +122,70 @@ see something like this:
 [![RC schematic with plot window that has 6 waveforms](/assets/pyltspice/rc_schematic_params_and_step.png)](/assets/pyltspice/rc_schematic_params_and_step.png)
 *(Click to enlarge)*
 
+The waveform viewer is not terrible, but it already has a bunch of warts:
+
+* if you add any other waveform, say, the V(in), all the V(out) waveforms get the same color.
+
+    ![Multiple waveforms, one color](/assets/pyltspice/multiple_waveforms_one_color.png)
+
+    You can kind of avoid this by adding a second "plot pane" above or below (but not left or right of) 
+    the current one.
+
+* There is no obvious way to figure out which waveform is for which parameter combination.
+
+    Moving your mouse cursor over a waveform is supposed to show this, but that doesn't work
+    on my version 24.1.10, the latest one.
+
+* You can't render measurement results in the plot window. 
+
+    ![Log window](/assets/pyltspice/log_window.png)
+ 
+    Instead, you need to view the log file. The genius software developers decided to make 
+    that a model window, which means you can't operate the plot window without first closing 
+    the log window. (Seriously, what were they thinking?) It's one of the many infuriating
+    quirks of the LTspice GUI.[^asc_file_save]
+
+[^asc_file_save]: One of my biggest pet peeves is the "Save As" behavior.
+                  Like every other piece of software in the world, the file dialog shows 
+                  "Schematics (\*.asc)" in the "Save as type:" field. 
+                  But if you fill in a new file name without adding ".asc", it will
+                  error out with "Unrecognized file name extension"... unlike every other piece
+                  of software in the world, which will add the extension automatically.
+                  ![Save File As dialog](/assets/pyltspice/save_file_as_dialog.png)
+
+* You can't have multiple plot windows at the same time.
+
+    This is important in you want to embed multiple plots from the same simulation
+    in a document.
+
+Even if you only have 2 parameters to step through, there's already a bunch of reasons to
+consider a different way to create plots.
+
+**A table allows stepping through more than 2 parameters**
+
+If you want to run simulations and change more than 2 parameters, there's a well known
+hack to do that. It goes as follows:
+
+* Create a table for each of the parameters:
+
+```
+.param r = table(idx, 1, 1k, 2, 2k, 3, 4k)
+.param c = table(idx, 1, 1u, 2, 3u, 3, 5u)
+```
+
+* Use a step directive to step through all the table elements
+
+```
+.step param idx list 1 2 3
+```
+
+Like this:
+
+[![RC schematic with param and table directives](/assets/pyltspice/rc_schematic_param_table.png)](/assets/pyltspice/rc_schematic_param_table.png)
+
+This works, but there's only 3 waveforms instead of 9 because you now need
+to list all combinations yourself.
+
 
 
 
