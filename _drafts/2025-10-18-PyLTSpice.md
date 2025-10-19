@@ -77,14 +77,19 @@ that I was looking for.
 
 # A Simple Example Design
 
-Let's use a simple R/C circuit as illustration:
+Let's use a simple R/C circuit as illustration. I've added
+a reverse polarized Zener diode to clamp the voltage across the
+capacitor to a maximum value of 4.7V. This makes the circuit a
+bit more interesting. 
 
+![Basic RC circuit with Zener diode. No simulation instructions](/assets/pyltspice/rc_schematic_basic.png)
 
 I want to:
 
-* simulate the design with different values of R and C.
+* simulate the design with different values of R1 and C1
 * measure the rise time when it is subjected to a step function
   at its input
+* check the effect of the Zener diode for different input voltages
 * create a plots to compare different cases
 
 # Some Alternatives that don't Require Scripting
