@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Using PyLTSpice for Automated and Repeatable LTSpice Simulations
-date:   2025-10-05 00:00:00 -1000
+date:   2025-10-18 00:00:00 -1000
 categories:
 ---
 
@@ -10,10 +10,10 @@ categories:
 
 # Introduction
 
-When I write a blog post, I want my simulation results or plots to be recreatable 
-and this should be as easy as running a single script. My blog post about 
+When I write a blog post, I want to recreate all simulation results or plots with
+a simple script. My blog post about 
 [CIC filters](/2020/09/30/Moving-Average-and-CIC-Filters.html)
-is a good example. The Python script that generated all the plots can be found 
+is a good example of this. The Python script that generates all the plots can be found 
 [here](https://github.com/tomverbeure/pdm/blob/master/modeling/cic_filters/cic_filters.py).
 
 There are a number of benefits to this kind of approach:
@@ -29,12 +29,11 @@ There are a number of benefits to this kind of approach:
   I'm happy with how they look. You just don't do that if there's too much
   effort involved.
 
-* They serve as a how-to
+* The script serves as a future how-to
 
-  I often write about topics about which I'm not an expert. Neither am I
-  an expert of the tools that I use. Previously written scripts are a great reference
-  for when I need to do something similar many years later in, say, Numpy or
-  Matplotlib.
+  I often write about topics or tools for which I'm not an expert. Previously written scripts 
+  are a great reference for when I need to do something similar many years later in, say, Numpy 
+  or Matplotlib.
 
 It's easy to do so for tools that have a built-in scripting language, but I've been dabbling
 a bunch of analog projects in the past years, and while some of that was done on real hardware, 
@@ -44,31 +43,52 @@ simulator.
 [![Sony CRT 60W power supply schematic and waveform in LTspice GUI](/assets/pyltspice/sonly_crt_60w_ltspice.png)](/assets/pyltspice/sonly_crt_60w_ltspice.png)
 
 I started out with the fully open source [ngspice](https://ngspice.sourceforge.io/)
-but I soon ran into insurmountable issues with simulations that wouldn't converge. I gave
-up and switched to 
-[LTspice](https://www.analog.com/en/resources/design-tools-and-calculators/ltspice-simulator.html).
-Not open source at all, but it's 100% free, comes with a gigantic component library,
-and it never gave up with a non-converging simulation.[^time_step_too_large]
+which it has its own [control language](https://ngspice.sourceforge.io/ngspice-control-language-tutorial.html), 
+but I soon ran into presistent issues with simulation convergence.[^oscillator_convergence]
+I eventually gave up and switched to 
+[LTspice](https://www.analog.com/en/resources/design-tools-and-calculators/ltspice-simulator.html),
+now owned by Analog Devices after their acquisition of Linear Technologies.
+
+LTspice is not open source, but it's 100% free as-in-beer, comes with a huge component library,
+and it has never given up on me  with a non-converging simulation error.[^time_step_too_large]
 Since LTspice only runs on Windows, I bought 
 [the cheapest laptop](/2025/03/12/HP-Laptop-17-RAM-Upgrade.html) I could find just
-for this purpose.
+for this purpose.[^wine]
 
-[^time_step_too_large]: That doesn't mean that it never has simulation issues.
-   A few times, I got [very strange results](https://electronics.stackexchange.com/questions/754308/understand-mismatch-between-small-signal-ac-amplitude-and-transient-amplitude-a) 
-   that were solved by making the minimal simulation time step smaller.
+[^oscillator_convergence]: ngspice is generally fine, but I suspect that the simulation
+                           covergence issues pop up when the design contains an oscillator. 
+                           In my case, the oscillator was part of a DC/DC boost converter.
+
+[^time_step_too_large]: That doesn't mean that LTspice never has simulation issues.
+                        A few times, I got [very strange results](https://electronics.stackexchange.com/questions/754308/understand-mismatch-between-small-signal-ac-amplitude-and-transient-amplitude-a) 
+                        that were solved by making the minimal simulation time step smaller.
+
+[^wine]: I have friends who successfully run LTspice under Linux by using [Wine](https://www.winehq.org),
+         but I'm past these kind of fragile hacks. 
 
 LTspice is a little bit quirky. The GUI is opinionated and takes some time to get used to
 and the waveform viewer has some annoying limitations when dealing with multiple
-results.
-
-But what bothers me the most in the total lack of tools to help with managing
+results. But what bothers me the most in the total lack of tools to help with managing
 a project and dealing with multiple simulations that are associated with it.
 
 There is a friendly LTspice forum on Groups.io where I asked how others dealt with these kind 
 of issues, but I didn't really get [the answers](https://groups.io/g/LTspice/topic/115566583#msg162688) 
 that I was looking for.
 
-# Some 
+# A Simple Example Design
+
+Let's use a simple R/C circuit as illustration:
+
+
+I want to:
+
+* simulate the design with different values of R and C.
+* measure the rise time when it is subjected to a step function
+  at its input
+* create a plots to compare different cases
+
+# Some Alternatives that don't Require Scripting
+
 
 
 
