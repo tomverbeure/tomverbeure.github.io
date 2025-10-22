@@ -106,6 +106,9 @@ Let's add a few directives to prepare the schematic for simulation:
 
 # Some Alternatives that don't Require Scripting
 
+*This section is entirly optinional, especially the rant about some of the LTspice GUI
+quirks. Feel free to skip directly to the PyLTSpice section.*
+
 **Use up to 2 .step directives**
 
 If we only need to go through a list of values for 2 parameters, we 
@@ -161,7 +164,7 @@ The waveform viewer is not terrible, but it already has a bunch of warts:
 Even if you only have 2 parameters to step through, there's already a bunch of reasons to
 consider a different way to create plots.
 
-**A table allows stepping through more than 2 parameters**
+**Use a table and step through all desired combinations**
 
 If you want to run simulations and change more than 2 parameters, there's a well known
 hack to do that. It goes as follows:
@@ -186,7 +189,91 @@ Like this:
 This works, but there's only 3 waveforms instead of 9 because you now need
 to list all combinations yourself.
 
+There are other ways to make LTspice deal with multiple variables, but they're all awkward and
+IMO worse than just biting the bullet and going the route of Python scripting.
 
+# PyPLTSpice to the Rescue 
+
+LTspice has a way to launch simulations in batch mode from the command line. This was once again
+done in a half-assed way, but it creates an opening for whoever wants to write a wrapper around it.
+What's what [PyLTSpice](https://github.com/nunobrum/PyLTSpice)[^pyltspice_spelling]
+does, and more.
+
+[^pyltspice_spelling]: LTspice is spelled with lower case 's'. PyLTSpice is spelled with an upper
+                       case 'S'. This kind of inconsistency bothers me, but it is what it is.
+
+**Don't confuse the`pyltspice` library with the `PyLTSpice` library!** 
+
+[`pyltspice`](https://github.com/thennen/pyltspice) is a light-weight LTspice wrapper that
+might work for you, but as I write this, it has the following note on the front
+page: "I would not call this production-ready. If in doubt, use PyLTSpice."
+That said, I did run into some PyLTSpice issues that were solved after I reported
+them on GitHub. The code in this blog post should work on PyLTSpice 5.4.4 and later.
+
+Assuming that you already have Python on your system, installation is just a matter of
+running:
+
+```sh
+pip install PyLTSpice
+```
+
+With PyLTSpice, you can:
+
+* read in the .asc schematics file
+* manipulate the schematic: modify component values, change simulation instructions,
+  add parameters, ...
+* kick off one or more simulations in parallel
+* read back and parse the waveform and log file results
+* process the results with your favority Python libraries
+
+The [documentation of PyLTSpice](https://pyltspice.readthedocs.io/en/latest/index.html) 
+is a set of examples. It has sections that are intended to go over its Python classes, but
+right now, these section are empty. For my needs, the examples were sufficient.
+
+# My PyLTSpice Project Script Step by Step
+
+[`pyltspice_prj.py`](/assets/pyltspice/pyltspice_prj.py) is the project script
+that I created for the example RC schematic of this blog. 
+
+**Reading in the LTspice design file**
+
+To simulate (and optionally modify) a design, you first need to read it in.
+In my case, I provide an `.asc` file, the proprietary file format of the LTspice GUI, but 
+you can also provide a `.net` text netlist file that is more or less standard for all
+Spice simulators.
+
+```python
+    asc_filename = Path("rc_schematic.asc")
+    netlist = PyLTSpice.SpiceEditor(asc_filename.name)
+```
+
+If you have older PyLTSpice version than 5.4.4, you may have to read in the `.asc` file
+in two steps:
+
+```python
+    asc_filename = Path("rc_schematic.asc")
+    PyLTSpice.LTspice.create_netlist(asc_filename.name)
+    netlist_file = asc_filename.with_suffix(".net")
+    netlist = PyLTSpice.SpiceEditor(netlist_file)
+```
+
+Even when you don't want to make any modifications to the design and just simulate,
+you still need to load the design first before kicking off the simulator.
+
+**Make modification**
+
+In my case, I want to simulate all combinations of a set of values for R1 and C1. I also
+want to run a transient simulation and an AC small signal simulation.
+
+```python
+    r1_values   = [ '1k', '2k', '4k' ]
+    c1_values   = [ '1u', '3u', '5u' ]
+
+    sims = [
+            { "name": "tran", "instruction": ".tran 50m startup" }, 
+            { "name": "ac",   "instruction": ".ac dec 10 1 100k" } 
+        ]
+```
 
 
 Issue:

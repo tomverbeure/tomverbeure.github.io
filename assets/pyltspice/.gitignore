@@ -1,3 +1,5 @@
 pyltspice_tmp/
 raw_and_log/
 *.net
+*.log
+*.raw
