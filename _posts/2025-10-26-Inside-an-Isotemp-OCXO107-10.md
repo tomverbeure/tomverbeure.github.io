@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Inside an Isotemp OCXO107-10 Oven Controlled Crystal Oscillator
-date:   2025-10-23 00:00:00 -1000
+date:   2025-10-26 00:00:00 -1000
 categories:
 ---
 
@@ -114,7 +114,10 @@ My unit has a tag to it that says:
 ```
 
 This must be the voltage level that's required on the EFC input to tune the output frequency at 5 MHz.
-In my current setup, that voltage level is roughly 2.228 V. The Vref output measures 6.78 V.
+In my current setup, that voltage level is roughly 2.228 V though that's only 2 days after powering
+it up. An OCXO107-10 needs about a week to truly stablize.
+
+The Vref output measures 6.78 V, not too far off the expected 7 V.
 
 # Inside the OCXO107-10
 
