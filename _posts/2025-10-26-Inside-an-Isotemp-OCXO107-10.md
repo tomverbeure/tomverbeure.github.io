@@ -32,29 +32,31 @@ input.
 I did some Google research and, to the surprise of no one, found a few scraps of information on the
 [time-nuts email list](http://leapsecond.com/time-nuts.htm):
 
-* These oscillators used to cost more than $1000 a piece. ([ref](https://www.febo.com/pipermail/time-nuts/2014-March/083620.html))
+* These oscillators used to cost more than [$1000 a piece](https://www.febo.com/pipermail/time-nuts/2014-March/083620.html).
 * In addition to Isotemp, [CTS](https://www.ctscorp.com/Products/Passive-Components/Frequency-Control-Products) 
-  Knights made a product with the same 0410-2450 SKU number. 
-  ([ref](https://www.febo.com/pipermail/time-nuts/2014-March/083623.html))
-* These oscillators were used by Lucent. The CTS Knights unit has a date code of 1989, well 
-  before AT&T spun off its AT&T Technologies business unit into Lucent in 1996, but that doesn't 
-  mean that unit wasn't used before that. My unit has a scribble of 1986.
-  ([ref](https://www.febo.com/pipermail/time-nuts/2014-March/083625.html))
-* There's an OCXO107-16 version which is also a 5 MHz option. 
-  ([ref](https://www.febo.com/pipermail/time-nuts/2014-March/083583.html))
-* Someone opened up his unit, did a bunch of stability measurements, and posted pictures. Those
-  pictures have since disappeared, but I contacted the author and Ed Palmer graciously sent them
-  to me.([ref](https://www.febo.com/pipermail/time-nuts/2014-March/083920.html))
+  Knights made a product with the [same 0410-2450 SKU number](https://www.febo.com/pipermail/time-nuts/2014-March/083623.html).
+* These oscillators were used by Lucent. The CTS Knights unit has a 
+  [date code of 1989](https://www.febo.com/pipermail/time-nuts/2014-March/083625.html), 
+  well before AT&T spun off its AT&T Technologies business unit into Lucent in 1996.
+  My unit has a scribble of 1986.
+* There's an [OCXO107-16 version](https://www.febo.com/pipermail/time-nuts/2014-March/083583.html)
+  which is also a 5 MHz option. 
+* Someone opened up his unit, did 
+  [a bunch of stability measurements, and posted pictures](https://www.febo.com/pipermail/time-nuts/2014-March/083920.html).
+  Those pictures have since disappeared, but I contacted the author, Ed Palmer, who graciously sent them
+  to me.
 * One of the pins of the 9-pin connector of the OCXO107 is a reference voltage that
   can be used to construct an EFC (electronic frequency control) input voltage to tune
-  the output frequency. There's apparently quite a bit of noise on this Vref output.
-  ([ref](https://febo.com/pipermail/time-nuts_lists.febo.com/2013-April/058247.html))
+  the output frequency. There's apparently quite a bit of 
+  [noise on this Vref output](https://febo.com/pipermail/time-nuts_lists.febo.com/2013-April/058247.html).
 * There's a [datasheet](/assets/ocxo107-10/ISOTEMP OCXO107 Series.pdf) 
   for an Isotemp OCXO107-3. It's not identical to the OCXO107-10:
   it has a different connector, uses more power, and there's also mention of a 16-bit
   D/A converter to discipline the output frequency. But chances are that some of the
   characteristics are similar?
-* Photo with pinout of the DE-9 connector. ([ref](https://www.febo.com/pipermail/time-nuts/2014-March/083616.html))
+* Photo with [pinout of the DE-9 connector](https://www.febo.com/pipermail/time-nuts/2014-March/083616.html).
+
+That's all I could find, but it's more than enough to get started.
 
 # Getting It to Run
 
@@ -122,7 +124,7 @@ The Vref output measures 6.78 V, not too far off the expected 7 V.
 # Inside the OCXO107-10
 
 The OCXO has 4 solder points to weld the outside case to inside sliding assembly. I tried to 
-get it open with a soldering iron, but the metal enclosuure immediately dissipated the heat
+get it open with a soldering iron, but the metal enclosure immediately dissipated the heat
 away. I wasn't able to open my unit, but luckily Ed gave permission to use his pictures. Let's
 have a look:
 
@@ -137,8 +139,10 @@ In the picture above, you see the Dewar flask on the right, the electronics slid
 and an insulating foam on the far left to plug off the open side of the Dewar cylinder.
 
 The Dewar flask makes the OCXO more resistant against varying outside temperatures, but it also makes the 
-unit very expensive (someone mentioned $1000 way back when) and fragile. Most high stability OCXOs have one 
-or two ovens and insulating material around it. 
+unit very expensive and fragile. Ed's first unit wasn't packaged correctly and arrived with a broken flask,
+which makes the OCXO useless. These days, high stability OCXOs have one or two ovens and insulating material 
+around it, though the website of Quantic Wenzel, producer of very high performance oscillators, says that
+["units with Dewar flasks are still available for superior temperature performance and lower power consumption"](https://www.quanticwenzel.com/library/crystal-oscillator-tutorials/ocxos-oven-controlled-crystal-oscillators/).
 
 I'm too much of a beginner to compare the specifications of different OCXOs but I'll give a try anyway, 
 so caveat emptor. The OCXO107-3 datasheet mentions a temperature stability of < +/- 0.06 ppb for an 
@@ -152,7 +156,7 @@ apples to apples that would make the OCXO107-3 41 times more resistant against t
 
 ![Rakon ROX5242T1 specs](/assets/ocxo107-10/Rakon_ROX5242T1.png)
 
-I randomly searched around for some specs for double-oven OCXOs and found numbers from 0.1 ppb for a
+I randomly searched for specs of contemporary double-oven OCXOs and found numbers from 0.1 ppb for a
 [Rakon ROX5242T1](https://www.rakon.com/products/ocxo-ocso/high-end-telecom-discrete-ocxo) 
 and even 0.05 ppb, for units that are smaller and definitely less fragile. 
 Just a case of old fashioned technological progress?
