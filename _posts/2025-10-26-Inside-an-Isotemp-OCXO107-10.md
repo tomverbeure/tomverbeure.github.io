@@ -60,7 +60,7 @@ That's all I could find, but it's more than enough to get started.
 
 # Getting It to Run
 
-The 107-10 has DE-9 connector for power and control, and an SMA connector for the
+The 107-10 has DE-9 connector for power and control and an SMA connector for the
 clock output.
 
 ![Isotemp OCXO107-10 connectors](/assets/ocxo107-10/connectors.jpg)
@@ -87,12 +87,12 @@ output a sine wave on the SMA port when you leave this 5 V rail unconnected.
 # On the Bench
 
 I don't have a setup to make long-term measurements, but I just wanted to see if I could
-get the things to work. Here's my earthquake-hardened bench setup:
+get the thing to work. Here's my earthquake-hardened bench setup:
 
 [![Isotemp OCXO107-10 on the bench](/assets/ocxo107-10/on_the_bench.jpg)](/assets/ocxo107-10/on_the_bench.jpg)
 
-An HP E3631A power supply creates the 12 V rail with one output, the EFC voltage with the other, and 
-the voltage is tuned to match 5 MHz output against the 10 MHz of my 
+One output of an HP E3631A power supply creates the 12 V rail, the other an EFC voltage that
+is tuned to match 5 MHz output against the 10 MHz of my 
 [TM4313 GPSDO](https://tomverbeure.github.io/2023/07/09/TM4313-GPSDO-Teardown.html).
 
 When I power up the unit, the 12 V rail initially pulls around 320 mA (3.8W) to
@@ -103,7 +103,7 @@ to 69 mA (0.83 mW.)
 
 
 When fed into a 50 Ohm termination, my uncalibrated spectrum analyzer measures a power level 
-of -1.80 dBm and second harmonic of -55.04 dBm or -53.23 dBc. The output level is different than 
+of -1.80 dBm and a second harmonic of -55.04 dBm or -53.23 dBc. The output level is different than 
 the >+3 dBm that is listed in the datasheet for the OCXO107-3, but it is similar to what 
 others on the time-nuts list have measured.
 
@@ -144,7 +144,7 @@ which makes the OCXO useless. These days, high stability OCXOs have one or two o
 around it, though the website of Quantic Wenzel, producer of very high performance oscillators, says that
 ["units with Dewar flasks are still available for superior temperature performance and lower power consumption"](https://www.quanticwenzel.com/library/crystal-oscillator-tutorials/ocxos-oven-controlled-crystal-oscillators/).
 
-I'm too much of a beginner to compare the specifications of different OCXOs but I'll give a try anyway, 
+I'm too much of a beginner to compare the specifications of different OCXOs but I'll give it a try anyway, 
 so caveat emptor. The OCXO107-3 datasheet mentions a temperature stability of < +/- 0.06 ppb for an 
 ambient temperature between 0 C and 60 C. 
 
@@ -152,7 +152,7 @@ ambient temperature between 0 C and 60 C.
 
 The [datasheet of the HP 10811 OCXO](https://hparchive.com/Manuals/HP-10811AB-Manual.pdf)
 lists a frequency vs temperature sensitivity of < 2.5 10^-9 between 0 C and 71 C. If that's
-apples to apples that would make the OCXO107-3 41 times more resistant against temperature variations?
+apples to apples that would make the OCXO107-3 41 times more resistant against temperature variations.
 
 ![Rakon ROX5242T1 specs](/assets/ocxo107-10/Rakon_ROX5242T1.png)
 
@@ -161,8 +161,11 @@ I randomly searched for specs of contemporary double-oven OCXOs and found number
 and even 0.05 ppb, for units that are smaller and definitely less fragile. 
 Just a case of old fashioned technological progress?
 
-Note that temperature resistance is just one of many OXCO metrics. You also need to compare again, 
-voltage stability, phase noise and a whole bunch of other parameters.
+Note that temperature sensitivity is just one of many OXCO metrics. You also need to compare again 
+voltage stability, phase noise and a whole bunch of other parameters, and select the one that
+matches your needs. For example, the temperature sensitivity of a 10 MHz lab reference clock may be 
+more important than phase noise, while the opposite can be true for an oscillator that's used for multi-GHz
+communication links.
 
 After removing the copper heatsink, you can see the oscillator control board on top of a large crystal:
 
@@ -195,10 +198,7 @@ My home lab currently has 2 clock references: the TM4313 GPSDO and the free-runn
 that I tore down last year. I've been wanting to do a bunch of long-term comparative measurements
 on a bunch of OCXOs, just for the fun of it. However, since crystal oscillators need a long
 time to truly stabilize, think a week for the OCXO107, this is not something I want to do
-with a power guzzling E3631A bench supply. The first step is to build a custom smaller scale
+with a power guzzling and noisy E3631A bench supply. The first step is to build a custom smaller scale
 linear power supply just for this purpose. In other words: yet another project to put on the
 stack!
-
-
-
 
