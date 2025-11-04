@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Fixing LCD Screen Corruption of a Tektronix TDS220 Oscilloscope 
-date:   2025-08-16 00:00:00 -1000
+date:   2025-11-03 00:00:00 -1000
 categories:
 ---
 
@@ -23,10 +23,10 @@ corruption, as promised.
 
 ![Screen corruption](/assets/tds220/screen_corruption.jpg)
 
-[This video](https://youtu.be/Np21eQKw6sw?si=13aY1BOcO3j50V-m) give a better idea about the 
+[This video](https://youtu.be/Np21eQKw6sw?si=13aY1BOcO3j50V-m) gives a better idea about the 
 corruption. It's intermittent and depends on the kind of content that is shown on the
 screen. It also less prevalent when the scope has warmed up. All in all, it's not a deal
-breaker.[^flicker] The scope is perfectly usable as is, but it would nice to fix it.
+breaker, the scope is perfectly usable as is, but it would nice to fix it.[^flicker]
 
 [^flicker]: In addition to the corruption, there's also quite a bit of full-screen flicker.
             This is only a video recording artifact. There is no visible flicker.
@@ -54,15 +54,14 @@ oscilloscope with an LCD but, if not, it was definitely one of the early ones.
 Some key characteristics:
 
 * 2 channels
-* 100 MHz/1Gsps
+* 100 MHz/1 Gsps
 * 2500 sample points per channel
 * Only a few measurements: period, frequency, cycle RMS, mean and peak-to-peak voltage
 
 With a plug-in extension board, you can add a parallel, serial and GPIB port and FFT 
-functionality, but even with those, it's reallly a bare bones scope.
-
-And yet, I expect that I'll be using it quite a bit: it's so portable and the
-footprint is so small that it's perfect for a quick measurement on a busy workbench.
+functionality, but even with those, it's a really bare bones scope. And yet, I expect 
+that I'll be using it quite a bit: it's so portable and the footprint is so small that 
+it's perfect for a quick measurement on a busy workbench.
 
 Let's take it apart!
 
@@ -129,9 +128,11 @@ Here are the most common TDS220 issues:
 * leaking capacitors in the power supply
 * mechanical stress around the BNC connectors
 * LCD backlight too weak or not working
-* Weak ground connection from BNC connector to power supply. 
+* Weak ground connection from BNC connector to power supply
+
   Tektronix issued a [product recall](https://www.tek.com/en/services/safety/tds200/originalletterhtml) 
   for this. My unit has components with dates that come after the product recall.
+  Check out [this video](https://www.youtube.com/watch?v=9N8UKwn4okM) for a fix.
 
 Not so common issue:
 
@@ -370,23 +371,11 @@ logic analyzer, but that's still a work in progress and may be a topic for a fut
 
 # References
 
-* Can't update the firmware without a programmer: https://www.eevblog.com/forum/testgear/reverse-engineering-tds2cmtds2mm/msg4396288/#msg4396288
-
 * [Tony Albus - Tektronix TDS220 Backlight Replace and Restore](https://www.youtube.com/watch?v=weUSGjzEoVM)
-
 * [Max's Garage - Repairing Two Digital Oscilloscopes from the 90s! Tektronix TDS210 and TDS220 Restoration](https://www.youtube.com/watch?v=YF-kBXBnxzw)
-
 * [Tektronix TDS200 CCFL to LED backlight replacement](http://hxc2001.free.fr/tektronix_tds220/index.html)
-
 * [EEVblog forum - Recap list](https://www.eevblog.com/forum/testgear/tektronix-tds210-teardown-and-bnc-replacement/msg1722653/#msg1722653)
-
 * [EEVblog forum - TDS 2002B repair](https://www.eevblog.com/forum/repair/tektronix-tds-220-repair/)
-
-* Scope with same probe compensation issue:
-  https://www.eevblog.com/forum/repair/tektronix-tds-2002b-repair/msg5170455/#msg5170455
-
-  Looks like a bad BNC connector.
-
 * [NFM - Tektronix TDS210 TDS220 Oscilloscope Recall and Loose BNC Fix](https://www.youtube.com/watch?v=9N8UKwn4okM)
 
 # Footnotes
