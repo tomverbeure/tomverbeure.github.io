@@ -11,7 +11,7 @@ categories:
 # Introduction
 
 I found a [Tektronix TDS220 oscilloscope](https://w140.com/tekwiki/wiki/TDS220) at the
-[electronics flea market](https://www.electronicsfleamarket.com). 
+[Silicon Valley Electronics Flea Market](https://www.electronicsfleamarket.com). 
 The seller told me that it worked but that the screen flickered a bit and that
 this model is known to have issues with leaking capacitors. He asked $25 which 
 would be a great price for any evening of entertainment even if an oscilloscope
@@ -26,7 +26,10 @@ corruption, as promised.
 [This video](https://youtu.be/Np21eQKw6sw?si=13aY1BOcO3j50V-m) give a better idea about the 
 corruption. It's intermittent and depends on the kind of content that is shown on the
 screen. It also less prevalent when the scope has warmed up. All in all, it's not a deal
-breaker. The scope is perfectly usable as is, but it would obviously nice to fix it.
+breaker.[^flicker] The scope is perfectly usable as is, but it would nice to fix it.
+
+[^flicker]: In addition to the corruption, there's also quite a bit of full-screen flicker.
+            This is only a video recording artifact. There is no visible flicker.
 
 When connected to a signal generator it showed 2 sine waves:
 
@@ -55,11 +58,11 @@ Some key characteristics:
 * 2500 sample points per channel
 * Only a few measurements: period, frequency, cycle RMS, mean and peak-to-peak voltage
 
-With an extension board, you can add a parallel, serial and GPIB port and FFT functionality, 
-but even with those, it's reallly a bare bones scope.
+With a plug-in extension board, you can add a parallel, serial and GPIB port and FFT 
+functionality, but even with those, it's reallly a bare bones scope.
 
 And yet, I expect that I'll be using it quite a bit: it's so portable and the
-footprint is so small that it's perfect for a quick measurement on a "busy" workbench.
+footprint is so small that it's perfect for a quick measurement on a busy workbench.
 
 Let's take it apart!
 
@@ -123,7 +126,7 @@ well as the fat ground wire. The PCB is held in place by 2 plastic tabs at the b
 
 Here are the most common TDS220 issues:
 
-* leaking capacitor in the power supply
+* leaking capacitors in the power supply
 * mechanical stress around the BNC connectors
 * LCD backlight too weak or not working
 
@@ -134,16 +137,16 @@ Not so common issue:
 # Replacing the power supply capacitors
 
 I didn't take pictures of it, but the solder side of the power supply PCB was drenched
-in a light-brown/yellow-ish fluid. Some of that make it to the front side of the PCB
+in a light-brown/yellow-ish fluid. Some of that made it to the front side of the PCB
 as can be seen here:
 
 [![Fluid on front of the PCB](/assets/tds220/fluid_marks.jpg)](/assets/tds220/fluid_marks.jpg)
 *(Click to enlarge)*
 
-I'm not 100% sure because I was never able to pinpoint exactly which of the capacitors
-started leaking, but it's fair to assume that this fluid was capacitor electrolyte. I decided
-to remove all electrolytic capacitors with new ones. There are 11 of them, listed in the
-table below:
+I'm not 100% sure about the source of this fluid because I was never able to pinpoint exactly 
+which of the capacitors started leaking, but it's fair to assume that this fluid was capacitor 
+electrolyte. I decided to remove all electrolytic capacitors with new ones. There are 11 of them, 
+listed in the table below:
 
 **I used these components for my TDS220 recapping, but there is absolutely no guarantee
 that these are the right ones. You need to double check everything yourself! Recapping
@@ -165,7 +168,7 @@ the scope is done at your own risk!**
 | 11    | C10           | 2.2 uF          | 50 V        | Next to CN2           |
 
 Pay attention to 1a and 1b: some TDS220 power supplies have a 47 uF, other have a 68 uF capacitor.
-Mine had a 47 uF one. You don't need to both of them.
+Mine had a 47 uF one. You don't need to buy both of them.
 
 I created [this Digikey list](https://www.digikey.com/en/mylists/list/NISC68K89D) with
 all these capacitors. At the time of writing this, the cost was $8.31, tax and shipping 
@@ -182,13 +185,13 @@ notation. For larger ones, a black circle indicates negative polarity.
 ![Capacitor polarity](/assets/tds220/capacitor_polarity.jpg)
 
 All in all, the PSU recapping process is pretty straightforward and took around
-1 hours to complete.
+1 hour to complete.
 
 However, after power the scope back on, the screen corruption was still there!
 
 # LCD Panel Corruption
 
-The LCD screen corruption is content specific and it happens for a while pixel row
+The LCD screen corruption is content specific and it happens for a whole pixel row
 at a time. I thought that it was caused by some signal corruption on the flat cable
 between the main PCB and the LCD panel, but this was not case. I googled around
 a bit, but couldn't find any references to the issue that I was seeing, so I asked
@@ -218,23 +221,113 @@ attached to the main body. You can just pull them off.
 
 **Remove buttons PCB** 
 
+Unplug 2 flat cable connectors that links the main PCB to the buttons PCB and to
+the LCD panel. 
+**Not shown: also unplug the power connector of the LCD panel.** It's right next
+to the mains receptacle on the power PCB.
+
 ![Unplug buttons PCB connector](/assets/tds220/tds220_unplug_button_connector.jpg)
+
+You can now remove the buttons PCB by pushing down 2 plastic tabs near the BNC
+connectors.
 
 ![Front panel removed](/assets/tds220/tds220_front_panel_removed.jpg)
 
+If the LCD panel was never removed before, chances are that the LCD front protector
+sticks to the LCD panel itself. That is the case in the picture above. The protector
+has a dark gray foam around a transparant piece of plastic.
+
 **Remove LCD protector**
+
+To get to the PCB inside the LCD panel, you need access to a screw that is covered
+by the LCD protector. A weak adhesive keeps the protector in place. You can gently pull 
+it from the LCD screen.
 
 ![LCD protector](/assets/tds220/LCD_protector.jpg)
 
+There are 2 plastic tabs on the left of the LCD panel that keep it locked in place. Push
+those up and down to unlock the the panel. You can now lift that left size away from the main
+chassis and then slide the panel to the left to get the metal tab on the right out as well.
+
 ![Front with only LCD panel left](/assets/tds220/tds220_front_with_only_LCD_panel.jpg)
+
+The panel is now loose. Remove the screw on the center left.
 
 **LCD frame clips**
 
+Turn the LCD panel around so that plastic back is towards you. Put something on the table
+to protect the LCD front screen. I used the LCD protector for that.
+
+We can now see the 3 capacitors that need to be replaced:
+
 ![LCD frame clips](/assets/tds220/LCD_frame_clips.jpg)
+
+In addition to the screw from the previous step, the metal frame at the front of the
+LCD panel is held in place by 8 metal tabs the bend into gaps of the plastic back. Use
+nose pliers to straighten those tabs. 
+
+You can now remove the plastic back. Finally, you have access to the LCD PCB!
 
 ![LCD PCB exposed](/assets/tds220/LCD_PCB_exposed.jpg)
 
+# LCD Panel Capacitor Replacement
+
+Here are the 3 capacitors in close-up. They're 3.3 uF 35V polarized capacitors.
+
 ![LCD PCB zoom](/assets/tds220/LCD_PCB_zoom.jpg)
+
+However, they are not your garden variety SMD tantalum capacitors! Notice how both
+leads are on the same side of the capacitor. When we look at the other side, we can
+see how the capacitor has a cylindrical core with a box plastic enclosure around it.
+
+![LCD capacitor closeup](/assets/tds220/LCD_capacitor_closeup.jpg)
+
+I couldn't find any exact replacement. On that Chinese forum, they used regular
+electrolytic caps instead, so that's what I did as well. 
+
+The plastic back has cut-outs for the 3 capacitors. On the Chinese forum, they
+made those cut-outs a bit larger to make the new capacitors fit, but that was not
+necessary in my case: the holes were large enough as-is, as long as you took care to
+solder them as close to the inside of the PCB as possible. 
+
+You can see this here:
+
+![Replacement LCD capacitors soldered](/assets/tds220/LCD_capacitors_soldered.jpg)
+
+The top capacitor is soldered too far to the left, the bottom one is fine.  I had to resolder 
+the top capacitor one to make it fit in the cut-out.
+
+One of the old LCD capacitors came in at 2.5 uF and a 75 Ohm ESR. The replacement ones
+have an ESR of 6 Ohm...
+
+![LCD meter result](/assets/tds220/LCR_meter_result.jpg)
+
+With the capacitors replace, you can now put the LCD panel back together in reverse order.
+But don't mount it back into the chasses just yet!
+
+# LCD Panel Backlight Replacement
+
+The LCD panel uses a small CCFL tube as backlight. Over time, these CCFLs lose their
+intensity which makes the screen less bright.
+
+You access the CCFL tube by removing an easy to remove cover on the left of the panel:
+
+![LCD panel CCFL backlight blackened](/assets/tds220/LCD_backlight.jpg)
+
+Notice how some parts of the tube are black.
+
+Replacement tubes can be found on eBay. Sellers vary, but just search for "CCFL lamp tds220"
+and you'll find what you need. Prices have gone up due to tariffs, I paid $17.46 including 
+shipping.
+
+The new lamp doesn't come with the right connector, so some soldering is required to transfer
+the connector from the old lamp to the new one. I first placed new tube in the LCD panel and
+the LCD panel in the chassis before soldering the connector. That made it easier to get
+the length of the wires correct.
+
+![LCD backlight with connector replaced](/assets/tds220/LCD_backlight_soldered_wires.jpg)
+
+
 
 # References
 
@@ -256,4 +349,7 @@ attached to the main body. You can just pull them off.
   Looks like a bad BNC connector.
 
 * [NFM - Tektronix TDS210 TDS220 Oscilloscope Recall and Loose BNC Fix](https://www.youtube.com/watch?v=9N8UKwn4okM)
+
+# Footnotes
+
 
