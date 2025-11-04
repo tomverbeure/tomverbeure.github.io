@@ -129,10 +129,17 @@ Here are the most common TDS220 issues:
 * leaking capacitors in the power supply
 * mechanical stress around the BNC connectors
 * LCD backlight too weak or not working
+* Weak ground connection from BNC connector to power supply. 
+  Tektronix issued a [product recall](https://www.tek.com/en/services/safety/tds200/originalletterhtml) 
+  for this. My unit has components with dates that come after the product recall.
 
 Not so common issue:
 
 * LCD screen corruption
+
+While I'll document 3 of the 4 common repairs, you can find plenty of other
+source on the web that do the same thing. That's not the case for the LCD screen
+corruption.
 
 # Replacing the power supply capacitors
 
@@ -288,7 +295,7 @@ electrolytic caps instead, so that's what I did as well.
 The plastic back has cut-outs for the 3 capacitors. On the Chinese forum, they
 made those cut-outs a bit larger to make the new capacitors fit, but that was not
 necessary in my case: the holes were large enough as-is, as long as you took care to
-solder them as close to the inside of the PCB as possible. 
+solder them as close to the inside of the PCB as possible.
 
 You can see this here:
 
@@ -327,6 +334,38 @@ the length of the wires correct.
 
 ![LCD backlight with connector replaced](/assets/tds220/LCD_backlight_soldered_wires.jpg)
 
+After the replacement, the screen brightness was noticable... dimmer, but that's normal:
+new CCFL lamps needs a few minutes to reach their full brightness.
+
+![Screen after backlight swap](/assets/tds220/screen_after_backlight_swap.jpg)
+
+You can find plenty of videos on Youtube of this backlight swap and authors always claim
+to see a significant improvement. I'm not so sure for my case: it's not dimmer, but I can't
+honestly say that it's much brighter. In one case, someone replaced the CCFL lamp 
+[with an LED PCB](http://hxc2001.free.fr/tektronix_tds220/index.html). I looked around
+for suitable LED PCBs to do that as well but didn't find anything that worked. If you want to
+try that, understand that the voltage of the CCFL lamp is much higher than the 5V or so you'd
+need for LEDs!
+
+# Fixing the Square Wave Issue
+
+The corrupted signal compensation square wave issue was solved by reheating the solder
+of the BNC connector pins on the main PCB. 
+
+![BNC connectors](/assets/tds220/BNC_connectors.jpg)
+
+To do this right, you need to remove the RF shielding at the bottom of the main PCB, but
+I just squeezed my soldering iron into an open space and hope for the best. It worked:
+
+![TDS220 with square wave](/assets/tds220/tds220_with_square_wave.jpg)
+
+# Conclusion
+
+The TDS220 is working perfect fine again. It measures signals correctly, there is no LCD screen 
+corruption, and the brightness is fine. It's still sitting on the bench, connected to a
+logic analyzer, but that's still a work in progress and may be a topic for a future blog post.
+
+![TDS220 connected to logic analyzer](/assets/tds220/tds220_connected_to_logic_analyzer.jpg)
 
 
 # References
