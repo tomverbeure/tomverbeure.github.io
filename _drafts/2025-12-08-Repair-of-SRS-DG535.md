@@ -17,7 +17,7 @@ for a device that was marked "X Dead".
 
 That's a really good deal: SRS products are pricey and even 
 the cheapest *Parts-Only* listings on eBay are $750 and up. Worst case, I'd get a few weekends
-of unsuccessful repair entertainment out of it, but even then I'd probably able to recoup my money
+of unsuccessful repair entertainment out of it, but even then I'd probably be able to recoup my money
 by selling pieces for parts.[^parts] Just the keyboard PCB is currently selling for $150[^keyboard].
 
 [^keyboard]: Whether or not it will ever sell for that asking price is a different story.
@@ -26,17 +26,17 @@ by selling pieces for parts.[^parts] Just the keyboard PCB is currently selling 
 
 It doesn't matter how broken they are, the first step after acquiring a new toy is cleaning up
 years of accumulated asset tracking labels, coffee stains, finger grime and glue residue. This one 
-cleaned up nicely: the front panel is pretty much flawless:
+cleaned up nicely; the front panel is pretty much flawless:
 
 ![DG535 front view](/assets/dg535/DG535_frontview.jpg)
 
-After an initial failed magic smoke repair attempt, the unit ended up in the garage for
+After an initial failed magic smoke repair attempt, the unit went back to the garage for
 18 months, but last week I finally got around to giving it the attention it deserves.
 
 The repair was successful, and when you only look at the end result, it was a straightforward 
-replacement of a diode bridge and LCD panel. However, the road to get there was long and winding, 
-and most important, the broken power architecture and awkward mechanical design of the SRS 
-DG535 make it way too easy to damage the device while trying to repair it.
+replacement of a diode bridge and LCD panel. However, the road to get there was long and winding. 
+The broken power architecture and awkward mechanical design of the SRS DG535 made it way too easy 
+to damage the device while trying to repair it.
 
 So let's get that advise out of the way first:
 
@@ -69,7 +69,7 @@ voltage amplitude and offset.
 [^NIM]: NIM stands for [Nuclear Instrumentation Model](https://en.wikipedia.org/wiki/Nuclear_Instrumentation_Module). 
         It's a voltage and current standard for fast digital pulses for physics and nuclear experiments.
 
-Settings can be configured through the front panel or through the GPIB interface that is
+Settings can be configured through the front panel or through a GPIB interface that is
 available at the back of the device.
 
 ![DG535 rear view](/assets/dg535/DG535_rearview.jpg)
@@ -77,11 +77,8 @@ available at the back of the device.
 In addition to the GPIB interface, the back has another set of T0/A/B/C/D outputs because my unit
 is equiped option 04. These outputs are not an identical copy of the ones in the front: their output
 voltage is much higher. There is also a connector and a switch to select the internal or an external
-10 MHz timebase.
-
-Missing screws on the connector are a first indication that I'm not the first one who has been
-inside to repair the unit...
-
+10 MHz timebase. Missing screws around the transformer housing are an indication that I'm not the 
+first one who has been inside to repair the unit.
 
 A [1993 ad](/assets/dg535/SRS_ad_1993.pdf) lists the DG535 for $3500. Today, it is still for sale 
 on the SRS website for $4495, remarkable for an instrument that dates from the mid 1980s. I assume 
@@ -121,13 +118,13 @@ Here are just a few examples:
 * [High-precision Gravity Measurements Using Atom-Interferometry](https://www.researchgate.net/publication/231085177_High-precision_Gravity_Measurements_Using_Atom-Interferometry)
 
   > The timing of the pulsesis controlled by a set of synchronized pulse generators
-  > (SRS DG535), one of which also triggers all thehardware involved in generating the 
+  > (SRS DG535), one of which also triggers all the hardware involved in generating the 
   > Raman frequencies.
 
 * [Physics of Plasmas - Laboratory generation of multiple periodic arrays of Alfvénic vortices](https://pubs.aip.org/aip/pop/article/32/12/122109/3374743/Laboratory-generation-of-multiple-periodic-arrays)
 
   > Each antenna was switched on with a pulse generator (Stanford SRS-DG535), which then activated 
-  > two arbitrary waveform generators (Agilent 3322 A).
+  > two arbitrary waveform generators (Agilent 3322A).
 
 * [Liquid-to-gas transfer of sodium in a liquid cathode glow discharge](https://www.researchgate.net/publication/382346349_Liquid-to-gas_transfer_of_sodium_in_a_liquid_cathode_glow_discharge)
 
@@ -136,7 +133,7 @@ Here are just a few examples:
   > of Na fluorescence during and after the discharge pulse.
 
 At this time, I don't have a use for a pulse delay generator, but as a hobbyist it's important 
-to keep this slogan in mind:
+to keep the following in mind:
 
 **We buy test equipment NOT because we need it, but because one day we might need it.**
 
@@ -198,7 +195,7 @@ the top and bottom cover. The DG535 is a different story.
 
 While the covers are just as easy to remove, the functionality is spread over 2 large 
 PCBs, mounted with components facing inwards, and connected with a bunch of cables 
-that are too short. 
+that are too short to allow separating the PCBs.
 
 [![DG535 open side view](/assets/dg535/DG535_open_sideview.jpg)](/assets/dg535/DG535_open_sideview.jpg)
 *(Click to enlarge)*
@@ -208,7 +205,7 @@ that are too short.
 
 SRS was clearly aware that this PCB arrangement makes the unit harder to repair,
 because they helpfully added component designators and even component name annotations on 
-the solder side of the PCB, though sadly no dots to mark pin of an IC.[^pin_dot]
+the solder side of the PCB, though, sadly, there are no dots to mark pin 1 of an IC.[^pin_dot]
 
 [^pin_dot]: When dealing with mirror image of an IC footprint, I'm constantly
             second guessing myself about whether or not I'm probing the right pin.
@@ -245,7 +242,7 @@ Before taking it apart, I had already powered up the device and nothing happened
 and the LCD screen were dead, only the fan spun up. No matter what state a device is in,
 you always have to make sure first that power rails are functional.
 
-The power architecture is split over the top and bottom PCB, but the secondary windings of 
+The power architecture is split between the top and bottom PCB, but the secondary windings of 
 the power transformer first go to the top PCB. *Since the transformer is located at the bottom,
 you always need to keep top and bottom closely together if you want to make live measurements.*
 
@@ -258,11 +255,11 @@ bottom PCB. These voltage rails are not used by the top PCB.
 
 A discrete diode bridge and some capacitors create an unregulated +/-9V that goes to the same connector
 and to LM340-5, a linear +5V regulator that is functionally equivalent to an 7805. The 5V is used
-to power pretty the entire top PCB as well as some ICs on the bottom.
+to power pretty much the entire top PCB as well as some ICs on the bottom.
 
-When I measured the voltages on the top-to-bottom power connector, I saw the following:
+When I measured the following voltages on the top-to-bottom power connector:
 
-* 0V (instead of 10V)
+* 0V - instead of 10V
 * +15V - good!
 * +12V - instead of +9V
 * +7V - instead of +5V. Horrible!
@@ -274,7 +271,7 @@ The lack of 10V is easy to explain: it's an input, generated out of the +15V by 
 reference. On the top PCB, it's only used for dying gasp[^gasp] and power-on/off reset generation.
 
 +12V instead of +9V was only a little bit concerning, at the time; the lack of -9V was clearly a problem,
-and +7V instead of +5V is a great way to damage all digital logic.
+and applying +7V instead of +5V to all digital logic is a great way to destroy all digital logic ICs.
 
 Here's the part of the PCB with the 9V diode bridge:
 
@@ -560,8 +557,8 @@ bend the LCD PCB.
 ![No spacers for the new screws](/assets/dg535/no_spacers_for_screws.jpg)
 
 
-My unit has only 2 out of 4 transformer mounting screws in place. Home Depot didn't 
-have the #10-32 1 5/8" screws in stock, so I used slightly shorter #10-32 1 1/2" screws 
+My unit had only 2 out of 4 transformer mounting screws in place. Home Depot didn't 
+have the #10-32 1 5/8" screws, but I used slightly shorter #10-32 1 1/2" screws 
 instead and those worked fine.
 
 After one more game of carefully connecting all connectors back in place, the DG535
@@ -569,6 +566,53 @@ was finally back to where it needed to be:
 
 ![DG535 with new LCD](/assets/dg535/DG535_with_new_LCD.jpg)
 
+# Post Mortem
+
+A bunch of things went wrong during the design and repair of this DG535.
+
+Design weaknesses:
+
+* current boost resistors make a design prone to self-destruction
+  due to overvoltage when the system load is too low due to some internal
+  failure.
+* current boost resistors also result in burning out a PCB when
+  the voltage difference between input and output of a voltage regulator
+  becomes too high. This can again happen when the system load is lower
+  than designed for.
+* the schematic in the manual shows a discrete diode full bridge for the
+  unregulated +/-9V rail, instead of an integrated one, and no current
+  boost resistor.
+* the mechanical design and short cables make it tempting to power
+  the top PCB without connecting the bottom PCB... which cuts down the
+  system load dramatically.
+* the power consumption of the top PCB will be very low when the bottom
+  PCB is disconnected, due to the lack of 10 MHz clock.
+* the pinout of the connectors of the DG535 doesn't follow standard convention,
+  and the convention that is documented in the manual is violated on the
+  same page.
+
+Repair mistakes:
+
+* a previous attempt at repairing saw the replacement of an integrated
+  diode bridge by a discrete one. To make things worse, they used 1N5822 
+  Schottky diodes, as shown in the incorrect schematic.  with a threshold 
+  voltage of 0.4V instead of a regular 0.7V threshold of the integrated diode 
+  bridge. Because of this, the unregulated DC output was 2 x (0.7 - 0.4V) = 0.6V 
+  higher, which increased the power consumption in the current boost resistors 
+  even more!
+* PCBs were powered on without full load. This resulted in PCB traces burning up.
+* Connectors were incorrectly plugged in. I should have taken pictures before
+  disconnecting anything.
+* I knew not enough about transformers and wasted way too much time chasing
+  a ghost because of it!
+
+In the end, I only made 3 fixes:
+
+* removed the discrete diode bridge and replaced it by an integrated one
+* installed a bodge wire to bring the -9V to the top-to-bottom PCB power
+  connector
+* replaced the LCD panel with broken backlight by a new one with diode 
+  backlight
 
 # References
 
