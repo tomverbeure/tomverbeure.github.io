@@ -415,39 +415,41 @@ A quick probe on the pins of the Z80 CPU showed no activity. Better yet: there w
 [![Z80 clock generator](/assets/dg535/z80_clock_generator.jpg)](/assets/dg535/z80_clock_generator.jpg)
 *(Click to enlarge)*
 
-Turns out: the 5 MHz CPU clock is derived from the 10 MHz clock, which comes from connector J40: the
+The 5 MHz CPU clock is derived from the 10 MHz clock, which comes from connector J40: the
 cable that connect the top and bottom PCB. In other words: if you run the top PCB by itself, there is
 no clock. And without a clock, the power consumption of the CPU system will be much lower... and
 with a current boost resistor, the voltage will rise to +7V.
 
-To run the CPU board stand-alone, I used the SYNC output of my HP 33120A signal generator to supply
-a 10 MHz clock to connector J40.
+To run the CPU board stand-alone, I used the SYNC output of 
+[my HP 33120A signal generator](/2023/01/02/HP33120A-Repair-Shutting-Down-the-Eye-of-Sauron.html) 
+to supply a 10 MHz clock to connector J40.
 
 [![10MHz from function generator](/assets/dg535/10MHz_from_function_generator.jpg)](/assets/dg535/10MHz_from_function_generator.jpg)
 *(Click to enlarge)*
 
-In the picture above, in additional to the signal generator, you can also see 10V being generator
+In the picture above, in addition to the signal generator, you can also see 10V being generated
 by an HP 3631A power supply: this is to create the reference voltage that's needed for the dying
-gasp and reset generator that I mentioned earlier. There are the 2 external signals that are needed
+gasp and reset generator that I mentioned earlier. These are the 2 external signals that are needed
 to run the CPU top PCB without the analog bottom PCB, though only for a short time: without
 current boost resistor, the 7805 was now taking on all the current and warming up.
 
 **Important: The +12V issue was still there! As soon as the current boost resistor was placed
-back, it was now dealing with 5W, with temperature rising to 130C almost instantly!!!**
+back, it was dissipating 5W and its temperature rose to 130C almost instantly!!!**
 
 # Side Quest: Debugging the CPU System - Connector Stupidity
 
 With the CPU clock running, I expected some activity on the keyboard/LED and LCD boards, but
 the CPU seemed stuck. 
 
-It took a lot of effort to root cause this. I dumped the ROM contents, used Ghidra to disassemble
+It took a lot of effort to root cause this. I dumped the 
+[ROM contents](/assets/dg535/DG535_ROM_v2.0_SN4633.bin), used Ghidra to disassemble
 the code. I also used a logic analyzer to trace the Z80 address bus to get a better insight into
 what was happening, resulting in this pretty picture:
 
 ![Logic analyzer on Z80](/assets/dg535/logic_analyzer.jpg)
 
 After many hours, the simple conclusion was this: the connector of the LCD panel cable was plugged
-in incorrect. This pulled down a crucial status bit on the data bus which made the Z80 go into
+in incorrectly. This pulled down a crucial status bit on the data bus which made the Z80 go into
 an endless loop.
 
 I partially blame SRS for this: the way they deal with connector-related documentation is horrible,
@@ -460,7 +462,7 @@ follow that convention. The LCD panel display does follow it, but this is a stan
 interface that's used by HD44780-based LCD controller which uses an entirely different convention.
 They also don't consistently mark pin 1 on the PCB.
 
-Still even after fixing that, the LCD didn't come up. This turned out to be due to another
+Still, even after fixing that, the LCD didn't come up. This turned out to be due to another
 signal that came from the bottom PCB, the analog voltage that sets the LCD contrast. It was
 sufficient to connect that to ground. That's the blue wire that the red arrow is pointing to:
 
@@ -590,6 +592,9 @@ Design weaknesses:
 * the pinout of the connectors of the DG535 doesn't follow standard convention,
   and the convention that is documented in the manual is violated on the
   same page.
+* The schematic of the top PCB shows a +/-9V rail. The bottom PCB schematic
+  shows +/-8V rails on the same connector pins. In reality, the measured voltage
+  is 10.2V. Confusing.
 
 Repair mistakes:
 
@@ -606,13 +611,17 @@ Repair mistakes:
 * I knew not enough about transformers and wasted way too much time chasing
   a ghost because of it!
 
-In the end, I only made 3 fixes:
+In the end, I only made 3 real fixes:
 
 * removed the discrete diode bridge and replaced it by an integrated one
 * installed a bodge wire to bring the -9V to the top-to-bottom PCB power
   connector
 * replaced the LCD panel with broken backlight by a new one with diode 
   backlight
+
+I got lucky that the 5V digital components survived being exposed to 7V. One
+thing that I've learned over the years is that old ICs are pretty good at
+surviving that kind of abuse.
 
 # References
 
