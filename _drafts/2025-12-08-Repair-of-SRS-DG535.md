@@ -10,8 +10,8 @@ categories:
 # Introduction
 
 I got my hands on a [Stanford Research Systems DG535](https://www.thinksrs.com/products/dg535.html)
-at the [Silicon Valley Electronics Flea Market](https://www.thinksrs.com/products/dg535.html), $40
-for a device that was marked "X Dead".
+at the [Silicon Valley Electronics Flea Market](https://www.thinksrs.com/products/dg535.html), 
+$40 for a device that was marked "X Dead".
 
 ![DG535 at flea market](/assets/dg535/DG535_at_flea_market.jpg)
 
@@ -36,9 +36,9 @@ After an initial failed magic smoke repair attempt, the unit went back to the ga
 The repair was successful, and when you only look at the end result, it was a straightforward 
 replacement of a diode bridge and LCD panel. However, the road to get there was long and winding. 
 The broken power architecture and awkward mechanical design of the SRS DG535 made it way too easy 
-to damage the device while trying to repair it.
+to damage the device *because* I was trying to repair it.
 
-So let's get that advise out of the way first:
+So let's get this advise out of the way first:
 
 **Do NOT power on the device with the analog PCB disconnected. It will almost certainly self-destruct
 with burnt PCB traces.** 
@@ -48,17 +48,19 @@ The details will be explained further below.
 # The Stanford Research Systems DG535
 
 Conceptually, the purpose of the DG535 is straightforward: it's a tool that takes in an input
-trigger pulse and generates 4 output pulse after some programmable delay. What makes the DG535 interesting 
+trigger pulse and generates 4 output pulses after some programmable delay. What makes the DG535 interesting 
 is that these delays can be specified with a 5 ps precision, though the jitter on the outputs far
 exceed that number.
 
 The DG535 has 9 outputs on the front panel:
 
-* T0 marks the beginning of an event. It's created by the internal or external trigger.
+* T0 marks the start of a timing interval. You'll most likely use it when you use the device with 
+  an internal trigger to know when a timing sequence has started. There is delay of around 85ns 
+  between the external trigger and T0.
 * 4 channels A, B, C and D can independently be programmed to change a programmable time after T0
   or after some of the other channels.
-* Outputs AB and CD and inverted AB and CD are a XNOR or XOR of signals A and B, and signals C
-  and D respectively.
+* Output AB is a pulse for the interval between the time set for A and B. It's an XNOR between those
+  2 channels. -AB is the inverse of output AB. CD and -CD are the same for channels C and D.
 
 [![DG535 timing diagram](/assets/dg535/DG535_timing_diagram.jpg)](/assets/dg535/DG535_timing_diagram.jpg)
 *(Click to enlarge)*
@@ -75,16 +77,19 @@ available at the back of the device.
 ![DG535 rear view](/assets/dg535/DG535_rearview.jpg)
 
 In addition to the GPIB interface, the back has another set of T0/A/B/C/D outputs because my unit
-is equiped option 04. These outputs are not an identical copy of the ones in the front: their output
-voltage is much higher. There is also a connector and a switch to select the internal or an external
+is equiped option 02. These outputs are not an identical copy of the ones in the front: their amplitudes
+can set from -32V to 32V when terminated by a 50 Ohm impedance and each output has pulse width of roughly 
+1 us.
+
+There is also a connector and a switch to select either the internal or an external
 10 MHz timebase. Missing screws around the transformer housing are an indication that I'm not the 
 first one who has been inside to repair the unit.
 
-A [1993 ad](/assets/dg535/SRS_ad_1993.pdf) lists the DG535 for $3500. Today, it is still for sale 
+This [1993 ad](/assets/dg535/SRS_ad_1993.pdf) lists the DG535 for $3500. Today, it is still for sale 
 on the SRS website for $4495, remarkable for an instrument that dates from the mid 1980s. I assume 
 that today's buyers are primarily those who need an exact replacement for an existing, certified setup, 
 because the [DG645](https://www.thinksrs.com/products/dg645.html), 
-SRS's more modern successor to the DG535 with better feature and specs, costs only $500 more.
+SRS's more modern successor to the DG535 with better features and specs, costs only $500 more.
 
 # Who Uses a Pulse Delay Generator?
 
@@ -145,47 +150,31 @@ security of a microcontroller, for example.
 
 It's not complicated to create pulse delay generator as long as delay precision and jitter
 requirements are larger than the clock period of the internal digital logic: a simple digital
-counter will do. But when the timing precision is much smaller than the clock speeds, you need 
-analog wizardry to make it happen. 
+counter will do. But when the timing precision is smaller than the clock period, you need 
+some analog wizardry to make it happen. 
 
 SRS includes detailed schematics and theory of operation for many of their products and the
-DG535 is no exception. It's such a great way to study and learn how non-trivial problems
-were solved 40 years ago.
+DG535 is no exception. It's a great way to study and learn how non-trivial problems were solved 
+40 years ago.
 
 ![DG535 block diagram](/assets/dg535/DG535_block_diagram.jpg)
 
-The DG535 uses a combined digital/analog approach to create delays that are up to 1000s long.
-Using an 80 MHz internal clock, the digital delay can be specified with 12.5ns of precision.
-The remainder is handled by a digital/analog-to-time converter.
+The DG535 uses a combined digital/analog approach to create delays up to 1000 s.
+With an 80 MHz internal clock, the digital delay can be specified with 12.5ns of precision.
+The remainder is handled by two analog circuits: the jitter circuit measures the delay between 
+the start of the external trigger and the first rising edge of the 80 MHz clock. The analog delay
+circuit creates a delay between 0 and 12.5 ns after digital delay has expired. Channels A/B/C/D 
+each have their own instance of the analog delay circuit.
 
-![Analog delay schematic](/assets/dg535/dg535-analog_delay.svg)
+I will leave the low level details to a future blog post, but at their core, both the jitter and 
+analog delay circuit work by precharging and discharging a capacitor with a constant current
+source for a time that varies between 0 and 12.5 ns. Precharging the analog delay capacitor is 
+controlled by a 12-bit DAC. If you were wondering where the 5 ps of precision limit is coming from: 
+12.5 ns / (2^12) = 3 ps. Close enough!
 
-It works as follows: a 12-bit DAC provides a voltage to set a delay from 0 to 12.5ns. If
-you're wondering where the 5 ps of precision is coming from: 12.5 ns / (2^12) = 3 ps. Close
-enough! At the start, a capacitor is discharged to ground through a resistor. When the delay 
-must generated, the input of the capacitor is switched to a constant current source, causing
-the voltage on the capacitor to rise linearly in time. A comparator checks the capacitor
-voltage against the DAC voltage. When the capacitor voltage exceeds the one of the DAC,
-the comparator flips and its output is deasserted.
-
-It's simple in practise, but to make it work 
-
-If you look carefully in the schematic, you notice that the right side input of the
-comparator comes from a net that is called Vjitter. This is a crucial element in bringing
-down jitter that is caused by the asynchronous crossing between the external trigger
-input and the internal 80 ns clock. Vjitter is a voltage that proportional to the delay
-between the starting edge of the external trigger and the first rising edge of the 80 MHz
-clock. While the output delay is generated by the C-charging circuit to convert a digital
-value to a time, the Vjitter circuit does the opposte: a capacitor is charged for the duration
-between the 2 pulses and the output, Vjitter, reflects this time. It's a technique called
-"analog interpolation" that is used by time interval and frequency counters such as the
-SRS SR620. I briefly touch this in my blog post about linear regression in frequency
-counters.
-
-By compare the voltage of the delay generator against Vjitter, the DG535 is essentially
-subtracting the analog output delay from the delay between external trigger and the clock.
-If the charging slope of the capacitor in both circuit is carefully calibrated to be the same,
-the overall delay generator becomes immune to the jitter introduced by the 80 MHz clock.
+Using a capacitor to measure time is a technique called "analog interpolation". It's often
+used by time interval and frequency counters such as the SRS SR620. I briefly touch this in my 
+blog post about linear regression in frequency counters. XXXXX Add Link
 
 # The Annoying Mechanical Design of the DG535
 
@@ -212,13 +201,13 @@ the solder side of the PCB, though, sadly, there are no dots to mark pin 1 of an
 
 ![PCB solder-side annotated](/assets/dg535/PCB_solderside_annotated.jpg)
 
-Most cables have connectors and can easily unplugged, but not the OPT04 board that drives 
+Most cables have connectors and can easily unplugged, but not all of them.
 the backside connectors.
 
-![Power supply wires for OPT04 board](/assets/dg535/power_supply_wires_to_opt04.jpg)
+![Power supply wires for OPT02 board](/assets/dg535/power_supply_wires_to_opt02.jpg)
 
-The red and orange wires in the picture above provide +20 and -20V rails. They are just
-long enough to connect the top PCB to the OPT04 board at the bottom. If you want to
+The red and orange wires in the picture above provide +20 and -20V rails from the top PCB
+to the OPT02 PCB that is mounted below the bottom PCB. They are just long enough. If you want to
 take the unit apart, your only choice is desoldering these wires. It's not rocket science,
 but... really? You also need to desolder the wires that power the cooling fan.
 
@@ -233,7 +222,7 @@ We can see:
 
 * a top PCB that contains a Z80-based controller and the counters that are used for the digital
   delay generation
-* a bottom PCB with the rest of the delay circuitry
+* a bottom PCB with the rest of the delay and output driver circuitry
 * the front has a generic LCD panel and a keyboard and LED PCB
 
 # It's Always the Power Supply
@@ -242,9 +231,9 @@ Before taking it apart, I had already powered up the device and nothing happened
 and the LCD screen were dead, only the fan spun up. No matter what state a device is in,
 you always have to make sure first that power rails are functional.
 
-The power architecture is split between the top and bottom PCB, but the secondary windings of 
+The power architecture is split between the top and bottom PCB, but the two secondary windings of 
 the power transformer first go to the top PCB. *Since the transformer is located at the bottom,
-you always need to keep top and bottom closely together if you want to make live measurements.*
+you always need to keep top and bottom PCBs closely together if you want to make live measurements.*
 
 [![Power supply schematic top](/assets/dg535/power_supply_top.jpg)](/assets/dg535/power_supply_top.jpg)
 *(Click to enlarge)*
@@ -267,11 +256,12 @@ When I measured the following voltages on the top-to-bottom power connector:
 * 0V - instead of -9V
 * -15V - good!
 
-The lack of 10V is easy to explain: it's an input, generated out of the +15V by a high precision voltage
-reference. On the top PCB, it's only used for dying gasp[^gasp] and power-on/off reset generation.
+The lack of 10V is easy to explain: it's an input, generated by a high precision voltage reference
+on the bottom PCB out of the +15V. On the top PCB, it's only used for dying gasp[^gasp] and power-on/off 
+reset generation.
 
-+12V instead of +9V was only a little bit concerning, at the time; the lack of -9V was clearly a problem,
-and applying +7V instead of +5V to all digital logic is a great way to destroy all digital logic ICs.
++12V instead of +9V was only a little bit concerning, at the time. The lack of -9V was clearly a problem.
+And applying +7V instead of +5V to all digital logic is a great way to destroy all digital logic ICs.
 
 Here's the part of the PCB with the 9V diode bridge:
 
@@ -280,16 +270,18 @@ Here's the part of the PCB with the 9V diode bridge:
 Observations:
 
 * the discrete diodes look like a bodge
-* there is a blackened spot above-right of the diodes
-* there is a green bodge wire. There are quite a bit of those and they turned out to be harmless;
+* marked in red, there is a blackened spot above-right of the diodes
+* there is a green patch wire. There are quite a bit of those and they turned out to be harmless;
   they work around bugs in the PCB itself.
 
 2 discrete diodes were on the other side of the PCB to complete the full bridge, though one soon
-fell off. You can't see it in this picture, but underneath the left diode is a footprint
+fell off. Underneath the discrete diodes is a footprint
 for a BR501 full bridge rectifier *that is not in the schematic*[^schematic]!
 
 [^schematic]: I emailed SRS to ask if they had an updated schematic, but they told me
               to send in the unit for repair.
+
+![BR501 and jumpers](/assets/dg535/br501_and_jumpers.jpg)
 
 While doing these measurements, magic smoke appeared at the same location as 
 blackened spot in the picture. At that point, I called it quits and left the unit sit for 18 months.
@@ -298,17 +290,22 @@ blackened spot in the picture. At that point, I called it quits and left the uni
          interrupt to the CPU, allowing to quickly store data in non-volatile RAM before the power
          is completely gone.
 
+The schematic shows jumpers on the +/-15V and the +5V rail, see the orange rectangle
+in the previous picture. These are intended for power measurements, but when removed
+the also disconnect the generated not-at-all-5V rail from the digital logic and thus
+protect it from further damage until I had sorted out the issue.
+
 # Power Architecture of the DG535
 
 I suspected an issue with the discrete diode bridge bodge on the top PCB, so the plan
 was to repopulate the PCB with an integrated full-bridge rectifier. Turns out: even though
-the schematic in the manual shows a discrete bridge, the schematic description indeed
-talks about an integrated full bridge. Instead of buying one at Digikey (and pay $7 for
-shipping a $1 component), I found a suitable 100V/2A alternative, a 2KBP01M, at 
+the schematic in the manual shows a discrete bridge, the schematic description in the same
+manual indeed talks about an integrated full bridge. Instead of buying one at Digikey (and pay 
+$7 for shipping a $1 component), I found a suitable 100V/2A alternative, a 2KBP01M, at 
 [Anchor Electronics](https://anchor-electronics.com), the last remaining Silicon Valley 
 retail components supplier, conveniently located across the street from work.
 
-I also had a look at the schematic of the bottom PCB power supply:
+I then had a look at the schematic of the bottom PCB power supply:
 
 [![Bottom PCB power supply](/assets/dg535/power_supply_bottom.jpg)](/assets/dg535/power_supply_bottom.jpg)
 *(Click to enlarge)*
@@ -326,7 +323,7 @@ conditions, they are bad news. And when we go back to the top PCB, here's what w
 
 ![5V current boost resistor](/assets/dg535/5v_current_boost_resistor.jpg)
 
-It may not be in the schematic, but located right next to the 7805 5V regulator is
+It may not be in the schematic, but located right next to the 5V regulator is
 another 10 Ohm 5W current boost resistor. 
 
 # The How, Why, and Please Don't of Current Boost Resistor Circuits
@@ -350,7 +347,8 @@ from 6.7W to 5.1W. The dissipation in the resistor is (9-5)^2 / 10 = 1.6 W. The 
 power consumption remains the same: 5.1 W + 1.6 W = 6.7 W.
 
 What have we gained? For the price of adding a beefy 10 Ohm resistor, we're now staying 
-within the current and power limits of the 7805 in TO-220 package. 
+within the current and power limits of the 7805 in TO-220 package. There is no need to
+upgrade the 7805 to a much larger TO-3 package and the changes to the PCB are minimal.
 
 But there is a price to pay! In fact, there's more than one. 
 
@@ -383,7 +381,8 @@ after all.
 Even without the current boost resistor, +12V at the input would be a real problem, since all 
 the power of the resistor would have to be dissipated by the regulator. But with a regulator, 
 there is at least the possibility of including safeguards: there could be a current limiter, 
-a temperature monitor etc. With a dumb resistor you have none of that. 
+a temperature monitor, worst case, the regulator burns out and disconnects the output
+from the input. With a dumb resistor you have none of that.
 
 In 
 [my 5370A repair blog post](/2025/08/10/HP-5370A-Repair.html#power-suppy-architecture),
