@@ -292,12 +292,12 @@ blackened spot in the picture. At that point, I called it quits and left the uni
 
 The schematic shows jumpers on the +/-15V and the +5V rail, see the orange rectangle
 in the previous picture. These are intended for power measurements, but when removed
-the also disconnect the generated not-at-all-5V rail from the digital logic and thus
+they also disconnect the not-at-all-5V rail from the digital logic and thus
 protect it from further damage until I had sorted out the issue.
 
 # Power Architecture of the DG535
 
-I suspected an issue with the discrete diode bridge bodge on the top PCB, so the plan
+Since I suspected an problem with the discrete diode bridge bodge on the top PCB, the plan
 was to repopulate the PCB with an integrated full-bridge rectifier. Turns out: even though
 the schematic in the manual shows a discrete bridge, the schematic description in the same
 manual indeed talks about an integrated full bridge. Instead of buying one at Digikey (and pay 
@@ -313,8 +313,8 @@ I then had a look at the schematic of the bottom PCB power supply:
 More linear regulators, 2 on the unregulated +8V (?) rail to create +6V and +5.2V, and 3 on
 the unregulated -8V rail to create -2V, -5.2V, and -6V ("actually -5.6V"). 
 
-Now here's the interesting part: the -2V and -5.2V rails have heavy duty 5W 18 and 10 Ohm resistors 
-between the input and the output of the linear regulator.
+Now here's the interesting part: the -2V and -5.2V rails have heavy duty 5W 18 Ohm and 10 Ohm resistors 
+between the input and the output of their linear regulator.
 
 ![Current boost resistors](/assets/dg535/current_boost_resistors.jpg)
 
@@ -328,7 +328,7 @@ another 10 Ohm 5W current boost resistor.
 
 # The How, Why, and Please Don't of Current Boost Resistor Circuits
 
-The purpose of a current boost resistor is to partially off-load a linear regulator. 
+The purpose of a current boost resistor is to partially offload a linear regulator. 
 
 ![Power supply without current boost](/assets/dg535/without_current_boost.png)
 
@@ -623,6 +623,9 @@ thing that I've learned over the years is that old ICs are pretty good at
 surviving that kind of abuse.
 
 # References
+
+* [Stanford Research - DG535 Digital Delay Generator](https://www.thinksrs.com/products/dg535.html)
+* [Analog Devices - Single Resistor Provides Extra Current from a Linear Regulator](https://www.analog.com/en/resources/design-notes/single-resistor-provides-extra-current-from-a-linear-regulator.html)
 
 
 # Footnotes
