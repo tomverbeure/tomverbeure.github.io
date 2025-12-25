@@ -166,6 +166,9 @@ the start of the external trigger and the first rising edge of the 80 MHz clock.
 circuit creates a delay between 0 and 12.5 ns after digital delay has expired. Channels A/B/C/D 
 each have their own instance of the analog delay circuit.
 
+[![Jitter/Digital Delay/Analog Delay waveform](/assets/dg535/dg535-waveform.svg)](/assets/dg535/dg535-waveform.svg)
+*(Click to enlarge)*
+
 I will leave the low level details to a future blog post, but at their core, both the jitter and 
 analog delay circuit work by precharging and discharging a capacitor with a constant current
 source for a time that varies between 0 and 12.5 ns. Precharging the analog delay capacitor is 
@@ -173,8 +176,8 @@ controlled by a 12-bit DAC. If you were wondering where the 5 ps of precision li
 12.5 ns / (2^12) = 3 ps. Close enough!
 
 Using a capacitor to measure time is a technique called "analog interpolation". It's often
-used by time interval and frequency counters such as the SRS SR620. I briefly touch this in my 
-blog post about linear regression in frequency counters. XXXXX Add Link
+used by time interval and frequency counters such as the SRS SR620. I briefly touch this in 
+[my blog post about linear regression in frequency counters](/2023/06/16/Frequency-Counting-with-Linear-Regression.html#frequency-counter-basics).
 
 # The Annoying Mechanical Design of the DG535
 
@@ -402,10 +405,9 @@ These issues were all related.
 # Debugging the +7V Issue
 
 The +7V could be explained by the current boost resistor and a load that was too low. If the load is 
-too low anyway, why not remove the current boost resistor and check what happens?
-
-I did that and the voltage on the +5V rail predicably dropped down to +5V. The temperature
-on the 7805 remained in check. Good!
+too low anyway, why temporarily desolder the current boost resistor and check what happens? I did that 
+and the voltage on the +5V rail predicably dropped down to +5V. The temperature on the 7805 remained 
+in check. Good!
 
 But why was the load too low?
 
@@ -415,19 +417,19 @@ A quick probe on the pins of the Z80 CPU showed no activity. Better yet: there w
 *(Click to enlarge)*
 
 The 5 MHz CPU clock is derived from the 10 MHz clock, which comes from connector J40: the
-cable that connect the top and bottom PCB. In other words: if you run the top PCB by itself, there is
+cable that connects the top and bottom PCB. In other words: if you run the top PCB by itself, there is
 no clock. And without a clock, the power consumption of the CPU system will be much lower... and
 with a current boost resistor, the voltage will rise to +7V.
 
-To run the CPU board stand-alone, I used the SYNC output of 
+To run the CPU board stand-alone with an active clock, I configured 
 [my HP 33120A signal generator](/2023/01/02/HP33120A-Repair-Shutting-Down-the-Eye-of-Sauron.html) 
-to supply a 10 MHz clock to connector J40.
+to generate a 10 MHz signal and routed its SYNC to connector J40.
 
 [![10MHz from function generator](/assets/dg535/10MHz_from_function_generator.jpg)](/assets/dg535/10MHz_from_function_generator.jpg)
 *(Click to enlarge)*
 
-In the picture above, in addition to the signal generator, you can also see 10V being generated
-by an HP 3631A power supply: this is to create the reference voltage that's needed for the dying
+In the picture above, in addition to the signal generator, you can also see an HP 3631A power
+supply that outputs 10V: this is a replacement of the reference voltage that's needed for the dying
 gasp and reset generator that I mentioned earlier. These are the 2 external signals that are needed
 to run the CPU top PCB without the analog bottom PCB, though only for a short time: without
 current boost resistor, the 7805 was now taking on all the current and warming up.
@@ -448,7 +450,7 @@ what was happening, resulting in this pretty picture:
 ![Logic analyzer on Z80](/assets/dg535/logic_analyzer.jpg)
 
 After many hours, the simple conclusion was this: the connector of the LCD panel cable was plugged
-in incorrectly. This pulled down a crucial status bit on the data bus which made the Z80 go into
+in incorrectly. This pulled high a crucial status bit on the data bus which made the Z80 go into
 an endless loop.
 
 I partially blame SRS for this: the way they deal with connector-related documentation is horrible,
@@ -467,9 +469,9 @@ sufficient to connect that to ground. That's the blue wire that the red arrow is
 
 ![LCD up and running](/assets/dg535/LCD_up_and_running.jpg)
 
-While the LCD is working, there is no backlight. The backlight of the original LCD panel
+The LCD was working now, but without backlight. The backlight of the original LCD panel
 requires 120V AC with a 50 kOhm resistor in series. This voltage is coming straight from a
-primary winding of the transformer. I measures 120V just fine, so the backlight was broken.
+primary winding of the transformer. I measured 120V just fine, so the backlight was broken.
 It doesn't make the display unreadable, but it's definitely annoying.
 
 # Fixing the Burnt PCB Trace
@@ -487,7 +489,7 @@ I still hadn't tracked down the +12V/-12V on the +9V/-9V rails, but with everyth
 fixed, I wondered if I could get the full unit to work. Just a few flea markets ago,
 I had picked up a variac for $15. I always wondered why people need such a thing, and
 wouldn't you know it, this was the perfect use case: reduce the mains voltage from 120V AC
-to ~100V AC to bright down the voltage on the secondary windings of the power transformer.
+to ~100V AC to bring down the voltage on the secondary windings of the transformer.
 
 ![Variac on my bench](/assets/dg535/variac.jpg)
 
@@ -512,17 +514,19 @@ questionable measurements didn't turn up anything.
 
 Other than secondary winding voltages being too high, the transformer behaved fine.
 
-In a discussion on the EEVblog forum, someone suggested that the output voltage of 
-a transformer can be... load dependent. I had earlier measured a power consumption 
-of 10W or so when only the CPU board was connected, so there was still 60W missing.
+I started a 
+[thread on the EEVblog forum about rewinding a transformer](https://www.eevblog.com/forum/repair/rewinding-a-power-transformer/)
+where someone suggested that the output voltage of a transformer can be... load dependent. 
+When only the CPU board was connected, I had measured an overall power consumption of 10W,
+60W below specification.
 
 I removed the variac from the setup and measured a power consumption of 72W. The
 measured voltage on the +9V rail was +10.2V. Enough to raise the power consumption
-in the 5V current boost resistor from 1.6W to 2.7W, but still well in spec of the
-5w resistor rating.
+in the 5V current boost resistor from 1.6W to 2.7W, but still well within spec of its
+5W rating.
 
-This was another manifestation of the lack of load resulting in unit self-destruct!
-I had been chasing another ghost.
+The +12V issue has been another manifestation of the lack of load resulting in a
+self-distructing unit! And I had been chasing another ghost.
 
 # LCD Replacement
 
@@ -530,7 +534,8 @@ With the unit now fully working, all that remained was fixing the LCD backlight.
 SRS sells a replacement LCD panel for a ridiculous $200. This must be old stock
 because you can't find ones anymore with a 120VAC backlight power supply.
 
-Instead, I bought a [CFAH2001B-TMI-ET panel from crystalfontz.com](https://www.crystalfontz.com/product/cfah2001btmiet-20x1-character-display-module).
+Instead, I bought a [CFAH2001B-TMI-ET panel](https://www.crystalfontz.com/product/cfah2001btmiet-20x1-character-display-module)
+from crystalfontz.com.
 
 It has a 16 pin instead of 14 pin interface, but the 2 additional pins are for
 the backlight. The original LCD has separate pins for that.
@@ -562,7 +567,7 @@ My unit had only 2 out of 4 transformer mounting screws in place. Home Depot did
 have the #10-32 1 5/8" screws, but I used slightly shorter #10-32 1 1/2" screws 
 instead and those worked fine.
 
-After one more game of carefully connecting all connectors back in place, the DG535
+After one more round of carefully connecting all connectors back in place, the DG535
 was finally back to where it needed to be:
 
 ![DG535 with new LCD](/assets/dg535/DG535_with_new_LCD.jpg)
@@ -573,20 +578,20 @@ A bunch of things went wrong during the design and repair of this DG535.
 
 Design weaknesses:
 
-* current boost resistors make a design prone to self-destruction
+* Current boost resistors make a design prone to self-destruction
   due to overvoltage when the system load is too low due to some internal
   failure.
-* current boost resistors also result in burning out a PCB when
+* Current boost resistors also result in burning out a PCB when
   the voltage difference between input and output of a voltage regulator
   becomes too high. This can again happen when the system load is lower
   than designed for.
-* the schematic in the manual shows a discrete diode full bridge for the
+* The schematic in the manual shows a discrete diode full bridge for the
   unregulated +/-9V rail, instead of an integrated one, and no current
   boost resistor.
-* the mechanical design and short cables make it tempting to power
+* The mechanical design and short cables make it tempting to power
   the top PCB without connecting the bottom PCB... which cuts down the
   system load dramatically.
-* the power consumption of the top PCB will be very low when the bottom
+* The power consumption of the top PCB is very low when the bottom
   PCB is disconnected, due to the lack of 10 MHz clock.
 * the pinout of the connectors of the DG535 doesn't follow standard convention,
   and the convention that is documented in the manual is violated on the
@@ -597,11 +602,11 @@ Design weaknesses:
 
 Repair mistakes:
 
-* a previous attempt at repairing saw the replacement of an integrated
+* A previous attempt at repairing saw the replacement of an integrated
   diode bridge by a discrete one. To make things worse, they used 1N5822 
-  Schottky diodes, as shown in the incorrect schematic.  with a threshold 
-  voltage of 0.4V instead of a regular 0.7V threshold of the integrated diode 
-  bridge. Because of this, the unregulated DC output was 2 x (0.7 - 0.4V) = 0.6V 
+  Schottky diodes, as shown in the incorrect schematic. Schottky diodes
+  have a threshold voltage of 0.4V instead of a 0.7V threshold for the integrated 
+  diode bridge. Because of this, the unregulated DC output was 2 x (0.7 - 0.4V) = 0.6V 
   higher, which increased the power consumption in the current boost resistors 
   even more!
 * PCBs were powered on without full load. This resulted in PCB traces burning up.
@@ -626,6 +631,8 @@ surviving that kind of abuse.
 
 * [Stanford Research - DG535 Digital Delay Generator](https://www.thinksrs.com/products/dg535.html)
 * [Analog Devices - Single Resistor Provides Extra Current from a Linear Regulator](https://www.analog.com/en/resources/design-notes/single-resistor-provides-extra-current-from-a-linear-regulator.html)
+* [EEVblog forum - SRS Stanford Research DG535](https://www.eevblog.com/forum/repair/srs-stanford-research-dg535/)
+* [EEVblog forum - Rewinding a power transformer?](https://www.eevblog.com/forum/repair/rewinding-a-power-transformer/)
 
 
 # Footnotes
