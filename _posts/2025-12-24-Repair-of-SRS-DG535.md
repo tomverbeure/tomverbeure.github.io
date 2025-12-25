@@ -1,6 +1,6 @@
 ---
 title: The Scenic Route to Repairing a Self-Destructing SRS DG535 Digital Delay Generator
-date: 2025-12-25 00:00:00 -1000
+date: 2025-12-24 00:00:00 -1000
 categories:
 ---
 
