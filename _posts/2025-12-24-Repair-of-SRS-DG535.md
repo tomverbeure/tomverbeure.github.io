@@ -483,6 +483,40 @@ wire.
 
 ![Bodge wire to fix the PCB trace](/assets/dg535/burnt_pcb_trace_fix.jpg)
 
+# Endless Boot Loop after Reassembly
+
+After going through the pain of reassembling the whole unit, I has hopefull that I'd be able
+to at least operate the keyboard and see things happening on the LCD. That, of course,
+didn't happen. Instead, the unit got into an endless boot loop, showing the splash
+screen, then going blank, repeat.
+
+<iframe width="680" height="400" src="https://www.youtube.com/embed/DJEbIihfNMo?si=c1rQnyQcja4wqpwB" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+This cost me another couple of hours to root cause. I disconnected all wires to the top PCB to
+revert back to the condition where things worked before, but no luck. Eventually, I
+stumbled onto the "Cold Boot" section in the user manual:
+
+> If the instrument turns on, but is completely unresponsive to the keyboard, then the RAM
+> contents may have been corrupted causing the instrument to "hang". To remedy this situation,
+> turn the unit off, then hold down the BSP (backspace) key down and turn the unit back on
+> again.
+
+Like so many old pieces of test equipment, the DG535 uses a 
+[BR-2/3A](https://www.digikey.com/en/products/detail/panasonic-energy/BR-2-3AE2SP/64350)
+3V lithium battery to retain settings and calibration values while the unit is powered down.
+The battery was still good when I measured the voltage, but maybe there was a 
+short circuit due reassembly that made the SRAM loose its contents.
+
+Either way, after following the power-up procedure from the manual the unit worked again.
+
+Note that it's not necessary to go through a full recalibration after losing the SRAM
+contents: the EPROM that holds the firmware also contains calibration constants and the
+serial number that are unique to each unit. That's pretty cool! The calibration
+constants are guarded by a checksum to ensure their correctness. What's puzzling is that
+the firmware checks the correctness, but when it detects an error, instead of reporting
+a meaningful error, it does a system reset and retries again. And leaving the owner
+to guess what went wrong. 
+
 # DG535 Up and Running with a Variac
 
 I still hadn't tracked down the +12V/-12V on the +9V/-9V rails, but with everything else
