@@ -308,6 +308,11 @@ $7 for shipping a $1 component, I found a suitable 100V/2A alternative, a 2KBP01
 [Anchor Electronics](https://anchor-electronics.com), the last remaining Silicon Valley 
 retail components supplier, conveniently located across the street from work.
 
+![BR501 replacement](/assets/dg535/br501_replacement.jpg)
+
+The footprint of the new diode bridge wasn't quite the same, but you can easily nudge the
+pins a bit to make it work.
+
 I then had a look at the schematic of the bottom PCB power supply:
 
 [![Bottom PCB power supply](/assets/dg535/power_supply_bottom.jpg)](/assets/dg535/power_supply_bottom.jpg)
