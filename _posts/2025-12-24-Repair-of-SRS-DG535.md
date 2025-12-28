@@ -48,7 +48,7 @@ The details will be explained further below.
 # The Stanford Research Systems DG535
 
 Conceptually, the purpose of the DG535 is straightforward: it's a tool that takes in an input
-trigger pulse and generates 4 output pulses after some programmable delay. What makes the DG535 interesting 
+trigger pulse and generates 4 output pulses after some programmable delay. What makes things interesting 
 is that these delays can be specified with a 5 ps precision, though the jitter on the outputs far
 exceed that number.
 
@@ -57,7 +57,7 @@ The DG535 has 9 outputs on the front panel:
 * T0 marks the start of a timing interval. You'll most likely use it when you use the device with 
   an internal trigger to know when a timing sequence has started. There is delay of around 85ns 
   between the external trigger and T0.
-* 4 channels A, B, C and D can independently be programmed to change a programmable time after T0
+* 4 channels A, B, C and D can independently be configured to change a programmable time after T0
   or after some of the other channels.
 * Output AB is a pulse for the interval between the time set for A and B. It's an XNOR between those
   2 channels. -AB is the inverse of output AB. CD and -CD are the same for channels C and D.
@@ -71,34 +71,34 @@ voltage amplitude and offset.
 [^NIM]: NIM stands for [Nuclear Instrumentation Model](https://en.wikipedia.org/wiki/Nuclear_Instrumentation_Module). 
         It's a voltage and current standard for fast digital pulses for physics and nuclear experiments.
 
-Settings can be configured through the front panel or through a GPIB interface that is
+Settings can be entered through the front panel or through a GPIB interface that is
 available at the back of the device.
 
 ![DG535 rear view](/assets/dg535/DG535_rearview.jpg)
 
 In addition to the GPIB interface, the back has another set of T0/A/B/C/D outputs because my unit
 is equiped option 02. These outputs are not an identical copy of the ones in the front: their amplitudes
-can set from -32V to 32V when terminated by a 50 Ohm impedance and each output has pulse width of roughly 
+can go from -32V to 32V when terminated by a 50 Ohm impedance and each output has pulse width of roughly 
 1 us.
 
 There is also a connector and a switch to select either the internal or an external
 10 MHz timebase. Missing screws around the transformer housing are an indication that I'm not the 
 first one who has been inside to repair the unit.
 
-This [1993 ad](/assets/dg535/SRS_ad_1993.pdf) lists the DG535 for $3500. Today, it is still for sale 
+This [1993 ad](/assets/dg535/SRS_ad_1993.pdf) lists the DG535 for $3500. It is currently still for sale 
 on the SRS website for $4495, remarkable for an instrument that dates from the mid 1980s. I assume 
 that today's buyers are primarily those who need an exact replacement for an existing, certified setup, 
 because the [DG645](https://www.thinksrs.com/products/dg645.html), 
-SRS's more modern successor to the DG535 with better features and specs, costs only $500 more.
+SRS's more modern successor with better features and specs, costs only $500 more.
 
 # Who Uses a Pulse Delay Generator?
 
 Anyone who has a setup where multiple pieces of test or lab equipment need to work together with a
 strictly timed sequence.
 
-When you research applications where the DG535 is used, you'll find long list of PhD theses, national
-or military laboratory documents, optical setups with lasers and so on. If you look closer at the first 
-picture of the blog post, you can see that mine was used by [Chemical Dynamics](https://www.chemicaldynamics.com) 
+When you google for applications where the DG535 is used, you get a long list of PhD theses, national
+or military laboratory documents, optical setups with lasers and so on. Look closer at the first 
+picture of this blog post and you can see that mine was used by [Chemical Dynamics](https://www.chemicaldynamics.com) 
 in a molecular beam setup... whatever that is.
 
 Here are just a few examples:
@@ -159,10 +159,10 @@ DG535 is no exception. It's a great way to study and learn how non-trivial probl
 
 ![DG535 block diagram](/assets/dg535/DG535_block_diagram.jpg)
 
-The DG535 uses a combined digital/analog approach to create delays up to 1000 s.
-With an 80 MHz internal clock, the digital delay can be specified with 12.5ns of precision.
+The DG535 takes a combined digital/analog approach to create delays of up to 1000 s.
+With an 80 MHz internal clock, the digital delay can be specified with 12.5 ns of precision.
 The remainder is handled by two analog circuits: the jitter circuit measures the delay between 
-the start of the external trigger and the first rising edge of the 80 MHz clock. The analog delay
+the start of the external trigger and the next rising edge of the 80 MHz clock. The analog delay
 circuit creates a delay between 0 and 12.5 ns after digital delay has expired. Channels A/B/C/D 
 each have their own instance of the analog delay circuit.
 
@@ -175,8 +175,9 @@ source for a time that varies between 0 and 12.5 ns. Precharging the analog dela
 controlled by a 12-bit DAC. If you were wondering where the 5 ps of precision limit is coming from: 
 12.5 ns / (2^12) = 3 ps. Close enough!
 
-Using a capacitor to measure time is a technique called "analog interpolation". It's often
-used by time interval and frequency counters such as the SRS SR620. I briefly touch this in 
+Using a capacitor to measure time with higher precision that the digital clock is called "analog 
+interpolation". It's often used by time interval and frequency counters such as the SRS SR620. 
+I briefly touch this in 
 [my blog post about linear regression in frequency counters](/2023/06/16/Frequency-Counting-with-Linear-Regression.html#frequency-counter-basics).
 
 # The Annoying Mechanical Design of the DG535
@@ -205,16 +206,15 @@ the solder side of the PCB, though, sadly, there are no dots to mark pin 1 of an
 ![PCB solder-side annotated](/assets/dg535/PCB_solderside_annotated.jpg)
 
 Most cables have connectors and can easily unplugged, but not all of them.
-the backside connectors.
 
 ![Power supply wires for OPT02 board](/assets/dg535/power_supply_wires_to_opt02.jpg)
 
-The red and orange wires in the picture above provide +20 and -20V rails from the top PCB
+The red and orange wires in the picture above deliver +20 and -20V from the top PCB
 to the OPT02 PCB that is mounted below the bottom PCB. They are just long enough. If you want to
 take the unit apart, your only choice is desoldering these wires. It's not rocket science,
 but... really? You also need to desolder the wires that power the cooling fan.
 
-Enough whining... for now... When all wires are desoldered, connecters disconnected and screws
+Enough whining... for now. When all wires are desoldered, connectors disconnected and screws
 removed, you can fold open the top PCB from the rest of the unit and get a full view of the inner
 components:
 
@@ -246,10 +246,10 @@ U601 and U503 to create +15V and -15V and then immediately to the connector on t
 bottom PCB. These voltage rails are not used by the top PCB.
 
 A discrete diode bridge and some capacitors create an unregulated +/-9V that goes to the same connector
-and to LM340-5, a linear +5V regulator that is functionally equivalent to an 7805. The 5V is used
+and to U501 / LM340-5, a linear +5V regulator that is functionally equivalent to a 7805. The 5V is used
 to power pretty much the entire top PCB as well as some ICs on the bottom.
 
-When I measured the following voltages on the top-to-bottom power connector:
+I measured the following voltages on the top-to-bottom power connector:
 
 * 0V - instead of 10V
 * +15V - good!
@@ -274,10 +274,10 @@ Observations:
 
 * the discrete diodes look like a bodge
 * marked in red, there is a blackened spot above-right of the diodes
-* there is a green patch wire. There are quite a bit of those and they turned out to be harmless;
-  they work around bugs in the PCB itself.
+* there is a green patch wire. There are quite a bit of those on the top PCB and they turned out to be 
+  harmless; they work around bugs in the PCB itself.
 
-2 discrete diodes were on the other side of the PCB to complete the full bridge, though one soon
+2 discrete diodes were on the other side of the PCB to complete the discrete full bridge, though one soon
 fell off. Underneath the discrete diodes is a footprint
 for a BR501 full bridge rectifier *that is not in the schematic*[^schematic]!
 
@@ -300,13 +300,18 @@ protect it from further damage until I had sorted out the issue.
 
 # Power Architecture of the DG535
 
-Since I suspected an problem with the discrete diode bridge bodge on the top PCB, the plan
+Since I suspected a problem with the discrete diode bridge bodge on the top PCB, the plan
 was to repopulate the PCB with an integrated full-bridge rectifier. Turns out: even though
 the schematic in the manual shows a discrete bridge, the schematic description in the same
-manual indeed talks about an integrated full bridge. Instead of buying one at Digikey (and pay 
-$7 for shipping a $1 component), I found a suitable 100V/2A alternative, a 2KBP01M, at 
+manual indeed talks about an integrated full bridge. Instead of buying one at Digikey and pay 
+$7 for shipping a $1 component, I found a suitable 100V/2A alternative, a 2KBP01M, at 
 [Anchor Electronics](https://anchor-electronics.com), the last remaining Silicon Valley 
 retail components supplier, conveniently located across the street from work.
+
+![BR501 replacement](/assets/dg535/br501_replacement.jpg)
+
+The footprint of the new diode bridge wasn't quite the same, but you can easily nudge the
+pins a bit to make it work.
 
 I then had a look at the schematic of the bottom PCB power supply:
 
@@ -326,7 +331,7 @@ conditions, they are bad news. And when we go back to the top PCB, here's what w
 
 ![5V current boost resistor](/assets/dg535/5v_current_boost_resistor.jpg)
 
-It may not be in the schematic, but located right next to the 5V regulator is
+It may not be in the schematic, but located below right next to the 5V regulator is
 another 10 Ohm 5W current boost resistor. 
 
 # The How, Why, and Please Don't of Current Boost Resistor Circuits
@@ -366,7 +371,7 @@ We can see that here:
 
 ![Power supply with system load 90 Ohm instead of 3 Ohm](/assets/dg535/current_boost_load_too_low.png)
 
-For whatever reason, the system load has reduced, the equivalent system resistance is now 
+Assume that the system load has reduced and the equivalent system resistance is now 
 90 Ohm instead of 3 Ohm. The current through the 2 resistors is just 0.09A. The voltage at the 7805 output
 node is 8.1V and there is nothing the 7805 can do to bring the voltage down.
 
@@ -382,7 +387,7 @@ The +12V that I measured on one of the connector is more than just a little bit 
 after all.
 
 Even without the current boost resistor, +12V at the input would be a real problem, since all 
-the power of the resistor would have to be dissipated by the regulator. But with a regulator, 
+the power of the resistor would have to be dissipated by the regulator. But with only a regulator, 
 there is at least the possibility of including safeguards: there could be a current limiter, 
 a temperature monitor, worst case, the regulator burns out and disconnects the output
 from the input. With a dumb resistor you have none of that.
@@ -405,7 +410,7 @@ These issues were all related.
 # Debugging the +7V Issue
 
 The +7V could be explained by the current boost resistor and a load that was too low. If the load is 
-too low anyway, why temporarily desolder the current boost resistor and check what happens? I did that 
+too low anyway, why not temporarily desolder the current boost resistor and check what happens? I did that 
 and the voltage on the +5V rail predicably dropped down to +5V. The temperature on the 7805 remained 
 in check. Good!
 
@@ -423,7 +428,7 @@ with a current boost resistor, the voltage will rise to +7V.
 
 To run the CPU board stand-alone with an active clock, I configured 
 [my HP 33120A signal generator](/2023/01/02/HP33120A-Repair-Shutting-Down-the-Eye-of-Sauron.html) 
-to generate a 10 MHz signal and routed its SYNC to connector J40.
+to generate a 10 MHz signal and routed its SYNC output to connector J40.
 
 [![10MHz from function generator](/assets/dg535/10MHz_from_function_generator.jpg)](/assets/dg535/10MHz_from_function_generator.jpg)
 *(Click to enlarge)*
@@ -432,7 +437,8 @@ In the picture above, in addition to the signal generator, you can also see an H
 supply that outputs 10V: this is a replacement of the reference voltage that's needed for the dying
 gasp and reset generator that I mentioned earlier. These are the 2 external signals that are needed
 to run the CPU top PCB without the analog bottom PCB, though only for a short time: without
-current boost resistor, the 7805 was now taking on all the current and warming up.
+current boost resistor and cooling fan, the 7805 was now taking on all the current and warming up
+quickly.
 
 **Important: The +12V issue was still there! As soon as the current boost resistor was placed
 back, it was dissipating 5W and its temperature rose to 130C almost instantly!!!**
@@ -443,9 +449,14 @@ With the CPU clock running, I expected some activity on the keyboard/LED and LCD
 the CPU seemed stuck. 
 
 It took a lot of effort to root cause this. I dumped the 
-[ROM contents](/assets/dg535/DG535_ROM_v2.0_SN4633.bin), used Ghidra to disassemble
+[ROM contents](/assets/dg535/DG535_ROM_v2.0_SN4633.bin)[^ROM], used Ghidra to disassemble
 the code. I also used a logic analyzer to trace the Z80 address bus to get a better insight into
 what was happening, resulting in this pretty picture:
+
+[^ROM]: The ROM contents of each DG535 are unique for that particular unit, since they contain
+        the serial number and calibration data that were determined in the factory. If you
+        program the EPROM with my ROM file in your unit, expect delay specification to be
+        significantly worse.
 
 ![Logic analyzer on Z80](/assets/dg535/logic_analyzer.jpg)
 
@@ -460,7 +471,7 @@ unconventional, and inconsistent. Just look at this beauty:
 
 At the bottom right (red), they lay out a pinout convention. The keyboard/LED PCB (green) doesn't
 follow that convention. The LCD panel display does follow it, but this is a standard 14-pin
-interface that's used by HD44780-based LCD controller which uses an entirely different convention.
+interface that's used by an HD44780-based LCD controller which uses an entirely different convention.
 They also don't consistently mark pin 1 on the PCB.
 
 Still, even after fixing that, the LCD didn't come up. This turned out to be due to another
@@ -472,20 +483,20 @@ sufficient to connect that to ground. That's the blue wire that the red arrow is
 The LCD was working now, but without backlight. The backlight of the original LCD panel
 requires 120V AC with a 50 kOhm resistor in series. This voltage is coming straight from a
 primary winding of the transformer. I measured 120V just fine, so the backlight was broken.
-It doesn't make the display unreadable, but it's definitely annoying.
+It doesn't make the display entirely unreadable, but it's definitely annoying.
 
 # Fixing the Burnt PCB Trace
 
 When I measured the voltages at the start of this journey, I noticed that the -9V was missing
-on the power connector towards the analog PCB. The trace to this connector is running right
-next to the overheating current boost resistor. All I needed to do was install a replacement
+on the power connector towards the analog PCB. The trace to this connector is running below
+the overheating current boost resistor. All I needed to do was install a replacement
 wire.
 
 ![Bodge wire to fix the PCB trace](/assets/dg535/burnt_pcb_trace_fix.jpg)
 
 # Endless Boot Loop after Reassembly
 
-After going through the pain of reassembling the whole unit, I has hopefull that I'd be able
+After going through the pain of reassembling the whole unit, I has hopeful that I'd be able
 to at least operate the keyboard and see things happening on the LCD. That, of course,
 didn't happen. Instead, the unit got into an endless boot loop, showing the splash
 screen, then going blank, repeat.
@@ -501,10 +512,10 @@ stumbled onto the "Cold Boot" section in the user manual:
 > turn the unit off, then hold down the BSP (backspace) key down and turn the unit back on
 > again.
 
-Like so many old pieces of test equipment, the DG535 uses a 
+Like many old pieces of test equipment, the DG535 uses a 
 [BR-2/3A](https://www.digikey.com/en/products/detail/panasonic-energy/BR-2-3AE2SP/64350)
 3V lithium battery to retain settings and calibration values while the unit is powered down.
-The battery was still good when I measured the voltage, but maybe there was a 
+The battery was still good when I measured its voltage, but maybe there was a 
 short circuit due reassembly that made the SRAM loose its contents.
 
 Either way, after following the power-up procedure from the manual the unit worked again.
@@ -514,7 +525,7 @@ contents: the EPROM that holds the firmware also contains calibration constants 
 serial number that are unique to each unit. That's pretty cool! The calibration
 constants are guarded by a checksum to ensure their correctness. What's puzzling is that
 the firmware checks the correctness, but when it detects an error, instead of reporting
-a meaningful error, it does a system reset and retries again. And leaving the owner
+a meaningful error, it does a system reset and retries again, leaving the operator
 to guess what went wrong. 
 
 # DG535 Up and Running with a Variac
@@ -531,7 +542,7 @@ And just like that, the DG535 was working!
 
 ![DG535 with oscilloscope showing pulses](/assets/dg535/dg535_and_oscilloscope_working.jpg)
 
-With my SR620 time interval counter and a whole lot of averaging measurements, I was even able 
+With my SR620 time interval counter and averaging a lot of measurements, I was even able 
 to show that delays could be changed with 5 ps precision.
 
 I measured a power consumption of 62W, not too far away from the 70W that's specified in the
@@ -539,10 +550,10 @@ manual, which is just a case of being conservative. Right?
 
 # Tracking down the +12/-12V on the +9/-9V Rails
 
-I once again spent a long time trying to track down the 12V vs 9V issue. My only explanations
-was a short somewhere in the transformer, or some wires misconnected during an earlier repair,
-or the original transformer being replaced by an incorrect one, but extensive and often
-questionable measurements didn't turn up anything. 
+I once again spent a long time trying to track down the 12V vs 9V issue. My only theories
+were a short somewhere in the transformer, or some wires misconnected during an earlier repair,
+or the original transformer being replaced by an incorrect one, but extensive and sometimes
+questionable measurement practises didn't turn up anything. 
 
 ![A very questionable measurement setup](/assets/dg535/questionable_measurement.jpg)
 
@@ -556,10 +567,10 @@ When only the CPU board was connected, I had measured an overall power consumpti
 
 I removed the variac from the setup and measured a power consumption of 72W. The
 measured voltage on the +9V rail was +10.2V. Enough to raise the power consumption
-in the 5V current boost resistor from 1.6W to 2.7W, but still well within spec of its
+in the 5V current boost resistor from 1.6W to 2.7W, but well within spec of its
 5W rating.
 
-The +12V issue has been another manifestation of the lack of load resulting in a
+The +12V issue was another manifestation of the lack of load resulting in a
 self-distructing unit! And I had been chasing another ghost.
 
 # LCD Replacement
@@ -598,8 +609,7 @@ bend the LCD PCB.
 
 
 My unit had only 2 out of 4 transformer mounting screws in place. Home Depot didn't 
-have the #10-32 1 5/8" screws, but I used slightly shorter #10-32 1 1/2" screws 
-instead and those worked fine.
+have the #10-32 1 5/8" screws, but slightly shorter #10-32 1 1/2" screws worked fine.
 
 After one more round of carefully connecting all connectors back in place, the DG535
 was finally back to where it needed to be:
