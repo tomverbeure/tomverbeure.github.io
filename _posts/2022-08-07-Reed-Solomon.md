@@ -46,16 +46,16 @@ The subject is covered in many college-level courses on coding and signal proces
 but a lot of the material online is theoretical, math heavy, and not intuitive. At least not 
 for me...
 
-That changed when found this 
+That changed when I found this 
 [Introduction to Reed-Solomon](https://innovation.vivint.com/introduction-to-reed-solomon-bc264d0794f8)
 article. It explains how polynomials and polynomial evaluation at certain points are a way to
 create a code with redundancy, and how to recover the original message back from it. The article
 is excellent, and it makes some of what I'm covering below unnecessary or redundant (ha!), 
 because parts of what follows will be a recreation of that material. However my take on it
-has dumbed things down even more, and yet also covers a larger variety of Reed-Solomon codes. 
+has dumbed things down even more yet also covers a larger variety of Reed-Solomon codes. 
 
 One of the best aspects of that article is the focus on integer math. Academic literature about 
-coding theory almost always start with the theory of finite fields, also known as Galois fields, and then 
+coding theory almost always starts with the theory of finite fields, also known as Galois fields, and then 
 build on that when explaining coding algorithms. I found this one of the bigger obstacles in 
 understanding the fundamentals of Reed-Solomon codes (and 
 [BCH codes](https://en.wikipedia.org/wiki/BCH_code), a close relative) because instead of 
@@ -157,7 +157,7 @@ Here's an example of a polynomial of degree 3, $$f(x)=2 + 3x -5x^2 + x^3$$, eval
 *I used the excellent [desmos graphing calculator](https://www.desmos.com/calculator) to create this
 function plot.*
 
-When given the points $$(-1, 7), (0,2), (1, 1), (2, -4)$$, we can fill in the values into 
+When given the points $$(-1, -7), (0,2), (1, 1), (2, -4)$$, we can fill in the values into 
 $$f(x) = c_0 + c_1 x + c_2 x^2 + c_3 x^3$$ for each of point, which results in the following set 
 of 4 linear equations with 4 unknowns:
 
@@ -548,7 +548,7 @@ Let's try this out with the same number sequence as before:
 
 * The message word is still $$(2,3,-5,1)$$. These are now considered the result of evaluating
   polynomial $$p(x)$$ for the corresponding values $$(-1, 0, 1, 2)$$ of $$x$$.
-* Construct the polynomial $$p(x)$$ out of these coordinate pairs: $$((-1, 2), (0, 3), (1, 1), (2, 1))$$.
+* Construct the polynomial $$p(x)$$ out of these coordinate pairs: $$((-1, 2), (0, 3), (1, -5), (2, 1))$$.
 
     I found [this website](https://www.dcode.fr/lagrange-interpolating-polynomial) to do that for me.
     It uses the Lagrange interpolation method, but Gaussian elimination would have given the

@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Micro Chip R/W Clip Review"
-date:   2018-04-28 17:56:48 -0700
+date:   2018-04-29 00:00:00 -0700
 categories: tools
 ---
 
