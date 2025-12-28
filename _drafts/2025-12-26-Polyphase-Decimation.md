@@ -14,15 +14,17 @@ categories:
 # Introduction
 
 I'm trying to understand polyphase filters and polyphase filter banks better. 
-This blog post is me writing things down and to better internalize things. Don't
-assume I know what I'm doing.
+In this blog post I write things down to better internalize things. Don't assume 
+I know what I'm doing, I don't..
 
+# Naive Decimation
 
-# Naive Decimation by 3
+Apply the filter to all input samples at the input sample rate. Then decimate.
 
-Calcalate everything, throw away most of the results.
+![Filter then decimate basic block diagram](/assets/polyphase/polyphase-naive_decimation_filter_basic_block_diagram.drawio.svg)
 
-Transfer function of 7-taps discrete filter:
+Let's do this for with 7-tap FIR filter with the following transfer function and
+a decimation factor M of 3.
 
 $$
 H(z) = h_0 + h_1 z^{-1} + h_2 z^{-2} + h_3 z^{-3} + h_4 z^{-4} + h_5 z^{-5} + h_6 z^{-6}
@@ -81,6 +83,13 @@ be as strict.
 
 While the number of multiplications per unit of time has been reduced by 3, the number of multipliers is
 still the same. 
+
+The data flowing through this architecture looks like this:
+
+![Decimate input value, multiply in slow domain, annotated](/assets/polyphase/polyphase-delay_input_multiply_in_slow_domain_annotated.drawio.svg)
+
+One thing that's immediately obvious is that the pipes of input samples with the same color
+have the same data flowing through them.
 
 # Perform multiplication in the fast clock domain
 
@@ -205,3 +214,11 @@ $$
 
   On page 21, says that the noble identities only work in one direction, if you move the 
   decimator to the right. Rarely the other way around.
+
+* [Designing Anaylsis and Synthesis Filterbanks in GNU Radio](https://static.squarespace.com/static/543ae9afe4b0c3b808d72acd/543aee1fe4b09162d08633d9/543aee20e4b09162d086354a/1395369129837/rondeau_gr_filtering.pdf)
+
+ > In the channelization process, we want those aliases. Recall that the filterbanks use 
+ > the same filter with a different phase. When filtering, each of the aliased zones is 
+ > processed by each arm of the filterbank, which has its own phase.
+
+
