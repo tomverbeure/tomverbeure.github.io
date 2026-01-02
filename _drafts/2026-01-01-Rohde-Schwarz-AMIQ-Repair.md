@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Rohde & Schwarz AMIQ Modulation Generator - Reviving the PC System 
-date:   2025-04-26 00:00:00 -1000
+date:   2026-01-01 00:00:00 -1000
 categories:
 ---
 
@@ -10,8 +10,9 @@ categories:
 
 # Introduction
 
-In [my teardown blog post](/2025/04/26/RS-AMIQ-Teardown-Analog-Deep-Dive.html) I used a working AMIQ.
-It wasn't like that when I first received it: I spent many hours to get to that point.
+[My Rohde & Schwarz AMIQ teardown blog post](/2025/04/26/RS-AMIQ-Teardown-Analog-Deep-Dive.html)
+used a working unit, but that wasn't the case when I first received it. On the contrary, many
+hours were spent getting it up and running. 
 
 There were 2 major issues:
 
