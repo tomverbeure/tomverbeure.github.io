@@ -138,8 +138,8 @@ what does each signal do for all different states.
 
 I've seen this kind of coding style used by highly competent RTL designers, but I just don't get the appeal.
 How can you possibily keep track of what's happening to multiple signals at a time for different states? With an FSM that
-focuses on the behavior per state, it's much easier to follow what happens from one step to the other. I usually  care
-about what happens to `seq_output` during the `ACTIVE` state when my FSM is in the `IDLE` state. 
+focuses on the behavior per state, it's much easier to follow what happens from one step to the other. I usually only care
+about what happens to `seq_output` during the `ACTIVE` state, not when my FSM is in the `IDLE` state. 
 
 I sometimes go out of my way to embed assignments in the FSM itself. Imagine a design with `data_valid` output that is governed 
 by an FSM and a `data` output that is not, but where `data` is only relevant when `data_valid` is active.
