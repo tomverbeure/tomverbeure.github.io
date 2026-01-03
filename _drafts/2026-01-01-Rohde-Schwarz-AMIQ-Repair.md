@@ -274,6 +274,53 @@ when using the gravity method to remove small caps.
 If that's not possible, you'll have to alternate between the two leads and gradually work the capacitor
 into its position.
 
+# Installing Firmware - The Official Way
+
+If you start with a blank hard drive, the official way to set up the machine is with 2 Rohde & Schwarz 
+provided floppy disks: the PREPARE disk and the PROGRAM disk.  You can't get them anymore, but I was 
+able to find a copy for version 4.00. Not the latest version, there's at least 4.01 version out there, 
+but we'll get to that later.
+
+The PREPARE disk contains a minimal operating system and various hardware related files, but
+not the main AMIQ application. The PROGRAM disk contains additional utilities and the main
+application.
+
+The setup is as follows:
+
+1. Insert the PREPARE disk.
+1. Have the PC boot up from floppy.
+
+  If the AMIQ still has the recommended settings for normal use, booting from floppy
+  will be disabled. You'll need to go to the BIOS menu to enable it.
+
+  After booting, you'll go through a bunch of setup screens.
+
+1. Format the new disk with FDISK.
+
+  The maximum partition size is 2GB, but you have option to add multiple
+  partitions and thus multiple drive letters. I think the remote software
+  is able to deal with that when uploading waveforms: just specify the right
+  drive letter.
+
+1. Enter a bunch AMIQ model information:
+
+  * Model: Mine is an AMIQ04 
+  * IQ_Analog/Digital Board version number
+
+    There are 4 options, 02/03/04 which you'd think match the model number, but
+    apparently not... otherwise they wouldn't ask? I guessed 04 for mine and
+    that worked.
+
+  * Enter serial number
+
+  The AMIQ signal generation board has a CPLD and 2 FPGAs. The information above
+  determines which one is used. For whatever reason, R&S decided that it wasn't
+  worth having some PC readable configuration register to make that automatic.
+
+1. 
+
+The embedded AMIQ application runs on DOS4GW on top of DR-DOS. The official way to 
+
 # Disassembly
 
 * Remove 4 back feet
