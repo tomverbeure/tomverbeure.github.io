@@ -12,7 +12,7 @@ categories:
 
 [My Rohde & Schwarz AMIQ teardown blog post](/2025/04/26/RS-AMIQ-Teardown-Analog-Deep-Dive.html)
 used a working unit, but that wasn't the case when I first received it. On the contrary, many
-hours were spent getting it up and running. 
+hours were spent getting it up and running.
 
 There were 2 major issues:
 
@@ -21,25 +21,20 @@ There were 2 major issues:
 
 # The PC System
 
-The top side of the AMIQ contains a regular early century PC.
+The top side of the AMIQ contains a regular early century PC: motherboard, power supply,
+hard drive, floppy drive and something that's plugged in an ISA slot.
 
 [![AMIQ top size with PC motherboard](/assets/amiq/amiq_pc_motherboard_side.jpg)](/assets/amiq/amiq_pc_motherboard_side.jpg)
 *(Click to enlarge)*
-
-  We can see the motherboard, power supply, floppy drive and hard drive. On the
-  bottom right, an ISA plug-in card connects the motherboard to the signal generation
-  PCB.
-
-It has the following components:
 
 * MSI MS-5169 motherboard
 
   You can find the details at 
   [The Retro Web](https://theretroweb.com/motherboards/s/msi-ms-5169-al9), 
   but it's an pretty standard late nineties affair with support for a large selection of socket 7 
-  CPUs from Intel, AMD and Winchip, SDR UDIMM RAM or 72-pin EDO RAM, 4 PCI, 1 AGP and 2 16 ISA slots, 
-  floppy and IDE interface and the usually assortment of smaller interfaces for mouse, keyboard,
-  serial port etc.
+  CPUs from Intel, AMD and Winchip. It supports SDR UDIMM RAM and 72-pin EDO RAM and has 4 PCI, 1 AGP, 
+  2 16 ISA slots, a floppy and IDE interface and the usually assortment of smaller interfaces for 
+  mouse, keyboard, serial port etc.
 
   My motherboard came with an IDT WinChip C6 CPU and a whopping 64MB of SDRAM. The CPU is rated
   at 200 MHz, but the boot screen reports a 120 MHz processor clock. I haven't yet tried to increase
@@ -51,36 +46,39 @@ It has the following components:
   IDE interface. This hard drive has a reputation of failing read/write heads, which is probably
   what happened with mine.
 
-* Power supply
 * 3 1/2" floppy drive
+* Power supply
 
-At the bottom right of the image, we can see a PCB that's plugged into the one of the 2 16-bit
-ISA slots. This is the interface that connected the PC system to the signal generation board.
+At the bottom right of the image, we can see a board that's plugged into the one of the 2 16-bit
+ISA slots. This is the interface that connects the PC system to the signal generation board.
 
 # Assessing the Damage
 
 The PC system on my AMIQ was in bad shape.  It had the following issues:
 
 * bulging electrolytic capacitors with rust spots on top
-* locked CPU fan 
+* locked-up CPU fan 
 * broken hard drive
+* barely working floppy drive
 * CR2032 battery empty
 
 ![Capacitors and fan](/assets/amiq/caps_and_fan.jpg)
 
 # Installing a Video Card and Keyboard
 
-If you want to do any restoration work on the AMIQ, you'll need to operate it like a PC, with
-a keyboard and a display. I found a Korean keyboard with PS2 on Craigslist for $20. For the video
-card, I found an ATI (meh) Rage XL PCI VGA card, also for $20. I think pretty much any video
-card with PCI should work as long as they're not some power hungry monster.
+If you want to do any restoration work on the AMIQ, you need to operate it like a PC with
+a keyboard and a display connected. I found a Korean keyboard with PS2 connector on Craigslist 
+for $20. An ATI (meh) Rage XL PCI with VGA output from eBay set me back another $20. 
+I think pretty much any video card with PCI should work as long as it's not some power 
+hungry monster. 
 
-The case of the AMIQ sits in the way of the video card, so I had unscrew the motherboard, remove
-the ISA interface board to the signal generation PCB, and awkwardly float the motherboard with
-some insulation foam underneath to prevent short-circuits. A temporary solution at best.
+You can't just plug in the VGA card in the PCI slot because the AMIQ case is in the way. 
+To make it work, I had unscrew the motherboard, remove the interface board to the signal generation PCB, and 
+awkwardly float the motherboard with some insulation foam underneath to prevent a short-circuit. 
+A temporary solution at best.
 
-**You are not supposed to power up a device with bad electrolytics**, but I did it anyway.
-This was the first sign of life:
+**You are not supposed to power up a device with bad electrolytics and a broken fan**, 
+but I did it anyway. This was the first sign of life:
 
 [![First boot image](/assets/amiq/first_boot.jpg)](/assets/amiq/first_boot.jpg)
 *(Click to enlarge)*
@@ -91,15 +89,29 @@ to make the video card fit when the motherboard is mounted in the case.
 [![PCI riser adapter](/assets/amiq/pci_riser_adapter.jpg)](/assets/amiq/pci_riser_adapter.jpg)
 *(Click to enlarge)*
 
+Much better!
+
 # Locked CPU Fan
 
 The fan was completely locked. I don't know how that happens? I replaced it with a socket 7
-cooler from Cooler Master that I bought on eBay for $20. The new fan comes with a heatsink, but
+cooler from Cooler Master, another $20 spent on eBay. The new fan comes with a heatsink, but
 I didn't have any thermal paste on hand, so instead of replacing the full assembly, I unscrewed
 the fan from the heatsink and installed just that. 
 (I *should* apply new thermal paste at some point...)
 
 ![Cooler Master cooler](/assets/amiq/cooler_master_cooler.jpg)
+
+# Installing a CompactFlash Drive
+
+After powering up, the harddrive made a gnarly clicking sound and the BIOS wasn't able to 
+boot from it. Late nineties IBM TravelStar drives may not be as notorious as their DeskStar
+bretheren for being total pieces of shit, but they have a reputation of failing just the same.
+
+I replaced mine with a 16GB CompactFlash drive that I had laying around and an $8 
+[2.5" 44-pin IDE to CompactFlash adapter](https://www.amazon.com/dp/B00S6GIHS2?th=1).
+
+![CompactFlash to 44-pin IDE adapter](/assets/amiq/cf2ide_adapter.jpg)
+
 
 # Motherboard Capacitors
 
@@ -107,10 +119,15 @@ The motherboard was produced in the late nineties and early 2000s, right around 
 electrolytic capacitor disaster that hit pretty much all PC electronics back and mine is no
 exception.
 
+![Rusted and bulging caps](/assets/amiq/rusted_caps.jpg)
+
 There are 33 electrolytic caps on the motherboard and while it's not possible to
 visually determine if the smaller ones have issues, all the larger ones have traces of rust
 at the top. There weren't any signs of leaks, which is great because the fluid inside a cap
 is corrosive and will eat away the hairline PCB traces.
+
+To give an idea how bad the capacitor situation was, I measured a 2.5uF on a 1500uF 
+capacitor. It's really a miracle that the motherboard was able to boot.
 
 Here's the full list:
 
@@ -123,15 +140,11 @@ Here's the full list:
 |     2    	|     47uF 	|     25V 	|      5mm 	|     2mm 	|
 |     7    	|     10uF 	|     25V 	|      4mm 	|   1.5mm 	|
 
-This was my [Mouser shopping list](https://www.mouser.com/Tools/Project/Share?AccessID=875b0d6d85).
 
-**Use at your own risk** and keep the following in mind:
+You can use my [Mouser shopping list](https://www.mouser.com/Tools/Project/Share?AccessID=875b0d6d85)
+if you want, but **you do so at your own risk**: 
 
-* The quantities in the shopping list don't match those of the table above. That's because 
-  I ordered one or two more spare ones in case I screwed up. The smaller caps are cheap and harder
-  to handle. In hindsight, I should have bought even a few more spares.
-
-* Not all capacitors have a low 
+* Not all new capacitors have a low 
   [equivalent series resistance (ESR)](https://en.wikipedia.org/wiki/Equivalent_series_resistance).
 
   Low ESR is important for capacitors that are part of switching voltage
@@ -139,8 +152,12 @@ This was my [Mouser shopping list](https://www.mouser.com/Tools/Project/Share?Ac
   with resistance, results in higher power consumption and thus lower power efficiency.
   It also reduces the lifetime of the capacitor.
 
-  I don't know for which AMIQ capacitors low ESR matters. In the list above,
-  the 1500uF, 1000uF and 470uF ones have a low ESR. The others don't. 
+  I didn't know for which AMIQ capacitors low ESR mattered so I winged it. In the list 
+  above, the 1500uF, 1000uF and 470uF ones have a low ESR. The others don't. 
+
+* The quantities in the shopping list don't match those of the table above. That's because 
+  I ordered one or two spares in case I screwed up. The smaller caps are cheap and harder
+  to handle. In hindsight, I should have bought even a few more spares.
 
 * The voltages don't always match: the ones in the shopping list are sometimes
   higher than the original because the ones with the original voltage weren't available.
@@ -148,31 +165,33 @@ This was my [Mouser shopping list](https://www.mouser.com/Tools/Project/Share?Ac
 
 # Recapping Tools
 
-I had never done a recap before, but Santa gave me a desoldering station for this project!
+25 year old PC motherboards already used complex multi-layer PCBs, so they're not the best 
+practice ground for beginners like me, but Santa had given me a desoldering station and
+I was eager to try it out.
 
 ![Workbench with recapping tools and motherboard](/assets/amiq/recapping_items.jpg)
 
-I used the following tools:
+Here are the tools that I used:
 
 * Yihua 948 desoldering station
 
-  It has a hollow iron and electrical air pump. It's great to remove the solder from
-  through-hole contact with thicker leads.
+  It has a hollow iron and electrical air pump. Great to remove the solder from
+  through-hole contact with thicker leads, but not very useful for smaller caps.
 
 * Pinecil soldering iron
 
   I used this more than the desoldering station. 
 
+* Engineer Solder Sucker
+
+  This thing is amazing. More expensive than cheaper solder suckers, but the silicone
+  tip makes all the difference.
+
 * Fake Amtech flux with a syringe plunger
-
 * Solder wick braid
-
 * Solder wire
-
 * Ceramic tweezers
-
 * Isopropyl alcohol
-
 * Medical swab sticks
 
 # Desoldering Techniques Learned Along the Way
@@ -184,7 +203,7 @@ Here are some random notes about techniques that I learned along the way:
 * Temperature >350C
 
   I used a temperature of 350C and higher. A PC motherboard has a lot of copper layers that
-  are excellent at channeling away the heat of a soldering iron. Some capacitors were easy to
+  channeling away the heat of a soldering iron. Some capacitors were easy to
   remove and to replace. Others were a total pain: they just didn't want to come loose. I 
   think the difference is primarily due to the amount of copper closeby.
 
@@ -192,10 +211,10 @@ Here are some random notes about techniques that I learned along the way:
 
   In an ideal world, you are able to suck enough solder out of the through-hole so that the
   hole opens up and you can simply insert a replacement cap back and and solder it. 
-  In practice, that rarely happens.
+  In practice, that rarely happened.
   Larger caps such as the 1000uF and 1500uF ones have thicker leads and a larger through-hole
   diameter. For those, there is a decent chances that at least one of the hole will free up,
-  but I didn't have a case where both holes were open.
+  but I never had a case where both holes were open.
 
 * The hollow tip of the desoldering pump
 
@@ -219,9 +238,10 @@ Here are some random notes about techniques that I learned along the way:
 
 * Adding solder before removing it
 
-  First adding fresh solder before removing it can do wonders. The extra solder can
+  Adding fresh solder to a joint before removing it can do wonders. The extra solder can
   increase the contact surface between the solder and the soldering iron tip and make the solder
-  heat up much easier.
+  heat up much easier. I didn't use it, but you can buy special solder with a low melting
+  temperature to make desoldering even easier.
 
 * Making use of gravity
 
@@ -273,6 +293,10 @@ when using the gravity method to remove small caps.
 
 If that's not possible, you'll have to alternate between the two leads and gradually work the capacitor
 into its position.
+
+# Replacing the HD
+
+
 
 # Disassembly
 
