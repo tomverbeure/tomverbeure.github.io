@@ -101,16 +101,118 @@ the fan from the heatsink and installed just that.
 
 ![Cooler Master cooler](/assets/amiq/cooler_master_cooler.jpg)
 
-# Installing a CompactFlash Drive
+# Replacing the spinning disk HD with a CompactFlash Drive
 
 After powering up, the harddrive made a gnarly clicking sound and the BIOS wasn't able to 
 boot from it. Late nineties IBM TravelStar drives may not be as notorious as their DeskStar
 bretheren for being total pieces of shit, but they have a reputation of failing just the same.
 
+If you're lucky and the drive still works, you're on borrowed time and should still get rid of it.
+
 I replaced mine with a 16GB CompactFlash drive that I had laying around and an $8 
 [2.5" 44-pin IDE to CompactFlash adapter](https://www.amazon.com/dp/B00S6GIHS2?th=1).
 
 ![CompactFlash to 44-pin IDE adapter](/assets/amiq/cf2ide_adapter.jpg)
+
+One removed, I tried one more time to extract the data of on the HD with a $10
+[USB-to-SATA/IDE adapter](https://www.amazon.com/dp/B08KT3F998), but that didn't work either.
+When these drives fail, it's usually because their head gets stuck. There isn't much
+software can do about that...
+
+![USB to SATA/IDE adapter](/assets/amiq/usb_to_sata_ide_adapter.jpg)
+
+The USB to SATA/IDE adapter is optional if you don't care about extracting the old HD data, 
+but I don't think I'd have been able to complete the installation without 
+this $8 [USB-to-CompactFlash adapter](https://www.amazon.com/dp/B08P517NW5?th=1) that I already
+had laying around after my [Symmetricom S200](/2024/07/14/Symmetricom-S200-NTP-Server-Setup.html)
+adventures.
+
+![USB-to-CompactFlash adapter](/assets/s200/flash_card_reader.jpg)
+
+I use `ddrescue` on Ubuntu Linux to create and write full disk images. 
+
+To install it:
+
+```sh
+sudo apt install gddrescue`
+```
+
+To make a backup of a drive:
+
+```sh
+ddrescue /dev/<src device> amiq-backup.img
+```
+
+In my case, `<src device>` is `sda`. Use `df` to figure out the name of the drive that's connected
+to your USB adapter.
+
+To restore an image to a drive:
+
+```sh
+sudo ddrescue -f amiq_hdd.img /dev/sda log
+```
+
+```
+GNU ddrescue 1.23
+Press Ctrl-C to interrupt
+     ipos:    3253 MB, non-trimmed:        0 B,  current rate:   1003 MB/s
+     opos:    3253 MB, non-scraped:        0 B,  average rate:   1084 MB/s
+non-tried:        0 B,  bad-sector:        0 B,    error rate:       0 B/s
+  rescued:    3253 MB,   bad areas:        0,        run time:          2s
+pct rescued:  100.00%, read errors:        0,  remaining time:         n/a
+                              time since last successful read:         n/a
+Finished                                     
+```
+
+Be careful: when restoring an image to a drive, `Finished` will show up immediately
+even if the data is still being transfered to the drive.
+
+# Installing Firmware - The Official Way
+
+If you start with a blank hard drive, the official way to set up the machine is with 2 Rohde & Schwarz 
+provided floppy disks: the PREPARE disk and the PROGRAM disk.  The AMIQ has been end-of-lifed a long time
+ago and you can't get them anymore, but I was able to find a copy for version 4.00. Not the latest version, 
+there's at least 4.01 version out there, but we'll get to that later.
+
+The PREPARE disk contains a minimal operating system and various hardware related files, but
+not the main AMIQ application. The PROGRAM disk contains additional utilities and the main
+application.
+
+The setup is as follows:
+
+1. Insert the PREPARE disk.
+1. Have the PC boot up from floppy.
+
+  If the AMIQ still has the recommended settings for normal use, booting from floppy
+  will be disabled. You'll need to go to the BIOS menu to enable it.
+
+  After booting, you'll go through a bunch of setup screens.
+
+1. Format the new disk with FDISK.
+
+  The maximum partition size is 2GB, but you have option to add multiple
+  partitions and thus multiple drive letters. I think the remote software
+  is able to deal with that when uploading waveforms: just specify the right
+  drive letter.
+
+1. Enter a bunch AMIQ model information:
+
+  * Model: Mine is an AMIQ04 
+  * IQ_Analog/Digital Board version number
+
+    There are 4 options, 02/03/04 which you'd think match the model number, but
+    apparently not... otherwise they wouldn't ask? I guessed 04 for mine and
+    that worked.
+
+  * Enter serial number
+
+  The AMIQ signal generation board has a CPLD and 2 FPGAs. The information above
+  determines which one is used. For whatever reason, R&S decided that it wasn't
+  worth having some PC readable configuration register to make that automatic.
+
+1. 
+
+The embedded AMIQ application runs on DOS4GW on top of DR-DOS. The official way to 
 
 
 # Motherboard Capacitors
@@ -293,55 +395,6 @@ when using the gravity method to remove small caps.
 
 If that's not possible, you'll have to alternate between the two leads and gradually work the capacitor
 into its position.
-
-# Installing Firmware - The Official Way
-
-If you start with a blank hard drive, the official way to set up the machine is with 2 Rohde & Schwarz 
-provided floppy disks: the PREPARE disk and the PROGRAM disk.  You can't get them anymore, but I was 
-able to find a copy for version 4.00. Not the latest version, there's at least 4.01 version out there, 
-but we'll get to that later.
-
-The PREPARE disk contains a minimal operating system and various hardware related files, but
-not the main AMIQ application. The PROGRAM disk contains additional utilities and the main
-application.
-
-The setup is as follows:
-
-1. Insert the PREPARE disk.
-1. Have the PC boot up from floppy.
-
-  If the AMIQ still has the recommended settings for normal use, booting from floppy
-  will be disabled. You'll need to go to the BIOS menu to enable it.
-
-  After booting, you'll go through a bunch of setup screens.
-
-1. Format the new disk with FDISK.
-
-  The maximum partition size is 2GB, but you have option to add multiple
-  partitions and thus multiple drive letters. I think the remote software
-  is able to deal with that when uploading waveforms: just specify the right
-  drive letter.
-
-1. Enter a bunch AMIQ model information:
-
-  * Model: Mine is an AMIQ04 
-  * IQ_Analog/Digital Board version number
-
-    There are 4 options, 02/03/04 which you'd think match the model number, but
-    apparently not... otherwise they wouldn't ask? I guessed 04 for mine and
-    that worked.
-
-  * Enter serial number
-
-  The AMIQ signal generation board has a CPLD and 2 FPGAs. The information above
-  determines which one is used. For whatever reason, R&S decided that it wasn't
-  worth having some PC readable configuration register to make that automatic.
-
-1. 
-
-The embedded AMIQ application runs on DOS4GW on top of DR-DOS. The official way to 
-
-# Replacing the HD
 
 
 # Disassembly
