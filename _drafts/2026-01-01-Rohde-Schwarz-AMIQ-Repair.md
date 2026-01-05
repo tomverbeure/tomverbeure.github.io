@@ -167,6 +167,82 @@ Finished
 Be careful: when restoring an image to a drive, `Finished` will show up immediately
 even if the data is still being transfered to the drive.
 
+# Configuring the Digital Logic of the Signal Generation PCB
+
+When trying to get the firmware to work, I found it useful to understand how the signal generation PCB
+interacts with the motherboard. And for that, you need to know how various FPGAs and CPLDs are
+interconnected.
+
+There are 3 programmable logic chips on the PCB:
+
+* Sequencer FPGA
+
+  This Altera EPF10K10 Flex10 FPGA is, found on sheet 7 of the schematics, resonsible for general 
+  PCB management. Like all FPGAs, its bitstream is volatile so a new configuration is required after 
+  each power-up. 
+  Unlike most FPGA boards, there is no bitstream configuration flash on the PCB: the FPGA is set
+  to "passive parallel asynchronous: configuration mode and bitstream is loaded by the PC over the 
+  ISA bus each time.
+
+* BER FPGA
+
+  Another Altera EPF10K10 Flex10 FPGA, located on sheet 28 of the schematic. This FPGA is primarily
+  responsible for controller the bit error rate (BER) external interface. This feature is only
+  supported when optoin AMIQ-B1 is enabled, but the FPGA is always there. In fact, even with 
+  the BER option disabled, the FPGA is still responsible for driving the JTAG interface to used
+  to configure the controller CPLD.
+
+  Like the sequencer FPGA, this one is also configure at bootup over the PC ISA bus.
+
+* controller CPLD
+
+  This chip, Altera EPM7128 CPLD, primarily drives the SDRAM pins, so it's a good guess that the full name
+  is SDRAM controller. CPLDs tend to have much less logic resource but back when they were popular, they
+  were definitely faster than FPGAs.
+
+  CPLDs will retain their configuration between power on. The controller CPLD is only programmed once
+  during the initial device setup. 
+
+  Programming happens over JTAG. The JTAG pins are driven by BER FPGA.
+
+The `AMIQ` directory of the R&S `PREPARE` recovery disk contains all the FPGA and CPLD configuration files:
+
+```
+tom@zen:/media/tom/14E4-1358/AMIQ$ ll
+total 166
+drwxr-xr-x 2 tom tom   512 Apr 29  1999 ./
+drwxr-xr-x 5 tom tom  7168 Dec 31  1969 ../
+-rwxr-xr-x 1 tom tom 11942 Mar  2  1999 AMIQINIT.EXE*
+-rw-r--r-- 1 tom tom  2352 Jun  1  1999 B.LZH
+-rw-r--r-- 1 tom tom 15757 Jun  1  1999 CONT_02.LZH
+-rw-r--r-- 1 tom tom 15724 Jun  1  1999 CONT_03.LZH
+-rw-r--r-- 1 tom tom 16623 Jun  1  1999 CONT_04.LZH
+-rwxr-xr-x 1 tom tom 76900 Jan 24  1999 LOADCON.EXE*
+-rw-r--r-- 1 tom tom  6886 Oct 25  1999 SEQ_02.LZH
+-rw-r--r-- 1 tom tom  6886 Oct 25  1999 SEQ_03.LZH
+-rw-r--r-- 1 tom tom  6984 Oct 25  1999 SEQ_04.LZH
+```
+
+* `CONT_*.LZH` are the compressed SVF files for the control CPLD. There are 3 AMIQ version, 02,03 and 04, each
+  with a unique file. During installation, one of this files is uncompressed into a `CON_*.SVF` file and then
+  renamed to `CONTROLS.SVF`. `LOADCON.EXE` is the utility that does the programming. 
+
+* Like the control CPLD, there are 3 bitstreams `SEQ_*.LZH` for the sequencer FPGA. One of the files gets
+  uncompressed and renamed to `S.OUT`. There is only 1 bitstream version of the BER FPGA:
+  `B.LZH`. It gets decompressed and renamed to `B.OUT. `AMIQINIT.EXE` is used to send the `S.OUT` and
+  `B.OUT` bitstreams to the FPGAs.
+
+You may see this error on your AMIQ-connected VGA monitor:
+
+```Error: 243, “AMIQ variant check failed;Board-ID 155: Bit:24/24 Version:05/06”```
+
+This is guaranteed to be a case of using the wrong SEQ bitstream or CONTROL configuration file.
+
+If you have an AMIQ for which the HD has been installed the official way, you'll find
+a `S.OUT`, `B.OUT` and `CONTROL.SVF` file in the `C:\AMIQ` directory. The `SEQ_*.LZH` files
+will be there as well, but the `CONT_*.LZH` won't be. The `PREPARE` installation should
+has all versions of them though.
+
 # Installing Firmware - The Official Way
 
 If you start with a blank hard drive, the official way to set up the machine is with 2 Rohde & Schwarz 
@@ -214,6 +290,9 @@ The setup is as follows:
 
 The embedded AMIQ application runs on DOS4GW on top of DR-DOS. The official way to 
 
+
+XXX When using the official installation way, `B.OUT` got replaced by `NONE.OUT` in
+`B.CFG`.
 
 # Motherboard Capacitors
 
