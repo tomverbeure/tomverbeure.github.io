@@ -17,7 +17,16 @@ feature_list = [
     "K17 - Digital Standard 1XEV-DO",
     "K18 - ",
     "K19 - Digital Standard 802.11",
-    "K20 - "
+    "K20 - ",
+    "K20 - ",
+    "K20 - ",
+    "K20 - ",
+    "K20 - ",
+    "K20 - ",
+    "K20 - ",
+    "K20 - ",
+    "K20 - ",
+    "K20 - ",
     ]
 
 if len(sys.argv) != 3:
