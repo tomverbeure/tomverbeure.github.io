@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Notes about Basic Polyphase Decimation Filters
+title: Polyphase Decimation Filter Banks
 date:   2026-01-25 00:00:00 -1000
 categories:
 ---
