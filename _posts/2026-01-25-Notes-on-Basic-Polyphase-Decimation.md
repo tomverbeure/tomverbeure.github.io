@@ -14,40 +14,45 @@ categories:
 # Introduction
 
 I've been reading up on polyphase filters and multi-rate digital signal processing.
-It's a broad topic, but I'm really not an expert, so to internalize even the basics,
-I like to expand the generic math into concretely worked-out, smaller examples to
-to better internalize things.
+It's a broad topic, but as a beginner I need to start with the basics. And to better 
+internalize those, I like to expand the generic math into concretely worked-out, 
+smaller examples. 
 
-And if I'm going to write things down anyway, I might as well put them in my blog
-post so I know where to find look if I want to review things later. 
+And if I'm going to write things down anyway, I might as well put them in a blog
+post, this way I know where to look if I want to review things later. 
 
 I hope the content here is useful to someone, but don't assume that I know what
-I'm doing. There are hundreds of articles on the web on the same topic, make sure to
+I'm doing. There are hundreds of articles on the web on the same topic, so make sure to
 sample a bunch of them to get different perspectives.
 
 One of the things that clicked with me while writing this, is the benefit of rearranging
-the mathematical equation so that it reflects the hardware implementation. In the
-past, I've seen a different of architectures for polyphase filters, that I was able
-to understand intuitively, linking them to the math adds an additional layer of
+the mathematical equations so that they reflect the hardware implementation. In the
+past, I've seen a different of architectures for polyphase filters. I was able
+to understand them intuitively but linking them to math adds an additional layer of
 confidence.
 
 So that's one of the things I'm doing here: switch back and forth between math
 and hardware architecture.
 
-# Decimation with FIR Anti-Aliasing Filter
+# The Decimation and Anti-Aliasing FIR Filter Combo
 
-In digital signal processing (DSP), decimation is an operation where you retain
-1 out of every M samples. It has the benefit of bringing the sample rate down,
-and thus the amount of data that flows through the system, the clock speeds, 
-the number of calculations etc. Decimation is a very common operation.
+In digital signal processing (DSP), decimation is an operation in which you retain
+1 out of every M samples and throw away the rest. It has the benefit of bringing the 
+sample rate down, and thus the amount of data that flows through the system, the clock 
+speed, the number of calculations etc. Decimation is a very common operation.
 
 When following DSP theory, if you want to decimate a signal from a sample
 rate $$f_s$$ to a sample rate $$f_{s/M}$$, you first need to apply an anti-aliasing 
 filter that removes all the frequeny components above $$f_s/(2 \cdot M)$$ to make sure
 that the Nyquist criterium remains valid after the sample frequency has
-been reduced.
+been reduced.[^Nyqist]
 
-When using an FIR filter, the conceptual block diagram then looks like this:
+[^Nyqist]: This is not entirely true. You can also apply a bandpass anti-aliasing filter 
+           that only retains a part of the spectrum above the new sample rate, and use
+           decimation to bring that section down to the baseband. But that's a
+           topic for a future blog post.
+
+When using an FIR filter, the conceptual block diagram looks like this:
 
 ![Filter then decimate basic block diagram](/assets/polyphase/polyphase-naive_decimation_filter_basic_block_diagram.drawio.svg)
 
@@ -58,9 +63,10 @@ $$
 H(z) = h_0 + h_1 z^{-1} + h_2 z^{-2} + h_3 z^{-3} + h_4 z^{-4} + h_5 z^{-5} + h_6 z^{-6}
 $$
 
-In this kind of notation, $$z^{-2}$$ means input value that was delayed by 2 discrete
-steps. In electronics, the equation above has a delay line of 6 elements and each
-element is then multiplied by a different value.
+In this kind of notation, $$z^{-2}$$ means the input value that was delayed by 2 discrete
+steps. In electronics, the equation above has a delay line of 6 elements, each
+element is multiplied by a different value, and the result of those multiplication is
+added together.
 
 Mathematically, the combiation of a filter followed by a decimator is often expressed
 like this:
@@ -144,7 +150,7 @@ multipliers see samples $$x[3i+2]$$.
 
 # Polyphase decomposition of the original filter
 
-Let's take the equation for value $$y[2]$$ again and decorate the 7 terms with the same colors
+Let's take the earlier equation for value $$y[3]$$ and decorate the 7 terms with the colors
 of the diagram:
 
 $$
@@ -182,7 +188,7 @@ $$
 **This is the polyphase decomposition of the original filter.** 
 
 The exponent of 3 in $$z^3$$ tells us that input to each sub-filter is a decimated version, because if
-we substitute $$z^{-3}$$ into the set of equations $$H_i(z)$$, we get:
+we substitute $$z^{3}$$ into the set of equations $$H_i(z)$$, we get:
 
 $$
 H_0(z^3) = h_0 + h_3 {z^3}^{-1} + h_6 {z^3}^{-2} \\
@@ -264,7 +270,7 @@ Converted to a hardware diagram:
 
 ![Polyphase decimation hardware diagram after applying noble identity](/assets/polyphase/polyphase-noble_identity.drawio.svg)
 
-It's not immediately obvious, but this last diagram is similar to the previous one, but we've
+It's not immediately obvious, but this last diagram is similar to the previous one after we've
 rearranged some items:
 
 * there's now 1 decimator per phase instead of one per coefficient.
@@ -272,7 +278,7 @@ rearranged some items:
   3 banks of multipliers with addition, and then one final addition.
 * each multiplier-addition bank has its own delay elements.
 
-# Re-using Common Hardware in the Fast Clock Domain
+# Reusing Common Hardware in the Fast Clock Domain
 
 In the previous diagram, it's clear that there's a lot of common hardware between
 the different phases. We can exploit that by doing everything in the fast clock domain,
@@ -329,8 +335,8 @@ Extract common $$z^{-3}$$ and $$z^{-6}$$:
 $$
 \begin{alignedat}{0}
 H(z) = && ( \color{red}{h_0 z^0} + \color{green}{h_1 z^{-1}}  + \color{blue}{h_2 z^{-2}} )   \\
-     + && z^{-3} ( \color{red}{h_3 z^{-0}}  + \color{green}{h_4 z^{-1}}  + \color{blue}{h_5 z^{-2}} ) \\ 
-     + && z^{-6} ( \color{red}{h_6 z^{-0}} ) \\
+     + && z^{-3} ( \color{red}{h_3 z^{0}}  + \color{green}{h_4 z^{-1}}  + \color{blue}{h_5 z^{-2}} ) \\ 
+     + && z^{-6} ( \color{red}{h_6 z^{0}} ) \\
 \end{alignedat}
 $$
 
