@@ -11,6 +11,61 @@ categories:
 * TOC
 {:toc}
 
+# Introduction
+
+I my earlier blog post about [polyphase decimation](/2026/01/25/Notes-on-Basic-Polyphase-Decimation.html), my
+reason for looking at that topic was "reading up on polyphase filters and multi-rate digital signal processing",
+but to be more specific, it's a fantastic video by Fred Harris called 
+["Recent Interesting and Useful Enchancements of Polyphase Filter Banks"][pfb_video]. The video is more than
+90min long and is a lot to process when your DSP knowledge is lacking.
+
+[pfb_video]: (https://dsp.stackexchange.com/questions/43344/how-to-implement-polyphase-filter)
+
+I've watched the video a few times now, and while I kind of get what he's doing, I made me realize even more how skin-deep
+my DSP knowledge really is.
+
+For example, I'm know that sampling an analog signal create a positive and negative spectrum, but I couldn't really
+tell you why. Or the video talks about a *complex heterodyne* of the input signal, but I can't really explain how
+the outcome of that operation different from mixing an input signal with a regular sinusoid. 
+
+I decided to fix this, dive into the subject and try to fill the holes in my knowledge. In the process, I'm obviously
+running into bigger gaps: I've known for quite a while that there's such a thing as the Hilbert transformation, but
+I couldn't explain what it's used for if my life depended on it.
+
+In the blog posts, and future ones, I'm writing down some of the stuff that I've learned. 
+
+# Converting an Analog Signal to Digital
+
+The starting point of all DSP operations is to get the real world analog signal into the digital domain.
+
+The width of spectrum of the analog input signal is in theory infinite. The magnitude spectrum is also 
+symmetric around the Y axis. When you have an analog-to-digital converter (ADC) with a sample frequency $$f_s$$, 
+the spectrum at the input of the ADC is replacated for each multiple of $$f_s$$. If you don't remove all the frequencies 
+that are higher than $$f_{s}/2$$ and lower than $$-f_{s}/2$$, you'll create end up with aliasing. 
+
+In the diagram belows, you can see how the contribution of each frequency consists of not only the green frequency
+of interest, but also the undesired red signals of all multiples $$f_s$$, positive and negative.
+
+![Analog to digital conversion without anti-aliasing low pass filter](/assets/polyphase/sampling-analog_to_digital_without_lpf.drawio.svg)
+
+A low pass anti-aliasing filter that sits before the ADC removes the undesired frequencies. Filters never have
+a vertical cut-off characteristic. In the diagram below, the filter is cutting away some of the green signal, but
+that's ok: whichever signal you want to process is normally designed such that a area in the transition band won't
+be used anyway.
+
+![Analog to digital conversion with anti-aliasing filter](/assets/polyphase/sampling-analog_to_digital_with_lpf.drawio.svg)
+
+The important part is that we only have the green signal left after sampling. To avoid interference between the duplicate image
+of the spectrume, that filter must be design such that no more signal is left above half the sample frequency, $$f_s/2$$,
+also called the *Nyquist frequency*.
+
+# Why Negative Frequencies?
+
+The first question is: where are those negative frequencies coming from?
+
+When sampling an analog signal with a single ADC, they are a purely mathematical construct?
+
+
 
 # References
 
