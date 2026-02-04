@@ -11,17 +11,17 @@ categories:
 # Introduction
 
 [My Rohde & Schwarz AMIQ teardown blog post](/2025/04/26/RS-AMIQ-Teardown-Analog-Deep-Dive.html)
-used a working unit, but that wasn't the case when I first received it. On the contrary, many
+featured a working unit, but that wasn't the case when I first received it. On the contrary, many
 hours were spent getting it up and running.
 
 There were 2 major issues:
 
-* all the electrolystic capacitors of the PC motherboard has to be replaced.
-* the hard drive was toast.
+* all the electrolytic capacitors of the PC motherboard has to be replaced
+* the hard drive was toast, and with it all the software to make the unit run
 
-# The PC System
+# A Late Nineties PC
 
-The top side of the AMIQ contains a regular early century PC: motherboard, power supply,
+The top side of the AMIQ contains a regular turn-of-the-century PC: motherboard, power supply,
 hard drive, floppy drive and something that's plugged in an ISA slot.
 
 [![AMIQ top size with PC motherboard](/assets/amiq/amiq_pc_motherboard_side.jpg)](/assets/amiq/amiq_pc_motherboard_side.jpg)
@@ -32,9 +32,9 @@ hard drive, floppy drive and something that's plugged in an ISA slot.
   You can find the details at 
   [The Retro Web](https://theretroweb.com/motherboards/s/msi-ms-5169-al9), 
   but it's an pretty standard late nineties affair with support for a large selection of socket 7 
-  CPUs from Intel, AMD and Winchip. It supports SDR UDIMM RAM and 72-pin EDO RAM and has 4 PCI, 1 AGP, 
-  2 16 ISA slots, a floppy and IDE interface and the usually assortment of smaller interfaces for 
-  mouse, keyboard, serial port etc.
+  CPUs from Intel, AMD and Winchip. It's compatible with SDR UDIMM RAM and 72-pin EDO RAM and 
+  it has 4 PCI, 1 AGP, 2 16 ISA slots, a floppy and IDE interface and the usually assortment of 
+  smaller interfaces for mouse, keyboard, serial port etc.
 
   My motherboard came with an IDT WinChip C6 CPU and a whopping 64MB of SDRAM. The CPU is rated
   at 200 MHz, but the boot screen reports a 120 MHz processor clock. I haven't yet tried to increase
@@ -43,14 +43,14 @@ hard drive, floppy drive and something that's plugged in an ISA slot.
 * IBM TravelStar hard drive
 
   This drive has a capacity of 6.4GB of which only ~2GB is used for the AMIQ. It uses a parallel
-  IDE interface. This hard drive has a reputation of failing read/write heads, which is probably
-  what happened with mine.
+  IDE interface. This type of hard drive has a reputation of failing read/write heads, which is 
+  probably what happened with mine.
 
 * 3 1/2" floppy drive
 * Power supply
 
 At the bottom right of the image, we can see a board that's plugged into the one of the 2 16-bit
-ISA slots. This is the interface that connects the PC system to the signal generation board.
+ISA slots. This is the interface that connects the PC system with the signal generation board.
 
 # Assessing the Damage
 
@@ -66,16 +66,16 @@ The PC system on my AMIQ was in bad shape.  It had the following issues:
 
 # Installing a Video Card and Keyboard
 
-If you want to do any restoration work on the AMIQ, you need to operate it like a PC with
+If you want to do any restoration work on the AMIQ, you need to operate it like a PC, with
 a keyboard and a display connected. I found a Korean keyboard with PS2 connector on Craigslist 
 for $20. An ATI (meh) Rage XL PCI with VGA output from eBay set me back another $20. 
 I think pretty much any video card with PCI should work as long as it's not some power 
 hungry monster. 
 
-You can't just plug in the VGA card in the PCI slot because the AMIQ case is in the way. 
-To make it work, I had unscrew the motherboard, remove the interface board to the signal generation PCB, and 
-awkwardly float the motherboard with some insulation foam underneath to prevent a short-circuit. 
-A temporary solution at best.
+Forget about just plugging in the VGA card in the PCI slot because the AMIQ case is in the way. 
+To make it work, I had unscrew the motherboard, remove the interface board to the signal generation 
+PCB, and awkwardly float the motherboard with some insulation foam underneath to prevent a 
+short-circuit.  A temporary solution at best.
 
 **You are not supposed to power up a device with bad electrolytics and a broken fan**, 
 but I did it anyway. This was the first sign of life:
@@ -101,7 +101,7 @@ the fan from the heatsink and installed just that.
 
 ![Cooler Master cooler](/assets/amiq/cooler_master_cooler.jpg)
 
-# Replacing the spinning disk HD with a CompactFlash Drive
+# Replacing the Spinning Disk Hard Drive with a CompactFlash Drive
 
 After powering up, the harddrive made a gnarly clicking sound and the BIOS wasn't able to 
 boot from it. Late nineties IBM TravelStar drives may not be as notorious as their DeskStar
@@ -114,10 +114,10 @@ I replaced mine with a 16GB CompactFlash drive that I had laying around and an $
 
 ![CompactFlash to 44-pin IDE adapter](/assets/amiq/cf2ide_adapter.jpg)
 
-One removed, I tried one more time to extract the data of on the HD with a $10
+Once removed, I tried to extract the data on the HD one more time with a $10
 [USB-to-SATA/IDE adapter](https://www.amazon.com/dp/B08KT3F998), but that didn't work either.
-When these drives fail, it's usually because their head gets stuck. There isn't much
-software can do about that...
+When these drives fail, it's usually because their heads gets stuck in their 
+protected-against-vibration idle position. There isn't much software can do about that...
 
 ![USB to SATA/IDE adapter](/assets/amiq/usb_to_sata_ide_adapter.jpg)
 
