@@ -6,15 +6,18 @@ from scipy.signal import firwin
 
 SIGNAL1_FREQ_MHZ    = 22
 SIGNAL2_FREQ_MHZ    = 16
-LO_FREQ_MHZ         = 20
+LO_FREQ_MHZ         = 18
 
 SAMPLE_CLOCK_MHZ    = 100
-NR_SAMPLES          = 1024
+NR_SAMPLES          = 2048
 
 LABEL_OFFSET_MHZ    = 1
 
-FIR_TAPS            = 51
-FIR_PASSBAND_MHZ    = 6
+FIR_TAPS                = 201
+FIR_PASSBAND_MHZ        = 5
+FIR_KAISER_BETA         = 12.0
+
+DECIM_FACTOR        = 10
 
 sample_clock_hz     = SAMPLE_CLOCK_MHZ * 1e6
 signal1_freq_hz     = SIGNAL1_FREQ_MHZ * 1e6
@@ -46,7 +49,7 @@ signal_real_het = signal * lo_signal
 
 # Low-pass FIR filter: sinc window method (via firwin)
 fir_cutoff          = FIR_PASSBAND_MHZ / (SAMPLE_CLOCK_MHZ / 2.0)
-h_lpf               = firwin(FIR_TAPS, fir_cutoff, window="blackman", pass_zero=True)
+h_lpf               = firwin(FIR_TAPS, fir_cutoff, window=("kaiser", FIR_KAISER_BETA), pass_zero=True)
 
 #============================================================
 # First plot
@@ -136,6 +139,9 @@ signal_complex_het  = signal * complex_lo_signal
 # Apply the low-pass filter
 signal_het_lpf      = np.convolve(signal_complex_het, h_lpf, mode="same")
 
+signal_decim        = signal_het_lpf[::DECIM_FACTOR]
+sample_clock_decim_hz = sample_clock_hz / DECIM_FACTOR
+
 complex_lo_fft_vals = np.fft.fftshift(np.fft.fft(complex_lo_signal * window))
 complex_lo_mag      = np.abs(complex_lo_fft_vals) / coherent_gain_complex
 complex_lo_mag_db   = 20 * np.log10(np.maximum(complex_lo_mag, 1e-12))
@@ -202,3 +208,32 @@ fig_iq.tight_layout()
 fig_iq.savefig("complex_heterodyne-iq_lpf.svg", format="svg")
 fig_iq.savefig("complex_heterodyne-iq_lpf.png", format="png", dpi=200)
 plt.show()
+
+#============================================================
+# Fourth plot
+#============================================================
+
+window_decim = np.kaiser(len(signal_decim), 14.0)
+coherent_gain_decim = np.sum(window_decim) / 2.0
+decim_fft_vals = np.fft.fftshift(np.fft.fft(signal_decim * window_decim))
+decim_freqs_hz = np.fft.fftshift(
+    np.fft.fftfreq(len(signal_decim), d=1.0 / sample_clock_decim_hz)
+)
+decim_mag = np.abs(decim_fft_vals) / coherent_gain_decim
+decim_mag_db = 20 * np.log10(np.maximum(decim_mag, 1e-12))
+
+fig_decim, ax_decim = plt.subplots(1, 1, figsize=(8, 4))
+ax_decim.plot(decim_freqs_hz / 1e6, decim_mag_db)
+ax_decim.set_xlabel("Frequency (MHz)")
+ax_decim.set_ylabel("Magnitude (dB)")
+ax_decim.set_title("Decimated Signal Spectrum")
+ax_decim.grid(True)
+ax_decim.set_xlim(decim_freqs_hz[0] / 1e6, decim_freqs_hz[-1] / 1e6)
+ax_decim.set_ylim(-80, None)
+
+fig_decim.tight_layout()
+fig_decim.savefig("complex_heterodyne-decim_fft.svg", format="svg")
+fig_decim.savefig("complex_heterodyne-decim_fft.png", format="png", dpi=200)
+plt.show()
+
+
