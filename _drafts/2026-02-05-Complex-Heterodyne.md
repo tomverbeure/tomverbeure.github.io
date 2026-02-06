@@ -1,6 +1,6 @@
 ---
 layout: post
-title: A Complex Heterodyne DSP Operation Explained
+title: A Complex Heterodyne Operation Explained
 date:   2026-02-05 00:00:00 -1000
 categories:
 ---
@@ -12,8 +12,8 @@ categories:
 
 TODO:
 
-* mention analytic signal
-* show with Euler identity and DTDF formula why there is a negative spectrum. 
+* show with Euler identity and DTDF formula why there is a negative spectrum?
+* link to graph generation script
 
 # Introduction
 
