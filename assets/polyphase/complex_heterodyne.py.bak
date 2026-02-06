@@ -4,8 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.signal import firwin
 
-from signal_gen import SigInfo, generate_signal
-
 SIGNAL1_FREQ_MHZ    = 22
 SIGNAL2_FREQ_MHZ    = 17
 
@@ -28,37 +26,42 @@ LPF_KAISER_BETA     = 12.0
 DECIM_FACTOR        = 10
 
 # Stopband filter to create out-of-band noise
-OOB_NOISE_FIR_TAPS              = 301
-OOB_NOISE_STOPBAND_CENTER_MHZ   = 20
-OOB_NOISE_STOPBAND_WIDTH_MHZ    = 14
-OOB_NOISE_KAISER_BETA           = 14.0
+OOB_NOISE_FIR_TAPS          = 301
+OOB_NOISE_SBF_LOW_MHZ       = 13
+OOB_NOISE_SBF_HIGH_MHZ      = 27
+OOB_NOISE_KAISER_BETA       = 14.0
 
 sample_clock_hz     = SAMPLE_CLOCK_MHZ * 1e6
 signal1_freq_hz     = SIGNAL1_FREQ_MHZ * 1e6
 signal2_freq_hz     = SIGNAL2_FREQ_MHZ * 1e6
 lo_freq_hz          = LO_FREQ_MHZ      * 1e6
 
-#============================================================
-# Generate test signal
-#============================================================
-signal_info = SigInfo(
-    nr_samples         = NR_SAMPLES,
-    sample_rate        = sample_clock_hz,
-    frequencies_hz     = [signal1_freq_hz, signal2_freq_hz],
-    amplitudes_db      = [SIGNAL1_AMPL_DB, SIGNAL2_AMPL_DB],
-    stopband_center_hz = OOB_NOISE_STOPBAND_CENTER_MHZ * 1e6,
-    stopband_width_hz  = OOB_NOISE_STOPBAND_WIDTH_MHZ * 1e6,
-    noise_floor_db     = FLOOR_NOISE_AMPL_DB,
-    oob_noise_db       = OOB_NOISE_AMPL_DB,
-    oob_filter_taps    = OOB_NOISE_FIR_TAPS,
-    oob_kaiser_beta    = OOB_NOISE_KAISER_BETA,
-)
+signal1_ampl        = 10 ** (SIGNAL1_AMPL_DB / 20.0)
+signal2_ampl        = 10 ** (SIGNAL2_AMPL_DB / 20.0)
+noise_floor_rms     = 10 ** (FLOOR_NOISE_AMPL_DB / 20.0)
+oob_noise_rms       = 10 ** (OOB_NOISE_AMPL_DB / 20.0)
 
-t, signal = generate_signal(signal_info)
+t                   = np.arange(NR_SAMPLES) / sample_clock_hz
 
-#============================================================
-# Perform all DSP operations
-#============================================================
+signal_pure         = (  signal1_ampl * np.sin(2 * np.pi * signal1_freq_hz * t)
+                       + signal2_ampl * np.cos(2 * np.pi * signal2_freq_hz * t) )
+
+# Add some noise to show a real noise floor in the spectrum...
+noise_floor         = np.random.normal(0.0, noise_floor_rms, NR_SAMPLES)
+
+oob_noise           = np.random.normal(0.0, oob_noise_rms, NR_SAMPLES)
+
+oob_noise_cutoffs = [ OOB_NOISE_SBF_LOW_MHZ / (SAMPLE_CLOCK_MHZ / 2.0),
+                      OOB_NOISE_SBF_HIGH_MHZ / (SAMPLE_CLOCK_MHZ / 2.0) ]
+
+oob_noise_h = firwin( OOB_NOISE_FIR_TAPS,
+                      oob_noise_cutoffs,
+                      window=("kaiser", OOB_NOISE_KAISER_BETA),
+                      pass_zero="bandstop" )
+
+oob_noise_filtered = np.convolve(oob_noise, oob_noise_h, mode="same")
+
+signal              = signal_pure + noise_floor + oob_noise_filtered
 
 lo_signal           = np.sin(2 * np.pi * lo_freq_hz * t)
 signal_real_het     = signal * lo_signal
@@ -76,6 +79,7 @@ h_lpf               = firwin(LPF_FIR_TAPS, fir_cutoff, window=("kaiser", LPF_KAI
 
 # Apply the low-pass filter
 signal_het_lpf      = np.convolve(signal_complex_het, h_lpf, mode="same")
+
 
 # Decimate the signal
 signal_decim        = signal_het_lpf[::DECIM_FACTOR]
@@ -109,7 +113,6 @@ freqs_hz = np.fft.fftshift(np.fft.fftfreq(NR_SAMPLES, d=1.0 / sample_clock_hz))
 
 mag = np.abs(fft_vals) / coherent_gain_real
 mag_db = 20 * np.log10(np.maximum(mag, 1e-12))
-mag_db -= np.max(mag_db)
 ax_freq.plot(freqs_hz / 1e6, mag_db)
 
 expected_peaks = [
@@ -170,12 +173,10 @@ plt.show()
 het_fft_vals = np.fft.fftshift(np.fft.fft(signal_real_het * window))
 het_mag = np.abs(het_fft_vals) / coherent_gain_real
 het_mag_db = 20 * np.log10(np.maximum(het_mag, 1e-12))
-het_mag_db -= np.max(het_mag_db)
 
 lo_fft_vals = np.fft.fftshift(np.fft.fft(lo_signal * window))
 lo_mag = np.abs(lo_fft_vals) / coherent_gain_real
 lo_mag_db = 20 * np.log10(np.maximum(lo_mag, 1e-12))
-lo_mag_db -= np.max(lo_mag_db)
 
 fig_het, (ax_input, ax_het) = plt.subplots(2, 1, figsize=(8, 7))
 ax_input.plot(freqs_hz / 1e6, mag_db)
@@ -229,22 +230,18 @@ sample_clock_decim_hz = sample_clock_hz / DECIM_FACTOR
 complex_lo_fft_vals = np.fft.fftshift(np.fft.fft(complex_lo_signal * window))
 complex_lo_mag      = np.abs(complex_lo_fft_vals) / coherent_gain_complex
 complex_lo_mag_db   = 20 * np.log10(np.maximum(complex_lo_mag, 1e-12))
-complex_lo_mag_db   -= np.max(complex_lo_mag_db)
 
 complex_het_fft_vals = np.fft.fftshift(np.fft.fft(signal_complex_het * window))
 complex_het_mag = np.abs(complex_het_fft_vals) / coherent_gain_complex
 complex_het_mag_db = 20 * np.log10(np.maximum(complex_het_mag, 1e-12))
-complex_het_mag_db -= np.max(complex_het_mag_db)
 
 het_lpf_fft_vals = np.fft.fftshift(np.fft.fft(signal_het_lpf * window))
 het_lpf_mag = np.abs(het_lpf_fft_vals) / coherent_gain_complex
 het_lpf_mag_db = 20 * np.log10(np.maximum(het_lpf_mag, 1e-12))
-het_lpf_mag_db -= np.max(het_lpf_mag_db)
 
 fir_fft_vals = np.fft.fftshift(np.fft.fft(h_lpf, n=NR_SAMPLES))
 fir_mag = np.abs(fir_fft_vals)
 fir_mag_db = 20 * np.log10(np.maximum(fir_mag, 1e-12))
-fir_mag_db -= np.max(fir_mag_db)
 
 fig_lo, (ax_lo, ax_complex_het) = plt.subplots(2, 1, figsize=(8, 7))
 ax_lo.plot(freqs_hz / 1e6, mag_db, label="Input signal")
@@ -327,7 +324,6 @@ decim_freqs_hz = np.fft.fftshift(
 )
 decim_mag = np.abs(decim_fft_vals) / coherent_gain_decim
 decim_mag_db = 20 * np.log10(np.maximum(decim_mag, 1e-12))
-decim_mag_db -= np.max(decim_mag_db)
 
 fig_decim, ax_decim = plt.subplots(1, 1, figsize=(8, 4))
 ax_decim.plot(decim_freqs_hz / 1e6, decim_mag_db)
