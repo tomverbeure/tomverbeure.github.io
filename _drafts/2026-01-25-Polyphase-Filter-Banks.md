@@ -12,35 +12,53 @@ categories:
 * TOC
 {:toc}
 
-TODO:
+# Baseline
 
-* mention analytic signal
-* show with Euler identity and DTDF formula why there is a negative spectrum. 
-* hint at polyphase usage
-* block diagram of complex heterodyne, then FIR, then decimation
+I ended previous blog with questions about the efficiency of a pipeline that consists of
+a complex heterodyne, a low pass filter and decimation. 
 
-# Introduction
+Let's do a quick recap of where we left things with a diagram of the DSP pipeline: 
 
-I my earlier blog post about [polyphase decimation](/2026/01/25/Notes-on-Basic-Polyphase-Decimation.html), my
-reason for looking at that topic was "reading up on polyphase filters and multi-rate digital signal processing",
-but to be more specific, it's a fantastic video by Fred Harris called 
-["Recent Interesting and Useful Enchancements of Polyphase Filter Banks"][pfb_video]. The video is more than
-90min long and is a lot to process when your DSP knowledge is lacking.
+![Rotator, LPF, decimator](/assets/polyphase/complex_heterodyne-rot_lpf_decim.drawio.svg)
 
-[pfb_video]: (https://dsp.stackexchange.com/questions/43344/how-to-implement-polyphase-filter)
+* $$n$$ indicates a discrete time stamp. 
+* $$\omega_k$$ is the center frequency of channel $$k$$ in normalized radians per sample. 
+  If $$F_s$$ is the sampling rate and $$F_k$$ is the center frequency of the channel,
+  then $$\omega_k = 2 \pi \frac{F_k}{F_s}$$.
+* $$s[n]$$ is a real signal that comes out of a single channel ADC.
+* $$e^{-j \omega_k n}$$ is a complex numerical local oscillator. It has a normalized 
+  frequency of the center band of channel $$k$$.
+* $$H_\text{lpf}(z)$$ is the discrete transfer function of a low-pass filter that
+  blocks all frequencies outside of the baseband.
+* The output of the low-pass filter is $$y[n]$$.
+* M:1 is a factor $$M$$ decimator.
+* $$y[nM]$$ is the final output, a sequence of one out of $$M$$ $$y[n]$$ samples.
+* Thin arrows indicate real numbers, fat arrows carry complex numbers.
 
-I've watched the video a few times now, and while I kind of get what he's doing, I made me realize even more how skin-deep
-my DSP knowledge really is.
+In a DSP, one of the most critical resources is multipication and the number of multiplications
+per second is often used to the main indicator by which to judge the efficiency of an 
+algorithm or operation.
 
-For example, I'm know that sampling an analog signal create a positive and negative spectrum, but I couldn't really
-tell you why. Or the video talks about a *complex heterodyne* of the input signal, but I can't really explain how
-the outcome of that operation different from mixing an input signal with a regular sinusoid. 
+Let's evaluate the number of multiplications for this architecture with:
 
-I decided to fix this, dive into the subject and try to fill the holes in my knowledge. In the process, I'm obviously
-running into bigger gaps: I've known for quite a while that there's such a thing as the Hilbert transformation, but
-I couldn't explain what it's used for if my life depended on it.
+* $$F_s$$ = 100 Msps
+* $$H_\text{lpf}(z)$$ is an FIR with 201 real taps and has linear phase, which makes the
+  coefficients symmetric around the center tap. That reduces the number of multiplications
+  by half.
 
-In the blog posts, and future ones, I'm writing down some of the stuff that I've learned. 
+The number of multiplications per second is:
+
+* The complex mixer multiplies a real sample with a complex number, so 2 per operation.
+  Good for 200M per second.
+* The low pass filter has 201 real taps that require 101 complex multiplications due to
+  symmetry, for a total of a whopping 101 x 2 100M = 20200M operations per second.
+
+Total: 20.4G multiplications per second!
+
+This is our baseline, and it's a lot. Let's see what we can do about this...
+
+# Straightforward Polyphase Filtering and Decimation
+
 
 # References
 

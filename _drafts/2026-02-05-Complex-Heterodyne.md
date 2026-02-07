@@ -106,19 +106,44 @@ the positive side. This is as it should be: to display the spectrum, we performe
 [Discrete Time Fourier Transformation (DTFT)](https://en.wikipedia.org/wiki/Discrete-time_Fourier_transform),
 which I'll call the Fourier transform from now on for brevity.
 
-A Fourier transform determines the sinusoidal components in the signal under test by 
-multiplying them by $$sin(2 \pi f_i t)$$ and $$cos(2 \pi f_i t)$$ for all 
-frequency values. For each frequency $$f_i$$, you get 2 values, let's call them $$I_i$$ and $$Q_i$$ 
-so that the frequency component is $$I_i \cos(2 \pi f_i t) + Q_i \sin(2 \pi f_i t)$$. The 
-amplitude of that frequency is $$\sqrt{I_i^2 + Q_i^2)}$$ and the phase is 
-$$arctan(\frac{Q_i}{I_i})$$. For notational convenience, $$I_i$$ and $$Q_i$$ are often 
-combined into a single complex number $$c_i = I_i + j Q_i$$.
+The definition of the DTFT is as follows:
+
+$$
+X[k] = \sum_{n=0}^{N-1}{x[n] e^{-j {2 \pi k n}/{N} } }
+$$
+
+That looks intimidating, but if we're using the Euler identity, we can rewrite this as:
+
+$$
+X[k] = \sum_{n=0}^{N-1}{x[n] cos( \frac{2 \pi k n}{N} ) } - j \sum_{n=0}^{N-1}{x[n] sin( \frac{2 \pi k n}{N} ) } 
+$$
+
+For a given frequency bucket $$k$$, we are multiplying the input signal by cosine and by a sine.
+This is essentially a correlation function that calculate the extent by which sine and cosine are part
+of the input signal. Since the cosine and sine havec a 90 degree phase difference between them,
+we're using complex notation for the final number: 
+
+$$
+X[k] = R + j I
+$$
+
+The magnitude of the frequency of each frequench components is: 
+
+$$
+\left| X[k] \right| = \sqrt{R^2 + I^2}
+$$
+
+The phase is the angle between R and I is:
+
+$$
+\angle{X[k]} = \arctan(\frac{I}{R})
+$$
 
 If the Fourier transform is applied to signal that doesn't have complex samples, 
 as is the case when you use only 1 ADC, then the result will have
 [Hermitian symmetry](https://www.dsprelated.com/freebooks/sasp/Symmetry_DTFT_Real_Signals.html):
 for every complex value on the positive frequency side, the corresponding negative frequency value
-will have the same real value $$I_i$$ and an inverted imaginary value $$Q_i$$. Because of this,
+will have the same real value $$R_k$$ and an inverted imaginary value $$I_k$$. Because of this,
 the amplitude is the same but the phase is inverted.
 
 In the frequency plot above, only the amplitude is shown, hence the mirror image with
@@ -308,6 +333,14 @@ Wrapping up, we arrived at the following block diagram of operations and transfo
 * A low pass filter removes all frequencies that don't reside in the baseband.
 * A decimator brings down the sample rate from 100 MHz to 10 MHz
 * The output is a complex 10 MHz sample stream.
+
+Expressed mathematically:
+
+$$
+y[m] = \big[(x[n] e^{-j 2 \pi f_0 n}) * h_{lpf}[n]\big] \downarrow M \\
+f_0 = \frac{f_c}{f_s}
+$$
+
 
 The thing works, but is the optimal of doing things? My 
 [previous blog post about polyphase decimation filtering](/2026/01/25/Notes-on-Basic-Polyphase-Decimation.html)
