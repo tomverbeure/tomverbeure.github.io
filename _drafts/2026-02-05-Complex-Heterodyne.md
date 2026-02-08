@@ -1,7 +1,7 @@
 ---
 layout: post
-title: A Complex Heterodyne Operation Explained
-date:   2026-02-05 00:00:00 -1000
+title: Complex Heterodynes Explained
+date:   2026-02-07 00:00:00 -1000
 categories:
 ---
 
@@ -9,11 +9,6 @@ categories:
 
 * TOC
 {:toc}
-
-TODO:
-
-* show with Euler identity and DTDF formula why there is a negative spectrum?
-* link to graph generation script
 
 # Introduction
 
@@ -39,10 +34,45 @@ interesting enough, I'll check those out just the same.
 
 But that's for the future. Let's talk about the why and how of a complex heterodyne.
 
-All plots of this blog posts were created with my 
-[`complex_heterodyne.py`](/assets/polyphase/complex_heterodyne.py) Python script. 
+The scripts that were used to create the figures in this blog post series can be found in
+my [`polyphase_blog_series`](https://github.com/tomverbeure/polyphase_blog_series) on GitHub.
 
-**FIXME: create a separate github repo for this project.**
+# Some Common DSP Notations
+
+There are some conventions that are useful to know about. They aren't a hard
+and fast rule, but I'll try to stick them as well as I can. 
+
+* $$N$$: the number of samples in the time domain buffer over which a certain
+  block operation is performed.
+* $$n$$: the current time in a discrete time system. For example, $$s[n]$$ could be
+  an array or sequence of input samples that come out of an ADC.
+* $$k$$: an index in a size limited set of numbers. $$k$$ could be used to indicate 
+  one of many channels, it could be one bin out of all the bins of 
+  a discrete time Fourier transform, etc.
+* $$H(z)$$: a discrete transfer function, usually of a filter. The fact that it's
+  an uppercase $$H$$ indicates that the function is in the z-domain, the discrete
+  version of $$H(s)$$ which is in the Laplace domain, but don't worry about those
+  terms, it's the last time they'll be mentioned.
+* $$h[n]$$: the impulse response of the $$H(z)$$ transfer function. This is the
+  time domain sequence that you get if you apply a 1 and then nothing but zeros
+  to $$H(z)$$. Since I'll only be discussion finite impulse response filters (FIR),
+  $$h[n]$$ will be the same as the coefficients of the polynomial that describes
+  $$H(z)$$.
+* $$h[k]$$: one of the polynomial coefficients of $$H(z)$$. For all coeffients of
+  $$H(z)$$, $$h[k]$$ will be identical to $$h[n]$$. For all other values, $$h[n]$$
+  will be zero, while $$h[k]$$ won't really exist. This is a pretty subtle difference
+  and often $$h[k]$$ and $$h[n]$$ will be used interchangably (I definitely used to
+  do so!), but the notation can help to make clear the intent of a formula.
+* $$F_x$$: a real world analog frequency, measured in Hz. $$F_s$$ is often used for
+  the sample rate. $$F_c$$ could be the center frequency of a channel.
+* $$f_x$$: a normalized frequency, usually relative to the sample frequency. 
+  $$f_c$$ would be the ratio of $$F_c / F_s$$.
+* $$\omega$$: normalized radians per sample. $$\omega = 2 \pi f$$. One reason to
+  use $$\omega$$ is because it reduces the visual clutter when used as an argument of
+  trigonometry functions. Compare $$sin(2 \pi f n)$$ with $$sin(\omega n)$$.
+
+I'll try to stick to these conventions as much as possible. Feel free to reach out
+if you think I'm doing it wrong somewhere.
 
 # Sampling with 1 ADC Creates a Real Signal
 
@@ -104,7 +134,7 @@ and the more prominent out-of-band noise everywhere else.
 We can also see that the negative frequency side of the spectrum is a mirror of 
 the positive side. This is as it should be: to display the spectrum, we performed a 
 [Discrete Time Fourier Transformation (DTFT)](https://en.wikipedia.org/wiki/Discrete-time_Fourier_transform),
-which I'll call the Fourier transform from now on for brevity.
+which I'll often call the Fourier transform for brevity.
 
 The definition of the DTFT is as follows:
 
@@ -112,15 +142,17 @@ $$
 X[k] = \sum_{n=0}^{N-1}{x[n] e^{-j {2 \pi k n}/{N} } }
 $$
 
-That looks intimidating, but if we're using the Euler identity, we can rewrite this as:
+That looks intimidating, but if we're using the 
+[Euler's formula](https://en.wikipedia.org/wiki/Euler%27s_formula), 
+we can rewrite this as:
 
 $$
 X[k] = \sum_{n=0}^{N-1}{x[n] cos( \frac{2 \pi k n}{N} ) } - j \sum_{n=0}^{N-1}{x[n] sin( \frac{2 \pi k n}{N} ) } 
 $$
 
 For a given frequency bucket $$k$$, we are multiplying the input signal by cosine and by a sine.
-This is essentially a correlation function that calculate the extent by which sine and cosine are part
-of the input signal. Since the cosine and sine havec a 90 degree phase difference between them,
+This is essentially a correlation function that calculates the extent by which sine and cosine are part
+of the input signal. Since the cosine and sine have a 90 degree phase difference between them,
 we're using complex notation for the final number: 
 
 $$
@@ -140,7 +172,7 @@ $$
 $$
 
 If the Fourier transform is applied to signal that doesn't have complex samples, 
-as is the case when you use only 1 ADC, then the result will have
+as is the case when there is only 1 ADC, then the Fourier transform has
 [Hermitian symmetry](https://www.dsprelated.com/freebooks/sasp/Symmetry_DTFT_Real_Signals.html):
 for every complex value on the positive frequency side, the corresponding negative frequency value
 will have the same real value $$R_k$$ and an inverted imaginary value $$I_k$$. Because of this,
@@ -153,19 +185,23 @@ In DSP land, a signal that doesn't have imaginary component values is called a r
 signal. A signal that is complex and that doesn't have a negative frequency 
 components is an [analytic signal](https://en.wikipedia.org/wiki/Analytic_signal).
 
+A common way of saying that the sine and cosine have a 90 degree phase difference, is that
+they are in quadrature. It's an extremely powerful concept that makes many DSP operations
+a whole lot easier, as we'll see below. 
+
 # Heterodyning the Signal to Baseband the Wrong Way
 
-Let's imagine that we have multiple frequency bands or channels, that each channel has 
-a bandwidth of 10 MHz and a center frequencies at 0, 10, 20, 30 and 40 MHz. Our signal 
-would then be part of the 20 MHz channel with a range from 15 to 25 MHz.
+Imagine that we have multiple frequency bands or channels, that each channel has 
+a bandwidth of 10 MHz and a center frequencies at 0, 10, 20, 30 and 40 MHz. The signal that we
+created above would then be part of the 20 MHz channel that ranges from 15 to 25 MHz.
 
 ![Different channels](/assets/polyphase/complex_heterodyne-channels.svg)
 
-To process a channel, we'd like to move the channel from 15 MHz to 25 MHz to the baseband 
+To process the channel, we'd like to move it from 15 MHz to 25 MHz to the baseband 
 range of -5 MHz to 5 MHz. For our case, this means that we want the 17 MHz and 22 MHz 
 components to end up at -3 MHz and +2 MHz resp.
 
-Moving the channel to baseband before doing further processing allows us to use the same DSP 
+Moving a channel to baseband before doing further processing allows us to use the same DSP 
 operations no matter which channel we've selected. It also allows us to reduce the sample rate 
 from 100 MHz to something much lower, thus reducing DSP resource requirements.
 
@@ -173,10 +209,13 @@ You can shift the spectrum of a signal by multiplying it with a sine wave. The
 multiplication of 2 signals is also called [mixing](https://en.wikipedia.org/wiki/Frequency_mixer). 
 And mixing with the purpose of moving the spectrum of a signal is called 
 [heterodyning](https://en.wikipedia.org/wiki/Heterodyne). In the analog world,
-the signal is multiplied with the sine wave of a local oscillator. In the virtual
-world of DSP math, I still give the generated signal that name.
+the signal is multiplied with the sinusoidal output of a local oscillator (LO). We still
+need this in the virtual work of DSP math in the form a simulated
+[numerically controlled oscillator](https://en.wikipedia.org/wiki/Numerically_controlled_oscillator)
+so I will keep on using the name of local oscillator.
 
-The math of heterodyning a sine wave is straightforward. Let's start with signal
+The math of heterodyning a sine wave is straightforward. Here I show how it works in the
+non-discrete analog world, but it works the same after sampling. Let's start with signal
 $$s(t)$$ and local oscillator $$l(t)$$:
 
 $$
@@ -202,11 +241,12 @@ $$
 y(t) = \frac{1}{2} A \big[ \cos(2 \pi (f_0 + f_c) t) + \cos( 2 \pi (f_0 - f_c) t) \big]
 $$
 
-What this tells us is that multiplying a signal with frequency component $$f_0$$
-with sine wave with frequency $$f_c$$ creates a new signal with 2 frequency components.
+This tells us is that multiplying a signal with frequency component $$f_0$$
+with sine wave with frequency $$f_c$$ creates a new signal with 2 frequency components
+$$f_0 + f_c$$ and $$f_0 - f_c$$.
 
 If we want to shift the center frequency of our channel from 20 MHz to 0 MHz, we need to
-multiply with a 20 MHz sine wave. Let's do that:
+multiply with a 20 MHz sine wave. Let's simulate that:
 
 ```python
 lo_signal       = np.sin(2 * np.pi * lo_freq_hz * t)
@@ -222,9 +262,9 @@ That... didn't go as we hoped.
 The spectrum got shifted down by 20 MHz to 0 MHz and to -40 MHz,
 giving us peaks at -3 MHz and +2MHz and -37 MHz and -42 MHz. That's what we wanted!
 But since `lo_signal` is a real signal, it has a mirror image at -20 MHz. This made
-the spectrum of the signal shift up +3 MHz and -2 MHz and 37 MHz and 42 MHz. 
+the spectrum of the signal shift up to +3 MHz and -2 MHz and 37 MHz and 42 MHz. 
 
-Instead of the desired 2 peaks in the baseband, there are now 4 peaks, at -3, -2, 3 and 3 Mhz. 
+Instead of the desired 2 peaks in the baseband, there are now 4 peaks, at -3, -2, 2 and 3 Mhz. 
 We've destroyed the original signal.
 
 Heterodyning with a real local oscillator is a common operation in the analog world, but
@@ -232,8 +272,11 @@ when this is done, the heterodyne doesn't happen to baseband but a non-zero inte
 frequency. That is the idea of the 
 [superheterodyne receiver](https://en.wikipedia.org/wiki/Superheterodyne_receiver)[^super], a huge
 breakthrough in 1918 in the development of radio technology: it mixes the desired signal
-to a fixed intermediate frequency (not the baseband!) and does further demodulation such
-AM or FM on that fixed intermediate frequency signal.
+to a fixed intermediate frequency (IF),  not the baseband, and does further demodulation such
+AM or FM on that IF signal.
+
+![Superheterodyne example block diagram](https://upload.wikimedia.org/wikipedia/commons/3/3f/Superheterodyne_receiver_block_diagram_2.svg)
+*(Source: Wikipedia)*
 
 [^super]: If you're wondering why it's called 'super': it's because the result of the
           heterodyne is a signal that is still in the supersonic frequency range, as in,
@@ -249,7 +292,7 @@ schemes such as
 rely on the ability to process the signal in the baseband.
 
 Luckily, the solution is simple enough. The root of our troubles is the presence of a 
-mirror frequency image for the local oscillator. If we can get rid of one of those orange peaks, 
+mirror frequency image for the local oscillator. If we can get rid of one of those orange LO peaks, 
 only one spectrum image of the signal will get heterodyned into the baseband.
 
 This is surprisingly simple: instead of a real sinusoid, we use a complex one as local oscillator:
@@ -258,7 +301,10 @@ $$
 l(t) = e^{-j 2 \pi f_c t}
 $$
 
-This signal only has a peak in the spectrum at $$-fc$$.
+This signal only has a peak in the spectrum at $$-F_c$$. We're using a negative LO frequency
+because we want to shift the spectrum down so that positive image of the channel spectrum end
+up at baseband. If we use $$F_c$$, the whole spectrum shifts up instead and the negative
+channel lands on baseband.
 
 Let's create the complex local oscillator signal and multiply it by
 the input signal:
@@ -272,16 +318,17 @@ And voila:
 
 ![Complex LO and heterodyne](/assets/polyphase/complex_heterodyne-complex_lo.svg)
 
-We had to move from real to complex numbers, but the result is worth it: the baseband
-has exactly what we want.
+Had to introduce complex numbers, but the result is worth it: the baseband has exactly 
+what we want.
 
 # Filtering Away the Old Negative Image
 
-The only thing that's still bothering us are the 2 peaks around -40 MHz. They need
-to go if we want to lower the sample rate by decimation.
+The only thing that's still bothering us are the 2 peaks around -40 MHz, the negative image
+of the channel that used to be at -20 MHz. This needs to go if we want to lower the sample 
+rate by decimation.
 
-We can do this with a low pass FIR filter. There are multiple ways to design these kind
-of filters. I even wrote [a blog post](2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html) 
+We can easily do this with a low pass FIR filter. There are multiple ways to design those,
+I even wrote [a blog post](2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html) 
 about it.
 
 Here, I chose the [windowing method](https://www.dsprelated.com/freebooks/sasp/Window_Method_FIR_Filter.html)
@@ -306,9 +353,11 @@ Here's the result:
 
 # Decimation 
 
-The spectrum has now been reduced to -5 MHz and 5 MHz. Since there is no mirror image, we can
-reduce the sample rate from 100 MHz to 10 MHz without running into aliasing issues. So let's
-do that:
+The spectrum has now been reduced to -5 MHz and 5 MHz. Since there is no mirror image, we can safely
+do a decimation without having to worry about aliasing as long as we obey 
+[Nyquist](https://en.wikipedia.org/wiki/Nyquist–Shannon_sampling_theorem) 
+by keeping the width of the spectrum is equal or larger than the 2-sided width of channel, which is
+10 MHz. With a sample rate of 100 Mhz, we can decimate by a factor of 10.
 
 ```python
 signal_decim    = signal_het_lpf[::DECIM_FACTOR]
@@ -327,7 +376,7 @@ Wrapping up, we arrived at the following block diagram of operations and transfo
 
 ![Block diagram with all operations](/assets/polyphase/complex_heterodyne-block_diagram.drawio.svg)
 
-* The analog signal is converted to a real digital with a single channel, 100 Msps ADC 
+* The analog signal is converted to a real digital with a single channel, 100 Msps ADC.
 * A mixer and a complex local oscillator heterodynes the signal to baseband. The
   signal is now complex.
 * A low pass filter removes all frequencies that don't reside in the baseband.
@@ -338,9 +387,8 @@ Expressed mathematically:
 
 $$
 y[m] = \big[(x[n] e^{-j 2 \pi f_0 n}) * h_{lpf}[n]\big] \downarrow M \\
-f_0 = \frac{f_c}{f_s}
+f_0 = \frac{f_c}{f_s}, m = n M
 $$
-
 
 The thing works, but is the optimal of doing things? My 
 [previous blog post about polyphase decimation filtering](/2026/01/25/Notes-on-Basic-Polyphase-Decimation.html)
@@ -355,11 +403,49 @@ win!
 
 In a next installment, I'll explore how this can be optimized.
 
+# Conclusion
+
+In the Fred Harris video that started this all, complex heterodynes are everywhere and
+treated as a known quantity. And they're straightforward once you get to know them better.
+
+I used to think that dealing with signals in quadrature, representing them with complex numbers, 
+was done primarily as a way to reduce the sample rate by half. There are certain potential
+cost savings to that.
+
+The benefits are more fundamental: they eliminate the issue of having to deal with mirror images
+in the spectrum. 
+
+# Afterthought: the Fourier Transform is a Bunch of Averaged Complex Heterodynes
+
+While writing this blog post, I suddenly struck me: the discrete time Fourier
+transform is the same as doing a complex heterodyne to 0 Hz and then calculating 
+the DC value by summing the samples, for all frequencies of interest.
+
+Complex heterodyne:
+
+$$
+y[n] = x[n] e^{-j 2 \pi f_0 n}
+$$
+
+DFTF:
+
+$$
+X[k] = \sum_{n=0}^{N-1}{x[n] e^{-j {2 \pi k n}/{N} } } \\
+f_0 = k / N \\
+X[k] = \sum_{n=0}^{N-1}{x[n] e^{-j {2 \pi f_0 n } } } \\
+$$
+
+This is kind of obvious when you think about it, but I had never dealt with
+complex heterodynes so it's something new for me.
+
 # References
 
 * [Youtube - Recent Interesting and Useful Enhancements of Polyphase Filter Banks: Fred Harris](https://www.youtube.com/watch?v=afU9f5MuXr8)
+* [polyphase blog series scripts](https://github.com/tomverbeure/polyphase_blog_series)
 
-  Spectularly good video.
-  
+Other blog posts in this series:
+
+* [Notes about Basic Polyphase Decimation Filters](/2026/01/25/Notes-on-Basic-Polyphase-Decimation.html)
+
 # Footnotes
 

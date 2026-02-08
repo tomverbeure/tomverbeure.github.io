@@ -21,15 +21,12 @@ Let's do a quick recap of where we left things with a diagram of the DSP pipelin
 
 ![Rotator, LPF, decimator](/assets/polyphase/complex_heterodyne-rot_lpf_decim.drawio.svg)
 
-* $$n$$ indicates a discrete time stamp. 
 * $$\omega_k$$ is the center frequency of channel $$k$$ in normalized radians per sample. 
   If $$F_s$$ is the sampling rate and $$F_k$$ is the center frequency of the channel,
   then $$\omega_k = 2 \pi \frac{F_k}{F_s}$$.
 * $$s[n]$$ is a real signal that comes out of a single channel ADC.
 * $$e^{-j \omega_k n}$$ is a complex numerical local oscillator. It has a normalized 
   frequency of the center band of channel $$k$$.
-* $$H_\text{lpf}(z)$$ is the discrete transfer function of a low-pass filter that
-  blocks all frequencies outside of the baseband.
 * The output of the low-pass filter is $$y[n]$$.
 * M:1 is a factor $$M$$ decimator.
 * $$y[nM]$$ is the final output, a sequence of one out of $$M$$ $$y[n]$$ samples.
