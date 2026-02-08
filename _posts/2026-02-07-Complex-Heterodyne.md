@@ -374,7 +374,7 @@ Success!
 
 Wrapping up, we arrived at the following block diagram of operations and transformations:
 
-![Block diagram with all operations](/assets/polyphase/complex_heterodyne/complex_heterodyne-block_diagram.drawio.svg)
+![Block diagram with all operations](/assets/polyphase/complex_heterodyne/complex_heterodyne-block_diagram.svg)
 
 * The analog signal is converted to a real digital with a single channel, 100 Msps ADC.
 * A mixer and a complex local oscillator heterodynes the signal to baseband. The
@@ -383,7 +383,7 @@ Wrapping up, we arrived at the following block diagram of operations and transfo
 * A decimator brings down the sample rate from 100 MHz to 10 MHz
 * The output is a complex 10 MHz sample stream.
 
-![Mathematical block diagram](/assets/polyphase/complex_heterodyne/complex_heterodyne-rot_lpf_decim.drawio.svg)
+![Mathematical block diagram](/assets/polyphase/complex_heterodyne/complex_heterodyne-rot_lpf_decim.svg)
 
 Expressed mathematically:
 

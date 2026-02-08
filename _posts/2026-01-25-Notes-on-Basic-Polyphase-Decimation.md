@@ -58,7 +58,7 @@ been reduced.[^Nyqist]
 
 When using an FIR filter, the conceptual block diagram looks like this:
 
-![Filter then decimate basic block diagram](/assets/polyphase/basic_polyphase/polyphase-naive_decimation_filter_basic_block_diagram.drawio.svg)
+![Filter then decimate basic block diagram](/assets/polyphase/basic_polyphase/polyphase-naive_decimation_filter_basic_block_diagram.svg)
 
 Let's do this with 7-tap FIR filter that has transfer function $$H(z)$$ and
 a decimation factor M of 3.
@@ -120,7 +120,7 @@ y[3] & = h_0 x[9] &+& h_1 x[8]  &+& h_2 x[7]  &+& h_3 x[6]  &+& h_4 x[5]  &+& h_
 
 A straight up hardware implementation looks like this:
 
-![Naive decimation filter](/assets/polyphase/basic_polyphase/polyphase-naive_decimation_filter.drawio.svg)
+![Naive decimation filter](/assets/polyphase/basic_polyphase/polyphase-naive_decimation_filter.svg)
 
 As mentioned before, we have 6 delay elements and 7 multipliers that operate on the each stage
 of the delay line.
@@ -136,14 +136,14 @@ All multiplications still happen at the same time but they can now be performed 
 3 times slower. This definitely reduces power and also reduces the multiplication area in an ASIC process, 
 because timing paths won't be as strict.
 
-![Decimate input values, multiply in slow domain](/assets/polyphase/basic_polyphase/polyphase-delay_input_multiply_in_slow_domain.drawio.svg)
+![Decimate input values, multiply in slow domain](/assets/polyphase/basic_polyphase/polyphase-delay_input_multiply_in_slow_domain.svg)
 
 While the number of multiplications per unit of time has been reduced by 3, the number of multipliers is
 still the same. 
 
 The data flowing through this architecture looks like this:
 
-![Decimate input value, multiply in slow domain, annotated](/assets/polyphase/basic_polyphase/polyphase-delay_input_multiply_in_slow_domain_annotated.drawio.svg)
+![Decimate input value, multiply in slow domain, annotated](/assets/polyphase/basic_polyphase/polyphase-delay_input_multiply_in_slow_domain_annotated.svg)
 
 When you look at bit closer, you can see that pipes of input samples with the same color
 have the same data flowing through them: the input feed of the $$h_0$$ multiplier sees the
@@ -272,7 +272,7 @@ $$
 
 Converted to a hardware diagram:
 
-![Polyphase decimation hardware diagram after applying noble identity](/assets/polyphase/basic_polyphase/polyphase-noble_identity.drawio.svg)
+![Polyphase decimation hardware diagram after applying noble identity](/assets/polyphase/basic_polyphase/polyphase-noble_identity.svg)
 
 It's not immediately obvious, but this last diagram is similar to the previous one after we've
 rearranged some items:
@@ -300,7 +300,7 @@ $$
 
 Now check out this diagram:
 
-![Delay input - multiply in fast domain](/assets/polyphase/basic_polyphase/polyphase-delay_input_multiply_in_fast_domain.drawio.svg)
+![Delay input - multiply in fast domain](/assets/polyphase/basic_polyphase/polyphase-delay_input_multiply_in_fast_domain.svg)
 
 Everything happens in the fast clock domain, but there are only 3 multipliers instead of 7 and
 we're only adding 4 numbers together at any time. The only extra cost is a register
@@ -311,7 +311,7 @@ There is only one $$ y[m] $$ output every 3 clock cycles.
 
 Here's the same diagram annotated with intermediates values for different time steps:
 
-![Delay input - multiply in fast domain, internal values](/assets/polyphase/basic_polyphase/polyphase-delay_input_multiply_in_fast_domain_annotated.drawio.svg)
+![Delay input - multiply in fast domain, internal values](/assets/polyphase/basic_polyphase/polyphase-delay_input_multiply_in_fast_domain_annotated.svg)
 
 # Delayed multiplications instead of delayed inputs
 
@@ -358,7 +358,7 @@ We now have a nested structure, with a delay of 3 for each nesting level.
 
 In hardware that looks like this:
 
-![Delayed multiplication results](/assets/polyphase/basic_polyphase/polyphase-delayed_multiplications.drawio.svg)
+![Delayed multiplication results](/assets/polyphase/basic_polyphase/polyphase-delayed_multiplications.svg)
 
 This structure is not intrinsically worse or better than the previous one, the architecture
 to use will depend on the technology that you're mapping it to. On FPGAs, for example, you should
