@@ -22,17 +22,17 @@ The video is more than 90 min long and is a lot to process when your DSP knowled
 I've watched the video a few times now, and while I kind of get what he's doing, it made me realize even 
 more how skin-deep my DSP knowledge really is.
 
-For example, the video talks about a *complex heterodyne* of the input signal, but I couldn't really 
-explain how the outcome of that operation is different from mixing an input signal with a regular sinusoid. 
+For example, the video talks about *complex heterodynes* all over the place, but I couldn't really 
+explain how the outcome of that operation is different from mixing an input signal with a regular, real sinusoid. 
 
-To fix this, I'm going through video tutorial sections step-by-step and blog post by blog post. The general
+To fix this, I'm going through video sections step-by-step and blog post by blog post. The general
 approach is to demonstrate concepts (to myself) by implementing them in 
 [NumPy](httpsP//numpy.org) 
 and plotting the results while limiting the number of mathematical formulas. In the process of peeling 
 that onion, new knowledge gaps will be exposed that might not be directly relevant to the video, but if 
 interesting enough, I'll check those out just the same.
 
-But that's for the future. Let's talk about the why and how of a complex heterodyne.
+But that's for the future. Let's talk about the why and how of the complex heterodyne.
 
 The scripts that were used to create the figures in this blog post series can be found in
 my [`polyphase_blog_series`](https://github.com/tomverbeure/polyphase_blog_series) on GitHub.
@@ -40,7 +40,7 @@ my [`polyphase_blog_series`](https://github.com/tomverbeure/polyphase_blog_serie
 # Some Common DSP Notations
 
 There are some conventions that are useful to know about. They aren't a hard
-and fast rule, but I'll try to stick them as well as I can. 
+and fast rules, but I'll try to stick to them as well as I can. 
 
 * $$N$$: the number of samples in the time domain buffer over which a certain
   block operation is performed.
@@ -55,14 +55,14 @@ and fast rule, but I'll try to stick them as well as I can.
   terms, it's the last time they'll be mentioned.
 * $$h[n]$$: the impulse response of the $$H(z)$$ transfer function. This is the
   time domain sequence that you get if you apply a 1 and then nothing but zeros
-  to $$H(z)$$. Since I'll only be discussion finite impulse response filters (FIR),
+  to $$H(z)$$. Since I'll only be discussing finite impulse response filters (FIR),
   $$h[n]$$ will be the same as the coefficients of the polynomial that describes
   $$H(z)$$.
 * $$h[k]$$: one of the polynomial coefficients of $$H(z)$$. For all coeffients of
   $$H(z)$$, $$h[k]$$ will be identical to $$h[n]$$. For all other values, $$h[n]$$
   will be zero, while $$h[k]$$ won't really exist. This is a pretty subtle difference
-  and often $$h[k]$$ and $$h[n]$$ will be used interchangably (I definitely used to
-  do so!), but the notation can help to make clear the intent of a formula.
+  and often $$h[k]$$ and $$h[n]$$ will be used interchangeably (I've definitely done so!), 
+  but the notation can help to make clear the intent of a formula.
 * $$F_x$$: a real world analog frequency, measured in Hz. $$F_s$$ is often used for
   the sample rate. $$F_c$$ could be the center frequency of a channel.
 * $$f_x$$: a normalized frequency, usually relative to the sample frequency. 
@@ -127,7 +127,7 @@ In a time domain plot, we see a typical case of sinusoids interacting with each 
 resulting in some kind of beat envelope frequency. The noise is too low to be noticable
 in a non-logarithmic plot.
 
-The frequency domain amplitude plot is a more interesting. There are the 2 peaks
+The frequency domain amplitude plot is more interesting. There are the 2 peaks
 of different amplitude, a noise floor in the frequency band where our signal lives,
 and the more prominent out-of-band noise everywhere else. 
 
@@ -142,7 +142,7 @@ $$
 X[k] = \sum_{n=0}^{N-1}{x[n] e^{-j {2 \pi k n}/{N} } }
 $$
 
-That looks intimidating, but if we're using the 
+That looks intimidating, but if we use
 [Euler's formula](https://en.wikipedia.org/wiki/Euler%27s_formula), 
 we can rewrite this as:
 
@@ -427,7 +427,7 @@ $$
 y[n] = x[n] e^{-j 2 \pi f_0 n}
 $$
 
-DFTF:
+DTFT:
 
 $$
 X[k] = \sum_{n=0}^{N-1}{x[n] e^{-j {2 \pi k n}/{N} } } \\
