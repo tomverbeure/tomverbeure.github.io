@@ -34,6 +34,10 @@ confidence.
 So that's one of the things I'm doing here: switch back and forth between math
 and hardware architecture.
 
+*Update: in a later blog post, I added a section about 
+[common DSP notations](/2026/02/07/Complex-Heterodyne.html#some-common-dsp-notations). 
+Check it out first!*
+
 # The Decimation and Anti-Aliasing FIR Filter Combo
 
 In digital signal processing (DSP), decimation is an operation in which you retain
@@ -257,7 +261,7 @@ H(z) = H_0(z^3) + z^{-1} H_1(z^3) + z^{-2} H_2(z^3)
 $$
 
 It important to note that we can't apply the noble identity to our $$H(z)$$ directly,
-because its coefficients $$h_1$$ $$h_2$$, $$h_4$$ and $$h_5$$ are non-zero. But we *can* apply 
+because its coefficients $$h_1$$, $$h_2$$, $$h_4$$ and $$h_5$$ are non-zero. But we *can* apply 
 it to the 3 individual phases. 
 
 Like this:
@@ -274,15 +278,15 @@ It's not immediately obvious, but this last diagram is similar to the previous o
 rearranged some items:
 
 * there's now 1 decimator per phase instead of one per coefficient.
-* a single bank of 7 multipliers and one addition has been refactors into
+* a single bank of 7 multipliers and one addition has been refactored into
   3 banks of multipliers with addition, and then one final addition.
 * each multiplier-addition bank has its own delay elements.
 
 # Reusing Common Hardware in the Fast Clock Domain
 
 In the previous diagram, it's clear that there's a lot of common hardware between
-the different phases. We can exploit that by doing everything in the fast clock domain,
-so that the hardware that's used for one phase can be reused for the other phases.
+the different phases. We can exploit that by doing everything in the fast clock domain
+and reuse the hardware that's used for one phase for the other phases.
 
 Recall the previous equation where the result was calculated in 3 steps:
 
