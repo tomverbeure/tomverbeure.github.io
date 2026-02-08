@@ -264,7 +264,7 @@ giving us peaks at -3 MHz and +2MHz and -37 MHz and -42 MHz. That's what we want
 But since `lo_signal` is a real signal, it has a mirror image at -20 MHz. This made
 the spectrum of the signal shift up to +3 MHz and -2 MHz and 37 MHz and 42 MHz. 
 
-Instead of the desired 2 peaks in the baseband, there are now 4 peaks, at -3, -2, 2 and 3 Mhz. 
+Instead of the desired 2 peaks in the baseband, there are now 4 peaks, at -3, -2, 2 and 3 MHz. 
 We've destroyed the original signal.
 
 Heterodyning with a real local oscillator is a common operation in the analog world, but
@@ -291,7 +291,7 @@ schemes such as
 [OFDM](https://en.wikipedia.org/wiki/Orthogonal_frequency-division_multiplexing)
 rely on the ability to process the signal in the baseband.
 
-Luckily, the solution is simple enough. The root of our troubles is the presence of a 
+Luckily, there is a solution. The root of our troubles is the presence of a 
 mirror frequency image for the local oscillator. If we can get rid of one of those orange LO peaks, 
 only one spectrum image of the signal will get heterodyned into the baseband.
 
@@ -302,7 +302,7 @@ l(t) = e^{-j 2 \pi f_c t}
 $$
 
 This signal only has a peak in the spectrum at $$-F_c$$. We're using a negative LO frequency
-because we want to shift the spectrum down so that positive image of the channel spectrum end
+because we want to shift the spectrum down so that positive image of the channel spectrum ends
 up at baseband. If we use $$F_c$$, the whole spectrum shifts up instead and the negative
 channel lands on baseband.
 
@@ -318,7 +318,7 @@ And voila:
 
 ![Complex LO and heterodyne](/assets/polyphase/complex_heterodyne-complex_lo.svg)
 
-Had to introduce complex numbers, but the result is worth it: the baseband has exactly 
+We had to introduce complex numbers, but the result is worth it: the baseband has exactly 
 what we want.
 
 # Filtering Away the Old Negative Image
@@ -328,7 +328,7 @@ of the channel that used to be at -20 MHz. This needs to go if we want to lower 
 rate by decimation.
 
 We can easily do this with a low pass FIR filter. There are multiple ways to design those,
-I even wrote [a blog post](2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html) 
+I even wrote [a blog post](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html) 
 about it.
 
 Here, I chose the [windowing method](https://www.dsprelated.com/freebooks/sasp/Window_Method_FIR_Filter.html)
@@ -357,7 +357,7 @@ The spectrum has now been reduced to -5 MHz and 5 MHz. Since there is no mirror 
 do a decimation without having to worry about aliasing as long as we obey 
 [Nyquist](https://en.wikipedia.org/wiki/Nyquist–Shannon_sampling_theorem) 
 by keeping the width of the spectrum is equal or larger than the 2-sided width of channel, which is
-10 MHz. With a sample rate of 100 Mhz, we can decimate by a factor of 10.
+10 MHz. With a sample rate of 100 MHz, we can decimate by a factor of 10.
 
 ```python
 signal_decim    = signal_het_lpf[::DECIM_FACTOR]
@@ -386,13 +386,13 @@ Wrapping up, we arrived at the following block diagram of operations and transfo
 Expressed mathematically:
 
 $$
-y[m] = \big[(x[n] e^{-j 2 \pi f_0 n}) * h_{lpf}[n]\big] \downarrow M \\
+y[m] = \big[(x[n] e^{-j 2 \pi f_c n}) * h_{\text{lpf}}[n]\big] \downarrow M \\
 f_0 = \frac{f_c}{f_s}, m = n M
 $$
 
 The thing works, but is the optimal of doing things? My 
 [previous blog post about polyphase decimation filtering](/2026/01/25/Notes-on-Basic-Polyphase-Decimation.html)
-should be hint that the answer is: definitely not.
+should be a hint that the answer is: definitely not.
 
 Dealing with a complex instead of real signal doubles the number of math operations
 and performing the decimation at the end of the pipeline means that we're doing a lot 
@@ -409,10 +409,10 @@ In the Fred Harris video that started this all, complex heterodynes are everywhe
 treated as a known quantity. And they're straightforward once you get to know them better.
 
 I used to think that dealing with signals in quadrature, representing them with complex numbers, 
-was done primarily as a way to reduce the sample rate by half. There are certain potential
+was dOne primarily as a way to reduce the sample rate by half. There are certain potential
 cost savings to that.
 
-The benefits are more fundamental: they eliminate the issue of having to deal with mirror images
+But the benefits are more fundamental: they eliminate the issue of having to deal with mirror images
 in the spectrum. 
 
 # Afterthought: the Fourier Transform is a Bunch of Averaged Complex Heterodynes
@@ -424,15 +424,15 @@ the DC value by summing the samples, for all frequencies of interest.
 Complex heterodyne:
 
 $$
-y[n] = x[n] e^{-j 2 \pi f_0 n}
+y[n] = x[n] e^{-j 2 \pi f_k n}
 $$
 
 DTFT:
 
 $$
 X[k] = \sum_{n=0}^{N-1}{x[n] e^{-j {2 \pi k n}/{N} } } \\
-f_0 = k / N \\
-X[k] = \sum_{n=0}^{N-1}{x[n] e^{-j {2 \pi f_0 n } } } \\
+f_k = k / N \\
+X[k] = \sum_{n=0}^{N-1}{x[n] e^{-j {2 \pi f_k n } } } \\
 $$
 
 This is kind of obvious when you think about it, but I had never dealt with
