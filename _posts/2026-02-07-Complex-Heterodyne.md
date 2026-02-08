@@ -121,7 +121,7 @@ The signal has the following components:
   don't then this noise will overlap the spectrum of the signal of interest and
   we'd notice that right away in the spectrum plot.
 
-![Input signal time and spectrum plot](/assets/polyphase/complex_heterodyne-input_signal.svg)
+![Input signal time and spectrum plot](/assets/polyphase/complex_heterodyne/complex_heterodyne-input_signal.svg)
 
 In a time domain plot, we see a typical case of sinusoids interacting with each other,
 resulting in some kind of beat envelope frequency. The noise is too low to be noticable
@@ -195,7 +195,7 @@ Imagine that we have multiple frequency bands or channels, that each channel has
 a bandwidth of 10 MHz and a center frequencies at 0, 10, 20, 30 and 40 MHz. The signal that we
 created above would then be part of the 20 MHz channel that ranges from 15 to 25 MHz.
 
-![Different channels](/assets/polyphase/complex_heterodyne-channels.svg)
+![Different channels](/assets/polyphase/complex_heterodyne/complex_heterodyne-channels.svg)
 
 To process the channel, we'd like to move it from 15 MHz to 25 MHz to the baseband 
 range of -5 MHz to 5 MHz. For our case, this means that we want the 17 MHz and 22 MHz 
@@ -255,7 +255,7 @@ signal_real_het = signal * lo_signal
 
 This is the resulting spectrum:
 
-![Spectrum after real heterodyn](/assets/polyphase/complex_heterodyne-real_het.svg)
+![Spectrum after real heterodyn](/assets/polyphase/complex_heterodyne/complex_heterodyne-real_het.svg)
 
 That... didn't go as we hoped. 
 
@@ -316,7 +316,7 @@ signal_complex_het  = signal * complex_lo_signal
 
 And voila:
 
-![Complex LO and heterodyne](/assets/polyphase/complex_heterodyne-complex_lo.svg)
+![Complex LO and heterodyne](/assets/polyphase/complex_heterodyne/complex_heterodyne-complex_lo.svg)
 
 We had to introduce complex numbers, but the result is worth it: the baseband has exactly 
 what we want.
@@ -349,7 +349,7 @@ Note that the samples of `signal_complex_het` are complex, but the filter coeffi
 
 Here's the result:
 
-![Complex heterodyned signal with low pass filter](/assets/polyphase/complex_heterodyne-low_pass_filter.svg)
+![Complex heterodyned signal with low pass filter](/assets/polyphase/complex_heterodyne/complex_heterodyne-low_pass_filter.svg)
 
 # Decimation 
 
@@ -366,7 +366,7 @@ signal_decim    = signal_het_lpf[::DECIM_FACTOR]
 We now have 10 times less data to deal with, but the spectrum looks just the same
 as before:
 
-![Spectrum after decimation](/assets/polyphase/complex_heterodyne-decim_fft.svg)
+![Spectrum after decimation](/assets/polyphase/complex_heterodyne/complex_heterodyne-decim_fft.svg)
 
 Success!
 
@@ -374,7 +374,7 @@ Success!
 
 Wrapping up, we arrived at the following block diagram of operations and transformations:
 
-![Block diagram with all operations](/assets/polyphase/complex_heterodyne-block_diagram.drawio.svg)
+![Block diagram with all operations](/assets/polyphase/complex_heterodyne/complex_heterodyne-block_diagram.drawio.svg)
 
 * The analog signal is converted to a real digital with a single channel, 100 Msps ADC.
 * A mixer and a complex local oscillator heterodynes the signal to baseband. The
