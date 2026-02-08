@@ -19,7 +19,7 @@ a complex heterodyne, a low pass filter and decimation.
 
 Let's do a quick recap of where we left things with a diagram of the DSP pipeline: 
 
-![Rotator, LPF, decimator](/assets/polyphase/complex_heterodyne-rot_lpf_decim.drawio.svg)
+![Rotator, LPF, decimator](/assets/polyphase/complex_heterodyne/complex_heterodyne-rot_lpf_decim.drawio.svg)
 
 * $$\omega_k$$ is the center frequency of channel $$k$$ in normalized radians per sample. 
   If $$F_s$$ is the sampling rate and $$F_k$$ is the center frequency of the channel,

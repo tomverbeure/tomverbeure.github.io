@@ -383,11 +383,13 @@ Wrapping up, we arrived at the following block diagram of operations and transfo
 * A decimator brings down the sample rate from 100 MHz to 10 MHz
 * The output is a complex 10 MHz sample stream.
 
+![Mathematical block diagram](/assets/polyphase/complex_heterodyne/complex_heterodyne-rot_lpf_decim.drawio.svg)
+
 Expressed mathematically:
 
 $$
 y[m] = \big[(x[n] e^{-j 2 \pi f_c n}) * h_{\text{lpf}}[n]\big] \downarrow M \\
-f_0 = \frac{f_c}{f_s}, m = n M
+f_c = \frac{F_c}{F_s}, m = n M
 $$
 
 The thing works, but is the optimal of doing things? My 
