@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Polyphase Decimation Filter Banks
-date:   2026-01-25 00:00:00 -1000
+date:   2026-02-08 00:00:00 -1000
 categories:
 ---
 
