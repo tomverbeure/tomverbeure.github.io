@@ -8,7 +8,6 @@ categories:
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML"></script>
 
 
-
 * TOC
 {:toc}
 
@@ -19,42 +18,49 @@ a complex heterodyne, a low pass filter and decimation.
 
 Let's do a quick recap of where we left things with a diagram of the DSP pipeline: 
 
-![Rotator, LPF, decimator](/assets/polyphase/complex_heterodyne/complex_heterodyne-rot_lpf_decim.drawio.svg)
+![Rotator, LPF, decimator](/assets/polyphase/complex_heterodyne/complex_heterodyne-rot_lpf_decim.svg)
 
-* $$\omega_k$$ is the center frequency of channel $$k$$ in normalized radians per sample. 
-  If $$F_s$$ is the sampling rate and $$F_k$$ is the center frequency of the channel,
-  then $$\omega_k = 2 \pi \frac{F_k}{F_s}$$.
-* $$s[n]$$ is a real signal that comes out of a single channel ADC.
-* $$e^{-j \omega_k n}$$ is a complex numerical local oscillator. It has a normalized 
-  frequency of the center band of channel $$k$$.
-* The output of the low-pass filter is $$y[n]$$.
-* M:1 is a factor $$M$$ decimator.
-* $$y[nM]$$ is the final output, a sequence of one out of $$M$$ $$y[n]$$ samples.
-* Thin arrows indicate real numbers, fat arrows carry complex numbers.
+* $$f_c$$ is the normalized center frequency of the channel that we're interested in. 
+  In our example, the sample rate $$F_s = 100 \text{MHz}$$ and the channel center frequency
+  $$F_c = 20 \text{MHz}$$ so $$f_c = 0.2$$.
+* Each channel has a 10 MHz bandwidth. Since there is no negative mirror spectrum, once the
+  channel has been moved to baseband, we can decimate by a factor 10.
+* $$H_\text{lpf}(z)$$ is an FIR with 201 real taps and a linear phase[^linear_phase]. 
+
+
+[^linear_phase]: Whether or not an FIR is linear phase depends on its coefficients, but most
+                 common methods to determine those result in a linear phase filter.
 
 In a DSP, one of the most critical resources is multipication and the number of multiplications
 per second is often used to the main indicator by which to judge the efficiency of an 
-algorithm or operation.
+algorithm.
 
-Let's evaluate the number of multiplications for this architecture with:
+Let's evaluate the number of multiplications for this architecture:
 
-* $$F_s$$ = 100 Msps
-* $$H_\text{lpf}(z)$$ is an FIR with 201 real taps and has linear phase, which makes the
-  coefficients symmetric around the center tap. That reduces the number of multiplications
-  by half.
-
-The number of multiplications per second is:
-
-* The complex mixer multiplies a real sample with a complex number, so 2 per operation.
+* The complex mixer multiplies a real sample with a complex number or 2 per operation.
   Good for 200M per second.
 * The low pass filter has 201 real taps that require 101 complex multiplications due to
-  symmetry, for a total of a whopping 101 x 2 100M = 20200M operations per second.
+  symmetry of the coefficients around the center tap, for a total of 101 x 2 x 100M = 
+  20200M operations per second.
 
 Total: 20.4G multiplications per second!
 
 This is our baseline, and it's a lot. Let's see what we can do about this...
 
 # Straightforward Polyphase Filtering and Decimation
+
+
+![Complex heterodyne - Polyphase - Decimation](/assets/polyphase/polyphase_het/polyphase_het-complex_het_polyphase_decim.svg)
+
+![Complex heterodyne - Decimation - Polyphase](/assets/polyphase/polyphase_het/polyphase_het-complex_het_decim_polyphase.svg)
+
+Moving the FIR filter operation behind the decimator is a huge savings. The complex mixer still counts
+for 200M multiplications per second, but combined 201 taps now need to deliver samples at a 10 times
+lower rate. The 
+
+
+21 taps:
+
 
 
 # References
