@@ -11,56 +11,130 @@ categories:
 * TOC
 {:toc}
 
-# Baseline
+# Where We Left Things Last Time
 
-I ended previous blog with questions about the efficiency of a pipeline that consists of
-a complex heterodyne, a low pass filter and decimation. 
+I ended my [previous blog about complex heterodynes](/2026/02/07/Complex-Heterodyne.html)
+with questions about the efficiency of implementing it as a low pass filter
+that is followed by a decimation.
 
-Let's do a quick recap of where we left things with a diagram of the DSP pipeline: 
+Here's a quick recap of that pipeline:
 
 ![Rotator, LPF, decimator](/assets/polyphase/complex_heterodyne/complex_heterodyne-rot_lpf_decim.svg)
 
 * $$f_c$$ is the normalized center frequency of the channel that we're interested in. 
   In our example, the sample rate $$F_s = 100 \text{MHz}$$ and the channel center frequency
-  $$F_c = 20 \text{MHz}$$ so $$f_c = 0.2$$.
+  $$F_c = 20 \text{MHz}$$ so $$f_c = 0.2$$. Further down, I'll often use $$\omega_c = 2 \pi f_c$$
+  because that makes equations less cluttered.
 * Each channel has a 10 MHz bandwidth. Since there is no negative mirror spectrum, once the
   channel has been moved to baseband, we can decimate by a factor 10.
 * $$H_\text{lpf}(z)$$ is an FIR with 201 real taps and a linear phase[^linear_phase]. 
 
+Check out my [section with common DSP notations](/2026/02/07/Complex-Heterodyne.html#some-common-dsp-notations)
+for a general overview symbols used in math formulas.
 
 [^linear_phase]: Whether or not an FIR is linear phase depends on its coefficients, but most
                  common methods to determine those result in a linear phase filter.
 
-In a DSP, one of the most critical resources is multipication and the number of multiplications
-per second is often used to the main indicator by which to judge the efficiency of an 
-algorithm.
+# Ignoring Linear Phase FIR Coefficient Symmetry
+
+Linear phase FIR filters have the desirable property that their coefficients are symmetric
+around the center tap. Here's a random example:
+
+$$
+H(z) = -1 + 3 z^{-1} - 6 z^{-2} + 10 z^{-3} - 6 z^{-4} + 3 z^{-5} - z^{-6}
+$$
+
+This filter has 7 coefficients, the center coefficient is 10, the ones to the left and right of 
+it are both -6 and so forth.
+
+When you convert a DSP algorithm to hardware that needs to consume an input sample and produce
+and output for every clock tick, the straightfoward implentation is to have one multiplier per
+coefficient. 
+
+![FIR without optimized multipliers](/assets/polyphase/polyphase_het/polyphase_het-fir_no_optimized_muls.svg)
+
+Since multipliers are often a scarce resource, you can reduce their number by
+almost half by rearranging the equation as follows:
+
+$$
+H(z) = -1 (1 + z^{-6})  + 3 (z^{-1} + z^{-5} ) - 6 (z^{-2} + z^{-4})  + 10 z^{-3}
+$$
+
+We've removed 3 out of 7 multipliers.
+
+![FIR with optimized multipliers](/assets/polyphase/polyphase_het/polyphase_het-fir_optimized_muls.svg)
+
+This works, but you need to trade off the reduction in multipliers against an increase in wiring
+to get the 2 operands to the addition that feeds the multiplier. On FPGAs, wiring congestion is
+a real concern so it's not always a slam dunk.
+
+If you have a hardware architecture where delayed input are stored in a RAM instead of individual
+registers and you use an FSM to execute the filter over multiple clock cycles, trying to do this
+trick can make scheduling transactions more complicated too. 
+
+And when converting the FIR into a polyphase filter, the simple symmetry breaks entirely. Here's
+an example of a symmetrical 19-tap filter. In it's original form, coefficients are symmetric, but
+when split up into 10 phases, the symmetry inside each phase is gone.
+
+![19-tap filter split up into 10 phases](/assets/polyphase/polyphase_het/polyphase_het-tap_symmetry_19.svg)
+
+It's still possible to share multiplications if you merge multiple phases, note how phase 2 has
+coefficients 6 and 2 and phase 7 has coefficients 2 and 6, but that again make data organization
+and movement more difficult.
+
+For the remainder of this blog post, I will ignore symmetric related optimizations when calculating
+the number of multiplications.
+
+# Performance Baseline 
+
+I will use multiplication as the main indicator by which to judge the efficiency of a DSP algorithm.
 
 Let's evaluate the number of multiplications for this architecture:
 
 * The complex mixer multiplies a real sample with a complex number or 2 per operation.
   Good for 200M per second.
-* The low pass filter has 201 real taps that require 101 complex multiplications due to
-  symmetry of the coefficients around the center tap, for a total of 101 x 2 x 100M = 
-  20200M operations per second.
+* The low pass filter has 201 real taps, for a total of 201 x 2 x 100M = 
+  40.2B operations per second.
 
-Total: 20.4G multiplications per second!
+Total: 40.4B multiplications per second!
 
 This is our baseline, and it's a lot. Let's see what we can do about this...
 
 # Straightforward Polyphase Filtering and Decimation
 
+There's a reason why I also wrote 
+[Notes about Basic Polyphase Decimation Filters](/2026/01/25/Notes-on-Basic-Polyphase-Decimation.html):
+it discusses exactly this kind of scenario, the combo of an FIR filter followed by a decimation. Yes,
+there's a complex rotator in front of the FIR filter, but for now we can keep it there 
+while we transfrom the FIR/decimator to its polyphase form.
+
+First split the FIR filter in as many sub-filters as the decimation factor:
 
 ![Complex heterodyne - Polyphase - Decimation](/assets/polyphase/polyphase_het/polyphase_het-complex_het_polyphase_decim.svg)
+
+Apply the [noble identity for decimation](/2026/01/25/Notes-on-Basic-Polyphase-Decimation.html#the-noble-identity-for-decimation):
 
 ![Complex heterodyne - Decimation - Polyphase](/assets/polyphase/polyphase_het/polyphase_het-complex_het_decim_polyphase.svg)
 
 Moving the FIR filter operation behind the decimator is a huge savings. The complex mixer still counts
-for 200M multiplications per second, but combined 201 taps now need to deliver samples at a 10 times
-lower rate. The 
+for 200M multiplications per second, but the combined 201 taps now need to deliver samples at a 10 times
+lower rate, 201 x 2 x 10M = 4.02B operations per second, for a total of 4.22B operations per second.
 
+The complex rotator can be moved after the the decimator, like this:
 
-21 taps:
+![Decimation - Complex heterodyne - Polyphase](/assets/polyphase/polyphase_het/polyphase_het-decim_complex_het_polyphase.svg)
 
+This doesn't really help us, though, the number of rotations/multiplications per decimated output sample
+is still the same.
+
+# The Free-Running Rotator
+
+One thing to note here is that the complex rotator consists of the input signal being multiplied by
+the output of a free-running oscillator. There are no major restrictions on rotation
+rate $$\omega_c$$.
+
+If we have a decimation factor of 10 and we want the center frequencies of the channel to be a multiple
+of the sample frequency divided by the decimation factor ($$F_c = k F_s/M$$)
 
 
 # References
