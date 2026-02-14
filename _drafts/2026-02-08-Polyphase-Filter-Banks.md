@@ -1,7 +1,7 @@
 ---
 layout: post
-title: Polyphase Decimation Filter Banks
-date:   2026-02-08 00:00:00 -1000
+title: The Stunning Efficiency of the Polyphase Channelizer
+date:   2026-02-13 00:00:00 -1000
 categories:
 ---
 
@@ -11,11 +11,36 @@ categories:
 * TOC
 {:toc}
 
+# Introduction
+
+In the past 2 blog posts, I wrote about 
+[polyphase decimation filters](/2026/01/25/Notes-on-Basic-Polyphase-Decimation.html)
+and [complex heterodynes](/2026/02/07/Complex-Heterodyne.html), the latter with
+some decimation thrown in for good measure.
+
+It's now time to put everything together, and more. First, I'll look at
+the complex heterodyne/decimation combo and see how it can be implemented as
+efficiently as possible. There's already some surprised in there, but to
+top it off, I'll expand the solution to do the operation for multiple
+channels as the same time.
+
+The result is truly amazing.
+
+I'm still roughly following the flow of 
+[Fred Harris' video about polyphase filter banks](https://www.youtube.com/watch?v=afU9f5MuXr8),
+but I'll be making some detours along the way because they helped me to put things
+better in context and help me with understanding the topic.
+
+There will be a bit more math this time around, out of necessity: some of the optimizations
+can't be figured out with intuition alone. But the math consist almost exclusively of
+shuffling around sums and products of scalar values and complex exponentials, with a
+convolution here and there.
+
 # Where We Left Things Last Time
 
-I ended my [previous blog about complex heterodynes](/2026/02/07/Complex-Heterodyne.html)
-with questions about the efficiency of implementing it as a low pass filter
-that is followed by a decimation.
+I ended my [blog post about complex heterodynes](/2026/02/07/Complex-Heterodyne.html)
+with a question about the efficiency of implementing it as a low pass filter that is 
+followed by a decimation.
 
 Here's a quick recap of that pipeline:
 
@@ -25,9 +50,13 @@ Here's a quick recap of that pipeline:
   In our example, the sample rate $$F_s = 100 \text{MHz}$$ and the channel center frequency
   $$F_c = 20 \text{MHz}$$ so $$f_c = 0.2$$. Further down, I'll often use $$\omega_c = 2 \pi f_c$$
   because that makes equations less cluttered.
-* Each channel has a 10 MHz bandwidth. Since there is no negative mirror spectrum, once the
-  channel has been moved to baseband, we can decimate by a factor 10.
-* $$H_\text{lpf}(z)$$ is an FIR with 201 real taps and a linear phase[^linear_phase]. 
+* $$e^{-j 2 \pi f_c n}$$ is a complex rotator that shifts down a channel with center frequency
+  $$F_c$$ down to 0 Hz with a complex heterodyne.
+* $$H_\text{lpf}(z)$$ is an FIR filter with 201 real taps and a linear phase[^linear_phase]. It
+  removes all the frequencies outside the -5 MHz to 5 MHz range.
+* Each channel has a 10 MHz bandwidth. Since there is no mirror spectrum due to the complex
+  heterodyne, once the channel has been moved to 0 Hz, we can decimate by a factor 10 so that
+  the range from -5 MHz to 5 MHz is all that's left.
 
 Check out my [section with common DSP notations](/2026/02/07/Complex-Heterodyne.html#some-common-dsp-notations)
 for a general overview symbols used in math formulas.
@@ -35,7 +64,7 @@ for a general overview symbols used in math formulas.
 [^linear_phase]: Whether or not an FIR is linear phase depends on its coefficients, but most
                  common methods to determine those result in a linear phase filter.
 
-# Ignoring Linear Phase FIR Coefficient Symmetry
+# Sidestep: Ignoring Linear Phase FIR Coefficient Symmetry
 
 Linear phase FIR filters have the desirable property that their coefficients are symmetric
 around the center tap. Here's a random example:
@@ -49,7 +78,12 @@ it are both -6 and so forth.
 
 When you convert a DSP algorithm to hardware that needs to consume an input sample and produce
 and output for every clock tick, the straightfoward implentation is to have one multiplier per
-coefficient. 
+coefficient[^multiplier]. 
+
+[^multiplier]: For the sake of argument, I'm assuming the coefficients are programmable so that
+               a full-fledged multiplier is needed. If the coefficients are constant, you can
+               almost always replace a multiplier by a much cheaper combination of add and shift
+               operations. 
 
 ![FIR without optimized multipliers](/assets/polyphase/polyphase_het/polyphase_het-fir_no_optimized_muls.svg)
 
@@ -68,7 +102,7 @@ This works, but you need to trade off the reduction in multipliers against an in
 to get the 2 operands to the addition that feeds the multiplier. On FPGAs, wiring congestion is
 a real concern so it's not always a slam dunk.
 
-If you have a hardware architecture where delayed input are stored in a RAM instead of individual
+If you have a hardware architecture where delayed inputs are stored in a RAM instead of individual
 registers and you use an FSM to execute the filter over multiple clock cycles, trying to do this
 trick can make scheduling transactions more complicated too. 
 
@@ -79,7 +113,7 @@ when split up into 10 phases, the symmetry inside each phase is gone.
 ![19-tap filter split up into 10 phases](/assets/polyphase/polyphase_het/polyphase_het-tap_symmetry_19.svg)
 
 It's still possible to share multiplications if you merge multiple phases, note how phase 2 has
-coefficients 6 and 2 and phase 7 has coefficients 2 and 6, but that again make data organization
+coefficients 6 and 2 and phase 7 has coefficients 2 and 6, but that again makes data organization
 and movement more difficult.
 
 For the remainder of this blog post, I will ignore symmetric related optimizations when calculating
@@ -89,7 +123,9 @@ the number of multiplications.
 
 I will use multiplication as the main indicator by which to judge the efficiency of a DSP algorithm.
 
-Let's evaluate the number of multiplications for this architecture:
+![Rotator, LPF, decimator](/assets/polyphase/complex_heterodyne/complex_heterodyne-rot_lpf_decim.svg)
+
+Let's evaluate the number of multiplications for the naive architecture:
 
 * The complex mixer multiplies a real sample with a complex number or 2 per operation.
   Good for 200M per second.
@@ -108,7 +144,10 @@ it discusses exactly this kind of scenario, the combo of an FIR filter followed 
 there's a complex rotator in front of the FIR filter, but for now we can keep it there 
 while we transfrom the FIR/decimator to its polyphase form.
 
-First split the FIR filter in as many sub-filters as the decimation factor:
+Harris mentions this case only tangentially, but it's useful to compare how well the straightforward
+polyphase filter bank performs compared to the naive solution.
+
+First split the FIR filter into its polyphase form, with as many sub-filters as the decimation factor:
 
 ![Complex heterodyne - Polyphase - Decimation](/assets/polyphase/polyphase_het/polyphase_het-complex_het_polyphase_decim.svg)
 
@@ -118,7 +157,8 @@ Apply the [noble identity for decimation](/2026/01/25/Notes-on-Basic-Polyphase-D
 
 Moving the FIR filter operation behind the decimator is a huge savings. The complex mixer still counts
 for 200M multiplications per second, but the combined 201 taps now need to deliver samples at a 10 times
-lower rate, 201 x 2 x 10M = 4.02B operations per second, for a total of 4.22B operations per second.
+lower rate, 201 x 2 x 10M = 4.02B operations per second, for a total of 4.22B operations per second. If
+it weren't for the complex rotator, the savings ratio is exactly the decimation factor.
 
 The complex rotator can be moved after the the decimator, like this:
 
@@ -127,15 +167,75 @@ The complex rotator can be moved after the the decimator, like this:
 This doesn't really help us, though, the number of rotations/multiplications per decimated output sample
 is still the same.
 
-# The Free-Running Rotator
+# A Free-Running Rotator
 
-One thing to note here is that the complex rotator consists of the input signal being multiplied by
+One minor thing to note is that the complex rotator consists of the input signal being multiplied by
 the output of a free-running oscillator. There are no major restrictions on rotation
-rate $$\omega_c$$.
+rate $$\omega_c$$. There's also no particular about the phase of the rotator. In the previous diagram,
+phase 0 gets the value of $$e^{-j \omega_c (n \bmod M)}$$, phase 1 gets $$e^{-j \omega_c ((n+1) \bmod M)}$$, 
+and so forth, but that's really arbitrary. We could assign $$e^{-j \omega_c ((n+1) \bmod M)}$$ to phase 0 and
+$$e^{-j \omega_c ((n+2) \bmod M)}$$ to phase 1 and outcome in terms of frequency characteristics wouldn't
+be materially different (though there would be constant phase shift.)
 
-If we have a decimation factor of 10 and we want the center frequencies of the channel to be a multiple
-of the sample frequency divided by the decimation factor ($$F_c = k F_s/M$$)
+What is true is that you will have to continuously loop through all the values of the rotator, irrespective
+of the decimation factor. We'll see later that this doesn't always have to be the case.
 
+# From Low Pass to Band Pass Filter
+
+Right now, we are moving the channel of interest to the baseband and then we send it through a low-pass filter. 
+Let's try to turn the order around: send the channel of interest through a band-pass filter and then heterodyne
+the result down to baseband.
+
+$$
+y[n] = (x[n] e^{-j \omega_c n}) * h[n]
+$$
+
+Expand convolution operator $$*$$:
+
+$$
+y[n] = \sum_k (x[n-k] e^{-j \omega_c (n-k)}) h[k] 
+$$
+
+Extract the exponential term that doesn't depend on $$k$$:
+
+$$
+y[n] = e^{-j \omega_c n} \sum_k x[n-k] h[k] e^{j \omega_c k}
+$$
+
+Back to convolution operator:
+
+$$
+y[n] = e^{-j \omega_c n} \big( x[n] * (h[n] e^{j \omega_c n} ) \big) = \big( x[n] * (h[n] e^{j \omega_c n} ) \big) e^{-j \omega_c n}
+$$
+
+This doesn't look like an improvement, but let's look at it a bit closer.
+
+We're first multiplying the coefficients of the low-pass filter with a complex rotator:
+
+$$ (h[n] e^{j \omega_c n} ) $$
+
+This is a complex heterodyne that shifts the spectrum of the filter up by $$\omega_c n$$ or $$F_c$$. In other words,
+it convers the low-pass filter to a bandpass filter with a center frequency of $$F_c$$. We can also write this
+as follows:
+
+$$
+H_{bpf
+$$
+
+
+
+
+
+
+# Moving the Rotator behind the Filter
+
+$$
+H(z) = \sum_{n=0}^{N-1} h[n] e^{j \theta_k n} z^{-n} = \sum_{n=0}^{N-1} h[n] (e^{j \theta_k } z)^{-n} = H(e^{-j \theta_k} z) \\
+= \sum_{m=0}^{M-1} \sum_{n=0}^{N-1} h[m + nM] e^{j \theta_k (m + nM)} z^{-(m+nM)} \\
+=  \sum_{m=0}^{M-1} e^{j \theta_k m} z^{-m}\sum_{n=0}^{N-1} h[m + nM] e^{j \theta_k nM} z^{-nM} \\
+=  \sum_{m=0}^{M-1} e^{j \frac{2 \pi}{M} k m} z^{-m}\sum_{n=0}^{N-1} h[m + nM]  z^{-nM} \\
+=  \sum_{m=0}^{M-1} e^{j \frac{2 \pi}{M} k m} z^{-m} H_m(z^M)
+$$
 
 # References
 
