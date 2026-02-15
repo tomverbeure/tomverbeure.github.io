@@ -27,9 +27,13 @@ channels as the same time.
 The result is truly amazing.
 
 I'm still roughly following the flow of 
-[Fred Harris' video about polyphase filter banks](https://www.youtube.com/watch?v=afU9f5MuXr8),
+[fred harris' video about polyphase filter banks](https://www.youtube.com/watch?v=afU9f5MuXr8)[^harris],
 but I'll be making some detours along the way because they helped me to put things
 better in context and help me with understanding the topic.
+
+[^harris]: fred harris insists on writing his name entirely in lower case. But according to
+           [this reddit comment](https://www.reddit.com/r/DSP/comments/1cyrh9/comment/c9lwtot)
+           that's only true in the time domain.
 
 There will be a bit more math this time around, out of necessity: some of the optimizations
 can't be figured out with intuition alone. But the math consist almost exclusively of
@@ -144,7 +148,7 @@ it discusses exactly this kind of scenario, the combo of an FIR filter followed 
 there's a complex rotator in front of the FIR filter, but for now we can keep it there 
 while we transfrom the FIR/decimator to its polyphase form.
 
-Harris mentions this case only tangentially, but it's useful to compare how well the straightforward
+harris mentions this case only tangentially, but it's useful to compare how well the straightforward
 polyphase filter bank performs compared to the naive solution.
 
 First split the FIR filter into its polyphase form, with as many sub-filters as the decimation factor:
@@ -184,13 +188,15 @@ of the decimation factor. We'll see later that this doesn't always have to be th
 
 Let's retrace from the previous optimization, start again from the naive solution, and then try something different.
 
-Right now, we are moving the channel of interest to the baseband and then we send it through a low-pass filter, 
+Right now, we are heterodyning the channel of interest to the baseband and then we send it through a low-pass filter, 
 as seen in the plot from prevous blog post:
 
 ![Complex heterodyne followed by low pass filter spectrum](/assets/polyphase/complex_heterodyne/complex_heterodyne-low_pass_filter.svg)
 
 Can we turn the order around, first send the channel of interest through a band-pass filter and then heterodyne
-the result down to baseband? We can, and it's relatively easy to show that mathematically:
+the result down to baseband? We can, and it's relatively easy to show that mathematically.
+
+Starting with this:
 
 $$
 y[n] = \underbrace{ \underbrace{(x[n] e^{-j \omega_c n})}_{heterodyne} * h[n]}_{low-pass filter}
@@ -199,43 +205,63 @@ $$
 Expand convolution operator $$*$$. $$N$$ is the number of coefficients of the filter.
 
 $$
-y[n] = \sum_{k=0}^{N-1} (x[n-k] e^{-j \omega_c (n-k)}) h[k] 
+y[n] = \sum_{k=0}^{N-1} (x[n-k] e^{-j \omega_c (n-k)}) \; h[k] 
 $$
 
 Extract the exponential term that doesn't depend on $$k$$:
 
 $$
-y[n] = e^{-j \omega_c n} \sum_k x[n-k] ( e^{j \omega_c k} h[k] )
+y[n] = e^{-j \omega_c n} \sum_k x[n-k] \; ( e^{j \omega_c k} h[k] )
 $$
 
 Reduce back to a convolution operator:
 
 $$
-y[n] = e^{-j \omega_c n} \big( x[n] * (h[n] e^{j \omega_c n} ) \big) = \big( x[n] * (h[n] e^{j \omega_c n} ) \big) e^{-j \omega_c n}
+y[n] = e^{-j \omega_c n} \; \big( x[n] * (h[n] e^{j \omega_c n} ) \big) = \big( x[n] * (h[n] e^{j \omega_c n} ) \big) \; e^{-j \omega_c n}
 $$
 
-This doesn't look like an improvement, but let's look at it step by step.
+We've just proven what, [in the video](https://youtu.be/afU9f5MuXr8?t=985), harris calls the 
+*Equivalency Theorem*: 
 
-In the past, we saw $$x[n] e^{j \omega_c n}$$ and treated it as a continuous, never ending stream
-of samples being multiplied by a free-running complex rotator. Now we're seeing this:
+$$
+( x[n] e^{-j \omega_c n} ) * h(n) = e^{-j \omega_c n} \; \big( x[n] * (h[n] e^{j \omega_c n} ) \big)
+$$
+
+There's one minor comment about this: while Google turns up plenty of equivalency
+theorems, none of them deal with the swapping around a heterodyne and convolution. The only reference[^equivalency] 
+that I found was in section 6.1 of his own book, 
+[Multirate Signal Processing for Communication Systems](https://www.amazon.com/Multirate-Processing-Communication-Systems-Publishers-dp-877022210X/dp/877022210X/)[^book],
+which has the same formulas and figures as the one of the video. It says:
+
+> The equivalency theorem states that the operations of a down-conversion followed by a low-pass 
+> filter are totally equivalent to the operations of a band-pass filter followed by a down-conversion.
+
+[^equivalency]: There are other references, but all of those are either papers written by harris
+                or papers that reference one of his papers or books.
+
+[^book]: I've only just started reading the book, but so far I really like what I see. 
+
+This doesn't look like an improvement, and it will take a while before we can see how this helps us.
+For now, let's break the equation into pieces and take things step by step.
 
 $$ h[n] e^{j \omega_c n} $$
 
-It is tempting to treat this the same way, but that would be wrong: $$h[n]$$ are the coefficients of filter $$H(z)$$.
-In the formula above, each of these coefficients is multiplied by a fixed value of the rotator. This creates a new
-filter which is then applied to the input signal.
+The coefficients of the low-pass filter with transfer function  $$H_{lpf}(z)$$ are each multiplied by 
+a value of a rotator. Notice how the $$-$$ sign in front of the $$j$$ exponent of the rotator has
+disappared: when we were heterodyning the channel, we were bringing the spectrum down to baseband.
+Now, we're doing the opposite and heterodyning the low-pass filter up to baseband!
 
-If transfer function of the original filter is this: 
+Let's apply the equation above to an example. If the transfer function of the original filter is this: 
 
 $$
 H_{lpf}(z) = h_0 z^{0} + h_1 z^{-1} + h_2 z^{-2} + h_3 z^{-3} + h_4 z^{-4}
 $$
 
-Then the one of the new filter is this:
+Then the new filter is this:
 
 $$
 \begin{alignedat}{0}
-H_{new}(z) & = & h_0 e^{j \omega_c 0} z^{0} &+& h_1 e^{j \omega_c 1} z^{-1} &+& h_2 e^{j \omega_c 2} z^{-2} &+& h_3 e^{j \omega_c 3} z^{-3} &+& h_4 e^{j \omega_c 4} z^{-4} \\
+H_{bpf}(z) & = & h_0 e^{j \omega_c 0} z^{0} &+& h_1 e^{j \omega_c 1} z^{-1} &+& h_2 e^{j \omega_c 2} z^{-2} &+& h_3 e^{j \omega_c 3} z^{-3} &+& h_4 e^{j \omega_c 4} z^{-4} \\
            & = & h_0 (e^{-j \omega_c} z)^{0} &+& h_1 (e^{-j \omega_c} z)^{-1} &+& h_2 (e^{-j \omega_c} z)^{-2} &+& h_3 (e^{-j \omega_c} z)^{-3} &+& h_4 (e^{-j \omega_c} z)^{-4} \\
 \end{alignedat}
 $$
@@ -243,25 +269,63 @@ $$
 This can be written much shorter, useful for drawings:
 
 $$
-H_{new}(z) = H_{lpf}(e^{-j \omega_c} z)
+H_{bpf}(z) = H_{lpf}(e^{-j \omega_c} z)
+$$
+
+It is important to note that the coefficients of $$H_{bpf}(z)$$ are constants: for a given center frequency, we can
+pre-calculate the coefficient and never change them again. But contrary to the original filter $$H_{lpf}(z)$$, the
+coefficients are now complex instead of real.
+
+To simulate the behavior of this band-pass filter, we create an array with as many complex rotator values
+as there are filter taps and multiply them with the low-pass filter coefficients from previous blog:
+
+```python
+tap_idx       = np.arange(LPF_FIR_TAPS)
+complex_lo    = np.exp(1j * 2 * np.pi * lo_freq_hz * tap_idx / sample_clock_hz)
+h_bpf_complex = h_lpf * complex_lo
+```
+
+Looking at the spectrum of this filter, there are no surprises: the filter has been transformed from a
+low-pass filter to a band-pass filter with $$F_c = 20 \text{MHz}$$ as center frequency:
+
+![Bandpass filter spectrum and filtered input signal](/assets/polyphase/polyphase_het/polyphase_het_sim-bpf_complex_filtered.svg)
+
+The second plot of the figure above shows the input signal after applying the bandpass filter.
+
+$$
+x[n] * h_{bpf}[n]
+$$
+
+```python
+signal_bpf_complex  = np.convolve(signal, h_bpf_complex, mode="same")
+```
+
+The final step shifts the filtered signal back to baseband:
+
+$$
+y[n] = ( x[n] * h_{bpf}[n] ) \; e^{-j \omega_c n}
 $$
 
 
+![Pipeline with bandpass filter, heterodyne and decimation](/assets/polyphase/polyphase_het/polyphase_het-bpf_het_decim.svg)
 
-We're first multiplying the coefficients of the low-pass filter with a complex rotator:
+After decimation, we end up with [the same result in the previous blog post](/2026/02/07/Complex-Heterodyne.html#decimation):
 
-This is a complex heterodyne that shifts the spectrum of the filter up by $$\omega_c n$$ or $$F_c$$. In other words,
-it convers the low-pass filter to a bandpass filter with a center frequency of $$F_c$$. We can also write this
-as follows:
+![Bandpass filter, followed by heterodyne and decimation](/assets/polyphase/polyphase_het/polyphase_het_sim-signal_bfp_filtered_decim_complex.svg)
 
-$$
-H_{bpf
-$$
+Cool! But what did we gain? 
 
+The input to the filter is now real instead of complex, but the coefficents are now complex instead of 
+real. So the complexity of the filter remains the same. And the heterodyne now multipliers 2 complex
+numbers instead of multiplying a real input with a complex. We've regressed!
 
+But that's something that will be fixed in the next section...
 
+# Disappearing the Complex Rotator
 
+![Pipeline with bandpass filter, decimation, and heterodyne](/assets/polyphase/polyphase_het/polyphase_het-bpf_decim_het.svg)
 
+![Pipeline with bandpass filter and decimation](/assets/polyphase/polyphase_het/polyphase_het-bpf_decimator.svg)
 
 # Moving the Rotator behind the Filter
 
@@ -283,7 +347,7 @@ $$
 
 * [Stackexchange - Understanding Polyphase Filter Banks](https://dsp.stackexchange.com/questions/96042/understanding-polyphase-filter-banks)
 
-* [Youtube - Recent Interesting and Useful Enhancements of Polyphase Filter Banks: Fred Harris](https://www.youtube.com/watch?v=afU9f5MuXr8)
+* [Youtube - Recent Interesting and Useful Enhancements of Polyphase Filter Banks: fred harris](https://www.youtube.com/watch?v=afU9f5MuXr8)
 
   Spectularly good video.
 
