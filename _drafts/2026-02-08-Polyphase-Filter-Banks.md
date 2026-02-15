@@ -52,7 +52,7 @@ Here's a quick recap of that pipeline:
   because that makes equations less cluttered.
 * $$e^{-j 2 \pi f_c n}$$ is a complex rotator that shifts down a channel with center frequency
   $$F_c$$ down to 0 Hz with a complex heterodyne.
-* $$H_\text{lpf}(z)$$ is an FIR filter with 201 real taps and a linear phase[^linear_phase]. It
+* $$H_\text{lpf}(z)$$ is a low-pass FIR filter with 201 real taps and a linear phase[^linear_phase]. It
   removes all the frequencies outside the -5 MHz to 5 MHz range.
 * Each channel has a 10 MHz bandwidth. Since there is no mirror spectrum due to the complex
   heterodyne, once the channel has been moved to 0 Hz, we can decimate by a factor 10 so that
@@ -119,7 +119,7 @@ and movement more difficult.
 For the remainder of this blog post, I will ignore symmetric related optimizations when calculating
 the number of multiplications.
 
-# Performance Baseline 
+# Naive Performance Baseline 
 
 I will use multiplication as the main indicator by which to judge the efficiency of a DSP algorithm.
 
@@ -182,37 +182,73 @@ of the decimation factor. We'll see later that this doesn't always have to be th
 
 # From Low Pass to Band Pass Filter
 
-Right now, we are moving the channel of interest to the baseband and then we send it through a low-pass filter. 
-Let's try to turn the order around: send the channel of interest through a band-pass filter and then heterodyne
-the result down to baseband.
+Let's retrace from the previous optimization, start again from the naive solution, and then try something different.
+
+Right now, we are moving the channel of interest to the baseband and then we send it through a low-pass filter, 
+as seen in the plot from prevous blog post:
+
+![Complex heterodyne followed by low pass filter spectrum](/assets/polyphase/complex_heterodyne/complex_heterodyne-low_pass_filter.svg)
+
+Can we turn the order around, first send the channel of interest through a band-pass filter and then heterodyne
+the result down to baseband? We can, and it's relatively easy to show that mathematically:
 
 $$
-y[n] = (x[n] e^{-j \omega_c n}) * h[n]
+y[n] = \underbrace{ \underbrace{(x[n] e^{-j \omega_c n})}_{heterodyne} * h[n]}_{low-pass filter}
 $$
 
-Expand convolution operator $$*$$:
+Expand convolution operator $$*$$. $$N$$ is the number of coefficients of the filter.
 
 $$
-y[n] = \sum_k (x[n-k] e^{-j \omega_c (n-k)}) h[k] 
+y[n] = \sum_{k=0}^{N-1} (x[n-k] e^{-j \omega_c (n-k)}) h[k] 
 $$
 
 Extract the exponential term that doesn't depend on $$k$$:
 
 $$
-y[n] = e^{-j \omega_c n} \sum_k x[n-k] h[k] e^{j \omega_c k}
+y[n] = e^{-j \omega_c n} \sum_k x[n-k] ( e^{j \omega_c k} h[k] )
 $$
 
-Back to convolution operator:
+Reduce back to a convolution operator:
 
 $$
 y[n] = e^{-j \omega_c n} \big( x[n] * (h[n] e^{j \omega_c n} ) \big) = \big( x[n] * (h[n] e^{j \omega_c n} ) \big) e^{-j \omega_c n}
 $$
 
-This doesn't look like an improvement, but let's look at it a bit closer.
+This doesn't look like an improvement, but let's look at it step by step.
+
+In the past, we saw $$x[n] e^{j \omega_c n}$$ and treated it as a continuous, never ending stream
+of samples being multiplied by a free-running complex rotator. Now we're seeing this:
+
+$$ h[n] e^{j \omega_c n} $$
+
+It is tempting to treat this the same way, but that would be wrong: $$h[n]$$ are the coefficients of filter $$H(z)$$.
+In the formula above, each of these coefficients is multiplied by a fixed value of the rotator. This creates a new
+filter which is then applied to the input signal.
+
+If transfer function of the original filter is this: 
+
+$$
+H_{lpf}(z) = h_0 z^{0} + h_1 z^{-1} + h_2 z^{-2} + h_3 z^{-3} + h_4 z^{-4}
+$$
+
+Then the one of the new filter is this:
+
+$$
+\begin{alignedat}{0}
+H_{new}(z) & = & h_0 e^{j \omega_c 0} z^{0} &+& h_1 e^{j \omega_c 1} z^{-1} &+& h_2 e^{j \omega_c 2} z^{-2} &+& h_3 e^{j \omega_c 3} z^{-3} &+& h_4 e^{j \omega_c 4} z^{-4} \\
+           & = & h_0 (e^{-j \omega_c} z)^{0} &+& h_1 (e^{-j \omega_c} z)^{-1} &+& h_2 (e^{-j \omega_c} z)^{-2} &+& h_3 (e^{-j \omega_c} z)^{-3} &+& h_4 (e^{-j \omega_c} z)^{-4} \\
+\end{alignedat}
+$$
+
+This can be written much shorter, useful for drawings:
+
+$$
+H_{new}(z) = H_{lpf}(e^{-j \omega_c} z)
+$$
+
+
 
 We're first multiplying the coefficients of the low-pass filter with a complex rotator:
-
-$$ (h[n] e^{j \omega_c n} ) $$
 
 This is a complex heterodyne that shifts the spectrum of the filter up by $$\omega_c n$$ or $$F_c$$. In other words,
 it convers the low-pass filter to a bandpass filter with a center frequency of $$F_c$$. We can also write this
