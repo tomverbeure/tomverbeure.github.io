@@ -20,11 +20,11 @@ some decimation thrown in for good measure.
 
 It's now time to put everything together, and more. First, I'll look at
 the complex heterodyne/decimation combo and see how it can be implemented as
-efficiently as possible. There's already some surprised in there, but to
+efficiently as possible. There's already some surprises in there, but to
 top it off, I'll expand the solution to do the operation for multiple
-channels as the same time.
+channels in parallel.
 
-The result is truly amazing.
+The result is amazing.
 
 I'm still roughly following the flow of 
 [fred harris' video about polyphase filter banks](https://www.youtube.com/watch?v=afU9f5MuXr8)[^harris],
@@ -35,7 +35,7 @@ better in context and help me with understanding the topic.
            [this reddit comment](https://www.reddit.com/r/DSP/comments/1cyrh9/comment/c9lwtot)
            that's only true in the time domain.
 
-There will be a bit more math this time around, out of necessity: some of the optimizations
+There's a lot more math this time around, out of necessity: some of the optimizations
 can't be figured out with intuition alone. But the math consist almost exclusively of
 shuffling around sums and products of scalar values and complex exponentials, with a
 convolution here and there.
@@ -43,7 +43,7 @@ convolution here and there.
 # Where We Left Things Last Time
 
 I ended my [blog post about complex heterodynes](/2026/02/07/Complex-Heterodyne.html)
-with a question about the efficiency of implementing it as a low pass filter that is 
+with a question about the efficiency of implementing them as a low pass filter that is 
 followed by a decimation.
 
 Here's a quick recap of that pipeline:
@@ -54,8 +54,8 @@ Here's a quick recap of that pipeline:
   In our example, the sample rate $$F_s = 100 \text{MHz}$$ and the channel center frequency
   $$F_c = 20 \text{MHz}$$ so $$f_c = 0.2$$. Further down, I'll often use $$\omega_c = 2 \pi f_c$$
   because that makes equations less cluttered.
-* $$e^{-j 2 \pi f_c n}$$ is a complex rotator that shifts down a channel with center frequency
-  $$F_c$$ down to 0 Hz with a complex heterodyne.
+* $$e^{-j 2 \pi f_c n}$$ is a rotator. When multiplied with the input signal, it shifts down a 
+  channel with center frequency $$F_c$$ down to 0 Hz. That's the complex heterodyne.
 * $$H_\text{lpf}(z)$$ is a low-pass FIR filter with 201 real taps and a linear phase[^linear_phase]. It
   removes all the frequencies outside the -5 MHz to 5 MHz range.
 * Each channel has a 10 MHz bandwidth. Since there is no mirror spectrum due to the complex
@@ -63,7 +63,7 @@ Here's a quick recap of that pipeline:
   the range from -5 MHz to 5 MHz is all that's left.
 
 Check out my [section with common DSP notations](/2026/02/07/Complex-Heterodyne.html#some-common-dsp-notations)
-for a general overview symbols used in math formulas.
+for a general overview of symbols used in DSP math formulas.
 
 [^linear_phase]: Whether or not an FIR is linear phase depends on its coefficients, but most
                  common methods to determine those result in a linear phase filter.
