@@ -67,13 +67,15 @@ and fast rules, but I'll try to stick to them as well as I can.
   the sample rate. $$F_c$$ could be the center frequency of a channel.
 * $$f_x$$: a normalized frequency, usually relative to the sample frequency. 
   $$f_c$$ would be the ratio of $$F_c / F_s$$.
-* $$\omega$$: normalized radians per unit of time. $$\omega = 2 \pi f$$. One reason to
-  use $$\omega$$ is because it reduces the visual clutter when used as an argument of
-  trigonometry functions. Compare $$\sin(2 \pi f t)$$ with $$sin(\omega t)$$. $$\omega$$
-  is often reserved for continuous time cases, think the analog world. The equivalent
-  discrete time variable is $$\theta$$ (theta).
-* $$\theta$$: the discrete time equivalent of $$\omega$$. You'll often see 
-  $$\theta_k$$ as a replacement of $$ 2 \pi \frac{k}{N}$$ and $$\sin(\theta_k n)$$.
+* $$\omega$$ and $$\theta$$: both are used to indicate the rate
+  of change of a periodic signal. But $$\omega$$ tends to be used more when the intent
+  is an angular frequency, e.g. in the context of shifting the spectrum of a signal,
+  while $$\theta$$ puts more emphasis on the change of an angle on the unit circle.
+  From a pure mathematical point of view, they're the same: $$\sin(\omega n)$$ is
+  no different than $$\sin(\theta n)$$.
+  One reason to use $$\omega$$ instead of $$2 \pi n/N$$ is because it reduces the visual 
+  clutter when used as an argument of trigonometry functions. Compare $$\sin(2 \pi n /N)$$ 
+  with $$\sin(\omega n)$$.
 
 
 I'll try to stick to these conventions as much as possible. Feel free to reach out
