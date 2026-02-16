@@ -463,7 +463,7 @@ Let's move our attention to the transfer function of filter:
 $$
 \begin{alignedat}{0}
 H_{bpf}(z) & = & H_{lpf}(e^{-j \theta_c} z) \\
-           & = & \sum_{n=0}^{N-1} h[n] (e^{j \theta_c } z)^{-n}  \\
+           & = & \sum_{n=0}^{N-1} h[n] (e^{-j \theta_c } z)^{-n}  \\
            & = & h_0 e^{j \theta_c 0} z^{ 0} &+& h_1 e^{j \theta_c 1} z^{-1} &+& h_2 e^{j \theta_c 2} z^{-2} &+& 3 e^{j \theta_c 3}  z^{-3} &+& ... 
 \end{alignedat}
 $$
@@ -565,8 +565,9 @@ Here's how that looks as a diagram:
 
 ![Polyphase with real band-pass filter, heterodyne, decimator](/assets/polyphase/polyphase_het/polyphase_het-poly_real_bpf_het_decim.svg)
 
-As a final step, we can move the decimator back to the front by multiplying the rotator exponent by $$M$$ and
-applying the noble identity on the polyphase sub-filters:
+As a final step, we can move the decimator back to the front by applying the noble identity on the 
+polyphase sub-filters. Note that this time, the rotator exponent is not multiplied by $$M$$, because
+the exponent is a fixed value, not a changing phasor.
 
 ![Polyphase with decimator, real band-pass filter, heterodyne](/assets/polyphase/polyphase_het/polyphase_het-decim_poly_real_bpf_het.svg)
 
@@ -622,7 +623,7 @@ is not good enough.
 Let's look at the rotator section for a single channel:
 
 $$
-s_k[n] = \sum_{m=0}^{M-1} y_m[n] e^{j 2 \pi m k}
+s_k[n] = \sum_{m=0}^{M-1} y_m[n] e^{j \frac{2 \pi}{M} k \, m}
 $$
 
 This calculation must be done for each output time step $$n$$, so let's drop that index. And while we're at it,
@@ -630,18 +631,18 @@ let's group the outputs $$y_m$$ of the filters into their own array, so that we 
 time step $$n$$, as $$y[m]$$ instead of $$y_m$$:
 
 $$
-s_k = \sum_{m=0}^{M-1} y[m] e^{j 2 \pi m k}
+s_k = \sum_{m=0}^{M-1} y[m] e^{j \frac{2 \pi}{M} k \, m}
 $$
 
 Does this equation ring a bell? Compare against this: 
 
 $$
-x[n] = \frac{1}{N} \sum_{k=0}^{N-1}{X[k] e^{j {2 \pi k n}/{N} } }
+x[n] = \frac{1}{N} \sum_{k=0}^{N-1}{X[k] e^{j \frac{2 \pi}{N} k \, n } }
 $$
 
 This is the definition of inverse[^inverse] 
 [discrete Fourier transform (DFT)](https://en.wikipedia.org/wiki/Discrete_Fourier_transform)!
-Except for some scaling factors, our equation has the same form.
+Except for the front scaling factor, our equation has the same form.
 
 [^inverse]: It's inverse because there's no $$-$$ sign in front of $$j$$.
 
@@ -653,13 +654,13 @@ Fourier transform without immediately bringing up the
 which has $$O(n \log n)$$ behavior.
 
 For a 65536 channel polyphase channelizer, the FFT brings down the number of complex multiplications
-from 4,294,901,760 down to 1,048,576. We're received a second boost of efficiency miracle.
+from 4,294,901,760 down to 1,048,576. We're received a second boost-of-efficiency miracle.
 
 ![Polyphase filters, IFFT](/assets/polyphase/polyphase_het/polyphase_het-polyphase_ifft.svg)
 
 The Fourier transform is known primarily for converting signals from the time domain to the
-frequency domain, and back, but that doesn't have to be the case and it isn't the case here:
-The output of the IFFT in the polyphase channelize is an array with the samples of all
+frequency domain and back, but you don't have to use it for frequency stuff, as is the case here.
+The output of the IFFT in the polyphase channelizer is an array with the samples of all
 channels of a given time tick. The IFFT is simply used algorithmic accelerator.
 
 This is a good at time as any to link to my favorite Youtube video of all time:
@@ -667,9 +668,8 @@ This is a good at time as any to link to my favorite Youtube video of all time:
 
 <iframe width="640" height="360" src="https://www.youtube.com/embed/h7apO7q16V0?si=8zM2mOaMBD0byhyb" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
-It develops the FFT algorithm, and like the polyphase channels, doesn't use the FFT
-for time domain/frequency conversion, but to accelerate the multiplication of 
-polynomials.
+It develops the FFT algorithm, and like the polyphase channelizer, it doesn't use the FFT
+for time domain/frequency conversion, but to accelerate the multiplication of polynomials.
 
 
 # References

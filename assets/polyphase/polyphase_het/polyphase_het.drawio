@@ -1,4 +1,4 @@
-<mxfile host="Electron" modified="2026-02-16T22:17:36.903Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.5.1 Chrome/112.0.5615.204 Electron/24.6.0 Safari/537.36" etag="_BEnOznPslCuYfHEMl83" version="21.5.1" type="device" pages="17">
+<mxfile host="Electron" modified="2026-02-16T23:06:31.085Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.5.1 Chrome/112.0.5615.204 Electron/24.6.0 Safari/537.36" etag="j4gmgjjQMRXcTNYjcs9j" version="21.5.1" type="device" pages="17">
   <diagram name="fir_no_optimized_muls" id="5JbJsr4caC7PF7zX3YwK">
     <mxGraphModel dx="1434" dy="922" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="1" shadow="0">
       <root>
@@ -1764,13 +1764,13 @@
         <mxCell id="GGIKSTptQ7bTs8L6k7Y8-2" value="M:1" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="EvHlZ80pONWpujF-nq2u-1">
           <mxGeometry x="480" y="460" width="40" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="DjZ5YQCw9mP8Nttifqh9-1" value="$$e^{j \frac{2 \pi}{M} 0 }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="EvHlZ80pONWpujF-nq2u-1">
+        <mxCell id="DjZ5YQCw9mP8Nttifqh9-1" value="$$e^{j \frac{2 \pi}{M} k \,0 }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="EvHlZ80pONWpujF-nq2u-1">
           <mxGeometry x="360" y="243" width="120" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="DjZ5YQCw9mP8Nttifqh9-2" value="$$e^{j \frac{2 \pi}{M} 1 }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="EvHlZ80pONWpujF-nq2u-1">
+        <mxCell id="DjZ5YQCw9mP8Nttifqh9-2" value="$$e^{j \frac{2 \pi}{M} k \, 1 }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="EvHlZ80pONWpujF-nq2u-1">
           <mxGeometry x="361" y="323" width="120" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="DjZ5YQCw9mP8Nttifqh9-3" value="$$e^{j \frac{2 \pi}{M} (M-1) }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="EvHlZ80pONWpujF-nq2u-1">
+        <mxCell id="DjZ5YQCw9mP8Nttifqh9-3" value="$$e^{j \frac{2 \pi}{M} k \, (M-1) }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="EvHlZ80pONWpujF-nq2u-1">
           <mxGeometry x="360" y="422.96" width="120" height="20" as="geometry" />
         </mxCell>
         <mxCell id="rd2Df8q3Kx1sB3UrZ9aQ-0" value="..." style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontSize=19;verticalAlign=middle;" vertex="1" parent="EvHlZ80pONWpujF-nq2u-1">
@@ -1929,13 +1929,13 @@
             <mxPoint x="520" y="399.96" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="uR2KChYW-ouwNVd_F7qK-12" value="$$e^{j 2 \pi 0 k }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="YuDfEwf1D8E6wkEXnhC8-1">
+        <mxCell id="uR2KChYW-ouwNVd_F7qK-12" value="$$e^{j \frac{2 \pi}{M} k \,0 }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="YuDfEwf1D8E6wkEXnhC8-1">
           <mxGeometry x="440" y="243" width="120" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="uR2KChYW-ouwNVd_F7qK-13" value="$$e^{j 2 \pi 1 k }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="YuDfEwf1D8E6wkEXnhC8-1">
+        <mxCell id="uR2KChYW-ouwNVd_F7qK-13" value="$$e^{j \frac{2 \pi}{M} k \, 1 }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="YuDfEwf1D8E6wkEXnhC8-1">
           <mxGeometry x="440" y="323" width="120" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="uR2KChYW-ouwNVd_F7qK-14" value="$$e^{j 2 \pi (M-1) k }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="YuDfEwf1D8E6wkEXnhC8-1">
+        <mxCell id="uR2KChYW-ouwNVd_F7qK-14" value="$$e^{j \frac{2 \pi}{M} k \, (M-1) }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="YuDfEwf1D8E6wkEXnhC8-1">
           <mxGeometry x="440" y="423.96" width="120" height="20" as="geometry" />
         </mxCell>
         <mxCell id="dFI07MN9r2Aj6cj5Gjat-0" value="..." style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;fontSize=19;verticalAlign=middle;" vertex="1" parent="YuDfEwf1D8E6wkEXnhC8-1">
@@ -2019,13 +2019,13 @@
         <mxCell id="u57sww9qUsm0GI7QScJL-24" value="$$H_{M-1}(z)$$" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="u57sww9qUsm0GI7QScJL-1">
           <mxGeometry x="360" y="440.04" width="80" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="C0DWieZ1LwuD6upFMYvO-11" value="$$e^{j 2 \pi 0 k }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="u57sww9qUsm0GI7QScJL-1">
+        <mxCell id="C0DWieZ1LwuD6upFMYvO-11" value="$$e^{j \frac{2 \pi}{M} k \, 0 }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="u57sww9qUsm0GI7QScJL-1">
           <mxGeometry x="500" y="123" width="120" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="C0DWieZ1LwuD6upFMYvO-12" value="$$e^{j 2 \pi 1 k }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="u57sww9qUsm0GI7QScJL-1">
+        <mxCell id="C0DWieZ1LwuD6upFMYvO-12" value="$$e^{j \frac{2 \pi}{M} k \, 1 }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="u57sww9qUsm0GI7QScJL-1">
           <mxGeometry x="500" y="203" width="120" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="C0DWieZ1LwuD6upFMYvO-13" value="$$e^{j 2 \pi (M-1) k }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="u57sww9qUsm0GI7QScJL-1">
+        <mxCell id="C0DWieZ1LwuD6upFMYvO-13" value="$$e^{j \frac{2 \pi}{M} k \, (M-1) }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="u57sww9qUsm0GI7QScJL-1">
           <mxGeometry x="500" y="284" width="120" height="20" as="geometry" />
         </mxCell>
         <mxCell id="C0DWieZ1LwuD6upFMYvO-14" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;" edge="1" parent="u57sww9qUsm0GI7QScJL-1">
@@ -2064,6 +2064,9 @@
             </Array>
           </mxGeometry>
         </mxCell>
+        <mxCell id="AHhVe2l_q7so-Grh-1Wk-0" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="u57sww9qUsm0GI7QScJL-1" source="C0DWieZ1LwuD6upFMYvO-19" target="C0DWieZ1LwuD6upFMYvO-21">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
         <mxCell id="C0DWieZ1LwuD6upFMYvO-19" value="" style="verticalLabelPosition=bottom;shadow=0;dashed=0;align=center;html=1;verticalAlign=top;shape=mxgraph.electrical.abstract.multiplier;" vertex="1" parent="u57sww9qUsm0GI7QScJL-1">
           <mxGeometry x="540" y="160.04000000000002" width="40" height="40" as="geometry" />
         </mxCell>
@@ -2091,13 +2094,13 @@
             <mxPoint x="559.88" y="320.04" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="C0DWieZ1LwuD6upFMYvO-25" value="$$e^{j 2 \pi 0 l }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="u57sww9qUsm0GI7QScJL-1">
+        <mxCell id="C0DWieZ1LwuD6upFMYvO-25" value="$$e^{j \frac{2 \pi}{M} l \, 0 }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="u57sww9qUsm0GI7QScJL-1">
           <mxGeometry x="500" y="363" width="120" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="C0DWieZ1LwuD6upFMYvO-26" value="$$e^{j 2 \pi 1 l }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="u57sww9qUsm0GI7QScJL-1">
+        <mxCell id="C0DWieZ1LwuD6upFMYvO-26" value="$$e^{j \frac{2 \pi}{M} l&amp;nbsp;\, 1 }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="u57sww9qUsm0GI7QScJL-1">
           <mxGeometry x="500" y="443" width="120" height="20" as="geometry" />
         </mxCell>
-        <mxCell id="C0DWieZ1LwuD6upFMYvO-27" value="$$e^{j 2 \pi (M-1) l }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="u57sww9qUsm0GI7QScJL-1">
+        <mxCell id="C0DWieZ1LwuD6upFMYvO-27" value="$$e^{j \frac{2 \pi}{M} l \, (M-1) }$$" style="rounded=0;whiteSpace=wrap;html=1;fillColor=none;strokeColor=none;" vertex="1" parent="u57sww9qUsm0GI7QScJL-1">
           <mxGeometry x="500" y="524" width="120" height="20" as="geometry" />
         </mxCell>
         <mxCell id="C0DWieZ1LwuD6upFMYvO-28" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeWidth=3;" edge="1" parent="u57sww9qUsm0GI7QScJL-1">
