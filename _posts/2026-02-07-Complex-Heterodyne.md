@@ -67,9 +67,14 @@ and fast rules, but I'll try to stick to them as well as I can.
   the sample rate. $$F_c$$ could be the center frequency of a channel.
 * $$f_x$$: a normalized frequency, usually relative to the sample frequency. 
   $$f_c$$ would be the ratio of $$F_c / F_s$$.
-* $$\omega$$: normalized radians per sample. $$\omega = 2 \pi f$$. One reason to
+* $$\omega$$: normalized radians per unit of time. $$\omega = 2 \pi f$$. One reason to
   use $$\omega$$ is because it reduces the visual clutter when used as an argument of
-  trigonometry functions. Compare $$sin(2 \pi f n)$$ with $$sin(\omega n)$$.
+  trigonometry functions. Compare $$\sin(2 \pi f t)$$ with $$sin(\omega t)$$. $$\omega$$
+  is often reserved for continuous time cases, think the analog world. The equivalent
+  discrete time variable is $$\theta$$ (theta).
+* $$\theta$$: the discrete time equivalent of $$\omega$$. You'll often see 
+  $$\theta_k$$ as a replacement of $$ 2 \pi \frac{k}{N}$$ and $$\sin(\theta_k n)$$.
+
 
 I'll try to stick to these conventions as much as possible. Feel free to reach out
 if you think I'm doing it wrong somewhere.
@@ -133,10 +138,10 @@ and the more prominent out-of-band noise everywhere else.
 
 We can also see that the negative frequency side of the spectrum is a mirror of 
 the positive side. This is as it should be: to display the spectrum, we performed a 
-[Discrete Time Fourier Transformation (DTFT)](https://en.wikipedia.org/wiki/Discrete-time_Fourier_transform),
-which I'll often call the Fourier transform for brevity.
+[Discrete Fourier Transformation (DFT)](https://en.wikipedia.org/wiki/Discrete_Fourier_transform),
+which I'll sometimes, incorrectly, call the Fourier transform for brevity.
 
-The definition of the DTFT is as follows:
+The definition of the DFT is as follows:
 
 $$
 X[k] = \sum_{n=0}^{N-1}{x[n] e^{-j {2 \pi k n}/{N} } }
@@ -147,7 +152,7 @@ That looks intimidating, but if we use
 we can rewrite this as:
 
 $$
-X[k] = \sum_{n=0}^{N-1}{x[n] cos( \frac{2 \pi k n}{N} ) } - j \sum_{n=0}^{N-1}{x[n] sin( \frac{2 \pi k n}{N} ) } 
+X[k] = \sum_{n=0}^{N-1}{x[n] \cos( \frac{2 \pi k n}{N} ) } - j \sum_{n=0}^{N-1}{x[n] \sin( \frac{2 \pi k n}{N} ) } 
 $$
 
 For a given frequency bucket $$k$$, we are multiplying the input signal by cosine and by a sine.
@@ -215,7 +220,7 @@ need this in the virtual work of DSP math in the form a simulated
 so I will keep on using the name of local oscillator.
 
 The math of heterodyning a sine wave is straightforward. Here I show how it works in the
-non-discrete analog world, but it works the same after sampling. Let's start with signal
+continuous time domain, but it works the same after sampling. Let's start with signal
 $$s(t)$$ and local oscillator $$l(t)$$:
 
 $$
@@ -429,7 +434,7 @@ $$
 y[n] = x[n] e^{-j 2 \pi f_k n}
 $$
 
-DTFT:
+DFT:
 
 $$
 X[k] = \sum_{n=0}^{N-1}{x[n] e^{-j {2 \pi k n}/{N} } } \\
