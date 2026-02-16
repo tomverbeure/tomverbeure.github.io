@@ -52,7 +52,7 @@ Here's a quick recap of that pipeline:
 
 * $$f_c$$ is the normalized center frequency of the channel that we're interested in. 
   In our example, the sample rate $$F_s = 100 \text{MHz}$$ and the channel center frequency
-  $$F_c = 20 \text{MHz}$$ so $$f_c = 0.2$$. Further down, I'll often use $$\omega_c = 2 \pi f_c$$
+  $$F_c = 20 \text{MHz}$$ so $$f_c = 0.2$$. Further down, I'll often use $$\theta_c = 2 \pi f_c$$
   because that makes equations less cluttered.
 * $$e^{-j 2 \pi f_c n}$$ is a rotator. When multiplied with the input signal, it shifts down a 
   channel with center frequency $$F_c$$ down to 0 Hz. That's the complex heterodyne.
@@ -175,10 +175,10 @@ is still the same.
 
 One minor thing to note is that the complex rotator consists of the input signal being multiplied by
 the output of a free-running oscillator. There are no major restrictions on rotation
-rate $$\omega_c$$. There's also no particular about the phase of the rotator. In the previous diagram,
-phase 0 gets the value of $$e^{-j \omega_c (n \bmod M)}$$, phase 1 gets $$e^{-j \omega_c ((n+1) \bmod M)}$$, 
-and so forth, but that's really arbitrary. We could assign $$e^{-j \omega_c ((n+1) \bmod M)}$$ to phase 0 and
-$$e^{-j \omega_c ((n+2) \bmod M)}$$ to phase 1 and outcome in terms of frequency characteristics wouldn't
+rate $$\theta_c$$. There's also no particular about the phase of the rotator. In the previous diagram,
+phase 0 gets the value of $$e^{-j \theta_c (n \bmod M)}$$, phase 1 gets $$e^{-j \theta_c ((n+1) \bmod M)}$$, 
+and so forth, but that's really arbitrary. We could assign $$e^{-j \theta_c ((n+1) \bmod M)}$$ to phase 0 and
+$$e^{-j \theta_c ((n+2) \bmod M)}$$ to phase 1 and outcome in terms of frequency characteristics wouldn't
 be materially different (though there would be constant phase shift.)
 
 What is true is that you will have to continuously loop through all the values of the rotator, irrespective
@@ -199,32 +199,32 @@ the result down to baseband? We can, and it's relatively easy to show that mathe
 Starting with this:
 
 $$
-y[n] = \underbrace{ \underbrace{(x[n] e^{-j \omega_c n})}_{heterodyne} * h[n]}_{low-pass filter}
+y[n] = \underbrace{ \underbrace{(x[n] e^{-j \theta_c n})}_{heterodyne} * h[n]}_{low-pass filter}
 $$
 
 Expand convolution operator $$*$$. $$N$$ is the number of coefficients of the filter.
 
 $$
-y[n] = \sum_{k=0}^{N-1} (x[n-k] e^{-j \omega_c (n-k)}) \; h[k] 
+y[n] = \sum_{k=0}^{N-1} (x[n-k] e^{-j \theta_c (n-k)}) \; h[k] 
 $$
 
 Extract the exponential term that doesn't depend on $$k$$:
 
 $$
-y[n] = e^{-j \omega_c n} \sum_k x[n-k] \; ( e^{j \omega_c k} h[k] )
+y[n] = e^{-j \theta_c n} \sum_k x[n-k] \; ( e^{j \theta_c k} h[k] )
 $$
 
 Reduce back to a convolution operator:
 
 $$
-y[n] = e^{-j \omega_c n} \; \big( x[n] * (h[n] e^{j \omega_c n} ) \big) = \big( x[n] * (h[n] e^{j \omega_c n} ) \big) \; e^{-j \omega_c n}
+y[n] = e^{-j \theta_c n} \; \big( x[n] * (h[n] e^{j \theta_c n} ) \big) = \big( x[n] * (h[n] e^{j \theta_c n} ) \big) \; e^{-j \theta_c n}
 $$
 
 We've just proven what, [in the video](https://youtu.be/afU9f5MuXr8?t=985), harris calls the 
 *Equivalency Theorem*: 
 
 $$
-( x[n] e^{-j \omega_c n} ) * h(n) = e^{-j \omega_c n} \; \big( x[n] * (h[n] e^{j \omega_c n} ) \big)
+( x[n] e^{-j \theta_c n} ) * h(n) = e^{-j \theta_c n} \; \big( x[n] * (h[n] e^{j \theta_c n} ) \big)
 $$
 
 There's one minor comment about this: while Google turns up plenty of equivalency
@@ -244,7 +244,7 @@ which has the same formulas and figures as the one of the video. It says:
 This doesn't look like an improvement, and it will take a while before we can see how this helps us.
 For now, let's break the equation into pieces and take things step by step.
 
-$$ h[n] e^{j \omega_c n} $$
+$$ h[n] e^{j \theta_c n} $$
 
 The coefficients of the low-pass filter with transfer function  $$H_{lpf}(z)$$ are each multiplied by 
 a value of a rotator. Notice how the $$-$$ sign in front of the $$j$$ exponent of the rotator has
@@ -261,15 +261,15 @@ Then the new filter is this:
 
 $$
 \begin{alignedat}{0}
-H_{bpf}(z) & = & h_0 e^{j \omega_c 0} z^{0} &+& h_1 e^{j \omega_c 1} z^{-1} &+& h_2 e^{j \omega_c 2} z^{-2} &+& h_3 e^{j \omega_c 3} z^{-3} &+& h_4 e^{j \omega_c 4} z^{-4} \\
-           & = & h_0 (e^{-j \omega_c} z)^{0} &+& h_1 (e^{-j \omega_c} z)^{-1} &+& h_2 (e^{-j \omega_c} z)^{-2} &+& h_3 (e^{-j \omega_c} z)^{-3} &+& h_4 (e^{-j \omega_c} z)^{-4} \\
+H_{bpf}(z) & = & h_0 e^{j \theta_c 0} z^{0} &+& h_1 e^{j \theta_c 1} z^{-1} &+& h_2 e^{j \theta_c 2} z^{-2} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_4 e^{j \theta_c 4} z^{-4} \\
+           & = & h_0 (e^{-j \theta_c} z)^{0} &+& h_1 (e^{-j \theta_c} z)^{-1} &+& h_2 (e^{-j \theta_c} z)^{-2} &+& h_3 (e^{-j \theta_c} z)^{-3} &+& h_4 (e^{-j \theta_c} z)^{-4} \\
 \end{alignedat}
 $$
 
 This can be written much shorter, useful for drawings:
 
 $$
-H_{bpf}(z) = H_{lpf}(e^{-j \omega_c} z)
+H_{bpf}(z) = H_{lpf}(e^{-j \theta_c} z)
 $$
 
 It is important to note that the coefficients of $$H_{bpf}(z)$$ are constants: for a given center frequency, we can
@@ -303,7 +303,7 @@ signal_bpf_complex  = np.convolve(signal, h_bpf_complex, mode="same")
 The final step shifts the filtered signal back to baseband:
 
 $$
-y[n] = ( x[n] * h_{bpf}[n] ) \; e^{-j \omega_c n}
+y[n] = ( x[n] * h_{bpf}[n] ) \; e^{-j \theta_c n}
 $$
 
 
@@ -329,14 +329,14 @@ to a decimator.
 Here's the rotator before decimation:
 
 $$
-e^{-j \omega_c n}
+e^{-j \theta_c n}
 $$
 
 When we decimate by a factor of M, the rotator complete a circle by a factor M less samples than before
 the decimation. Thus, after decimation, it can be written as follows:
 
 $$
-e^{-j \omega_c M m}, m = \lfloor \frac{n}{M} \rfloor
+e^{-j \theta_c M m}, m = \lfloor \frac{n}{M} \rfloor
 $$
 
 where $$\lfloor x \rfloor$$ means "$$x$$ rounded down to the closest integer number". 
@@ -356,17 +356,17 @@ than before.
 But we can do better! The rotator can disappear entirely if it's equal to one at all times.
 
 $$
-e^{-j \omega_c M m} = 1
+e^{-j \theta_c M m} = 1
 $$
 
 The rotator is one when the exponent is a multiple of $$2 \pi$$. Irrespective of the integer
 value of $$m$$, this can satisfied when:
 
 $$
-\omega_c M = k \; 2 \pi
+\theta_c M = k \; 2 \pi
 $$
 
-Replace $$\omega_c$$ with its definition:
+Replace $$\theta_c$$ with its definition:
 
 $$
 2 \pi \frac{F_c}{F_s} M = k \; 2 \pi
@@ -393,7 +393,7 @@ times per second.
 
 A pitiful 5% savings is not worth writing home about. Can we do better?
 
-# Moving the Rotator behind the Filter... Again
+# Moving the Rotator behind the Filter and More... Again
 
 Let's play another game of shuffling around sums and terms. This time, however,
 we're adding the polyphase decomposition explicitly to the mathematical mix.
@@ -402,8 +402,8 @@ Here's where we left it last time:
 
 $$
 \begin{alignedat}{0}
-H_{bpf}(z) & = & H_{lpf}(e^{-j \omega_c} z) \\
-           & = & \sum_{n=0}^{N-1} h[n] (e^{j \omega_c } z)^{-n}  \\
+H_{bpf}(z) & = & H_{lpf}(e^{-j \theta_c} z) \\
+           & = & \sum_{n=0}^{N-1} h[n] (e^{j \theta_c } z)^{-n}  \\
 \end{alignedat}
 $$
 
@@ -411,7 +411,7 @@ Do the polyphase decomposition. Instead of summing all the terms the full $$h[n]
 we sum the terms of $$M$$ different polynomials separately, and then add them together:
 
 $$
-= \sum_{m=0}^{M-1} \sum_{n=0}^{N-1} h[m + nM] e^{j \omega_c (m + nM)} z^{-(m+nM)} \\
+= \sum_{m=0}^{M-1} \sum_{n=0}^{N-1} h[m + nM] e^{j \theta_c (m + nM)} z^{-(m+nM)} \\
 $$
 
 When studying this step [in the video](https://youtu.be/afU9f5MuXr8?t=1480), it took
@@ -427,59 +427,59 @@ filter with decimation factor $$M=3$$:
 
 $$
 \begin{alignedat}{0}
-H(z) & = &  h_0 e^{j \omega_c 0} z^{ 0} &+& h_3 e^{j \omega_c 3} z^{-3} &+& h_6 e^{j \omega_c 6} z^{-6} &+& 0 e^{j \omega_c 9}  z^{-9}  + ... && \qquad (m = 0) \\
-     & + &  h_1 e^{j \omega_c 1} z^{-1} &+& h_4 e^{j \omega_c 4} z^{-4} &+& h_7 e^{j \omega_c 7} z^{-7} &+& 0 e^{j \omega_c 10} z^{-10} + ... && \qquad (m = 1) \\
-     & + &  h_2 e^{j \omega_c 2} z^{-2} &+& h_5 e^{j \omega_c 5} z^{-5} &+& h_8 e^{j \omega_c 8} z^{-8} &+& 0 e^{j \omega_c 11} z^{-11} + ... && \qquad (m = 2) \\
+H(z) & = &  h_0 e^{j \theta_c 0} z^{ 0} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_6 e^{j \theta_c 6} z^{-6} &+& 0 e^{j \theta_c 9}  z^{-9}  + ... && \qquad (m = 0) \\
+     & + &  h_1 e^{j \theta_c 1} z^{-1} &+& h_4 e^{j \theta_c 4} z^{-4} &+& h_7 e^{j \theta_c 7} z^{-7} &+& 0 e^{j \theta_c 10} z^{-10} + ... && \qquad (m = 1) \\
+     & + &  h_2 e^{j \theta_c 2} z^{-2} &+& h_5 e^{j \theta_c 5} z^{-5} &+& h_8 e^{j \theta_c 8} z^{-8} &+& 0 e^{j \theta_c 11} z^{-11} + ... && \qquad (m = 2) \\
 \end{alignedat}
 $$
 
-In each of the polyphase sub-filters, the factor $$e^{j \omega_c m} z^{-m}$$:
+In each of the polyphase sub-filters, the factor $$e^{j \theta_c m} z^{-m}$$:
 
 $$
-=  \sum_{m=0}^{M-1} e^{j \omega_c m} z^{-m} \sum_{n=0}^{N-1} h[m + nM] e^{j \omega_c nM} z^{-nM} \\
+=  \sum_{m=0}^{M-1} e^{j \theta_c m} z^{-m} \sum_{n=0}^{N-1} h[m + nM] e^{j \theta_c nM} z^{-nM} \\
 $$
 
 And:
 
 $$
 \begin{alignedat}{0}
-H(z) & = & e^{j \omega_c 0} z^{ 0} & \big(  h_0 e^{j \omega_c 0} z^{0} &+& h_3 e^{j \omega_c 3} z^{-3} &+& h_6 e^{j \omega_c 6} z^{-6} \big)  && \qquad (m = 0) \\
-     & + & e^{j \omega_c 1} z^{-1} & \big(  h_1 e^{j \omega_c 0} z^{0} &+& h_4 e^{j \omega_c 3} z^{-4} &+& h_7 e^{j \omega_c 6} z^{-7} \big)  && \qquad (m = 1) \\
-     & + & e^{j \omega_c 2} z^{-2} & \big(  h_2 e^{j \omega_c 0} z^{0} &+& h_5 e^{j \omega_c 3} z^{-5} &+& h_8 e^{j \omega_c 6} z^{-8} \big)  && \qquad (m = 2) \\
+H(z) & = & e^{j \theta_c 0} z^{ 0} & \big(  h_0 e^{j \theta_c 0} z^{0} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_6 e^{j \theta_c 6} z^{-6} \big)  && \qquad (m = 0) \\
+     & + & e^{j \theta_c 1} z^{-1} & \big(  h_1 e^{j \theta_c 0} z^{0} &+& h_4 e^{j \theta_c 3} z^{-4} &+& h_7 e^{j \theta_c 6} z^{-7} \big)  && \qquad (m = 1) \\
+     & + & e^{j \theta_c 2} z^{-2} & \big(  h_2 e^{j \theta_c 0} z^{0} &+& h_5 e^{j \theta_c 3} z^{-5} &+& h_8 e^{j \theta_c 6} z^{-8} \big)  && \qquad (m = 2) \\
 \end{alignedat}
 $$
 
 Now look back at the previous section where we figured out the condition to eliminate the rotator. In the equations
-above, we are dealing with exactly the same term, $$ e^{j \omega_c M n} $$ !
+above, we are dealing with exactly the same term, $$ e^{j \theta_c M n} $$ !
 
 In other words, when using the same restriction $$ F_c = k \frac{F_s}{M} $$, the rotator in the products of the
 inner sum simply disappears and we end up with this:
 
 $$
-=  \sum_{m=0}^{M-1} e^{j \omega_c m} z^{-m} \sum_{n=0}^{N-1} h[m + nM] z^{-nM} \\
+=  \sum_{m=0}^{M-1} e^{j \theta_c m} z^{-m} \sum_{n=0}^{N-1} h[m + nM] z^{-nM} \\
 $$
 
 And:
 
 $$
 \begin{alignedat}{0}
-H(z) & = & e^{j \omega_c 0} z^{ 0} & \big(  h_0 z^{0} &+& h_3 z^{-3} &+& h_6 z^{-6} \big)  && \qquad (m = 0) \\
-     & + & e^{j \omega_c 1} z^{-1} & \big(  h_1 z^{0} &+& h_4 z^{-4} &+& h_7 z^{-7} \big)  && \qquad (m = 1) \\
-     & + & e^{j \omega_c 2} z^{-2} & \big(  h_2 z^{0} &+& h_5 z^{-5} &+& h_8 z^{-8} \big)  && \qquad (m = 2) \\
+H(z) & = & e^{j \theta_c 0} z^{ 0} & \big(  h_0 z^{0} &+& h_3 z^{-3} &+& h_6 z^{-6} \big)  && \qquad (m = 0) \\
+     & + & e^{j \theta_c 1} z^{-1} & \big(  h_1 z^{0} &+& h_4 z^{-4} &+& h_7 z^{-7} \big)  && \qquad (m = 1) \\
+     & + & e^{j \theta_c 2} z^{-2} & \big(  h_2 z^{0} &+& h_5 z^{-5} &+& h_8 z^{-8} \big)  && \qquad (m = 2) \\
 \end{alignedat}
 $$
 
 Or abbreviated:
 
 $$
-H_{bpf}(z) = \sum_{m=0}^{M-1} e^{j \omega_c m} z^{-m} H_m(z^M)
+H_{bpf}(z) = \sum_{m=0}^{M-1} e^{j \theta_c m} z^{-m} H_m(z^M)
 $$
 
 Furthermore:
 
 $$
-\omega_c = 2 \pi \frac{F_c}{F_s} \quad \text{and} \quad F_c = k \frac{F_s}{M} \\
-\omega_c = k \frac{2 \pi}{M}
+\theta_c = 2 \pi \frac{F_c}{F_s} \quad \text{and} \quad F_c = k \frac{F_s}{M} \\
+\theta_c = k \frac{2 \pi}{M}
 $$
 
 So we end up with this:
@@ -577,11 +577,19 @@ $$
 s_k = \sum_{m=0}^{M-1} y[m] e^{j 2 \pi m k}
 $$
 
-Does this equation ring a bell? It's the inverse[^inverse] discrete Fourier transform (DFT)!
+Does this equation ring a bell? Compare against this: 
+
+$$
+x[n] = \frac{1}{N} \sum_{k=0}^{N-1}{X[k] e^{j {2 \pi k n}/{N} } }
+$$
+
+This is the definition of inverse[^inverse] 
+[discrete Fourier transform (DFT)](https://en.wikipedia.org/wiki/Discrete_Fourier_transform)!
+Except for some scaling factors, our equation has the same form.
 
 [^inverse]: It's inverse because there's no $$-$$ sign in front of $$j$$.
 
-If, for each time step, we want the outputs sample of channels $$0..N-1$$, the DFT will give us
+If, for each time step $$n$$, we want the output samples of all channels $$0..M-1$$, the DFT will give us
 exactly that. That in itself doesn't solve our problem: it is well known that a naive DFT
 implementation has $$O(n^2)$$ behavior. But in DSP land, it's impossible to mention the discrete
 Fourier transform without immediately bringing up the 
