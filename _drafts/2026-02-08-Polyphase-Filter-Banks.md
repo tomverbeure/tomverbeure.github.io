@@ -384,21 +384,20 @@ rotator at the input sample rate has been solved!
 
 ![Pipeline with band-pass filter, decimation, and heterodyne](/assets/polyphase/polyphase_het/polyphase_het-bpf_decim_het.svg)
 
-Even with complex filter coefficients, we can still do the polyphase decomposition and 
-move the decimator before the set of filters:
-
-![Pipeline with decimation, polyphase band-pass filters, and heterodyne](/assets/polyphase/polyphase_het/polyphase_het-decim_poly_bpf_het.svg)
-
-Tadaa! All elements of the pipeline can now run at the decimated output sample rate.
-
 But we can do better! The rotator can disappear entirely if its value is equal to one at all times.
 
 $$
 e^{-j \theta_c M m} \stackrel{?}{=} 1 + 0j
 $$
 
+We don't want this to be dependent on $$m$$, so we're really finding a solution for this equation:
+
+$$
+e^{-j \theta_c M } \stackrel{?}{=} 1 + 0j
+$$
+
 The rotator is one whenever it makes a full circle or whenever the exponent is an integer multiple of $$2 \pi$$. 
-Irrespective of the integer value of $$m$$, this can satisfied when:
+$$m$$ is an integer. If the equation above is satisfied, then it will also be satisfied after adding $$m$$ to the exponent.
 
 $$
 \theta_c M = k \; 2 \pi
@@ -424,39 +423,62 @@ and thus the multiplication disappears entirely.
 In our example with $$F_s=100 \text{MHz}$$, $$M=10$$, $$F_c=20 \text{MHz}$$, this
 equation is satisfied for $$k=2$$, and we end up with this:
 
+![Band-pass filter and decimation](/assets/polyphase/polyphase_het/polyphase_het-bpf_decim.svg)
+
+Even with complex filter coefficients, we can still do the polyphase decomposition and 
+move the decimator before the set of filters:
+
 ![Decimator, polyphase band-pass filter](/assets/polyphase/polyphase_het/polyphase_het-decim_poly_bpf.svg)
+
+Tadaa! All elements of the pipeline can now run at the decimated output sample rate.
+
 
 Last time we checked, we needed 4.22B multiplications per second. With the complex rotator gone,
 we're now at 4.02B: just a filter with 201 complex taps, fed with a real value, executed 10M 
 times per second. 
 
-A pitiful 5% savings is not worth writing home about. Can we do better?
+A pitiful 5% savings is not worth writing home about, but we can do even better.
 
-# Moving the Rotator behind the Filter and More... Again
+Note: even if we don't satisfy the $$F_c = k \frac{F_s}{M} $$ condition, we're still better off
+than before, because the rotator still runs at the output instead of the input sample rate:
 
-Let's play another game of shuffling around sums and terms. This time, however,
-we're adding the polyphase decomposition explicitly to the mathematical mix.
+![Pipeline with decimation, polyphase band-pass filters, and heterodyne](/assets/polyphase/polyphase_het/polyphase_het-decim_poly_bpf_het.svg)
+
+This blog post is already long as it is, so for this one, I'm focussing only on the case
+where the center frequency condition is satisfied.
+
+# Moving Another Rotator behind the Filter and More... Again
+
+Let's play another game of shuffling around sums and terms. So far, we've only engaged
+the polyphase decomposition after the fact, to lower the number of filter calculations. 
+This time we're adding the polyphase decomposition explicitly to the mathematical mix
+for additional benefits.
 
 Here's where we left it last time:
+
+![Band-pass filter and decimation](/assets/polyphase/polyphase_het/polyphase_het-bpf_decim.svg)
+
+Let's move our attention to the transfer function of filter:
 
 $$
 \begin{alignedat}{0}
 H_{bpf}(z) & = & H_{lpf}(e^{-j \theta_c} z) \\
            & = & \sum_{n=0}^{N-1} h[n] (e^{j \theta_c } z)^{-n}  \\
+           & = & h_0 e^{j \theta_c 0} z^{ 0} &+& h_1 e^{j \theta_c 1} z^{-1} &+& h_2 e^{j \theta_c 2} z^{-2} &+& 3 e^{j \theta_c 3}  z^{-3} &+& ... 
 \end{alignedat}
 $$
 
-Do the polyphase decomposition. Instead of summing all the terms the full $$h[n]$$ polynomial,
-we sum the terms of $$M$$ different polynomials separately, and then add them together:
+Do the polyphase decomposition. Instead of summing all the terms the full $$h[n]$$ polynomial in one go,
+we sum the terms of $$M$$ different polyphase polynomials separately, and then add them together:
 
 $$
-= \sum_{m=0}^{M-1} \sum_{n=0}^{N-1} h[m + nM] e^{j \theta_c (m + nM)} z^{-(m+nM)} \\
+= \sum_{m=0}^{M-1} \sum_{n=0}^{N-1} h[m + Mn] e^{j \theta_c (m + Mn)} z^{-(m+Mn)} \\
 $$
 
 When studying this step [in the video](https://youtu.be/afU9f5MuXr8?t=1480), it took
 me a minute to understand what happened with $$h[n]$$. In the first equation,
 $$n = 0 ... N-1$$, where $$N$$ is the number of coefficients. In the equation above, 
-the range of $$n$$ doesn't change, but now it's used like this: $$h[m + nM]$$. The
+the range of $$n$$ doesn't change, but now it's used like this: $$h[m + Mn]$$. The
 maximum index of $$h$$ now goes beyond the number of coefficients. This isn't a problem,
 though, as long as you keep in mind that $$h[n]$$ is zero when $$n$$ is smaller than 0
 or larger than $$N-1$$.
@@ -466,42 +488,43 @@ filter with decimation factor $$M=3$$:
 
 $$
 \begin{alignedat}{0}
-H(z) & = &  h_0 e^{j \theta_c 0} z^{ 0} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_6 e^{j \theta_c 6} z^{-6} &+& 0 e^{j \theta_c 9}  z^{-9}  + ... && \qquad (m = 0) \\
-     & + &  h_1 e^{j \theta_c 1} z^{-1} &+& h_4 e^{j \theta_c 4} z^{-4} &+& h_7 e^{j \theta_c 7} z^{-7} &+& 0 e^{j \theta_c 10} z^{-10} + ... && \qquad (m = 1) \\
-     & + &  h_2 e^{j \theta_c 2} z^{-2} &+& h_5 e^{j \theta_c 5} z^{-5} &+& h_8 e^{j \theta_c 8} z^{-8} &+& 0 e^{j \theta_c 11} z^{-11} + ... && \qquad (m = 2) \\
+H_{bpf}(z) & = &  h_0 e^{j \theta_c 0} z^{ 0} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_6 e^{j \theta_c 6} z^{-6} &+& 0 e^{j \theta_c 9}  z^{-9}  &+& ... && \qquad (m = 0) \\
+           & + &  h_1 e^{j \theta_c 1} z^{-1} &+& h_4 e^{j \theta_c 4} z^{-4} &+& h_7 e^{j \theta_c 7} z^{-7} &+& 0 e^{j \theta_c 10} z^{-10} &+& ... && \qquad (m = 1) \\
+           & + &  h_2 e^{j \theta_c 2} z^{-2} &+& h_5 e^{j \theta_c 5} z^{-5} &+& h_8 e^{j \theta_c 8} z^{-8} &+& 0 e^{j \theta_c 11} z^{-11} &+& ... && \qquad (m = 2) \\
 \end{alignedat}
 $$
 
 In each of the polyphase sub-filters, the factor $$e^{j \theta_c m} z^{-m}$$ is not dependent on $$n$$
-and can be moved out of the inner sum:
+and can be moved ahead of the inner sum:
 
 $$
-=  \sum_{m=0}^{M-1} e^{j \theta_c m} z^{-m} \sum_{n=0}^{N-1} h[m + nM] e^{j \theta_c nM} z^{-nM} \\
+=  \sum_{m=0}^{M-1} e^{j \theta_c m} z^{-m} \sum_{n=0}^{N-1} h[m + Mn] e^{j \theta_c Mn} z^{-Mn} \\
 $$
 
 $$
 \begin{alignedat}{0}
-H(z) & = & e^{j \theta_c 0} z^{ 0} & \big(  h_0 e^{j \theta_c 0} z^{0} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_6 e^{j \theta_c 6} z^{-6} \big)  && \qquad (m = 0) \\
-     & + & e^{j \theta_c 1} z^{-1} & \big(  h_1 e^{j \theta_c 0} z^{0} &+& h_4 e^{j \theta_c 3} z^{-4} &+& h_7 e^{j \theta_c 6} z^{-7} \big)  && \qquad (m = 1) \\
-     & + & e^{j \theta_c 2} z^{-2} & \big(  h_2 e^{j \theta_c 0} z^{0} &+& h_5 e^{j \theta_c 3} z^{-5} &+& h_8 e^{j \theta_c 6} z^{-8} \big)  && \qquad (m = 2) \\
+H_{bpf}(z) & = & e^{j \theta_c 0} z^{ 0} & \big(  h_0 e^{j \theta_c 0} z^{0} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_6 e^{j \theta_c 6} z^{-6} \big)  && \qquad (m = 0) \\
+           & + & e^{j \theta_c 1} z^{-1} & \big(  h_1 e^{j \theta_c 0} z^{0} &+& h_4 e^{j \theta_c 3} z^{-4} &+& h_7 e^{j \theta_c 6} z^{-7} \big)  && \qquad (m = 1) \\
+           & + & e^{j \theta_c 2} z^{-2} & \big(  h_2 e^{j \theta_c 0} z^{0} &+& h_5 e^{j \theta_c 3} z^{-5} &+& h_8 e^{j \theta_c 6} z^{-8} \big)  && \qquad (m = 2) \\
 \end{alignedat}
 $$
 
-Now look back at the previous section where we figured out the condition to eliminate the rotator. In the equations
-above, we are dealing with exactly the same term, $$ e^{j \theta_c M n} $$ !
+Now look back at the previous section where we figured out the condition to eliminate the rotator. In the equation
+above, we see $$ e^{j \theta_c Mn } $$, which contains $$ e^{j \theta_c M } $$. This is exactly the same rotator
+that we eliminated before.
 
 In other words, when using the same restriction $$ F_c = k \frac{F_s}{M} $$, the rotator in the products of the
 inner sum simply disappears and we end up with this:
 
 $$
-=  \sum_{m=0}^{M-1} e^{j \theta_c m} z^{-m} \sum_{n=0}^{N-1} h[m + nM] z^{-nM} \\
+=  \sum_{m=0}^{M-1} e^{j \theta_c m} z^{-m} \sum_{n=0}^{N-1} h[m + Mn] z^{-Mn} \\
 $$
 
 $$
 \begin{alignedat}{0}
-H(z) & = & e^{j \theta_c 0} z^{ 0} & \big(  h_0 z^{0} &+& h_3 z^{-3} &+& h_6 z^{-6} \big)  && \qquad (m = 0) \\
-     & + & e^{j \theta_c 1} z^{-1} & \big(  h_1 z^{0} &+& h_4 z^{-4} &+& h_7 z^{-7} \big)  && \qquad (m = 1) \\
-     & + & e^{j \theta_c 2} z^{-2} & \big(  h_2 z^{0} &+& h_5 z^{-5} &+& h_8 z^{-8} \big)  && \qquad (m = 2) \\
+H_{bpf}(z) & = & e^{j \theta_c 0} z^{ 0} & \big(  h_0 z^{0} &+& h_3 z^{-3} &+& h_6 z^{-6} \big)  && \qquad (m = 0) \\
+           & + & e^{j \theta_c 1} z^{-1} & \big(  h_1 z^{0} &+& h_4 z^{-4} &+& h_7 z^{-7} \big)  && \qquad (m = 1) \\
+           & + & e^{j \theta_c 2} z^{-2} & \big(  h_2 z^{0} &+& h_5 z^{-5} &+& h_8 z^{-8} \big)  && \qquad (m = 2) \\
 \end{alignedat}
 $$
 
@@ -514,7 +537,6 @@ $$
 Furthermore:
 
 $$
-\theta_c = 2 \pi \frac{F_c}{F_s} \quad \text{and} \quad F_c = k \frac{F_s}{M} \\
 \theta_c = k \frac{2 \pi}{M}
 $$
 
@@ -524,7 +546,7 @@ $$
 H_{bpf}(z) = \sum_{m=0}^{M-1} e^{j \frac{2 \pi}{M} k m} z^{-m} H_m(z^M)
 $$
 
-Finally, $$e^{j \frac{2 \pi}{M} k r}$$ is a scalar value, so we can move the multiplication 
+$$e^{j \frac{2 \pi}{M} k m}$$ is a scalar value, so we can move the multiplication 
 to the back of the filter:
 
 $$
@@ -533,9 +555,9 @@ $$
 
 $$
 \begin{alignedat}{0}
-H(z) & = & z^{ 0} & \big(  h_0 z^{0} &+& h_3 z^{-3} &+& h_6 z^{-6} \big) e^{j \frac{2 \pi}{M} k 0} \\
-     & + & z^{-1} & \big(  h_1 z^{0} &+& h_4 z^{-4} &+& h_7 z^{-7} \big) e^{j \frac{2 \pi}{M} k 1} \\
-     & + & z^{-2} & \big(  h_2 z^{0} &+& h_5 z^{-5} &+& h_8 z^{-8} \big) e^{j \frac{2 \pi}{M} k 2} \\
+H_{bpf}(z) & = & z^{ 0} & \big(  h_0 z^{0} &+& h_3 z^{-3} &+& h_6 z^{-6} \big) e^{j \frac{2 \pi}{M} k 0} \\
+           & + & z^{-1} & \big(  h_1 z^{0} &+& h_4 z^{-4} &+& h_7 z^{-7} \big) e^{j \frac{2 \pi}{M} k 1} \\
+           & + & z^{-2} & \big(  h_2 z^{0} &+& h_5 z^{-5} &+& h_8 z^{-8} \big) e^{j \frac{2 \pi}{M} k 2} \\
 \end{alignedat}
 $$
 
