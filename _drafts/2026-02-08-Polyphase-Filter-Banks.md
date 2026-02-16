@@ -35,16 +35,25 @@ better in context and help me with understanding the topic.
            [this reddit comment](https://www.reddit.com/r/DSP/comments/1cyrh9/comment/c9lwtot)
            that's only true in the time domain.
 
-There's a lot more math this time around, out of necessity: some of the optimizations
+There's a lot more math[^math] this time around, out of necessity: some of the optimizations
 can't be figured out with intuition alone. But the math consist almost exclusively of
 shuffling around sums and products of scalar values and complex exponentials, with a
 convolution here and there.
+
+[^math]: I've been spending weeks on this subject now: watching videos, reading books,
+         and writing the blog posts. Doing so, I've become much more comfortable with the
+         math. That's good for me personally, but it's ironic that this might make the
+         blog posts less accessible for others!
 
 # Where We Left Things Last Time
 
 I ended my [blog post about complex heterodynes](/2026/02/07/Complex-Heterodyne.html)
 with a question about the efficiency of implementing them as a low pass filter that is 
-followed by a decimation.
+followed by a decimation. In [the video](https://youtu.be/afU9f5MuXr8?t=552), harris
+calls this the Armstrong[^armstrong] heterodyne.
+
+[^armstrong]: Edwin Armstrong was the inventor of the superheterodyne receiver that 
+              I mentioned in the previous blog post.
 
 Here's a quick recap of that pipeline:
 
@@ -164,37 +173,51 @@ for 200M multiplications per second, but the combined 201 taps now need to deliv
 lower rate, 201 x 2 x 10M = 4.02B operations per second, for a total of 4.22B operations per second. If
 it weren't for the complex rotator, the savings ratio is exactly the decimation factor.
 
-The complex rotator can be moved after the the decimator, like this:
-
-![Decimation - Complex heterodyne - Polyphase](/assets/polyphase/polyphase_het/polyphase_het-decim_complex_het_polyphase.svg)
-
-This doesn't really help us, though, the number of rotations/multiplications per decimated output sample
-is still the same.
+The biggest problem with this arrangement is that the rotator is in front of the decimator and there is
+no obvious way to move it behind the decimator. If the DSP pipeline is implemented in an FPGA and the
+input sample clock is very high, the multiplier hardware may simply not be fast enough.
 
 # A Free-Running Rotator
 
-One minor thing to note is that the complex rotator consists of the input signal being multiplied by
-the output of a free-running oscillator. There are no major restrictions on rotation
-rate $$\theta_c$$. There's also no particular about the phase of the rotator. In the previous diagram,
-phase 0 gets the value of $$e^{-j \theta_c (n \bmod M)}$$, phase 1 gets $$e^{-j \theta_c ((n+1) \bmod M)}$$, 
-and so forth, but that's really arbitrary. We could assign $$e^{-j \theta_c ((n+1) \bmod M)}$$ to phase 0 and
-$$e^{-j \theta_c ((n+2) \bmod M)}$$ to phase 1 and outcome in terms of frequency characteristics wouldn't
-be materially different (though there would be constant phase shift.)
+One minor thing to note is that the rotator consists of the input signal being multiplied by
+the output of a free-running oscillator. Free-running implies that there are no restrictions on 
+the starting phase of the oscillator. 
 
-What is true is that you will have to continuously loop through all the values of the rotator, irrespective
-of the decimation factor. We'll see later that this doesn't always have to be the case.
+In the previous diagram, sample $$x[n]$$ is multiplied by $$e^{-j \theta_c n}$$, sample $$x[n+1]$$ by 
+$$e^{-j \theta_c (n+1)}$$, and so forth, but that's really arbitrary. We could multiply $$x[n]$$ by $$e^{-j \theta_c (n+1)}$$ 
+and $$x[n+1]$$ by $$e^{-j \theta_c (n +2)}$$ and the outcome in terms of frequency characteristics 
+wouldn't be materially different (though there would be constant phase shift.)
+
+What is true is that you have to continuously loop through all the values of the rotator, irrespective
+of the length of the number of filter taps: if the rotator completes a full rotation in 128 steps, then
+you'll need a table or a calculation[^unity_point_calculation] to produce 128 points around the unity circle.
+
+[^unity_point_calculation]: There are multiple techniques to calculate the next point on a unity circle.
+                            The most straightforward one is to do a rotation with a fixed 
+                            [rotation matrix](https://en.wikipedia.org/wiki/Rotation_matrix), you that
+                            will cost up to 4 multipliers, and you need to watch out for accumulating
+                            errors over time. The [CORDIC](https://en.wikipedia.org/wiki/CORDIC)
+                            algorithm is very popular, requires no multiplication, but requires much
+                            more steps per result to achieve the desired precision.
+
+We'll soon see that this isn't the case in other schemes.
 
 # From Low Pass to Band Pass Filter
 
-Let's retrace from the previous optimization, start again from the naive solution, and then try something different.
+Let's undo the previous polyphase optimization, start again from the naive solution, and try 
+something different.
 
-Right now, we are heterodyning the channel of interest to the baseband and then we send it through a low-pass filter, 
-as seen in the plot from prevous blog post:
+So far, we have been heterodyning the channel of interest to the baseband and then sent it through a low-pass filter, 
+as seen in the plot from previous blog post:
 
 ![Complex heterodyne followed by low pass filter spectrum](/assets/polyphase/complex_heterodyne/complex_heterodyne-low_pass_filter.svg)
 
 Can we turn the order around, first send the channel of interest through a band-pass filter and then heterodyne
-the result down to baseband? We can, and it's relatively easy to show that mathematically.
+the result down to baseband? As [harris points out](https://youtu.be/afU9f5MuXr8?t=597), the Armstrong heterodyne
+was created to avoid that, because a movable band-pass filter requires mechanically tuned capacitors and inductors.
+In the DSP world, however, it's just numbers and calculations. 
+
+So, yes, we can do the filtering first and then do the heterodyne, and it's relatively easy to show that mathematically.
 
 Starting with this:
 
@@ -202,7 +225,9 @@ $$
 y[n] = \underbrace{ \underbrace{(x[n] e^{-j \theta_c n})}_{heterodyne} * h[n]}_{low-pass filter}
 $$
 
-Expand convolution operator $$*$$. $$N$$ is the number of coefficients of the filter.
+$$N$$ is the number of coefficients of the filter and $$*$$ is the convolution operator, 
+in this case, a [discrete convolution](https://en.wikipedia.org/wiki/Convolution#Discrete_convolution).
+Let's expand the equation by applying the definition of the convolution:
 
 $$
 y[n] = \sum_{k=0}^{N-1} (x[n-k] e^{-j \theta_c (n-k)}) \; h[k] 
@@ -217,7 +242,10 @@ $$
 Reduce back to a convolution operator:
 
 $$
-y[n] = e^{-j \theta_c n} \; \big( x[n] * (h[n] e^{j \theta_c n} ) \big) = \big( x[n] * (h[n] e^{j \theta_c n} ) \big) \; e^{-j \theta_c n}
+\begin{alignedat}{0}
+y[n] & = & e^{-j \theta_c n} \; \big( x[n] * (h[n] e^{j \theta_c n} ) \big) \\ 
+     & = & \big( x[n] * (h[n] e^{j \theta_c n} ) \big) \; e^{-j \theta_c n}
+\end{alignedat}
 $$
 
 We've just proven what, [in the video](https://youtu.be/afU9f5MuXr8?t=985), harris calls the 
@@ -241,15 +269,15 @@ which has the same formulas and figures as the one of the video. It says:
 
 [^book]: I've only just started reading the book, but so far I really like what I see. 
 
-This doesn't look like an improvement, and it will take a while before we can see how this helps us.
-For now, let's break the equation into pieces and take things step by step.
+Anyway, this transformation doesn't look like an improvement, and it will take a while before we 
+can see how this helps us.  For now, let's break the equation into pieces and look at them step by step.
 
 $$ h[n] e^{j \theta_c n} $$
 
 The coefficients of the low-pass filter with transfer function  $$H_{lpf}(z)$$ are each multiplied by 
 a value of a rotator. Notice how the $$-$$ sign in front of the $$j$$ exponent of the rotator has
-disappared: when we were heterodyning the channel, we were bringing the spectrum down to baseband.
-Now, we're doing the opposite and heterodyning the low-pass filter up to baseband!
+disappared: when we were heterodyning the channel, we were bringing the spectrum *down* to baseband.
+Now, we're doing the opposite and heterodyning the low-pass filter *up* to channel band!
 
 Let's apply the equation above to an example. If the transfer function of the original filter is this: 
 
@@ -266,15 +294,17 @@ H_{bpf}(z) & = & h_0 e^{j \theta_c 0} z^{0} &+& h_1 e^{j \theta_c 1} z^{-1} &+& 
 \end{alignedat}
 $$
 
-This can be written much shorter, useful for drawings:
+This can be written much shorter, useful for drawings, like this:
 
 $$
 H_{bpf}(z) = H_{lpf}(e^{-j \theta_c} z)
 $$
 
 It is important to note that the coefficients of $$H_{bpf}(z)$$ are constants: for a given center frequency, we can
-pre-calculate the coefficient and never change them again. But contrary to the original filter $$H_{lpf}(z)$$, the
-coefficients are now complex instead of real.
+pre-calculate the coefficients and never change them agaian. And contrary to the free-running rotator that
+shifted down the spectrum of the input signal, the number of rotator values to shift up the filter is fixed to the
+number of filter taps. However, compared to the original filter $$H_{lpf}(z)$$, the coefficients are now complex 
+instead of real.
 
 To simulate the behavior of this band-pass filter, we create an array with as many complex rotator values
 as there are filter taps and multiply them with the low-pass filter coefficients from previous blog:
@@ -290,7 +320,7 @@ low-pass filter to a band-pass filter with $$F_c = 20 \text{MHz}$$ as center fre
 
 ![Bandpass filter spectrum and filtered input signal](/assets/polyphase/polyphase_het/polyphase_het_sim-bpf_complex_filtered.svg)
 
-The second plot of the figure above shows the input signal after applying the bandpass filter.
+The second plot of the figure above shows the input signal after applying the band-pass filter.
 
 $$
 x[n] * h_{bpf}[n]
@@ -307,7 +337,7 @@ y[n] = ( x[n] * h_{bpf}[n] ) \; e^{-j \theta_c n}
 $$
 
 
-![Pipeline with bandpass filter, heterodyne and decimation](/assets/polyphase/polyphase_het/polyphase_het-bpf_het_decim.svg)
+![Pipeline with band-pass filter, heterodyne and decimation](/assets/polyphase/polyphase_het/polyphase_het-bpf_het_decim.svg)
 
 After decimation, we end up with [the same result in the previous blog post](/2026/02/07/Complex-Heterodyne.html#decimation):
 
@@ -316,15 +346,19 @@ After decimation, we end up with [the same result in the previous blog post](/20
 Cool! But what did we gain? 
 
 The input to the filter is now real instead of complex, but the coefficents are now complex instead of 
-real. So the complexity of the filter remains the same. And the heterodyne now multipliers 2 complex
-numbers instead of multiplying a real input with a complex. We've regressed!
+real. So the number of multiplications in the filter remains the same. And the heterodyne now multiplies 2 
+complex numbers instead of multiplying a real input with a complex. We've regressed!
 
 But that's something that will be fixed in the next section...
 
 # Disappearing the Complex Rotator
 
-The benefit of the moving the rotator behind the filter is that we can easily subject it unmodified
-to a decimator.
+In the straightforward case, we had to switch a polyphase decomposition to move the decimator from behind
+the filter to in front of the filter. But that decomposition introduces single timestep delays which
+prevents moving the decimator even further to the front of the rotator.
+
+This is not the case anymore: the rotator is behind the filter and there are no delay elements. This 
+allows us to move the decimator before the rotator.
 
 Here's the rotator before decimation:
 
@@ -332,8 +366,12 @@ $$
 e^{-j \theta_c n}
 $$
 
-When we decimate by a factor of M, the rotator complete a circle by a factor M less samples than before
-the decimation. Thus, after decimation, it can be written as follows:
+When we decimate by a factor of M, the rotator completes a circle by a factor M less steps than before
+the decimation. Or the angle by which the rotator moves forward each step is now M times larger.
+
+![Original vs decimated rotator](/assets/polyphase/polyphase_het/polyphase_het-decimated_phasor.svg)
+
+After decimation, the exponent of the rotator now has factor $$M$$ add to it:
 
 $$
 e^{-j \theta_c M m}, m = \lfloor \frac{n}{M} \rfloor
@@ -341,26 +379,26 @@ $$
 
 where $$\lfloor x \rfloor$$ means "$$x$$ rounded down to the closest integer number". 
 
-Here's the decimator and the rotator swapped:
+The decimator and the rotator have swapped positions. The earlier problem of having to run the
+rotator at the input sample rate has been solved!
 
-![Pipeline with bandpass filter, decimation, and heterodyne](/assets/polyphase/polyphase_het/polyphase_het-bpf_decim_het.svg)
+![Pipeline with band-pass filter, decimation, and heterodyne](/assets/polyphase/polyphase_het/polyphase_het-bpf_decim_het.svg)
 
-Of course, even when the filter coefficients are now complex, we can still do the polyphase
-decomposition and move the decimator before the set of filters:
+Even with complex filter coefficients, we can still do the polyphase decomposition and 
+move the decimator before the set of filters:
 
-![Pipeline with decimation, polyphase bandpass filters, and heterodyne](/assets/polyphase/polyphase_het/polyphase_het-decim_poly_bpf_het.svg)
+![Pipeline with decimation, polyphase band-pass filters, and heterodyne](/assets/polyphase/polyphase_het/polyphase_het-decim_poly_bpf_het.svg)
 
-Finally, we've made a bit of progress, with the complex heterodyne running at $$1/M$$ lower speed
-than before.
+Tadaa! All elements of the pipeline can now run at the decimated output sample rate.
 
-But we can do better! The rotator can disappear entirely if it's equal to one at all times.
+But we can do better! The rotator can disappear entirely if its value is equal to one at all times.
 
 $$
-e^{-j \theta_c M m} = 1
+e^{-j \theta_c M m} \stackrel{?}{=} 1 + 0j
 $$
 
-The rotator is one when the exponent is a multiple of $$2 \pi$$. Irrespective of the integer
-value of $$m$$, this can satisfied when:
+The rotator is one whenever it makes a full circle or whenever the exponent is an integer multiple of $$2 \pi$$. 
+Irrespective of the integer value of $$m$$, this can satisfied when:
 
 $$
 \theta_c M = k \; 2 \pi
@@ -375,17 +413,18 @@ $$
 Simplify and rearrange:
 
 $$
-F_c = k \frac{F_s}{M}
+F_c = k \frac{F_s}{M} \\
+\theta_c = \frac{2 \pi k}{M}
 $$
 
 In other words: if the center frequency of your channel is a multiple of the
 sample rate divided by the decimation factor, the decimated rotator will always evaluate to 1
-and thus disappear entirely.
+and thus the multiplication disappears entirely.
 
 In our example with $$F_s=100 \text{MHz}$$, $$M=10$$, $$F_c=20 \text{MHz}$$, this
 equation is satisfied for $$k=2$$, and we end up with this:
 
-![Decimator, polyphase bandpass filter](/assets/polyphase/polyphase_het/polyphase_het-decim_poly_bpf.svg)
+![Decimator, polyphase band-pass filter](/assets/polyphase/polyphase_het/polyphase_het-decim_poly_bpf.svg)
 
 Last time we checked, we needed 4.22B multiplications per second. With the complex rotator gone,
 we're now at 4.02B: just a filter with 201 complex taps, fed with a real value, executed 10M 
@@ -415,7 +454,7 @@ $$
 $$
 
 When studying this step [in the video](https://youtu.be/afU9f5MuXr8?t=1480), it took
-me a minute to understand what was happened with $$h[n]$$. In the previous equation,
+me a minute to understand what happened with $$h[n]$$. In the first equation,
 $$n = 0 ... N-1$$, where $$N$$ is the number of coefficients. In the equation above, 
 the range of $$n$$ doesn't change, but now it's used like this: $$h[m + nM]$$. The
 maximum index of $$h$$ now goes beyond the number of coefficients. This isn't a problem,
@@ -433,13 +472,12 @@ H(z) & = &  h_0 e^{j \theta_c 0} z^{ 0} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_6 
 \end{alignedat}
 $$
 
-In each of the polyphase sub-filters, the factor $$e^{j \theta_c m} z^{-m}$$:
+In each of the polyphase sub-filters, the factor $$e^{j \theta_c m} z^{-m}$$ is not dependent on $$n$$
+and can be moved out of the inner sum:
 
 $$
 =  \sum_{m=0}^{M-1} e^{j \theta_c m} z^{-m} \sum_{n=0}^{N-1} h[m + nM] e^{j \theta_c nM} z^{-nM} \\
 $$
-
-And:
 
 $$
 \begin{alignedat}{0}
@@ -458,8 +496,6 @@ inner sum simply disappears and we end up with this:
 $$
 =  \sum_{m=0}^{M-1} e^{j \theta_c m} z^{-m} \sum_{n=0}^{N-1} h[m + nM] z^{-nM} \\
 $$
-
-And:
 
 $$
 \begin{alignedat}{0}
@@ -495,8 +531,6 @@ $$
 H_{bpf}(z) = \sum_{m=0}^{M-1} z^{-m} H_m(z^M) e^{j \frac{2 \pi}{M} k m} 
 $$
 
-And:
-
 $$
 \begin{alignedat}{0}
 H(z) & = & z^{ 0} & \big(  h_0 z^{0} &+& h_3 z^{-3} &+& h_6 z^{-6} \big) e^{j \frac{2 \pi}{M} k 0} \\
@@ -507,12 +541,12 @@ $$
 
 Here's how that looks as a diagram:
 
-![Polyphase with real bandpass filter, heterodyne, decimator](/assets/polyphase/polyphase_het/polyphase_het-poly_real_bpf_het_decim.svg)
+![Polyphase with real band-pass filter, heterodyne, decimator](/assets/polyphase/polyphase_het/polyphase_het-poly_real_bpf_het_decim.svg)
 
 As a final step, we can move the decimator back to the front by multiplying the rotator exponent by $$M$$ and
 applying the noble identity on the polyphase sub-filters:
 
-![Polyphase with decimator, real bandpass filter, heterodyne](/assets/polyphase/polyphase_het/polyphase_het-decim_poly_real_bpf_het.svg)
+![Polyphase with decimator, real band-pass filter, heterodyne](/assets/polyphase/polyphase_het/polyphase_het-decim_poly_real_bpf_het.svg)
 
 This is a truly remarkable outcome: 
 
@@ -534,7 +568,7 @@ Total: 2.016B multiplications.
 
 Our naive initial baseline was 40.4B multiplications per second, we've reduced that number by a factor of 20.
 
-And we are not done yet...
+And still we are not done...
 
 # The Polyphase Channelizer
 
