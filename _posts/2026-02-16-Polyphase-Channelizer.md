@@ -5,6 +5,8 @@ date:   2026-02-16 00:00:00 -1000
 categories:
 ---
 
+*All words in this blog post were written by a human being.*
+
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML"></script>
 
 * TOC
