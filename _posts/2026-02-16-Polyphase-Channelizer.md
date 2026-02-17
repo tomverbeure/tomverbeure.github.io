@@ -227,7 +227,7 @@ So, yes, we can do the filtering first and then do the heterodyne, and it's rela
 Starting with this:
 
 $$
-y[n] = \underbrace{ \underbrace{(x[n] e^{-j \theta_c n})}_{\text{heterodyne}} * h[n]}_{\text{low-pass filter}}
+y[n] = \big( \underbrace{ \underbrace{(x[\cdot] e^{-j \theta_c (\cdot)})}_{\text{heterodyne}} * h\big)[n]}_{\text{low-pass filter}}
 $$
 
 $$*$$ is the convolution operator, in this case, a 
@@ -250,8 +250,8 @@ Reduce back to a convolution operator:
 
 $$
 \begin{alignedat}{0}
-y[n] & = & e^{-j \theta_c n} \; \big( x[n] * (h[n] e^{j \theta_c n} ) \big) \\ 
-     & = & \big( x[n] * (h[n] e^{j \theta_c n} ) \big) \; e^{-j \theta_c n}
+y[n] & = & e^{-j \theta_c n} \; \big( x * (h[\cdot] e^{j \theta_c (\cdot)} ) \big)[n] \\ 
+     & = & \big( x * (h[\cdot] e^{j \theta_c (\cdot)} ) \big)[n] \; e^{-j \theta_c n}
 \end{alignedat}
 $$
 
@@ -259,7 +259,7 @@ We've just proven what, [in the video](https://youtu.be/afU9f5MuXr8?t=985), harr
 *Equivalency Theorem*: 
 
 $$
-( x[n] e^{-j \theta_c n} ) * h(n) = e^{-j \theta_c n} \; \big( x[n] * (h[n] e^{j \theta_c n} ) \big)
+\big(( x[\cdot] e^{-j \theta_c (\cdot)} ) * h\big)[n] = e^{-j \theta_c n} \; \big( x * (h[\cdot] e^{j \theta_c (\cdot)} ) \big)[n]
 $$
 
 There's one minor comment about this: while Google turns up plenty of equivalency
@@ -281,7 +281,7 @@ can see how this helps us.  For now, let's break the equation into pieces and lo
 
 $$ h[n] e^{j \theta_c n} $$
 
-The coefficients of the low-pass filter with transfer function  $$H_{lpf}(z)$$ are each multiplied by 
+The coefficients of the low-pass filter with transfer function  $$H_text{lpf}(z)$$ are each multiplied by 
 a value of a rotator. Notice how the $$-$$ sign in front of the $$j$$ exponent of the rotator has
 disappeared: when we were heterodyning the channel, we were bringing the spectrum *down* to baseband.
 Now, we're doing the opposite and heterodyning the low-pass filter *up* to channel band!
@@ -289,28 +289,28 @@ Now, we're doing the opposite and heterodyning the low-pass filter *up* to chann
 Let's apply the equation above to an example. If the transfer function of the original filter is this: 
 
 $$
-H_{lpf}(z) = h_0 z^{0} + h_1 z^{-1} + h_2 z^{-2} + h_3 z^{-3} + h_4 z^{-4}
+H_\text{lpf}(z) = h_0 z^{0} + h_1 z^{-1} + h_2 z^{-2} + h_3 z^{-3} + h_4 z^{-4}
 $$
 
 Then the new filter is this:
 
 $$
 \begin{alignedat}{0}
-H_{bpf}(z) & = & h_0 e^{j \theta_c 0} z^{0} &+& h_1 e^{j \theta_c 1} z^{-1} &+& h_2 e^{j \theta_c 2} z^{-2} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_4 e^{j \theta_c 4} z^{-4} \\
-           & = & h_0 (e^{-j \theta_c} z)^{0} &+& h_1 (e^{-j \theta_c} z)^{-1} &+& h_2 (e^{-j \theta_c} z)^{-2} &+& h_3 (e^{-j \theta_c} z)^{-3} &+& h_4 (e^{-j \theta_c} z)^{-4} \\
+H_\text{bpf}(z) & = & h_0 e^{j \theta_c 0} z^{0} &+& h_1 e^{j \theta_c 1} z^{-1} &+& h_2 e^{j \theta_c 2} z^{-2} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_4 e^{j \theta_c 4} z^{-4} \\
+                & = & h_0 (e^{-j \theta_c} z)^{0} &+& h_1 (e^{-j \theta_c} z)^{-1} &+& h_2 (e^{-j \theta_c} z)^{-2} &+& h_3 (e^{-j \theta_c} z)^{-3} &+& h_4 (e^{-j \theta_c} z)^{-4} \\
 \end{alignedat}
 $$
 
 This can be written much shorter, useful for drawings, like this:
 
 $$
-H_{bpf}(z) = H_{lpf}(e^{-j \theta_c} z)
+H_\text{bpf}(z) = H_\text{lpf}(e^{-j \theta_c} z)
 $$
 
-It is important to note that the coefficients of $$H_{bpf}(z)$$ are constants: for a given center frequency, we can
+It is important to note that the coefficients of $$H_\text{bpf}(z)$$ are constants: for a given center frequency, we can
 pre-calculate the coefficients and never change them again. And contrary to the free-running rotator that
 shifted down the spectrum of the input signal, the number of rotator values to shift up the filter is fixed to the
-number of filter taps. However, compared to the original filter $$H_{lpf}(z)$$, the coefficients are now complex 
+number of filter taps. However, compared to the original filter $$H_\text{lpf}(z)$$, the coefficients are now complex 
 instead of real.
 
 To simulate the behavior of this band-pass filter, we create an array with as many complex rotator values
@@ -330,7 +330,7 @@ low-pass filter to a band-pass filter with $$F_c = 20 \text{MHz}$$ as center fre
 The second plot of the figure above shows the input signal after applying the band-pass filter.
 
 $$
-x[n] * h_{bpf}[n]
+x[n] * h_\text{bpf}[n]
 $$
 
 ```python
@@ -340,7 +340,7 @@ signal_bpf_complex  = np.convolve(signal, h_bpf_complex, mode="same")
 The final step shifts the filtered signal back to baseband:
 
 $$
-y[n] = ( x[n] * h_{bpf}[n] ) \; e^{-j \theta_c n}
+y[n] = ( x[n] * h_\text{bpf}[n] ) \; e^{-j \theta_c n}
 $$
 
 
@@ -424,9 +424,10 @@ F_c = k \frac{F_s}{M} \\
 \theta_c = \frac{2 \pi k}{M}
 $$
 
-In other words: if the center frequency of your channel is a multiple of the
-sample rate divided by the decimation factor, the decimated rotator will always evaluate to 1
-and thus the multiplication disappears entirely.
+It doesn't seem like it, but this is a crucial result:
+
+**if the center frequency of your channel is a multiple of the sample rate divided by the decimation 
+factor, the decimated rotator will always evaluate to 1 and thus the multiplication disappears entirely.**
 
 In our example with $$F_s=100 \text{MHz}$$, $$M=10$$, $$F_c=20 \text{MHz}$$, this
 equation is satisfied for $$k=2$$, and we end up with this:
@@ -470,7 +471,7 @@ Let's move our attention to the transfer function of filter:
 
 $$
 \begin{alignedat}{0}
-H_{bpf}(z) & = & H_{lpf}(e^{-j \theta_c} z) \\
+H_\text{bpf}(z) & = & H_\text{lpf}(e^{-j \theta_c} z) \\
            & = & \sum_{n=0}^{N-1} h[n] (e^{-j \theta_c } z)^{-n}  \\
            & = & h_0 e^{j \theta_c 0} z^{ 0} &+& h_1 e^{j \theta_c 1} z^{-1} &+& h_2 e^{j \theta_c 2} z^{-2} &+& 3 e^{j \theta_c 3}  z^{-3} &+& ... 
 \end{alignedat}
@@ -496,7 +497,7 @@ filter with decimation factor $$M=3$$:
 
 $$
 \begin{alignedat}{0}
-H_{bpf}(z) & = &  h_0 e^{j \theta_c 0} z^{ 0} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_6 e^{j \theta_c 6} z^{-6} &+& 0 e^{j \theta_c 9}  z^{-9}  &+& ... && \qquad (m = 0) \\
+H_\text{bpf}(z) & = &  h_0 e^{j \theta_c 0} z^{ 0} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_6 e^{j \theta_c 6} z^{-6} &+& 0 e^{j \theta_c 9}  z^{-9}  &+& ... && \qquad (m = 0) \\
            & + &  h_1 e^{j \theta_c 1} z^{-1} &+& h_4 e^{j \theta_c 4} z^{-4} &+& h_7 e^{j \theta_c 7} z^{-7} &+& 0 e^{j \theta_c 10} z^{-10} &+& ... && \qquad (m = 1) \\
            & + &  h_2 e^{j \theta_c 2} z^{-2} &+& h_5 e^{j \theta_c 5} z^{-5} &+& h_8 e^{j \theta_c 8} z^{-8} &+& 0 e^{j \theta_c 11} z^{-11} &+& ... && \qquad (m = 2) \\
 \end{alignedat}
@@ -511,7 +512,7 @@ $$
 
 $$
 \begin{alignedat}{0}
-H_{bpf}(z) & = & e^{j \theta_c 0} z^{ 0} & \big(  h_0 e^{j \theta_c 0} z^{0} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_6 e^{j \theta_c 6} z^{-6} \big)  && \qquad (m = 0) \\
+H_\text{bpf}(z) & = & e^{j \theta_c 0} z^{ 0} & \big(  h_0 e^{j \theta_c 0} z^{0} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_6 e^{j \theta_c 6} z^{-6} \big)  && \qquad (m = 0) \\
            & + & e^{j \theta_c 1} z^{-1} & \big(  h_1 e^{j \theta_c 0} z^{0} &+& h_4 e^{j \theta_c 3} z^{-4} &+& h_7 e^{j \theta_c 6} z^{-7} \big)  && \qquad (m = 1) \\
            & + & e^{j \theta_c 2} z^{-2} & \big(  h_2 e^{j \theta_c 0} z^{0} &+& h_5 e^{j \theta_c 3} z^{-5} &+& h_8 e^{j \theta_c 6} z^{-8} \big)  && \qquad (m = 2) \\
 \end{alignedat}
@@ -530,7 +531,7 @@ $$
 
 $$
 \begin{alignedat}{0}
-H_{bpf}(z) & = & e^{j \theta_c 0} z^{ 0} & \big(  h_0 z^{0} &+& h_3 z^{-3} &+& h_6 z^{-6} \big)  && \qquad (m = 0) \\
+H_\text{bpf}(z) & = & e^{j \theta_c 0} z^{ 0} & \big(  h_0 z^{0} &+& h_3 z^{-3} &+& h_6 z^{-6} \big)  && \qquad (m = 0) \\
            & + & e^{j \theta_c 1} z^{-1} & \big(  h_1 z^{0} &+& h_4 z^{-4} &+& h_7 z^{-7} \big)  && \qquad (m = 1) \\
            & + & e^{j \theta_c 2} z^{-2} & \big(  h_2 z^{0} &+& h_5 z^{-5} &+& h_8 z^{-8} \big)  && \qquad (m = 2) \\
 \end{alignedat}
@@ -539,7 +540,7 @@ $$
 Or abbreviated:
 
 $$
-H_{bpf}(z) = \sum_{m=0}^{M-1} e^{j \theta_c m} z^{-m} H_m(z^M)
+H_\text{bpf}(z) = \sum_{m=0}^{M-1} e^{j \theta_c m} z^{-m} H_m(z^M)
 $$
 
 Furthermore:
@@ -551,19 +552,19 @@ $$
 So we end up with this:
 
 $$
-H_{bpf}(z) = \sum_{m=0}^{M-1} e^{j \frac{2 \pi}{M} k m} z^{-m} H_m(z^M)
+H_\text{bpf}(z) = \sum_{m=0}^{M-1} e^{j \frac{2 \pi}{M} k m} z^{-m} H_m(z^M)
 $$
 
 $$e^{j \frac{2 \pi}{M} k m}$$ is a scalar value, so we can move the multiplication 
 to the back of the filter:
 
 $$
-H_{bpf}(z) = \sum_{m=0}^{M-1} z^{-m} H_m(z^M) e^{j \frac{2 \pi}{M} k m} 
+H_\text{bpf}(z) = \sum_{m=0}^{M-1} z^{-m} H_m(z^M) e^{j \frac{2 \pi}{M} k m} 
 $$
 
 $$
 \begin{alignedat}{0}
-H_{bpf}(z) & = & z^{ 0} & \big(  h_0 z^{0} &+& h_3 z^{-3} &+& h_6 z^{-6} \big) e^{j \frac{2 \pi}{M} k 0} \\
+H_\text{bpf}(z) & = & z^{ 0} & \big(  h_0 z^{0} &+& h_3 z^{-3} &+& h_6 z^{-6} \big) e^{j \frac{2 \pi}{M} k 0} \\
            & + & z^{-1} & \big(  h_1 z^{0} &+& h_4 z^{-4} &+& h_7 z^{-7} \big) e^{j \frac{2 \pi}{M} k 1} \\
            & + & z^{-2} & \big(  h_2 z^{0} &+& h_5 z^{-5} &+& h_8 z^{-8} \big) e^{j \frac{2 \pi}{M} k 2} \\
 \end{alignedat}
