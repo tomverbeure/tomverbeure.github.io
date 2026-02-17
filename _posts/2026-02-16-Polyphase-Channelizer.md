@@ -143,7 +143,7 @@ I will use multiplication as the main indicator by which to judge the efficiency
 
 Let's evaluate the number of multiplications for the naive architecture:
 
-* The complex mixer multiplies a real sample with a complex number or 2 multiplications per operation
+* The complex rotator multiplies a real sample with a complex number or 2 multiplications per operation
   and 200M per second.
 * The low pass filter has 201 real taps, for a total of 201 x 2 x 100M = 
   40.2B operations per second.
@@ -171,7 +171,7 @@ Apply the [noble identity for decimation](/2026/01/25/Notes-on-Basic-Polyphase-D
 
 ![Complex heterodyne - Decimation - Polyphase](/assets/polyphase/polyphase_het/polyphase_het-complex_het_decim_polyphase.svg)
 
-Moving the FIR filter operation behind the decimator is a huge savings. The complex mixer still counts
+Moving the FIR filter operation behind the decimator is a huge savings. The complex rotator still counts
 for 200M multiplications per second, but the combined 201 taps now need to deliver samples at a 10 times
 lower rate, 201 x 2 x 10M = 4.02B operations per second, for a total of 4.22B operations per second. If
 it weren't for the complex rotator, the savings ratio is exactly the decimation factor.
@@ -777,12 +777,12 @@ Let's do step-by-step recap:
 
 * We started with a very naive implementation of a single channel downconverter.
 * Using a straightforward polyphase decomposition, we came up with a much more efficient design but
-  with one major flaw: it required a mixer that runs at the input sample rate.
-* With a bit of algebra, we were able to move that mixer to the back of the pipeline,
+  with one major flaw: it required a rotator that runs at the input sample rate.
+* With a bit of algebra, we were able to move that rotator to the back of the pipeline,
   after the decimator. No more units running at input sample rate!
-* A smart choice of the sample rate allowed us to get rid of the mixer altogether.
+* A smart choice of the sample rate allowed us to get rid of the rotator altogether.
 * Some more algebra allowed us to cut the number of multiplications by half and
-  isolated all channel specific calculations to the very end of the pipeline.
+  isolate all channel specific calculations to the very end of the pipeline.
 * With only 1 non-channel specific polyphase filter and different rotators at the back, 
   we could expand the pipeline to support multiple channels at low extra cost.
 * That cost became even lower by recognizing the presence of an inverse discrete Fourier
