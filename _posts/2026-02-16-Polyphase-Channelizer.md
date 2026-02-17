@@ -224,6 +224,11 @@ In the DSP world, however, it's just numbers and calculations.
 
 So, yes, we can do the filtering first and then do the heterodyne, and it's relatively easy to show that mathematically.
 
+*In what follows, I will deviate from the harris's notation in 2 ways. He uses $$a[n] * b[n]$$ for convolution. $$(a * b)[n]$$
+is the more common way. He also overloads the meaning of $$n$$ in the same equation, in a way that I found utterly
+confusing. Instead, I will use the $$[\cdot]$$ and $$(\cdot)$$ notation, where $$\cdot$$ is essentially a
+temporary local loop variable. If you see a $$\cdot$$ in the equations below, assume that harris had a $$n$$ there.*
+
 Starting with this:
 
 $$
@@ -279,7 +284,7 @@ which has the same formulas and figures as the one of the video. It says:
 Anyway, this transformation doesn't look like an improvement, and it will take a while before we 
 can see how this helps us.  For now, let's break the equation into pieces and look at them step by step.
 
-$$ h[n] e^{j \theta_c n} $$
+$$ h[\cdot] e^{j \theta_c (\cdot)} $$
 
 The coefficients of the low-pass filter with transfer function  $$H_text{lpf}(z)$$ are each multiplied by 
 a value of a rotator. Notice how the $$-$$ sign in front of the $$j$$ exponent of the rotator has
@@ -448,13 +453,13 @@ times per second.
 
 A pitiful 5% savings is not worth writing home about, but we can do even better.
 
-Note: even if we don't satisfy the $$F_c = k \frac{F_s}{M} $$ condition, we're still better off
-than before, because the rotator still runs at the output instead of the input sample rate:
+*Note: even if we don't satisfy the $$F_c = k \frac{F_s}{M} $$ condition, we're still better off
+than before, because the rotator still runs at the output instead of the input sample rate:*
 
 ![Pipeline with decimation, polyphase band-pass filters, and heterodyne](/assets/polyphase/polyphase_het/polyphase_het-decim_poly_bpf_het.svg)
 
-This blog post is already long as it is, so for this one, I'm focussing only on the case
-where the center frequency condition is satisfied.
+*This blog post is already long as it is, so for this one, I'm focussing only on the case
+where the center frequency condition is satisfied.*
 
 # Moving Another Rotator behind the Filter and More... Again
 
@@ -489,7 +494,7 @@ me a minute to understand what happened with $$h[n]$$. In the first equation,
 $$n = 0 ... N-1$$, where $$N$$ is the number of coefficients. In the equation above, 
 the range of $$n$$ doesn't change, but now it's used like this: $$h[m + Mn]$$. The
 maximum index of $$h$$ now goes beyond the number of coefficients. This isn't a problem,
-though, as long as you keep in mind that $$h[n]$$ is zero when $$n$$ is smaller than 0
+though, as long as you keep in mind that $$h[n]$$ is $$\color{red}{0}$$ when $$n$$ is smaller than 0
 or larger than $$N-1$$.
 
 To make things really clear, let's expand all these sums and products for a 9-tap
@@ -497,9 +502,9 @@ filter with decimation factor $$M=3$$:
 
 $$
 \begin{alignedat}{0}
-H_\text{bpf}(z) & = &  h_0 e^{j \theta_c 0} z^{ 0} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_6 e^{j \theta_c 6} z^{-6} &+& 0 e^{j \theta_c 9}  z^{-9}  &+& ... && \qquad (m = 0) \\
-           & + &  h_1 e^{j \theta_c 1} z^{-1} &+& h_4 e^{j \theta_c 4} z^{-4} &+& h_7 e^{j \theta_c 7} z^{-7} &+& 0 e^{j \theta_c 10} z^{-10} &+& ... && \qquad (m = 1) \\
-           & + &  h_2 e^{j \theta_c 2} z^{-2} &+& h_5 e^{j \theta_c 5} z^{-5} &+& h_8 e^{j \theta_c 8} z^{-8} &+& 0 e^{j \theta_c 11} z^{-11} &+& ... && \qquad (m = 2) \\
+H_\text{bpf}(z) & = &  h_0 e^{j \theta_c 0} z^{ 0} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_6 e^{j \theta_c 6} z^{-6} &+& \color{red}{0} \, e^{j \theta_c 9}  z^{-9}  &+& ... && \qquad (m = 0) \\
+           & + &  h_1 e^{j \theta_c 1} z^{-1} &+& h_4 e^{j \theta_c 4} z^{-4} &+& h_7 e^{j \theta_c 7} z^{-7} &+& \color{red}{0} \, e^{j \theta_c 10} z^{-10} &+& ... && \qquad (m = 1) \\
+           & + &  h_2 e^{j \theta_c 2} z^{-2} &+& h_5 e^{j \theta_c 5} z^{-5} &+& h_8 e^{j \theta_c 8} z^{-8} &+& \color{red}{0} \, e^{j \theta_c 11} z^{-11} &+& ... && \qquad (m = 2) \\
 \end{alignedat}
 $$
 
