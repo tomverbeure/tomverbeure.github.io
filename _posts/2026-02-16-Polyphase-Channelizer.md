@@ -599,9 +599,9 @@ be brought to base band from one to another, all you need to change are the rota
 Compared the last checkpoint, the resource requirements have also been reduced roughly by half:
 
 * the 201 filter taps are multiplied by a real input at a rate of 10M per second = 2.01B multiplications.
-* 3 rotators multiply the real output of the filters by a complex number at 10M per second = 60M multiplications.
+* 10 rotators multiply the real output of the filters by a complex number at 10M per second = 200M multiplications.
 
-Total: 2.016B multiplications.
+Total: 2.21B multiplications.
 
 Our naive initial baseline was 40.4B multiplications per second, we've reduced that number by a factor of 20.
 
@@ -781,6 +781,8 @@ work. harris talks about rotating spectra, aliased to the same baseband, that ca
 out for different rotators. While I kind of get what he's trying to say, the truth is that I
 currently don't have the kind of intuition that harris has, so I'll 
 defer [to the video](https://youtu.be/afU9f5MuXr8?t=2151) for that.
+
+Many thanks to [Joshua](https://joshuawise.com) for reviewing!
 
 # References
 
