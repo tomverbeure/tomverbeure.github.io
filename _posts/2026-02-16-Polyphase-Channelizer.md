@@ -751,7 +751,7 @@ Let's do step-by-step recap:
 * That cost became even lower by recognizing the presence of an inverse discrete Fourier
   transform and using an IFFT to accelerate the calculations.
 
-I just love how everything comes beautifully together.
+I just love how everything, like a plan, comes beautifully together.
 
 I deliberately left out the parts of the video where harris discusses cases where channel centers
 have a fixed offset from where they should be. It would make this blog post even longer, but these
