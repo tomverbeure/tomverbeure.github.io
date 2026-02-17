@@ -44,6 +44,10 @@ convolution here and there.
          math. That's good for me personally, but it's ironic that this might make the
          blog posts less accessible for others!
 
+For those who don't want to read previous installments of this series, check out the section with
+[Some Common DSP Notations](/2026/02/07/Complex-Heterodyne.html#some-common-dsp-notations)
+if you need a quick refresher about the meaning of some of the symbols.
+
 # Where We Left Things Last Time
 
 I ended my [blog post about complex heterodynes](/2026/02/07/Complex-Heterodyne.html)
@@ -89,7 +93,7 @@ This filter has 7 coefficients, the center coefficient is 10, the ones to the le
 it are both -6 and so forth.
 
 When you convert a DSP algorithm to hardware that needs to consume an input sample and produce
-and output for every clock tick, the straightfoward implentation is to have one multiplier per
+and output for every clock tick, the straightforward implementation is to have one multiplier per
 coefficient[^multiplier]. 
 
 [^multiplier]: For the sake of argument, I'm assuming the coefficients are programmable so that
@@ -118,8 +122,8 @@ If you have a hardware architecture where delayed inputs are stored in a RAM ins
 registers and you use an FSM to execute the filter over multiple clock cycles, trying to do this
 trick can make scheduling transactions more complicated too. 
 
-And when converting the FIR into a polyphase filter, the simple symmetry breaks entirely. Here's
-an example of a symmetrical 19-tap filter. In it's original form, coefficients are symmetric, but
+And when converting the FIR filter into its polyphase form, the simple symmetry breaks entirely. Here's
+an example of a symmetrical 19-tap filter. In its original form, coefficients are symmetric, but
 when split up into 10 phases, the symmetry inside each phase is gone.
 
 ![19-tap filter split up into 10 phases](/assets/polyphase/polyphase_het/polyphase_het-tap_symmetry_19.svg)
@@ -128,7 +132,7 @@ It's still possible to share multiplications if you merge multiple phases, note 
 coefficients 6 and 2 and phase 7 has coefficients 2 and 6, but that again makes data organization
 and movement more difficult.
 
-For the remainder of this blog post, I will ignore symmetric related optimizations when calculating
+For the remainder of this blog post, I will ignore symmetry related optimizations when calculating
 the number of multiplications.
 
 # Naive Performance Baseline 
@@ -139,8 +143,8 @@ I will use multiplication as the main indicator by which to judge the efficiency
 
 Let's evaluate the number of multiplications for the naive architecture:
 
-* The complex mixer multiplies a real sample with a complex number or 2 per operation.
-  Good for 200M per second.
+* The complex mixer multiplies a real sample with a complex number or 2 multiplications per operation
+  and 200M per second.
 * The low pass filter has 201 real taps, for a total of 201 x 2 x 100M = 
   40.2B operations per second.
 
@@ -154,12 +158,12 @@ There's a reason why I also wrote
 [Notes about Basic Polyphase Decimation Filters](/2026/01/25/Notes-on-Basic-Polyphase-Decimation.html):
 it discusses exactly this kind of scenario, the combo of an FIR filter followed by a decimation. Yes,
 there's a complex rotator in front of the FIR filter, but for now we can keep it there 
-while we transfrom the FIR/decimator to its polyphase form.
+while we transform the FIR/decimator to its polyphase form.
 
 harris mentions this case only tangentially, but it's useful to compare how well the straightforward
 polyphase filter bank performs compared to the naive solution.
 
-First split the FIR filter into its polyphase form, with as many sub-filters as the decimation factor:
+First split the FIR filter into its polyphase form with 10 sub-filters, the decimation factor:
 
 ![Complex heterodyne - Polyphase - Decimation](/assets/polyphase/polyphase_het/polyphase_het-complex_het_polyphase_decim.svg)
 
@@ -188,7 +192,7 @@ and $$x[n+1]$$ by $$e^{-j \theta_c (n +2)}$$ and the outcome in terms of frequen
 wouldn't be materially different (though there would be constant phase shift.)
 
 What is true is that you have to continuously loop through all the values of the rotator, irrespective
-of the length of the number of filter taps: if the rotator completes a full rotation in 128 steps, then
+of the length of the number of filter taps: if the rotator completes a full rotation in 128[^steps] steps, then
 you'll need a table or a calculation[^unity_point_calculation] to produce 128 points around the unity circle.
 
 [^unity_point_calculation]: There are multiple techniques to calculate the next point on a unity circle.
@@ -198,6 +202,8 @@ you'll need a table or a calculation[^unity_point_calculation] to produce 128 po
                             errors over time. The [CORDIC](https://en.wikipedia.org/wiki/CORDIC)
                             algorithm is very popular, requires no multiplication, but requires much
                             more steps per result to achieve the desired precision.
+
+[^steps]: In theory, the number of steps to complete a rotation could be a fractional number. 
 
 We'll soon see that this isn't the case in other schemes.
 
@@ -739,7 +745,7 @@ together.
 Let's do step-by-step recap:
 
 * We started with a very naive implementation of a single channel downconverter.
-* Using a straightfoward polyphase decomposition, we came up with a much more efficient design but
+* Using a straightforward polyphase decomposition, we came up with a much more efficient design but
   with one major flaw: it required a mixer that runs at the input sample rate.
 * With some algebraic magic, we were able to move that mixer to the back of the pipeline,
   after the decimator. No more units running at input sample rate!
