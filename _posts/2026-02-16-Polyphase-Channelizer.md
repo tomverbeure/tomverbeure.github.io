@@ -736,6 +736,23 @@ Success!
 This was a long story, but I felt that it had to be told in one go to keep all the context
 together.
 
+Let's go recap step by step:
+
+* We started with a very naive implementation of a single channel downconverter.
+* Using a straightfoward polyphase decomposition, we came up with a much more efficient design but
+  with one major flaw: it required a mixer that runs at the input sample rate.
+* With some algebraic magic, we were able to move that mixer to the back of the pipeline,
+  after the decimator. No more units running at input sample rate!
+* A smart choice of the sample rate allowed us to get rid of the mixer altogether.
+* Even more algebraic magic, allowed to cut the number of multiplications by half and
+  isolated all channel specific calculations to the very end of the pipeline.
+* With only 1 non-channel specific polyphase filter and different rotators at the back, 
+  we could expand the pipeline to support multiple channels at low extra cost.
+* That cost became even lower by recognizing the presence of an inverse discrete Fourier
+  transform and using an IFFT to accelerate the calculations.
+
+I just love how everything comes beautifully together.
+
 I deliberately left out the parts of the video where harris discusses cases where channel centers
 have a fixed offset from where they should be. It would make this blog post even longer, but these
 cases are also not fully worked-out in the video. I'll need more time to digest those parts.
