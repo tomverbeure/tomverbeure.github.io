@@ -380,6 +380,10 @@ a polyphase filter bank. That said, I can't promise a timeline.
  > for a simple FIR filter, you distribute those same coefficients in "row to column" format 
  > into the separate polyphase FIR components
 
+Other blog posts in this series:
+
+* [Complex Heterodynes Explained](/2026/02/07/Complex-Heterodyne.html)
+* [The Stunning Efficiency and Beauty of the Polyphase Channelizer](/2026/02/16/Polyphase-Channelizer.html)
 
 # Footnotes
 

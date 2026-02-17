@@ -455,6 +455,7 @@ complex heterodynes so it's something new for me.
 Other blog posts in this series:
 
 * [Notes about Basic Polyphase Decimation Filters](/2026/01/25/Notes-on-Basic-Polyphase-Decimation.html)
+* [The Stunning Efficiency and Beauty of the Polyphase Channelizer](/2026/02/16/Polyphase-Channelizer.html)
 
 # Footnotes
 
