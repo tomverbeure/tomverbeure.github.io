@@ -227,18 +227,20 @@ So, yes, we can do the filtering first and then do the heterodyne, and it's rela
 Starting with this:
 
 $$
-y[n] = \underbrace{ \underbrace{(x[n] e^{-j \theta_c n})}_{heterodyne} * h[n]}_{low-pass filter}
+y[n] = \underbrace{ \underbrace{(x[n] e^{-j \theta_c n})}_{\text{heterodyne}} * h[n]}_{\text{low-pass filter}}
 $$
 
-$$N$$ is the number of coefficients of the filter and $$*$$ is the convolution operator, 
-in this case, a [discrete convolution](https://en.wikipedia.org/wiki/Convolution#Discrete_convolution).
+$$*$$ is the convolution operator, in this case, a 
+[discrete convolution](https://en.wikipedia.org/wiki/Convolution#Discrete_convolution).
 Let's expand the equation by applying the definition of the convolution:
 
 $$
 y[n] = \sum_{k=0}^{N-1} (x[n-k] e^{-j \theta_c (n-k)}) \; h[k] 
 $$
 
-Extract the exponential term that doesn't depend on $$k$$:
+$$N$$ is the number of coefficients of the filter.
+
+Extract the common exponential term that doesn't depend on $$k$$:
 
 $$
 y[n] = e^{-j \theta_c n} \sum_k x[n-k] \; ( e^{j \theta_c k} h[k] )
@@ -281,7 +283,7 @@ $$ h[n] e^{j \theta_c n} $$
 
 The coefficients of the low-pass filter with transfer function  $$H_{lpf}(z)$$ are each multiplied by 
 a value of a rotator. Notice how the $$-$$ sign in front of the $$j$$ exponent of the rotator has
-disappared: when we were heterodyning the channel, we were bringing the spectrum *down* to baseband.
+disappeared: when we were heterodyning the channel, we were bringing the spectrum *down* to baseband.
 Now, we're doing the opposite and heterodyning the low-pass filter *up* to channel band!
 
 Let's apply the equation above to an example. If the transfer function of the original filter is this: 
@@ -306,7 +308,7 @@ H_{bpf}(z) = H_{lpf}(e^{-j \theta_c} z)
 $$
 
 It is important to note that the coefficients of $$H_{bpf}(z)$$ are constants: for a given center frequency, we can
-pre-calculate the coefficients and never change them agaian. And contrary to the free-running rotator that
+pre-calculate the coefficients and never change them again. And contrary to the free-running rotator that
 shifted down the spectrum of the input signal, the number of rotator values to shift up the filter is fixed to the
 number of filter taps. However, compared to the original filter $$H_{lpf}(z)$$, the coefficients are now complex 
 instead of real.
@@ -384,7 +386,7 @@ $$
 
 where $$\lfloor x \rfloor$$ means "$$x$$ rounded down to the closest integer number". 
 
-The decimator and the rotator have swapped positions. The earlier problem of having to run the
+Since the decimator and the rotator have swapped positions, the earlier problem of having to run the
 rotator at the input sample rate has been solved!
 
 ![Pipeline with band-pass filter, decimation, and heterodyne](/assets/polyphase/polyphase_het/polyphase_het-bpf_decim_het.svg)
@@ -402,7 +404,8 @@ e^{-j \theta_c M } \stackrel{?}{=} 1 + 0j
 $$
 
 The rotator is one whenever it makes a full circle or whenever the exponent is an integer multiple of $$2 \pi$$. 
-$$m$$ is an integer. If the equation above is satisfied, then it will also be satisfied after adding $$m$$ to the exponent.
+$$m$$ is an integer. If the equation above is satisfied without $$m$$, then it will also be satisfied after 
+adding $$m$$ to the exponent.
 
 $$
 \theta_c M = k \; 2 \pi
