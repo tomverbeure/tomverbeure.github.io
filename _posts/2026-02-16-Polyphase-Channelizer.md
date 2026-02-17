@@ -668,8 +668,11 @@ $$
 Does this equation ring a bell? Compare against this: 
 
 $$
-x[n] = \frac{1}{N} \sum_{k=0}^{N-1}{X[k] e^{j \frac{2 \pi}{N} k \, n } }
+x[n] = \frac{1}{N} \sum_{k=0}^{N-1}{X[k] e^{j \frac{2 \pi}{N} n \, k } }
 $$
+
+*Don't confuse the meanings of $$k$$, $$m$$, and $$n$$. The $$k$$ in the first equation
+matches the purpose of $$n$$ in the second one!*
 
 This is the definition of inverse[^inverse] 
 [discrete Fourier transform (DFT)](https://en.wikipedia.org/wiki/Discrete_Fourier_transform)!
@@ -686,6 +689,8 @@ which has $$O(n \log n)$$ behavior.
 
 For a 65536 channel polyphase channelizer, the FFT brings down the number of complex multiplications
 from 4,294,901,760 down to 1,048,576. We're received a second boost-of-efficiency miracle.
+
+Finally, we're at the end of a journey that gives us this wonderful result:
 
 ![Polyphase filters, IFFT](/assets/polyphase/polyphase_het/polyphase_het-polyphase_ifft.svg)
 
@@ -773,10 +778,10 @@ Let's do step-by-step recap:
 * We started with a very naive implementation of a single channel downconverter.
 * Using a straightforward polyphase decomposition, we came up with a much more efficient design but
   with one major flaw: it required a mixer that runs at the input sample rate.
-* With some algebraic magic, we were able to move that mixer to the back of the pipeline,
+* With a bit of algebra, we were able to move that mixer to the back of the pipeline,
   after the decimator. No more units running at input sample rate!
 * A smart choice of the sample rate allowed us to get rid of the mixer altogether.
-* Even more algebraic magic, allowed to cut the number of multiplications by half and
+* Some more algebra allowed us to cut the number of multiplications by half and
   isolated all channel specific calculations to the very end of the pipeline.
 * With only 1 non-channel specific polyphase filter and different rotators at the back, 
   we could expand the pipeline to support multiple channels at low extra cost.
