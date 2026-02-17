@@ -773,7 +773,7 @@ Success!
 This was a long story, but I felt that it had to be told in one go to keep all the context
 together.
 
-Let's do step-by-step recap:
+Let's do a step-by-step recap:
 
 * We started with a very naive implementation of a single channel downconverter.
 * Using a straightforward polyphase decomposition, we came up with a much more efficient design but
