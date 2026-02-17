@@ -581,17 +581,34 @@ Here's how that looks as a diagram:
 
 As a final step, we can move the decimator back to the front by applying the noble identity on the 
 polyphase sub-filters. Note that this time, the rotator exponent is not multiplied by $$M$$, because
-the exponent is a fixed value, not a changing phasor.
+the exponent is a fixed value, not a changing rotator.
 
 ![Polyphase with decimator, real band-pass filter, heterodyne](/assets/polyphase/polyphase_het/polyphase_het-decim_poly_real_bpf_het.svg)
 
 This is a truly remarkable outcome: 
 
-* All math operations happen at a slow rate behind the decimators.
-* The inputs to the filters are real.
-* The coefficients of the polyphase filters are real again.
-* The coefficients don't depend on the targeted channel frequency
-* The rotators are located behind the filters
+* **All math operations happen at a slow rate behind the decimators.**
+
+  We can do this because of the noble identies that give us the polyphase
+  transformations and because the rotators are located after the filters.
+
+* **The inputs to the filters are real.**
+
+  We achieved this by applying the equivalency theorem.
+
+* **The coefficients of the polyphase filters are real again.**
+
+  We did this by extracting the rotators from the filters, and removing the 
+  frequency-dependent component.
+
+* **The coefficients don't depend on the targeted channel frequency.**
+
+  We did this also by extracting the rotators from the filters (as long as the channel $k$ 
+  meets our criterion above of being an integer multiple of the decimation rate).
+
+* **The rotators are located behind the filters.**
+
+  This will be very important in the next section.
 
 The importance of the last 2 points can't be overstated: if you want to change the channel $$k$$ that needs to
 be brought to base band from one to another, all you need to change are the rotators.
@@ -609,10 +626,10 @@ And still we are not done...
 
 # The Polyphase Channelizer
 
-So far, we've focused on finding an optimal solution to extracting the signal of one channel of many to baseband.
-We're now expanding our scope: what if we want to extract the signal of all channels in parallel?
+So far, we've focused on finding an optimal solution to extracting the signal of one channel out of a possible many 
+to baseband. We're now expanding our scope: what if we want to extract the signal of all channels in parallel?
 
-This is where the conclusion of pervious section pays off ever more: since only the final rotators are channel
+This is where the conclusion of previous section pays off ever more: since only the final rotators are channel
 dependent, all we need is an additional set of rotators for each channel. The filters remain untouched. That's
 a huge win: from the resource calculation, we can already conclude that the filters tend to be require the
 large majority of multipliers. And that's for a filter with 201 taps, which is relatively modest. In today's
