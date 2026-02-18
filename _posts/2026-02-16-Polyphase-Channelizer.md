@@ -44,6 +44,10 @@ convolution here and there.
          math. That's good for me personally, but it's ironic that this might make the
          blog posts less accessible for others!
 
+For those who don't want to read previous installments of this series, check out the section with
+[Some Common DSP Notations](/2026/02/07/Complex-Heterodyne.html#some-common-dsp-notations)
+if you need a quick refresher about the meaning of some of the symbols.
+
 # Where We Left Things Last Time
 
 I ended my [blog post about complex heterodynes](/2026/02/07/Complex-Heterodyne.html)
@@ -89,7 +93,7 @@ This filter has 7 coefficients, the center coefficient is 10, the ones to the le
 it are both -6 and so forth.
 
 When you convert a DSP algorithm to hardware that needs to consume an input sample and produce
-and output for every clock tick, the straightfoward implentation is to have one multiplier per
+and output for every clock tick, the straightforward implementation is to have one multiplier per
 coefficient[^multiplier]. 
 
 [^multiplier]: For the sake of argument, I'm assuming the coefficients are programmable so that
@@ -118,8 +122,8 @@ If you have a hardware architecture where delayed inputs are stored in a RAM ins
 registers and you use an FSM to execute the filter over multiple clock cycles, trying to do this
 trick can make scheduling transactions more complicated too. 
 
-And when converting the FIR into a polyphase filter, the simple symmetry breaks entirely. Here's
-an example of a symmetrical 19-tap filter. In it's original form, coefficients are symmetric, but
+And when converting the FIR filter into its polyphase form, the simple symmetry breaks entirely. Here's
+an example of a symmetrical 19-tap filter. In its original form, coefficients are symmetric, but
 when split up into 10 phases, the symmetry inside each phase is gone.
 
 ![19-tap filter split up into 10 phases](/assets/polyphase/polyphase_het/polyphase_het-tap_symmetry_19.svg)
@@ -128,7 +132,7 @@ It's still possible to share multiplications if you merge multiple phases, note 
 coefficients 6 and 2 and phase 7 has coefficients 2 and 6, but that again makes data organization
 and movement more difficult.
 
-For the remainder of this blog post, I will ignore symmetric related optimizations when calculating
+For the remainder of this blog post, I will ignore symmetry related optimizations when calculating
 the number of multiplications.
 
 # Naive Performance Baseline 
@@ -139,8 +143,8 @@ I will use multiplication as the main indicator by which to judge the efficiency
 
 Let's evaluate the number of multiplications for the naive architecture:
 
-* The complex mixer multiplies a real sample with a complex number or 2 per operation.
-  Good for 200M per second.
+* The complex rotator multiplies a real sample with a complex number or 2 multiplications per operation
+  and 200M per second.
 * The low pass filter has 201 real taps, for a total of 201 x 2 x 100M = 
   40.2B operations per second.
 
@@ -154,12 +158,12 @@ There's a reason why I also wrote
 [Notes about Basic Polyphase Decimation Filters](/2026/01/25/Notes-on-Basic-Polyphase-Decimation.html):
 it discusses exactly this kind of scenario, the combo of an FIR filter followed by a decimation. Yes,
 there's a complex rotator in front of the FIR filter, but for now we can keep it there 
-while we transfrom the FIR/decimator to its polyphase form.
+while we transform the FIR/decimator to its polyphase form.
 
 harris mentions this case only tangentially, but it's useful to compare how well the straightforward
 polyphase filter bank performs compared to the naive solution.
 
-First split the FIR filter into its polyphase form, with as many sub-filters as the decimation factor:
+First split the FIR filter into its polyphase form with 10 sub-filters, the decimation factor:
 
 ![Complex heterodyne - Polyphase - Decimation](/assets/polyphase/polyphase_het/polyphase_het-complex_het_polyphase_decim.svg)
 
@@ -167,7 +171,7 @@ Apply the [noble identity for decimation](/2026/01/25/Notes-on-Basic-Polyphase-D
 
 ![Complex heterodyne - Decimation - Polyphase](/assets/polyphase/polyphase_het/polyphase_het-complex_het_decim_polyphase.svg)
 
-Moving the FIR filter operation behind the decimator is a huge savings. The complex mixer still counts
+Moving the FIR filter operation behind the decimator is a huge savings. The complex rotator still counts
 for 200M multiplications per second, but the combined 201 taps now need to deliver samples at a 10 times
 lower rate, 201 x 2 x 10M = 4.02B operations per second, for a total of 4.22B operations per second. If
 it weren't for the complex rotator, the savings ratio is exactly the decimation factor.
@@ -188,7 +192,7 @@ and $$x[n+1]$$ by $$e^{-j \theta_c (n +2)}$$ and the outcome in terms of frequen
 wouldn't be materially different (though there would be constant phase shift.)
 
 What is true is that you have to continuously loop through all the values of the rotator, irrespective
-of the length of the number of filter taps: if the rotator completes a full rotation in 128 steps, then
+of the length of the number of filter taps: if the rotator completes a full rotation in 128[^steps] steps, then
 you'll need a table or a calculation[^unity_point_calculation] to produce 128 points around the unity circle.
 
 [^unity_point_calculation]: There are multiple techniques to calculate the next point on a unity circle.
@@ -198,6 +202,8 @@ you'll need a table or a calculation[^unity_point_calculation] to produce 128 po
                             errors over time. The [CORDIC](https://en.wikipedia.org/wiki/CORDIC)
                             algorithm is very popular, requires no multiplication, but requires much
                             more steps per result to achieve the desired precision.
+
+[^steps]: In theory, the number of steps to complete a rotation could be a fractional number. 
 
 We'll soon see that this isn't the case in other schemes.
 
@@ -218,21 +224,28 @@ In the DSP world, however, it's just numbers and calculations.
 
 So, yes, we can do the filtering first and then do the heterodyne, and it's relatively easy to show that mathematically.
 
+*In what follows, I will deviate from the harris's notation in 2 ways. He uses $$a[n] * b[n]$$ for convolution. $$(a * b)[n]$$
+is the more common way. He also overloads the meaning of $$n$$ in the same equation, in a way that I found utterly
+confusing. Instead, I will use the $$[\cdot]$$ and $$(\cdot)$$ notation, where $$\cdot$$ is essentially a
+temporary local loop variable. If you see a $$\cdot$$ in the equations below, assume that harris had a $$n$$ there.*
+
 Starting with this:
 
 $$
-y[n] = \underbrace{ \underbrace{(x[n] e^{-j \theta_c n})}_{heterodyne} * h[n]}_{low-pass filter}
+y[n] = \big( \underbrace{ \underbrace{(x[\cdot] e^{-j \theta_c (\cdot)})}_{\text{heterodyne}} * h\big)[n]}_{\text{low-pass filter}}
 $$
 
-$$N$$ is the number of coefficients of the filter and $$*$$ is the convolution operator, 
-in this case, a [discrete convolution](https://en.wikipedia.org/wiki/Convolution#Discrete_convolution).
+$$*$$ is the convolution operator, in this case, a 
+[discrete convolution](https://en.wikipedia.org/wiki/Convolution#Discrete_convolution).
 Let's expand the equation by applying the definition of the convolution:
 
 $$
 y[n] = \sum_{k=0}^{N-1} (x[n-k] e^{-j \theta_c (n-k)}) \; h[k] 
 $$
 
-Extract the exponential term that doesn't depend on $$k$$:
+$$N$$ is the number of coefficients of the filter.
+
+Extract the common exponential term that doesn't depend on $$k$$:
 
 $$
 y[n] = e^{-j \theta_c n} \sum_k x[n-k] \; ( e^{j \theta_c k} h[k] )
@@ -242,8 +255,8 @@ Reduce back to a convolution operator:
 
 $$
 \begin{alignedat}{0}
-y[n] & = & e^{-j \theta_c n} \; \big( x[n] * (h[n] e^{j \theta_c n} ) \big) \\ 
-     & = & \big( x[n] * (h[n] e^{j \theta_c n} ) \big) \; e^{-j \theta_c n}
+y[n] & = & e^{-j \theta_c n} \; \big( x * (h[\cdot] e^{j \theta_c (\cdot)} ) \big)[n] \\ 
+     & = & \big( x * (h[\cdot] e^{j \theta_c (\cdot)} ) \big)[n] \; e^{-j \theta_c n}
 \end{alignedat}
 $$
 
@@ -251,7 +264,7 @@ We've just proven what, [in the video](https://youtu.be/afU9f5MuXr8?t=985), harr
 *Equivalency Theorem*: 
 
 $$
-( x[n] e^{-j \theta_c n} ) * h(n) = e^{-j \theta_c n} \; \big( x[n] * (h[n] e^{j \theta_c n} ) \big)
+\big(( x[\cdot] e^{-j \theta_c (\cdot)} ) * h\big)[n] = e^{-j \theta_c n} \; \big( x * (h[\cdot] e^{j \theta_c (\cdot)} ) \big)[n]
 $$
 
 There's one minor comment about this: while Google turns up plenty of equivalency
@@ -271,38 +284,38 @@ which has the same formulas and figures as the one of the video. It says:
 Anyway, this transformation doesn't look like an improvement, and it will take a while before we 
 can see how this helps us.  For now, let's break the equation into pieces and look at them step by step.
 
-$$ h[n] e^{j \theta_c n} $$
+$$ h[\cdot] e^{j \theta_c (\cdot)} $$
 
-The coefficients of the low-pass filter with transfer function  $$H_{lpf}(z)$$ are each multiplied by 
+The coefficients of the low-pass filter with transfer function  $$H_text{lpf}(z)$$ are each multiplied by 
 a value of a rotator. Notice how the $$-$$ sign in front of the $$j$$ exponent of the rotator has
-disappared: when we were heterodyning the channel, we were bringing the spectrum *down* to baseband.
+disappeared: when we were heterodyning the channel, we were bringing the spectrum *down* to baseband.
 Now, we're doing the opposite and heterodyning the low-pass filter *up* to channel band!
 
 Let's apply the equation above to an example. If the transfer function of the original filter is this: 
 
 $$
-H_{lpf}(z) = h_0 z^{0} + h_1 z^{-1} + h_2 z^{-2} + h_3 z^{-3} + h_4 z^{-4}
+H_\text{lpf}(z) = h_0 z^{0} + h_1 z^{-1} + h_2 z^{-2} + h_3 z^{-3} + h_4 z^{-4}
 $$
 
 Then the new filter is this:
 
 $$
 \begin{alignedat}{0}
-H_{bpf}(z) & = & h_0 e^{j \theta_c 0} z^{0} &+& h_1 e^{j \theta_c 1} z^{-1} &+& h_2 e^{j \theta_c 2} z^{-2} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_4 e^{j \theta_c 4} z^{-4} \\
-           & = & h_0 (e^{-j \theta_c} z)^{0} &+& h_1 (e^{-j \theta_c} z)^{-1} &+& h_2 (e^{-j \theta_c} z)^{-2} &+& h_3 (e^{-j \theta_c} z)^{-3} &+& h_4 (e^{-j \theta_c} z)^{-4} \\
+H_\text{bpf}(z) & = & h_0 e^{j \theta_c 0} z^{0} &+& h_1 e^{j \theta_c 1} z^{-1} &+& h_2 e^{j \theta_c 2} z^{-2} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_4 e^{j \theta_c 4} z^{-4} \\
+                & = & h_0 (e^{-j \theta_c} z)^{0} &+& h_1 (e^{-j \theta_c} z)^{-1} &+& h_2 (e^{-j \theta_c} z)^{-2} &+& h_3 (e^{-j \theta_c} z)^{-3} &+& h_4 (e^{-j \theta_c} z)^{-4} \\
 \end{alignedat}
 $$
 
 This can be written much shorter, useful for drawings, like this:
 
 $$
-H_{bpf}(z) = H_{lpf}(e^{-j \theta_c} z)
+H_\text{bpf}(z) = H_\text{lpf}(e^{-j \theta_c} z)
 $$
 
-It is important to note that the coefficients of $$H_{bpf}(z)$$ are constants: for a given center frequency, we can
-pre-calculate the coefficients and never change them agaian. And contrary to the free-running rotator that
+It is important to note that the coefficients of $$H_\text{bpf}(z)$$ are constants: for a given center frequency, we can
+pre-calculate the coefficients and never change them again. And contrary to the free-running rotator that
 shifted down the spectrum of the input signal, the number of rotator values to shift up the filter is fixed to the
-number of filter taps. However, compared to the original filter $$H_{lpf}(z)$$, the coefficients are now complex 
+number of filter taps. However, compared to the original filter $$H_\text{lpf}(z)$$, the coefficients are now complex 
 instead of real.
 
 To simulate the behavior of this band-pass filter, we create an array with as many complex rotator values
@@ -322,7 +335,7 @@ low-pass filter to a band-pass filter with $$F_c = 20 \text{MHz}$$ as center fre
 The second plot of the figure above shows the input signal after applying the band-pass filter.
 
 $$
-x[n] * h_{bpf}[n]
+x[n] * h_\text{bpf}[n]
 $$
 
 ```python
@@ -332,7 +345,7 @@ signal_bpf_complex  = np.convolve(signal, h_bpf_complex, mode="same")
 The final step shifts the filtered signal back to baseband:
 
 $$
-y[n] = ( x[n] * h_{bpf}[n] ) \; e^{-j \theta_c n}
+y[n] = ( x[n] * h_\text{bpf}[n] ) \; e^{-j \theta_c n}
 $$
 
 
@@ -378,7 +391,7 @@ $$
 
 where $$\lfloor x \rfloor$$ means "$$x$$ rounded down to the closest integer number". 
 
-The decimator and the rotator have swapped positions. The earlier problem of having to run the
+Since the decimator and the rotator have swapped positions, the earlier problem of having to run the
 rotator at the input sample rate has been solved!
 
 ![Pipeline with band-pass filter, decimation, and heterodyne](/assets/polyphase/polyphase_het/polyphase_het-bpf_decim_het.svg)
@@ -396,7 +409,8 @@ e^{-j \theta_c M } \stackrel{?}{=} 1 + 0j
 $$
 
 The rotator is one whenever it makes a full circle or whenever the exponent is an integer multiple of $$2 \pi$$. 
-$$m$$ is an integer. If the equation above is satisfied, then it will also be satisfied after adding $$m$$ to the exponent.
+$$m$$ is an integer. If the equation above is satisfied without $$m$$, then it will also be satisfied after 
+adding $$m$$ to the exponent.
 
 $$
 \theta_c M = k \; 2 \pi
@@ -415,9 +429,10 @@ F_c = k \frac{F_s}{M} \\
 \theta_c = \frac{2 \pi k}{M}
 $$
 
-In other words: if the center frequency of your channel is a multiple of the
-sample rate divided by the decimation factor, the decimated rotator will always evaluate to 1
-and thus the multiplication disappears entirely.
+It doesn't seem like it, but this is a crucial result:
+
+**if the center frequency of your channel is a multiple of the sample rate divided by the decimation 
+factor, the decimated rotator will always evaluate to 1 and thus the multiplication disappears entirely.**
 
 In our example with $$F_s=100 \text{MHz}$$, $$M=10$$, $$F_c=20 \text{MHz}$$, this
 equation is satisfied for $$k=2$$, and we end up with this:
@@ -438,13 +453,13 @@ times per second.
 
 A pitiful 5% savings is not worth writing home about, but we can do even better.
 
-Note: even if we don't satisfy the $$F_c = k \frac{F_s}{M} $$ condition, we're still better off
-than before, because the rotator still runs at the output instead of the input sample rate:
+*Note: even if we don't satisfy the $$F_c = k \frac{F_s}{M} $$ condition, we're still better off
+than before, because the rotator still runs at the output instead of the input sample rate:*
 
 ![Pipeline with decimation, polyphase band-pass filters, and heterodyne](/assets/polyphase/polyphase_het/polyphase_het-decim_poly_bpf_het.svg)
 
-This blog post is already long as it is, so for this one, I'm focussing only on the case
-where the center frequency condition is satisfied.
+*This blog post is already long as it is, so for this one, I'm focussing only on the case
+where the center frequency condition is satisfied.*
 
 # Moving Another Rotator behind the Filter and More... Again
 
@@ -461,7 +476,7 @@ Let's move our attention to the transfer function of filter:
 
 $$
 \begin{alignedat}{0}
-H_{bpf}(z) & = & H_{lpf}(e^{-j \theta_c} z) \\
+H_\text{bpf}(z) & = & H_\text{lpf}(e^{-j \theta_c} z) \\
            & = & \sum_{n=0}^{N-1} h[n] (e^{-j \theta_c } z)^{-n}  \\
            & = & h_0 e^{j \theta_c 0} z^{ 0} &+& h_1 e^{j \theta_c 1} z^{-1} &+& h_2 e^{j \theta_c 2} z^{-2} &+& 3 e^{j \theta_c 3}  z^{-3} &+& ... 
 \end{alignedat}
@@ -479,7 +494,7 @@ me a minute to understand what happened with $$h[n]$$. In the first equation,
 $$n = 0 ... N-1$$, where $$N$$ is the number of coefficients. In the equation above, 
 the range of $$n$$ doesn't change, but now it's used like this: $$h[m + Mn]$$. The
 maximum index of $$h$$ now goes beyond the number of coefficients. This isn't a problem,
-though, as long as you keep in mind that $$h[n]$$ is zero when $$n$$ is smaller than 0
+though, as long as you keep in mind that $$h[n]$$ is $$\color{red}{0}$$ when $$n$$ is smaller than 0
 or larger than $$N-1$$.
 
 To make things really clear, let's expand all these sums and products for a 9-tap
@@ -487,9 +502,9 @@ filter with decimation factor $$M=3$$:
 
 $$
 \begin{alignedat}{0}
-H_{bpf}(z) & = &  h_0 e^{j \theta_c 0} z^{ 0} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_6 e^{j \theta_c 6} z^{-6} &+& 0 e^{j \theta_c 9}  z^{-9}  &+& ... && \qquad (m = 0) \\
-           & + &  h_1 e^{j \theta_c 1} z^{-1} &+& h_4 e^{j \theta_c 4} z^{-4} &+& h_7 e^{j \theta_c 7} z^{-7} &+& 0 e^{j \theta_c 10} z^{-10} &+& ... && \qquad (m = 1) \\
-           & + &  h_2 e^{j \theta_c 2} z^{-2} &+& h_5 e^{j \theta_c 5} z^{-5} &+& h_8 e^{j \theta_c 8} z^{-8} &+& 0 e^{j \theta_c 11} z^{-11} &+& ... && \qquad (m = 2) \\
+H_\text{bpf}(z) & = &  h_0 e^{j \theta_c 0} z^{ 0} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_6 e^{j \theta_c 6} z^{-6} &+& \color{red}{0} \, e^{j \theta_c 9}  z^{-9}  &+& ... && \qquad (m = 0) \\
+           & + &  h_1 e^{j \theta_c 1} z^{-1} &+& h_4 e^{j \theta_c 4} z^{-4} &+& h_7 e^{j \theta_c 7} z^{-7} &+& \color{red}{0} \, e^{j \theta_c 10} z^{-10} &+& ... && \qquad (m = 1) \\
+           & + &  h_2 e^{j \theta_c 2} z^{-2} &+& h_5 e^{j \theta_c 5} z^{-5} &+& h_8 e^{j \theta_c 8} z^{-8} &+& \color{red}{0} \, e^{j \theta_c 11} z^{-11} &+& ... && \qquad (m = 2) \\
 \end{alignedat}
 $$
 
@@ -502,7 +517,7 @@ $$
 
 $$
 \begin{alignedat}{0}
-H_{bpf}(z) & = & e^{j \theta_c 0} z^{ 0} & \big(  h_0 e^{j \theta_c 0} z^{0} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_6 e^{j \theta_c 6} z^{-6} \big)  && \qquad (m = 0) \\
+H_\text{bpf}(z) & = & e^{j \theta_c 0} z^{ 0} & \big(  h_0 e^{j \theta_c 0} z^{0} &+& h_3 e^{j \theta_c 3} z^{-3} &+& h_6 e^{j \theta_c 6} z^{-6} \big)  && \qquad (m = 0) \\
            & + & e^{j \theta_c 1} z^{-1} & \big(  h_1 e^{j \theta_c 0} z^{0} &+& h_4 e^{j \theta_c 3} z^{-4} &+& h_7 e^{j \theta_c 6} z^{-7} \big)  && \qquad (m = 1) \\
            & + & e^{j \theta_c 2} z^{-2} & \big(  h_2 e^{j \theta_c 0} z^{0} &+& h_5 e^{j \theta_c 3} z^{-5} &+& h_8 e^{j \theta_c 6} z^{-8} \big)  && \qquad (m = 2) \\
 \end{alignedat}
@@ -521,7 +536,7 @@ $$
 
 $$
 \begin{alignedat}{0}
-H_{bpf}(z) & = & e^{j \theta_c 0} z^{ 0} & \big(  h_0 z^{0} &+& h_3 z^{-3} &+& h_6 z^{-6} \big)  && \qquad (m = 0) \\
+H_\text{bpf}(z) & = & e^{j \theta_c 0} z^{ 0} & \big(  h_0 z^{0} &+& h_3 z^{-3} &+& h_6 z^{-6} \big)  && \qquad (m = 0) \\
            & + & e^{j \theta_c 1} z^{-1} & \big(  h_1 z^{0} &+& h_4 z^{-4} &+& h_7 z^{-7} \big)  && \qquad (m = 1) \\
            & + & e^{j \theta_c 2} z^{-2} & \big(  h_2 z^{0} &+& h_5 z^{-5} &+& h_8 z^{-8} \big)  && \qquad (m = 2) \\
 \end{alignedat}
@@ -530,7 +545,7 @@ $$
 Or abbreviated:
 
 $$
-H_{bpf}(z) = \sum_{m=0}^{M-1} e^{j \theta_c m} z^{-m} H_m(z^M)
+H_\text{bpf}(z) = \sum_{m=0}^{M-1} e^{j \theta_c m} z^{-m} H_m(z^M)
 $$
 
 Furthermore:
@@ -542,19 +557,19 @@ $$
 So we end up with this:
 
 $$
-H_{bpf}(z) = \sum_{m=0}^{M-1} e^{j \frac{2 \pi}{M} k m} z^{-m} H_m(z^M)
+H_\text{bpf}(z) = \sum_{m=0}^{M-1} e^{j \frac{2 \pi}{M} k m} z^{-m} H_m(z^M)
 $$
 
 $$e^{j \frac{2 \pi}{M} k m}$$ is a scalar value, so we can move the multiplication 
 to the back of the filter:
 
 $$
-H_{bpf}(z) = \sum_{m=0}^{M-1} z^{-m} H_m(z^M) e^{j \frac{2 \pi}{M} k m} 
+H_\text{bpf}(z) = \sum_{m=0}^{M-1} z^{-m} H_m(z^M) e^{j \frac{2 \pi}{M} k m} 
 $$
 
 $$
 \begin{alignedat}{0}
-H_{bpf}(z) & = & z^{ 0} & \big(  h_0 z^{0} &+& h_3 z^{-3} &+& h_6 z^{-6} \big) e^{j \frac{2 \pi}{M} k 0} \\
+H_\text{bpf}(z) & = & z^{ 0} & \big(  h_0 z^{0} &+& h_3 z^{-3} &+& h_6 z^{-6} \big) e^{j \frac{2 \pi}{M} k 0} \\
            & + & z^{-1} & \big(  h_1 z^{0} &+& h_4 z^{-4} &+& h_7 z^{-7} \big) e^{j \frac{2 \pi}{M} k 1} \\
            & + & z^{-2} & \big(  h_2 z^{0} &+& h_5 z^{-5} &+& h_8 z^{-8} \big) e^{j \frac{2 \pi}{M} k 2} \\
 \end{alignedat}
@@ -566,17 +581,34 @@ Here's how that looks as a diagram:
 
 As a final step, we can move the decimator back to the front by applying the noble identity on the 
 polyphase sub-filters. Note that this time, the rotator exponent is not multiplied by $$M$$, because
-the exponent is a fixed value, not a changing phasor.
+the exponent is a fixed value, not a changing rotator.
 
 ![Polyphase with decimator, real band-pass filter, heterodyne](/assets/polyphase/polyphase_het/polyphase_het-decim_poly_real_bpf_het.svg)
 
 This is a truly remarkable outcome: 
 
-* All math operations happen at a slow rate behind the decimators.
-* The inputs to the filters are real.
-* The coefficients of the polyphase filters are real again.
-* The coefficients don't depend on the targeted channel frequency
-* The rotators are located behind the filters
+* **All math operations happen at a slow rate behind the decimators.**
+
+  We can do this because of the noble identies that give us the polyphase
+  transformations and because the rotators are located after the filters.
+
+* **The inputs to the filters are real.**
+
+  We achieved this by applying the equivalency theorem.
+
+* **The coefficients of the polyphase filters are real again.**
+
+  We did this by extracting the rotators from the filters, and removing the 
+  frequency-dependent component.
+
+* **The coefficients don't depend on the targeted channel frequency.**
+
+  We did this also by extracting the rotators from the filters (as long as the channel $k$ 
+  meets our criterion above of being an integer multiple of the decimation rate).
+
+* **The rotators are located behind the filters.**
+
+  This will be very important in the next section.
 
 The importance of the last 2 points can't be overstated: if you want to change the channel $$k$$ that needs to
 be brought to base band from one to another, all you need to change are the rotators.
@@ -584,9 +616,9 @@ be brought to base band from one to another, all you need to change are the rota
 Compared the last checkpoint, the resource requirements have also been reduced roughly by half:
 
 * the 201 filter taps are multiplied by a real input at a rate of 10M per second = 2.01B multiplications.
-* 3 rotators multiply the real output of the filters by a complex number at 10M per second = 60M multiplications.
+* 10 rotators multiply the real output of the filters by a complex number at 10M per second = 200M multiplications.
 
-Total: 2.016B multiplications.
+Total: 2.21B multiplications.
 
 Our naive initial baseline was 40.4B multiplications per second, we've reduced that number by a factor of 20.
 
@@ -594,10 +626,10 @@ And still we are not done...
 
 # The Polyphase Channelizer
 
-So far, we've focused on finding an optimal solution to extracting the signal of one channel of many to baseband.
-We're now expanding our scope: what if we want to extract the signal of all channels in parallel?
+So far, we've focused on finding an optimal solution to extracting the signal of one channel out of a possible many 
+to baseband. We're now expanding our scope: what if we want to extract the signal of all channels in parallel?
 
-This is where the conclusion of pervious section pays off ever more: since only the final rotators are channel
+This is where the conclusion of previous section pays off ever more: since only the final rotators are channel
 dependent, all we need is an additional set of rotators for each channel. The filters remain untouched. That's
 a huge win: from the resource calculation, we can already conclude that the filters tend to be require the
 large majority of multipliers. And that's for a filter with 201 taps, which is relatively modest. In today's
@@ -636,8 +668,11 @@ $$
 Does this equation ring a bell? Compare against this: 
 
 $$
-x[n] = \frac{1}{N} \sum_{k=0}^{N-1}{X[k] e^{j \frac{2 \pi}{N} k \, n } }
+x[n] = \frac{1}{N} \sum_{k=0}^{N-1}{X[k] e^{j \frac{2 \pi}{N} n \, k } }
 $$
+
+*Don't confuse the meanings of $$k$$, $$m$$, and $$n$$. The $$k$$ in the first equation
+matches the purpose of $$n$$ in the second one!*
 
 This is the definition of inverse[^inverse] 
 [discrete Fourier transform (DFT)](https://en.wikipedia.org/wiki/Discrete_Fourier_transform)!
@@ -654,6 +689,8 @@ which has $$O(n \log n)$$ behavior.
 
 For a 65536 channel polyphase channelizer, the FFT brings down the number of complex multiplications
 from 4,294,901,760 down to 1,048,576. We're received a second boost-of-efficiency miracle.
+
+Finally, we're at the end of a journey that gives us this wonderful result:
 
 ![Polyphase filters, IFFT](/assets/polyphase/polyphase_het/polyphase_het-polyphase_ifft.svg)
 
@@ -736,6 +773,23 @@ Success!
 This was a long story, but I felt that it had to be told in one go to keep all the context
 together.
 
+Let's do a step-by-step recap:
+
+* We started with a very naive implementation of a single channel downconverter.
+* Using a straightforward polyphase decomposition, we came up with a much more efficient design but
+  with one major flaw: it required a rotator that runs at the input sample rate.
+* With a bit of algebra, we were able to move that rotator to the back of the pipeline,
+  after the decimator. No more units running at input sample rate!
+* A smart choice of the sample rate allowed us to get rid of the rotator altogether.
+* Some more algebra allowed us to cut the number of multiplications by half and
+  isolate all channel specific calculations to the very end of the pipeline.
+* With only 1 non-channel specific polyphase filter and different rotators at the back, 
+  we could expand the pipeline to support multiple channels at low extra cost.
+* That cost became even lower by recognizing the presence of an inverse discrete Fourier
+  transform and using an IFFT to accelerate the calculations.
+
+I just love how everything, like a plan, comes beautifully together.
+
 I deliberately left out the parts of the video where harris discusses cases where channel centers
 have a fixed offset from where they should be. It would make this blog post even longer, but these
 cases are also not fully worked-out in the video. I'll need more time to digest those parts.
@@ -749,6 +803,8 @@ work. harris talks about rotating spectra, aliased to the same baseband, that ca
 out for different rotators. While I kind of get what he's trying to say, the truth is that I
 currently don't have the kind of intuition that harris has, so I'll 
 defer [to the video](https://youtu.be/afU9f5MuXr8?t=2151) for that.
+
+Many thanks to [Joshua](https://joshuawise.com) for reviewing!
 
 # References
 
