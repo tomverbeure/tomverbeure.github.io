@@ -5,6 +5,8 @@ date:   2026-02-16 00:00:00 -1000
 categories:
 ---
 
+*All words in this blog post were written by a human being.*
+
 <script async src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML"></script>
 
 * TOC
@@ -441,7 +443,7 @@ equation is satisfied for $$k=2$$, and we end up with this:
 
 If all of this feels a bit familiar, it's probably because you've heard about 
 [undersampling or band-pass sampling](https://en.wikipedia.org/wiki/Undersampling). 
-It's what happens when you deliverately violate the 
+It's what happens when you deliberately violate the 
 [Nyquist theorem](https://en.wikipedia.org/wiki/Nyquist–Shannon_sampling_theorem),
 sample at a rate that is much lower than twice the bandwidth of a signal, but do it in such
 a way that the spectrum of the signal aliases exactly where you want it to be: at baseband.
