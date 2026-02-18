@@ -1,4 +1,4 @@
-<mxfile host="Electron" modified="2026-02-18T18:12:30.128Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.5.1 Chrome/112.0.5615.204 Electron/24.6.0 Safari/537.36" etag="4URZGhhH5NeiD9C1r7gC" version="21.5.1" type="device" pages="5">
+<mxfile host="Electron" modified="2026-02-18T18:26:33.156Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.5.1 Chrome/112.0.5615.204 Electron/24.6.0 Safari/537.36" etag="FmpKEOB-LJW3HfCBqndQ" version="21.5.1" type="device" pages="5">
   <diagram name="analog_to_digital_without_lpf" id="QnW7GE7UdoACAppnVIxl">
     <mxGraphModel dx="1434" dy="922" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
       <root>
@@ -640,7 +640,7 @@
             <mxPoint x="440" y="330.4" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="ln7jM-BSTrHDn0GhziyN-10" value="3:1" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="2yUXVGdmPeLXrG2jSFaM-1">
+        <mxCell id="ln7jM-BSTrHDn0GhziyN-10" value="M:1" style="whiteSpace=wrap;html=1;aspect=fixed;" vertex="1" parent="2yUXVGdmPeLXrG2jSFaM-1">
           <mxGeometry x="360" y="230.4" width="39.6" height="39.6" as="geometry" />
         </mxCell>
         <mxCell id="ln7jM-BSTrHDn0GhziyN-11" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="2yUXVGdmPeLXrG2jSFaM-1">
