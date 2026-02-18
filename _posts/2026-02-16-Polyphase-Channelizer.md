@@ -431,13 +431,25 @@ $$
 
 It doesn't seem like it, but this is a crucial result:
 
-**if the center frequency of your channel is a multiple of the sample rate divided by the decimation 
+**If the center frequency of your channel is a multiple of the sample rate divided by the decimation 
 factor, the decimated rotator will always evaluate to 1 and thus the multiplication disappears entirely.**
 
 In our example with $$F_s=100 \text{MHz}$$, $$M=10$$, $$F_c=20 \text{MHz}$$, this
 equation is satisfied for $$k=2$$, and we end up with this:
 
 ![Band-pass filter and decimation](/assets/polyphase/polyphase_het/polyphase_het-bpf_decim.svg)
+
+If all of this feels a bit familiar, it's probably because you've heard about 
+[undersampling or band-pass sampling](https://en.wikipedia.org/wiki/Undersampling). 
+It's what happens when you deliverately violate the 
+[Nyquist theorem](https://en.wikipedia.org/wiki/Nyquist–Shannon_sampling_theorem),
+sample at a rate that is much lower than twice the bandwidth of a signal, but do it in such
+a way that the spectrum of the signal aliases exactly where you want it to be: at baseband.
+
+![Undersampling](/assets/polyphase/polyphase_het/sampling-undersampling.svg)
+
+Band-pass sampling only works if there are no stray frequency components outside the channel,
+which is why preprocessing the input with a band-pass filter is essential.
 
 Even with complex filter coefficients, we can still do the polyphase decomposition and 
 move the decimator before the set of filters:
