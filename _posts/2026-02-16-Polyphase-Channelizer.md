@@ -288,7 +288,7 @@ can see how this helps us.  For now, let's break the equation into pieces and lo
 
 $$ h[\cdot] e^{j \theta_c (\cdot)} $$
 
-The coefficients of the low-pass filter with transfer function  $$H_text{lpf}(z)$$ are each multiplied by 
+The coefficients of the low-pass filter with transfer function  $$H_\text{lpf}(z)$$ are each multiplied by 
 a value of a rotator. Notice how the $$-$$ sign in front of the $$j$$ exponent of the rotator has
 disappeared: when we were heterodyning the channel, we were bringing the spectrum *down* to baseband.
 Now, we're doing the opposite and heterodyning the low-pass filter *up* to channel band!
