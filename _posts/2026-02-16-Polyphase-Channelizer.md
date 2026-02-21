@@ -50,6 +50,9 @@ For those who don't want to read previous installments of this series, check out
 [Some Common DSP Notations](/2026/02/07/Complex-Heterodyne.html#some-common-dsp-notations)
 if you need a quick refresher about the meaning of some of the symbols.
 
+The NumPy code that was used to create the plots in this series can be found
+[here](https://github.com/tomverbeure/polyphase_blog_series).
+
 # Where We Left Things Last Time
 
 I ended my [blog post about complex heterodynes](/2026/02/07/Complex-Heterodyne.html)
@@ -288,7 +291,7 @@ can see how this helps us.  For now, let's break the equation into pieces and lo
 
 $$ h[\cdot] e^{j \theta_c (\cdot)} $$
 
-The coefficients of the low-pass filter with transfer function  $$H_text{lpf}(z)$$ are each multiplied by 
+The coefficients of the low-pass filter with transfer function  $$H_\text{lpf}(z)$$ are each multiplied by 
 a value of a rotator. Notice how the $$-$$ sign in front of the $$j$$ exponent of the rotator has
 disappeared: when we were heterodyning the channel, we were bringing the spectrum *down* to baseband.
 Now, we're doing the opposite and heterodyning the low-pass filter *up* to channel band!
@@ -828,10 +831,15 @@ Many thanks to [Joshua](https://joshuawise.com) for reviewing!
 
 * [IEEE - Digital Receivers and Transmitters Using Polyphase Filter Banks for Wireless Communications](https://ieeexplore.ieee.org/document/1193158)
 
-Other blog posts in this series:
+**Other blog posts in this series**
 
 * [Notes about Basic Polyphase Decimation Filters](/2026/01/25/Notes-on-Basic-Polyphase-Decimation.html)
 * [Complex Heterodynes Explained](/2026/02/07/Complex-Heterodyne.html)
+
+**Source code**
+
+* [GitHub - Polyphase Filtering Blog Series](https://github.com/tomverbeure/polyphase_blog_series)
+
 
 # Footnotes
 
