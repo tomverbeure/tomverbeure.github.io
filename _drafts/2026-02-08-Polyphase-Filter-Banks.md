@@ -48,6 +48,8 @@ the following characteristics:
 * quadrature I/Q sampling
 
 
+
+
 [![BLE Waterfall Plot](/assets/polyphase/ble/ble_input_data_waterfall.png)](/assets/polyphase/ble/ble_input_data_waterfall.png)
 *(Click to enlarge)*
 
@@ -59,6 +61,10 @@ the following characteristics:
 *(Click to enlarge)*
 
 # Derivation
+
+![polyphase, IFFT](/assets/polyphase/ble/ble-polyphase_ifft.svg)
+
+![Input heterodyne, polyphase, IFFT](/assets/polyphase/ble/ble-pre_polyphase_ifft.svg)
 
 Starting formula:
 
