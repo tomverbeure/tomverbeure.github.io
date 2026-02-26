@@ -632,6 +632,17 @@ dsp.stackexchange.com
     Probably the best derivation for DIF and DIT.
 
     [All classes of this course](https://eeweb.engineering.nyu.edu/iselesni/EL713/zoom/)
+* [The FFT Via Matrix Factorizations - A Key to Designing High Performance Implementations](https://www.cs.cornell.edu/~bindel/class/cs5220-s10/slides/FFT.pdf)
+
+  Charles Van Loan
+
+* [SPIRAL: AI for High Performance Code](https://sites.google.com/modelingtalks.org/entry/spiral-ai-for-high-performance-code)
+
+* [SPIRAL - DFT/FFT IP Core Generator](https://www.spiral.net/hardware/dftgen.html)
+
+* [SGen - Streaming Hardware Generator](https://acl.inf.ethz.ch/research/hardware/)
+
+* [Github - fpga-fft](https://github.com/owocomm-0/fpga-fft)
 
 * [Multidigit multiplication for mathematicians](https://cr.yp.to/papers/m3-20010811-retypeset-20220327.pdf)
 
