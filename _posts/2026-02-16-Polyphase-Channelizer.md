@@ -714,9 +714,9 @@ Finally, we're at the end of a journey that gives us this wonderful result:
 The Fourier transform is known primarily for converting signals from the time domain to the
 frequency domain and back, but you don't have to use it for frequency stuff, as is the case here.
 The output of the IFFT in the polyphase channelizer is an array with the samples of all
-channels of a given time tick. The IFFT is simply used algorithmic accelerator.
+channels of a given time tick. The IFFT is simply used as an algorithmic accelerator.
 
-This is a good at time as any to link to my favorite Youtube video of all time:
+This is as good a time as any to link to my favorite Youtube video of all time:
 "The Fast Fourier Transform (FFT): Most Ingenious Algorithm Ever?"
 
 <iframe width="640" height="360" src="https://www.youtube.com/embed/h7apO7q16V0?si=8zM2mOaMBD0byhyb" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
