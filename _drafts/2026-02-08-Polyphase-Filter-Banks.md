@@ -47,12 +47,31 @@ the following characteristics:
 * sample rate: 96 MHz
 * quadrature I/Q sampling
 
-
-
+We can create a 
+[waterfall plot](https://en.wikipedia.org/wiki/Waterfall_plot) 
+of this, where the X-axis shows the time and the Y axis the 
+[short time Fourier transform (STFT)](https://en.wikipedia.org/wiki/Short-time_Fourier_transform).
 
 [![BLE Waterfall Plot](/assets/polyphase/ble/ble_input_data_waterfall.png)](/assets/polyphase/ble/ble_input_data_waterfall.png)
 *(Click to enlarge)*
 
+We can see a thin bright line at the 2441 MHz center frequency. This is a common artifact of the 
+imperfect SDR hardware. It could be caused by local oscillator leakage or an imbalance between the 
+I and Q channels of the quadrature AD converters, or both.
+
+In this video, harris talks about how DC is often problematic, and a reason to have channel with an
+offset so that none of the channel center frequencies coincides with DC. I'm pretty sure that is
+one of the reasons why.
+
+We can also see some symmetry around the 2441 MHz line. For example, there's a short burst around
+1.1 ms at 2415 Mhz and weaker version 2467 MHz. This weaker version isn't real either, but a
+spectral mirrom image that's cause by imbalance between the I and the Q channel: their phase shift
+might not be exactly 90 degrees or they might have a slight different gain on their way to the ADCs.
+This is another topics that harris talks about: if possible, use a single double-speed ADC and do
+all the I/Q handling in the mathematically perfect digital domain.
+
+[![BLE Waterfall Plot with Channels](/assets/polyphase/ble/ble_input_data_waterfall_bars.png)](/assets/polyphase/ble/ble_input_data_waterfall_bars.png)
+*(Click to enlarge)*
 
 [![BLE Channel 33 decoding with 1 MHz heterodyne before channelization](/assets/polyphase/ble/chan_33_time_plot_het_pre.svg)](/assets/polyphase/ble/chan_33_time_plot_het_pre.svg)
 *(Click to enlarge)*
