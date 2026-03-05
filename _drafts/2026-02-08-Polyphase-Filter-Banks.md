@@ -55,20 +55,20 @@ of this, where the X-axis shows the time and the Y axis the
 [![BLE Waterfall Plot](/assets/polyphase/ble/ble_input_data_waterfall.png)](/assets/polyphase/ble/ble_input_data_waterfall.png)
 *(Click to enlarge)*
 
-We can see a thin bright line at the 2441 MHz center frequency. This is a common artifact of the 
+We can see a bright line at the 2441 MHz center frequency. This is a common artifact of the 
 imperfect SDR hardware. It could be caused by local oscillator leakage or an imbalance between the 
 I and Q channels of the quadrature AD converters, or both.
 
-In this video, harris talks about how DC is often problematic, and a reason to have channel with an
-offset so that none of the channel center frequencies coincides with DC. I'm pretty sure that is
+In this video, harris talks about how DC is often problematic, and a reason to have channels with a
+frequency offset so that none of the channel center frequencies coincide with DC. I'm pretty sure that is
 one of the reasons why.
 
 We can also see some symmetry around the 2441 MHz line. For example, there's a short burst around
-1.1 ms at 2415 Mhz and weaker version 2467 MHz. This weaker version isn't real either, but a
-spectral mirrom image that's cause by imbalance between the I and the Q channel: their phase shift
-might not be exactly 90 degrees or they might have a slight different gain on their way to the 
+1.1 ms at 2415 Mhz and a weaker version at 2467 MHz. This weaker version isn't real either, but a
+spectral mirror image that's caused by an imbalance between the I and the Q channels: their phase shift
+might not be exactly 90 degrees or they might have a slightly different gain on their way to the 
 ADCs.[^gram_schmidt]
-This is another topics that harris talks about: if possible, use a single double-speed ADC and do
+This is another topic that harris talks about: if possible, use a single double-speed ADC and do
 all the I/Q handling in the mathematically perfect digital domain. 
 
 [^gram_schmidt]: You can use [Gram-Schmidt decorrelation](https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process)
@@ -76,7 +76,8 @@ all the I/Q handling in the mathematically perfect digital domain.
 
 A recording of 96 Msps complex samples covers 48 channels of 2 MHz. Since BLE only has 40 active channels,
 we have a little bit too much data, but that's ok. In the waterfall plot below, I've added separators that
-the individual channels. The 2441 MHz line is now obstructed.
+the individual channels. The suprious 2441 MHz line is now obstructed, which is good because it shows that 
+it falls on a transition band.
 
 [![BLE Waterfall Plot with Channels](/assets/polyphase/ble/ble_input_data_waterfall_bars.png)](/assets/polyphase/ble/ble_input_data_waterfall_bars.png)
 *(Click to enlarge)*
@@ -93,6 +94,8 @@ That's not the case here. Instead, we have the following situation:
 $$
     F_c = \frac{F_s}{M} c + \frac{1}{2M}, \quad c = 0, 1, \dots, M-1
 $$
+
+**Add a drawing of channel spectrum with offset**
 
 Concretely, instead of channel center frequencies at -2, 0, 2, 4, ... MHz, they are located at
 -3, -1, 1, 3, 5, ... MHz. Having the center frequency offset at exacty half the channel width is
@@ -116,10 +119,10 @@ hard to not do anything at the input sample rate.
 
 Still, let's do it anyway and see what kind of result we get.
 
-I've become smarter about using NumPy functions which makes code a whole lot shorter, though not
+I've become smarter about using NumPy functions which makes the code a whole lot shorter, though not
 necessarily more readable. The source code to do the input heterodyne and the
 polyphase channelizer is below. I've stripped some of the comments for brevity, but
-check out the code in GitHub repo for more details.
+check out the code in the GitHub repo for more details.
 
 ```python
 n = np.arange(len(ble_input), dtype=np.float32)
@@ -174,7 +177,7 @@ After extracting the data from channel 33[^33] between 1.14 ms and 1.24 ms, we g
 [![Channel 33 I/Q time plot](/assets/polyphase/ble/chan_33_time_plot_het_pre_iq.svg)](/assets/polyphase/ble/chan_33_time_plot_het_pre_iq.svg)
 *(Click to enlarge)*
 
-The start and stop of a packet can be derived from the amplitude of the I/Q vector (green).
+The active period of a packet can be derived from the amplitude of the I/Q vector (green).
 And the I/Q data clearly has some structure in it.
 
 BLE uses 
@@ -190,12 +193,12 @@ $$
 \phi[n] = \arctan(\frac{q[n]}{i[n]})
 $$
 
-The derivative is simply the delta between consecutive phase.
+The derivative is simply the delta between consecutive phase samples.
 
 In Python, we can demodulate a GFSK signal like this:
 
 ```python
-angle = np.unwrap(np.angle(data))
+angle = np.unwrap(np.angle(iq_data))
 d_angle = angle[:-1] - angle[1:]
 ```
 
@@ -204,17 +207,14 @@ Here's the result:
 [![Channel 33 GFSK time plot](/assets/polyphase/ble/chan_33_time_plot_het_pre_gfsk.svg)](/assets/polyphase/ble/chan_33_time_plot_het_pre_gfsk.svg)
 *(Click to enlarge)*
 
+A BLE packet starts with a 16-symbol 1010101010101010 sync word, followed by data. This definitely looks
+like a valid packet.
 
-A transmission starts with a 16-symbol 1010101010101010 sync word, followed by data.
-
-Cool! But it cost a table with 48 rotator values that's fed into a complex multiplier at the input sample rate. 
+Cool! But it costs us a table with 48 rotator values are fed into a complex multiplier, at the input sample rate. 
 In this example, the input samples are already complex, but if they were real, the input heterodyne also
 forces all filter bank calculations to become complex.
 
 Can we do better?
-
-[![BLE Channel 33 decoding with 1 MHz heterodyne after decimation ](/assets/polyphase/ble/chan_33_time_plot_het_post.svg)](/assets/polyphase/ble/chan_33_time_plot_het_post.svg)
-*(Click to enlarge)*
 
 # Derivation of Post-Decimation Offset Correction
 
@@ -265,7 +265,7 @@ y_c[n] = \underbrace{e^{j \omega_{\Delta} Mn} }_\text{output rotator}
          \sum_{m=0}^{M-1}  e^{j \frac{2 \pi}{M} c \, m}  \sum_{k=0}^{N-1} h[kM + m] \; x'[(n - k)M - m] \; e^{j \omega_{\Delta} (- kM - m)}  
 $$
 
-Now extract a term that only depends on polyphase variable $$k$$:
+Now extract a term that only depends on polyphase variable $$m$$:
 
 $$
 y_c[n] = e^{j \omega_{\Delta} Mn} \sum_{m=0}^{M-1}  
@@ -287,7 +287,7 @@ $$
 
 There are 3 additional terms now:
 
-* all the filter coefficients are now modified by a filter adjustment term $$ e^{-j \omega_{\Delta} (kM)} $$.
+* all the filter coefficients are modified by a filter adjustment term $$ e^{-j \omega_{\Delta} (kM)} $$.
 * the output of each sub-filter is multiplied by a phase adjustment term $$ e^{-j \omega_{\Delta} m}$$.
 * all outputs of the IFFT are subjected to complex heterodyne $$ e^{j \omega_{\Delta} Mn}$$.
 
