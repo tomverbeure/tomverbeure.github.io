@@ -367,13 +367,13 @@ multiplication by $$M$$:
 The filter coefficient adjustment:
 
 $$
-e^{-j \omega_\Delta (kM)} = e^{-j \frac{\pi}{M} (kM)} = e^{-j \pi kM } = (-1)^k
+e^{-j \omega_\Delta (kM)} = e^{-j \frac{\pi}{M} (kM)} = e^{-j \pi k } = (-1)^k
 $$
 
 The output rotator:
 
 $$
-e^{-j \omega_\Delta (Mn)} = e^{-j \frac{\pi}{M} (Mn)} = e^{-j \pi Mn } = (-1)^n
+e^{-j \omega_\Delta (Mn)} = e^{-j \frac{\pi}{M} (Mn)} = e^{-j \pi n } = (-1)^n
 $$
 
 Awesome!  The general equation has been simplified to this:
