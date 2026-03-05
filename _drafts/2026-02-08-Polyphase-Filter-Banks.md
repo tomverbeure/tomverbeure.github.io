@@ -66,26 +66,163 @@ one of the reasons why.
 We can also see some symmetry around the 2441 MHz line. For example, there's a short burst around
 1.1 ms at 2415 Mhz and weaker version 2467 MHz. This weaker version isn't real either, but a
 spectral mirrom image that's cause by imbalance between the I and the Q channel: their phase shift
-might not be exactly 90 degrees or they might have a slight different gain on their way to the ADCs.
+might not be exactly 90 degrees or they might have a slight different gain on their way to the 
+ADCs.[^gram_schmidt]
 This is another topics that harris talks about: if possible, use a single double-speed ADC and do
-all the I/Q handling in the mathematically perfect digital domain.
+all the I/Q handling in the mathematically perfect digital domain. 
+
+[^gram_schmidt]: You can use [Gram-Schmidt decorrelation](https://en.wikipedia.org/wiki/Gram%E2%80%93Schmidt_process)
+                 to fix the I/Q vectors, supposedly, but I haven't explored that yet.
+
+A recording of 96 Msps complex samples covers 48 channels of 2 MHz. Since BLE only has 40 active channels,
+we have a little bit too much data, but that's ok. In the waterfall plot below, I've added separators that
+the individual channels. The 2441 MHz line is now obstructed.
 
 [![BLE Waterfall Plot with Channels](/assets/polyphase/ble/ble_input_data_waterfall_bars.png)](/assets/polyphase/ble/ble_input_data_waterfall_bars.png)
 *(Click to enlarge)*
 
-[![BLE Channel 33 decoding with 1 MHz heterodyne before channelization](/assets/polyphase/ble/chan_33_time_plot_het_pre.svg)](/assets/polyphase/ble/chan_33_time_plot_het_pre.svg)
+In the previous blog post, we operated under the assumption that channel center frequencies were located
+at a multiple of the decimated sample rate:
+
+$$
+    F_c = \frac{F_s}{M} c, \quad c = 0, 1, \dots, M-1
+$$
+
+That's not the case here. Instead, we have the following situation:
+
+$$
+    F_c = \frac{F_s}{M} c + \frac{1}{2M}, \quad c = 0, 1, \dots, M-1
+$$
+
+Concretely, instead of channel center frequencies at -2, 0, 2, 4, ... MHz, they are located at
+-3, -1, 1, 3, 5, ... MHz. Having the center frequency offset at exacty half the channel width is
+something we can exploit later, and harris spends the good part of his video talking about the
+special case where the M is an odd number, but I will start by assuming the generic case where
+the frequency offset can be anything, and later apply simplications.
+
+# Input Complex Heterodyne
+
+The simplest way to align the center channel frequencies to an integer multiple of the output
+sample rate is to remove the offset with a complex heterodyne on the input signal.
+
+Like this:
+
+$$
+x[n] = x'[n] \, e^{j \omega_\Delta n}
+$$
+
+This works, of course, but it undoes all the effort from last blog post where we tried very
+hard to not do anything at the input sample rate.
+
+Still, let's do it anyway and see what kind of result we get.
+
+I've become smarter about using NumPy functions which makes code a whole lot shorter, though not
+necessarily more readable. The source code to do the input heterodyne and the
+polyphase channelizer is below. I've stripped some of the comments for brevity, but
+check out the code in GitHub repo for more details.
+
+```python
+n = np.arange(len(ble_input), dtype=np.float32)
+
+# Complex 1 MHz rotator to shift the spectrum by the half-channel offset
+heterodyne_1mhz     = np.exp(1j * 2.0 * np.pi * channel_offset_hz / sample_rate_hz * n).astype(np.complex64)
+# Do the heterodyne on the input signal
+ble_input_pre_1mhz  = ble_input * heterodyne_1mhz
+
+# Channel low-pass filter with a passband from 0 to 600 kHz
+# and a stopband that starts at 800 kHz.
+h_lpf = create_remez_lowpass_fir(
+    input_sample_rate_hz     = sample_rate_hz,
+    passband_hz              = 600e3,
+    passband_ripple_db       = 1.0,
+    stopband_hz              = 800e3,
+    stopband_attenuation_db  = 50.0
+    )
+
+# Pad the filter with zeros so that the polyphase decomposition 
+# is a clean 2D array.
+h_lpf   = np.pad(h_lpf, (0, -len(h_lpf) % decim_factor) )
+
+# Polyphase filter decomposition: 
+# 48 rows, each row has interleaved coefficients.
+h_lpf_poly  = np.reshape(
+        h_lpf, ( (len(h_lpf) // decim_factor), decim_factor) 
+    ).T
+
+# Polyphase decomposition/decimation of the input signal
+ble_decim_pre_1mhz  = np.flipud(
+    np.reshape(
+        ble_input_pre_1mhz,
+        ((len(ble_input_pre_1mhz) // decim_factor), decim_factor),
+    ).T
+)
+
+# Calculate the output of all polyphase filters
+h_poly_out_pre_1mhz = np.array(
+        [np.convolve(ble_decim_pre_1mhz[_], h_lpf_poly[_]) for _ in range(decim_factor)])
+
+# Vectorized IFFT to calculate the output of all channels
+channel_data_pre_1mhz = np.fft.ifft(h_poly_out_pre_1mhz, axis=0).astype(np.complex64)
+```
+
+After extracting the data from channel 33[^33] between 1.14 ms and 1.24 ms, we get the following:
+
+[^33]: Channel zero is located at 2441 MHz. Channel numbers increment up to 24 the top frequency
+       is reached, after which the frequency rolls over to the bottom and channel numbers continue
+       to increment. That's how you end up with 33.
+
+[![Channel 33 I/Q time plot](/assets/polyphase/ble/chan_33_time_plot_het_pre_iq.svg)](/assets/polyphase/ble/chan_33_time_plot_het_pre_iq.svg)
 *(Click to enlarge)*
+
+The start and stop of a packet can be derived from the amplitude of the I/Q vector (green).
+And the I/Q data clearly has some structure in it.
+
+BLE uses 
+[Gaussian frequency shift keying (GFSK)](https://en.wikipedia.org/wiki/Frequency-shift_keying#Gaussian_frequency-shift_keying).
+Like ordinary [frequency shift keying (FSK)](https://en.wikipedia.org/wiki/Frequency-shift_keying), 
+a 0 and a 1 are coded with slightly different frequencies, but the transistion between them is just
+a bit smoother for GFSK. 
+
+Frequency is the derivative of the phase. Since I and Q are available, you can calculate the
+phase as follows:
+
+$$
+\phi[n] = \arctan(\frac{q[n]}{i[n]})
+$$
+
+The derivative is simply the delta between consecutive phase.
+
+In Python, we can demodulate a GFSK signal like this:
+
+```python
+angle = np.unwrap(np.angle(data))
+d_angle = angle[:-1] - angle[1:]
+```
+
+Here's the result:
+
+[![Channel 33 GFSK time plot](/assets/polyphase/ble/chan_33_time_plot_het_pre_gfsk.svg)](/assets/polyphase/ble/chan_33_time_plot_het_pre_gfsk.svg)
+*(Click to enlarge)*
+
+
+A transmission starts with a 16-symbol 1010101010101010 sync word, followed by data.
+
+Cool! But it cost a table with 48 rotator values that's fed into a complex multiplier at the input sample rate. 
+In this example, the input samples are already complex, but if they were real, the input heterodyne also
+forces all filter bank calculations to become complex.
+
+Can we do better?
 
 [![BLE Channel 33 decoding with 1 MHz heterodyne after decimation ](/assets/polyphase/ble/chan_33_time_plot_het_post.svg)](/assets/polyphase/ble/chan_33_time_plot_het_post.svg)
 *(Click to enlarge)*
 
-# Derivation
+# Derivation of Post-Decimation Offset Correction
 
-![polyphase, IFFT](/assets/polyphase/ble/ble-polyphase_ifft.svg)
+Here's the standard polyphase channelizer pipeline from last blog post:
 
-![Input heterodyne, polyphase, IFFT](/assets/polyphase/ble/ble-pre_polyphase_ifft.svg)
+![Standard polyphase channelizer](/assets/polyphase/ble/ble-polyphase_ifft.svg)
 
-Starting formula:
+And here's the mathematical description of the pipeline, for 3 channels and a filter with 9 coefficients:
 
 $$
 \begin{alignedat}{0}
@@ -99,50 +236,191 @@ y_c[n+1]  & = & e^{j \frac{2 \pi}{3} c \, 0} & ( & h[0] & x[3n+3] & + &  h[3] & 
 \end{alignedat}
 $$
 
+Let's generalize this formula to $$M$$ channels and $$N$$ filter taps:
+
 $$
-y_c[n] = \sum_{m=0}^{M-1}  e^{j \frac{2 \pi}{M} c \, m}  \sum_{k=0}^{N-1} h[kM + m] \; x[Mn - kM - m] \\
 y_c[n] = \sum_{m=0}^{M-1}  e^{j \frac{2 \pi}{M} c \, m}  \sum_{k=0}^{N-1} h[kM + m] \; x[(n - k)M - m] \\
 $$
 
-Input heterodyne:
+Now substitute input $$x[n]$$ with an input signal to which a complex heterodyne has been applied.
 
 $$
-x[n] = x'[n] \; e^{j \omega_{\Delta} n}  
+x[n] = x'[n] \; e^{j \omega_{\Delta} n} 
 $$
 
-Substitute $$x[n]$$:
+![Input heterodyne + polyphase channelizer](/assets/polyphase/ble/ble-pre_polyphase_ifft.svg)
 
 $$
-y_c[n] = \sum_{m=0}^{M-1}  e^{j \frac{2 \pi}{M} c \, m}  \sum_{k=0}^{N-1} h[kM + m] \; x'[(n - k)M - m] \; e^{j \omega_{\Delta} ((n - k)M - m)}  
+y_c[n] = \sum_{m=0}^{M-1}  e^{j \frac{2 \pi}{M} c \, m}  \sum_{k=0}^{N-1} h[kM + m] \; x'[(n - k)M - m] \; 
+         \underbrace{e^{j \omega_{\Delta} ((n - k)M - m)}}_\text{offset adjust rotator}
 $$
 
-Extract free-running post-rotator:
+A frequency offset adjustment rotator has been introduced. 
+
+We can split it up this exponential, extract a free-running post-rotator that only depends on decimated 
+sample number $$nM$$, and move it all the way to the front:
 
 $$
-y_c[n] = e^{j \omega_{\Delta} Mn} \sum_{m=0}^{M-1}  e^{j \frac{2 \pi}{M} c \, m}  \sum_{k=0}^{N-1} h[kM + m] \; x'[(n - k)M - m] \; e^{j \omega_{\Delta} (- kM - m)}  
+y_c[n] = \underbrace{e^{j \omega_{\Delta} Mn} }_\text{output rotator}
+         \sum_{m=0}^{M-1}  e^{j \frac{2 \pi}{M} c \, m}  \sum_{k=0}^{N-1} h[kM + m] \; x'[(n - k)M - m] \; e^{j \omega_{\Delta} (- kM - m)}  
 $$
 
-Extract per phase constant:
+Now extract a term that only depends on polyphase variable $$k$$:
 
 $$
-y_c[n] = e^{j \omega_{\Delta} Mn} \sum_{m=0}^{M-1}  e^{-j \omega_{\Delta} m} e^{j \frac{2 \pi}{M} c \, m}  \sum_{k=0}^{N-1} h[kM + m] \; x'[(n - k)M - m] \; e^{j \omega_{\Delta} (- kM)}  
+y_c[n] = e^{j \omega_{\Delta} Mn} \sum_{m=0}^{M-1}  
+         \underbrace{e^{-j \omega_{\Delta} m} }_\text{phase adjustment}
+         e^{j \frac{2 \pi}{M} c \, m}  \sum_{k=0}^{N-1} h[kM + m] \; x'[(n - k)M - m] \; e^{j \omega_{\Delta} (- kM)}  
 $$
 
-Coefficient adjustment:
+Rearrange the remaining exponential that is different for each filter coefficient:
 
 $$
-y_c[n] = e^{j \omega_{\Delta} Mn} \sum_{m=0}^{M-1}  e^{-j \omega_{\Delta} m} e^{j \frac{2 \pi}{M} c \, m}  \sum_{k=0}^{N-1} h[kM + m] \; e^{-j \omega_{\Delta} (kM)}  \; x'[(n - k)M - m]
-$$
-
-
-$$
-y_c[n] = \underbrace{e^{j \omega_{\Delta} Mn}}_{\text{offset output rotator}} 
+y_c[n] = \underbrace{e^{j \omega_{\Delta} Mn}}_{\text{output rotator}} 
          \sum_{m=0}^{M-1}  
-         \underbrace{e^{-j \omega_{\Delta} m}}_{\text{offset phase adjust}} 
+         \underbrace{e^{-j \omega_{\Delta} m}}_{\text{phase adjustment}} 
          \underbrace{e^{j \frac{2 \pi}{M} c \, m}}_{\text{IFFT}}  
          \sum_{k=0}^{N-1} h[kM + m]  
-         \underbrace{e^{-j \omega_{\Delta} (kM)}}_{\text{filter offset adjust}}  \; x'[(n - k)M - m]
+         \underbrace{e^{-j \omega_{\Delta} (kM)}}_{\text{filter adjustment}}  \; x'[(n - k)M - m]
 $$
+
+
+There are 3 additional terms now:
+
+* all the filter coefficients are now modified by a filter adjustment term $$ e^{-j \omega_{\Delta} (kM)} $$.
+* the output of each sub-filter is multiplied by a phase adjustment term $$ e^{-j \omega_{\Delta} m}$$.
+* all outputs of the IFFT are subjected to complex heterodyne $$ e^{j \omega_{\Delta} Mn}$$.
+
+None of this is ideal, but the first 2 terms are not dependent on the sample number and can be baked 
+into the design. Meanwhile the rotator at the end not only runs at a rate that is M times lower, but the 
+phase step of the rotator is also M times larger.
+
+The diagram looks like this:
+
+[![Polyphase channelizer with decimated offset adjustment](/assets/polyphase/ble/ble-polyphase_ifft_post.svg)](/assets/polyphase/ble/ble-polyphase_ifft_post.svg)
+*(Click to enlarge)*
+
+In Python, we can use this code:
+
+```python
+# No more input heterodyne. Immediately decimate the input signal
+ble_decim   = np.flipud(
+    np.reshape(
+        ble_input,
+        ((len(ble_input) // decim_factor), decim_factor),
+    ).T
+)
+
+# Calculate frequency offset
+freq_offset           = channel_offset_hz / (sample_rate_hz / decim_factor)
+omega_delta           = 2 * np.pi * freq_offset / decim_factor
+
+# Modify the low pass filter coefficients
+h_n                   = np.arange(len(h_lpf_poly[0]), dtype=np.float32)
+h_lpf_poly_adj        = np.exp(-1j * omega_delta * decim_factor * h_n).astype(np.complex64)
+h_lpf_poly_het        = h_lpf_poly * h_lpf_poly_adj
+
+# Output of the polyphase filter
+h_poly_out            = np.array([np.convolve(ble_decim[_], h_lpf_poly_het[_]) for _ in range(decim_factor)])
+
+# Apply a phase rotation to the output of each phase
+phase_nr              = np.arange(decim_factor, dtype=np.float32)
+h_phase_adj           = np.exp(-1j * omega_delta * phase_nr).astype(np.complex64)
+h_poly_out_phase_adj  = h_poly_out * h_phase_adj[:, None]
+
+# IFFT...
+channel_data          = np.fft.ifft(h_poly_out_phase_adj, axis=0).astype(np.complex64)
+
+# Output rotator
+sample_nr             = np.arange(channel_data.shape[1], dtype=np.float32)
+heterodyne_1mhz_decim = np.exp(1j * omega_delta * decim_factor * sample_nr).astype(np.complex64)
+
+# Heterodyne all channels
+channel_data_1mhz_post  = channel_data * heterodyne_1mhz_decim[None, :]
+```
+
+The channel output samples are not identical to the previous case: there is a phase shift to 
+the output I/Q samples. But after GFSK demodulation, the result is the same:
+
+[![BLE Channel 33 decoding with 1 MHz heterodyne after decimation ](/assets/polyphase/ble/chan_33_time_plot_het_post.svg)](/assets/polyphase/ble/chan_33_time_plot_het_post.svg)
+*(Click to enlarge)*
+
+All of this seems like a whole lot of effort. We are running all operations at the output
+sample rate, but the number of multiplications per output sample is now higher than the case with 
+the input heterodyne! 
+
+But remember: this is for the generic case, with random frequency offset. Let's fix that.
+
+# Simplifying for the Half-Channel Offset Case
+
+As mentioned at the start of this blog post, it's common to have a frequency offset that
+equal to half the channel width:
+
+$$
+F_\Delta = \frac{F_s}{2 M} \\
+\omega_\Delta = \frac{\omega}{2 M} = \frac{2 \pi}{2 M} = \frac{\pi}{M}
+$$
+
+The crucial observation is that 2 of our adjustment exponentionals feature a 
+multiplication by $$M$$:
+
+The filter coefficient adjustment:
+
+$$
+e^{-j \omega_\Delta (kM)} = e^{-j \frac{\pi}{M} (kM)} = e^{-j \pi kM } = {-1}^k
+$$
+
+The output rotator:
+
+$$
+e^{-j \omega_\Delta (Mn)} = e^{-j \frac{\pi}{M} (Mn)} = e^{-j \pi Mn } = {-1}^n
+$$
+
+Awesome!  The general equation has been simplified to this:
+
+$$
+y_c[n] = (-1)^n
+         \sum_{m=0}^{M-1}  
+         \underbrace{e^{-j \omega_{\Delta} m}}_{\text{phase adjustment}} 
+         \underbrace{e^{j \frac{2 \pi}{M} c \, m}}_{\text{IFFT}}  
+         \sum_{k=0}^{N-1} h[kM + m]  
+         (-1)^k
+         \; x'[(n - k)M - m]
+$$
+
+The filter coefficients are real again and the complex multiplier for the output rotator
+can be replaced by logic that just flips the sign bit.
+
+[![Post-decimation frequency adjust for half-bin offset](/assets/polyphase/ble/ble-polyphase_ifft_post_half_bin.svg)](/assets/polyphase/ble/ble-polyphase_ifft_post_half_bin.svg)
+*(Click to enlarge)*
+
+
+This is so much better! But it's *still* possible to do better, though the requirements
+become even stricter.
+
+# The Odd Case of an Odd Number of Channels
+
+**Ignore this section for now. It's wrong, but it should work eventually.**
+
+To get rid of the complex filter output adjustment, we need to make it either 1 or -1.
+
+$$
+e^{-j \omega_\Delta m} = 1, -1
+$$
+
+So far, we've only considered the case where the offset is the minimum required: smaller
+than the width of one channel. But that doesn't have to be the case: instead of shifting
+by half the width of a channel, we can shift by half the channel width plus any number
+of full channel widths. Like this:
+
+$$
+\omega_\Delta = \frac{\pi}{2M} + 2 \pi p \\ 
+\omega_\Delta = \frac{\pi}{2M} + \frac{2 \pi 2M}{2M} p \\
+\omega_\Delta = \frac{\pi}{2M} + \frac{2 \pi 2M-1 + 1}{2M} p \\
+\omega_\Delta = \frac{\pi}{2M} + \frac{2 \pi 2M-1}{M} p + \frac{2 \pi}{2M} p \\
+$$
+
+When applied to the filter output adjustment term, the second always reduces to 1.
 
 
 # References
