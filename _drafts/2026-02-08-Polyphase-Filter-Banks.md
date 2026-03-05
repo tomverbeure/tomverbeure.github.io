@@ -210,7 +210,7 @@ Here's the result:
 A BLE packet starts with a 16-symbol 1010101010101010 sync word, followed by data. This definitely looks
 like a valid packet.
 
-Cool! But it costs us a table with 48 rotator values are fed into a complex multiplier, at the input sample rate. 
+Cool! But it costs us a table with 48 rotator values that are fed into a complex multiplier, at the input sample rate. 
 In this example, the input samples are already complex, but if they were real, the input heterodyne also
 forces all filter bank calculations to become complex.
 
@@ -273,7 +273,7 @@ y_c[n] = e^{j \omega_{\Delta} Mn} \sum_{m=0}^{M-1}
          e^{j \frac{2 \pi}{M} c \, m}  \sum_{k=0}^{N-1} h[kM + m] \; x'[(n - k)M - m] \; e^{j \omega_{\Delta} (- kM)}  
 $$
 
-Rearrange the remaining exponential that is different for each filter coefficient:
+Rearrange the remaining exponential that is different for each filter coefficient $$k$$:
 
 $$
 y_c[n] = \underbrace{e^{j \omega_{\Delta} Mn}}_{\text{output rotator}} 
@@ -367,13 +367,13 @@ multiplication by $$M$$:
 The filter coefficient adjustment:
 
 $$
-e^{-j \omega_\Delta (kM)} = e^{-j \frac{\pi}{M} (kM)} = e^{-j \pi kM } = {-1}^k
+e^{-j \omega_\Delta (kM)} = e^{-j \frac{\pi}{M} (kM)} = e^{-j \pi kM } = (-1)^k
 $$
 
 The output rotator:
 
 $$
-e^{-j \omega_\Delta (Mn)} = e^{-j \frac{\pi}{M} (Mn)} = e^{-j \pi Mn } = {-1}^n
+e^{-j \omega_\Delta (Mn)} = e^{-j \frac{\pi}{M} (Mn)} = e^{-j \pi Mn } = (-1)^n
 $$
 
 Awesome!  The general equation has been simplified to this:
