@@ -108,7 +108,7 @@ $$
 That's not the case here. Instead, we have the following situation:
 
 $$
-    F_c = \frac{F_s}{M} c + \frac{1}{2M}, \quad c = -\frac{M}{2}, \dots, -1, 0, 1, \dots, \frac{M}{2}-1
+    F_c = \frac{F_s}{M} c + \frac{F_s}{2M}, \quad c = -\frac{M}{2}, \dots, -1, 0, 1, \dots, \frac{M}{2}-1
 $$
 
 ![Half-bin channel center frequency offset](/assets/polyphase/ble/ble-half_bin_offset.svg)
@@ -206,7 +206,7 @@ Frequency is the derivative of the phase. Since I and Q are available, you can c
 phase as follows:
 
 $$
-\phi[n] = \arctan(\frac{q[n]}{i[n]})
+\phi[n] = \text{atan2}(q[n],i[n])
 $$
 
 The derivative is simply the delta between consecutive phase samples.
@@ -253,7 +253,7 @@ y_c[n+1]  & = & e^{j \frac{2 \pi}{3} c \, 0} & ( & h[0] & x[3n+3] & + &  h[3] & 
 \end{alignedat}
 $$
 
-Let's generalize this formula to $$M$$ channels and $$N$$ filter taps:
+Let's generalize this formula to $$M$$ channels and $$N$$ filter taps per phase:
 
 $$
 y_c[n] = \sum_{m=0}^{M-1}  
@@ -394,7 +394,7 @@ $$
 The output rotator:
 
 $$
-e^{-j \omega_\Delta (Mn)} = e^{-j \frac{\pi}{M} (Mn)} = e^{-j \pi n } = (-1)^n
+e^{-j \omega_\Delta (Mn)} = e^{j \frac{\pi}{M} (Mn)} = e^{j \pi n } = (-1)^n
 $$
 
 Awesome!  The general equation has been simplified to this:
@@ -492,7 +492,7 @@ $$
 r = M/4   \\
 \omega_\Delta = \frac{ 2 \pi }{M} \frac{M}{4} \\
 \omega_\Delta = \frac{\pi}{2}  \\
-e^{-j \omega_\Delta m} = e^{-j \frac{\pi}{2} m} = 1, j, -1, -j, 1, \dots
+e^{-j \omega_\Delta m} = e^{-j \frac{\pi}{2} m} = 1, -j, -1, j, 1, \dots
 $$
 
 We didn't get rid of the complex term, but we can implement these factors with a sign flip
