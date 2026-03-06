@@ -384,6 +384,7 @@ Other blog posts in this series:
 
 * [Complex Heterodynes Explained](/2026/02/07/Complex-Heterodyne.html)
 * [The Stunning Efficiency and Beauty of the Polyphase Channelizer](/2026/02/16/Polyphase-Channelizer.html)
+* [Polyphase Channelizers with Frequency Offset - a Bluetooth LE Example](/2026/03/05/Polyphase-Channelizer-with-Offset.html)
 
 # Footnotes
 
