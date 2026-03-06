@@ -86,16 +86,19 @@ In the previous blog post, we operated under the assumption that channel center 
 at a multiple of the decimated sample rate:
 
 $$
-    F_c = \frac{F_s}{M} c, \quad c = 0, 1, \dots, M-1
+    F_c = \frac{F_s}{M} c, \quad c = -\frac{M}{2}, \dots, -1, 0, 1, \dots, \frac{M}{2}-1
 $$
+
+![No channel center frequency offset](/assets/polyphase/ble/ble-dc_offset.svg)
 
 That's not the case here. Instead, we have the following situation:
 
 $$
-    F_c = \frac{F_s}{M} c + \frac{1}{2M}, \quad c = 0, 1, \dots, M-1
+    F_c = \frac{F_s}{M} c + \frac{1}{2M}, \quad c = -\frac{M}{2}, \dots, -1, 0, 1, \dots, \frac{M}{2}-1
 $$
 
-**Add a drawing of channel spectrum with offset**
+![Half-bin channel center frequency offset](/assets/polyphase/ble/ble-half_bin_offset.svg)
+
 
 Concretely, instead of channel center frequencies at -2, 0, 2, 4, ... MHz, they are located at
 -3, -1, 1, 3, 5, ... MHz. Having the center frequency offset at exacty half the channel width is
@@ -105,13 +108,14 @@ the frequency offset can be anything, and later apply simplications.
 
 # Input Complex Heterodyne
 
-The simplest way to align the center channel frequencies to an integer multiple of the output
+The easiest way to align the center channel frequencies to an integer multiple of the output
 sample rate is to remove the offset with a complex heterodyne on the input signal.
 
 Like this:
 
 $$
-x[n] = x'[n] \, e^{j \omega_\Delta n}
+\omega_\Delta = 2 \pi \frac{F_\text{offset}}{F_s} \\
+x[n] = x'[n] \, e^{j \omega_\Delta n} \\
 $$
 
 This works, of course, but it undoes all the effort from last blog post where we tried very
@@ -119,10 +123,10 @@ hard to not do anything at the input sample rate.
 
 Still, let's do it anyway and see what kind of result we get.
 
-I've become smarter about using NumPy functions which makes the code a whole lot shorter, though not
-necessarily more readable. The source code to do the input heterodyne and the
+*I've become smarter about using NumPy functions which makes the code more concise and
+efficient, but not necessarily more readable. The source code to do the input heterodyne and the
 polyphase channelizer is below. I've stripped some of the comments for brevity, but
-check out the code in the GitHub repo for more details.
+check out the code in the GitHub repo for more details.*
 
 ```python
 n = np.arange(len(ble_input), dtype=np.float32)
@@ -239,10 +243,12 @@ $$
 Let's generalize this formula to $$M$$ channels and $$N$$ filter taps:
 
 $$
-y_c[n] = \sum_{m=0}^{M-1}  e^{j \frac{2 \pi}{M} c \, m}  \sum_{k=0}^{N-1} h[kM + m] \; x[(n - k)M - m] \\
+y_c[n] = \sum_{m=0}^{M-1}  
+         \underbrace{ e^{j \frac{2 \pi}{M} c \, m} }_\text{IFFT}
+         \sum_{k=0}^{N-1} h[kM + m] \; x[(n - k)M - m] \\
 $$
 
-Now substitute input $$x[n]$$ with an input signal to which a complex heterodyne has been applied.
+Now substitute input $$x[n]$$ with an input signal to which a complex heterodyne has been applied:
 
 $$
 x[n] = x'[n] \; e^{j \omega_{\Delta} n} 
@@ -257,7 +263,7 @@ $$
 
 A frequency offset adjustment rotator has been introduced. 
 
-We can split it up this exponential, extract a free-running post-rotator that only depends on decimated 
+We can split it up this exponential, extract a free-running output rotator that only depends on decimated 
 sample number $$nM$$, and move it all the way to the front:
 
 $$
@@ -273,7 +279,7 @@ y_c[n] = e^{j \omega_{\Delta} Mn} \sum_{m=0}^{M-1}
          e^{j \frac{2 \pi}{M} c \, m}  \sum_{k=0}^{N-1} h[kM + m] \; x'[(n - k)M - m] \; e^{j \omega_{\Delta} (- kM)}  
 $$
 
-Rearrange the remaining exponential that is different for each filter coefficient $$k$$:
+Finally, rearrange the remaining exponential that is different for each filter coefficient $$k$$:
 
 $$
 y_c[n] = \underbrace{e^{j \omega_{\Delta} Mn}}_{\text{output rotator}} 
@@ -288,7 +294,7 @@ $$
 There are 3 additional terms now:
 
 * all the filter coefficients are modified by a filter adjustment term $$ e^{-j \omega_{\Delta} (kM)} $$.
-* the output of each sub-filter is multiplied by a phase adjustment term $$ e^{-j \omega_{\Delta} m}$$.
+* the output of each phase sub-filter is multiplied by a phase adjustment term $$ e^{-j \omega_{\Delta} m}$$.
 * all outputs of the IFFT are subjected to complex heterodyne $$ e^{j \omega_{\Delta} Mn}$$.
 
 None of this is ideal, but the first 2 terms are not dependent on the sample number and can be baked 
@@ -345,7 +351,7 @@ the output I/Q samples. But after GFSK demodulation, the result is the same:
 [![BLE Channel 33 decoding with 1 MHz heterodyne after decimation ](/assets/polyphase/ble/chan_33_time_plot_het_post.svg)](/assets/polyphase/ble/chan_33_time_plot_het_post.svg)
 *(Click to enlarge)*
 
-All of this seems like a whole lot of effort. We are running all operations at the output
+This seems like a whole lot of effort for little benefit. We are running all operations at the output
 sample rate, but the number of multiplications per output sample is now higher than the case with 
 the input heterodyne! 
 
@@ -357,14 +363,14 @@ As mentioned at the start of this blog post, it's common to have a frequency off
 equal to half the channel width:
 
 $$
-F_\Delta = \frac{F_s}{2 M} \\
-\omega_\Delta = \frac{\omega}{2 M} = \frac{2 \pi}{2 M} = \frac{\pi}{M}
+F_\text{offset} = \frac{F_s}{2 M} \\
+\omega_\Delta = 2 \pi \frac{F_\text{offset}}{F_s} = \frac{2 \pi}{2 M} = \frac{\pi}{M}
 $$
 
-The crucial observation is that 2 of our adjustment exponentionals feature a 
+A crucial observation is that 2 of our adjustment exponentionals feature a 
 multiplication by $$M$$:
 
-The filter coefficient adjustment:
+The filter coefficients adjustment:
 
 $$
 e^{-j \omega_\Delta (kM)} = e^{-j \frac{\pi}{M} (kM)} = e^{-j \pi k } = (-1)^k
@@ -400,27 +406,124 @@ become even stricter.
 
 # The Odd Case of an Odd Number of Channels
 
-**Ignore this section for now. It's wrong, but it should work eventually.**
-
-To get rid of the complex filter output adjustment, we need to make it either 1 or -1.
+We are currently still stuck with the per-phase complex rotator:
 
 $$
-e^{-j \omega_\Delta m} = 1, -1
+e^{-j \omega_\Delta m}
 $$
 
-So far, we've only considered the case where the offset is the minimum required: smaller
-than the width of one channel. But that doesn't have to be the case: instead of shifting
-by half the width of a channel, we can shift by half the channel width plus any number
-of full channel widths. Like this:
+When the channel center frequencies are offset by half the channel width, we've so far
+only considered the case where the correction offset is half the channel bandwidth:
 
 $$
-\omega_\Delta = \frac{\pi}{2M} + 2 \pi p \\ 
-\omega_\Delta = \frac{\pi}{2M} + \frac{2 \pi 2M}{2M} p \\
-\omega_\Delta = \frac{\pi}{2M} + \frac{2 \pi 2M-1 + 1}{2M} p \\
-\omega_\Delta = \frac{\pi}{2M} + \frac{2 \pi 2M-1}{M} p + \frac{2 \pi}{2M} p \\
+\omega_\Delta = \frac{\pi}{M}
 $$
 
-When applied to the filter output adjustment term, the second always reduces to 1.
+Relative to the full channel bandwidth of $$\frac{2 \pi}{M}$$, this offset is $$r=0.5$$. 
+
+$$
+\omega_\Delta = \frac{ 2 \pi }{M} r
+$$
+
+
+But $$r$$ doesn't have to be 0.5: we can use any kind of offset, as long as the fractional
+part of the value is 0.5.
+
+For example, when $$r = 2.5 $$, the channelizer still works, but in addition to a fractional
+shift of half the channel width, there will be an additional shift of 2 full channels. An output
+sample that would go to channel $$k$$ for an offset of 0.5 will go to channel $$k+2$$ instead.
+Not the exactly the same result, but this reassigned output channel is just a minor bookkeeping
+issue.
+
+![Spectrum with integer channel offset of 2](/assets/polyphase/ble/ble-offset_of_2.5.svg)
+
+Let's see what happens when $$r=M/2$$.
+
+For even values of M, $$r$$ is an integer value, without the fractional 0.5 half-bin
+offset that we need:
+
+![Spectrum with even channels moved by M/2](/assets/polyphase/ble/ble-offsest_of_m_div2_even.svg)
+
+For odd values of M, we get the half-bin offset and all channels are moved by $$\frac{M-1}{2}$$ at the output.
+
+![Spectrum with integer channel offset of M/2 = 3.5](/assets/polyphase/ble/ble-offsest_of_m_div2_odd.svg)
+
+*harris shows this graphically with phase adjust values on a unity circle, but the principle is the same.*
+
+Let's see what $$r=M/2$$ does to the phase adjust term:
+
+$$
+r = M/2   \\
+\omega_\Delta = \frac{ 2 \pi }{M} \frac{M}{2} \\
+\omega_\Delta = \pi \\
+e^{-j \omega_\Delta m} = e^{-j \pi m} = (-1)^m
+$$
+
+Nothing changes for the 2 other terms: they still reduce to $$(-1)^k$$ and $$(-1)^n$$.
+
+So for odd values of M, we can do a half-bin frequency offset without an additional complex
+multiplier! Flipping the sign of some sub-filter output values and reassigning the output channel
+numbers is all that it takes.
+
+[![DSP pipeline for odd M and half-bin offset](/assets/polyphase/ble/ble-polyphase_ifft_odd_m.svg)](/assets/polyphase/ble/ble-polyphase_ifft_odd_m.svg)
+*(Click to enlarge)*
+
+# Reducing the Number of Phase Adjustment Values
+
+We can expand this for cases where M is even but its number of prime factors 2 is low.
+Let's do the exercise for $$M = 18$$ and select $$r = \frac{M}{4} = \frac{18}{4} = 4.5$$.
+
+$$
+r = M/4   \\
+\omega_\Delta = \frac{ 2 \pi }{M} \frac{M}{4} \\
+\omega_\Delta = \frac{\pi}{2}  \\
+e^{-j \omega_\Delta m} = e^{-j \frac{\pi}{2} m} = 1, j, -1, -j, 1, \dots
+$$
+
+We didn't get rid of the complex term, but we can implement these factors with a sign flip
+and/or swapping the real and imaginary part of the sub-filter outputs.
+
+In general, if the following it true:
+
+$$
+M = 2^p K, \quad K > 2
+$$
+
+Then you should choose $$r$$ as follows:
+
+$$
+r = \frac{M}{2^{p+1}} = \frac{K}{2}
+$$
+
+When $$p=0$$, you get the case where M is odd, and adjustment factors of $${-1,1}$$.
+When $$p=1$$, the adjustment factors are $${-1,1, j, -j}$$.
+For larger values of $$p$$, you can't avoid a complex multiplier, but at least you will
+limit the number adjustment values, which can be useful if you have 1 complex multiplier
+that serially processes all the sub-filter outputs before sending them to the IFFT.
+
+For the BLE example:
+
+$$
+M = 48 = 16 \cdot 3 = 2^4 \cdot 3 \\
+r =  \frac{48}{2^5} = 1.5
+$$
+
+With this configuration, the rotator warps around at phase 32, so we only need a
+lookup table of 32 instead of 48 if we choose $$r=0.5$$.[^lut]
+
+[^lut]: This lookup table can be reduced further by exploiting symmetry along the circle.
+
+# Conclusion
+
+Just like in previous blog post, we started with a straightfoward solution to a problem
+that worked, but that required significant mathematical resources. We then threw
+some math at it and added constraints to simplify the math even more.
+
+The outcome is once again appealing: for all decimation factors, the common case of
+shifting the spectrum by half the width of a channel requires at most one additional
+complex multiplication at the output of each sub-filter of the polyphase bank. And even
+this multiplication can be removed entirely if we can choose a decimation factor that
+is odd or if it only has one prime factor of 2.
 
 
 # References
