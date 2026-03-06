@@ -394,7 +394,7 @@ $$
 The output rotator:
 
 $$
-e^{-j \omega_\Delta (Mn)} = e^{j \frac{\pi}{M} (Mn)} = e^{j \pi n } = (-1)^n
+e^{j \omega_\Delta (Mn)} = e^{j \frac{\pi}{M} (Mn)} = e^{j \pi n } = (-1)^n
 $$
 
 Awesome!  The general equation has been simplified to this:
