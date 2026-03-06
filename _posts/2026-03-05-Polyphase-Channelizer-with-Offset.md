@@ -203,7 +203,11 @@ a 0 and a 1 are coded with slightly different frequencies, but the transistion b
 a bit smoother for GFSK. 
 
 Frequency is the derivative of the phase. Since I and Q are available, you can calculate the
-phase as follows:
+phase as follows[^atan2]:
+
+[^atan2]: The $$\text{atan2}(q,i)$$ function differs from $$\arctan(\frac{q}{i})$$ function in the
+          sense that the former works in all 4 quadrants whereas the latter only works in 1 quadrant.
+          For DSP, you almost always need the 4 quadrant version.
 
 $$
 \phi[n] = \text{atan2}(q[n],i[n])
