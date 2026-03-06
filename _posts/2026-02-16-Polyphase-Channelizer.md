@@ -835,6 +835,7 @@ Many thanks to [Joshua](https://joshuawise.com) for reviewing!
 
 * [Notes about Basic Polyphase Decimation Filters](/2026/01/25/Notes-on-Basic-Polyphase-Decimation.html)
 * [Complex Heterodynes Explained](/2026/02/07/Complex-Heterodyne.html)
+* [Polyphase Channelizers with Frequency Offset - a Bluetooth LE Example](/2026/03/05/Polyphase-Channelizer-with-Offset.html)
 
 **Source code**
 
