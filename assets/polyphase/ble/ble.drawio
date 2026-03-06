@@ -1,4 +1,4 @@
-<mxfile host="Electron" modified="2026-03-06T06:14:08.985Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.5.1 Chrome/112.0.5615.204 Electron/24.6.0 Safari/537.36" etag="9CfkLHAU0mQyUz2MPN5P" version="21.5.1" type="device" pages="10">
+<mxfile host="Electron" modified="2026-03-06T08:08:08.824Z" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/21.5.1 Chrome/112.0.5615.204 Electron/24.6.0 Safari/537.36" etag="Jq9QY1yaDglss7gTcF63" version="21.5.1" type="device" pages="10">
   <diagram id="73XCjJYUw_oeT1K0V9TI" name="dc_offset">
     <mxGraphModel dx="341" dy="220" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="1" shadow="0">
       <root>
@@ -1280,7 +1280,7 @@
     </mxGraphModel>
   </diagram>
   <diagram name="polyphase_ifft_odd_m" id="uXK8d8bTteO7Y4pskCa1">
-    <mxGraphModel dx="717" dy="461" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="1" shadow="0">
+    <mxGraphModel dx="1247" dy="802" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="1" shadow="0">
       <root>
         <mxCell id="NFV1gG4XzC0rKyFSeVKZ-0" />
         <mxCell id="NFV1gG4XzC0rKyFSeVKZ-1" parent="NFV1gG4XzC0rKyFSeVKZ-0" />
