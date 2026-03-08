@@ -16,10 +16,10 @@ a [Siglent SDS2304X](https://siglentna.com/product/sds2304x/).
 
 ![Siglent SDS2304X](/assets/siglent/SDS2000Xa.png)
 
-One feature that I have used quite a bit is the ability to take screenshots to add as 
-illustration to 
+One feature that I have used quite a bit is the ability to take screenshots to add
+illustrations to 
 [some of my blog posts](/2019/10/03/Pixel-Purse.html#audio-upload-interface). But I've
-always used them the primitive way: by saving the screenshot on a USB drive that's plugged
+always done this the primitive way by saving the screenshot on a USB drive that's plugged
 into the USB type A connector on the front of the scope.
 
 ![Scope Screenshot](/assets/pixel_purse/audio_digital_signal.png)
@@ -61,25 +61,26 @@ There are essentially 3 layers. They probably have an official name, but I've na
 * transport layer
 
     This is the higher level protocol that is used on top of the physical layer. When
-    using USB, this layer is almost always [USB Test and Measurement Class](https://sigrok.org/wiki/USBTMC) (USBTMC). 
+    using USB, this layer is almost always the [USB Test and Measurement Class](https://sigrok.org/wiki/USBTMC) (USBTMC). 
     For Ethernet, telnet, raw sockets or VXI-11 are commonly used. Some devices support
     the more modern [High Speed LAN Instrument Protocol](https://en.wikipedia.org/wiki/High_Speed_LAN_Instrument_Protocol) (HiSLIP).
 
-    In some cases, a name will cover the physical layer and the transport layer: GPIB/IEEE 488.1
-    nomenclature is used for both the physical layer and the transport layer.
+    In some cases, a name will cover the physical layer and the transport layer. For example, the 
+    GPIB/IEEE 488.1 nomenclature is used for both the physical layer and the transport layer.
 
 
 * command layer
 
     This specifies the syntax of commands that are issued over the transport layer. Most
-    equipment supports 
-    [SCPI (Standard Commands for Programmable Instruments, aka 'Skippy')](https://en.wikipedia.org/wiki/Standard_Commands_for_Programmable_Instruments). 
+    modern equipment supports 
+    [SCPI](https://en.wikipedia.org/wiki/Standard_Commands_for_Programmable_Instruments),
+    short for *Standard Commands for Programmable Instruments*, aka 'Skippy'.
 
     While SCPI is a standard at the lowest level, each brand has its own variant with it
     comes to commands and how they are formatted.
 
-If this sounds all simple enough, don't worry: it's not as clear-cut as I'm making it out to be.
-For example, USBTMC has a messaging system that has been borrowed almost entirely from GPIB/IEEE-488.2
+If this sounds all simple enough, it's not as clear-cut as I'm making it out to be.
+For example, USBTMC has a messaging system that has been borrowed almost entirely from GPIB/IEEE-488.
 
 To make things even more fun, the fact that these standards are well defined doesn't mean that
 equipment follows them. Rigol oscilloscopes are known to use a different TCP/IP port number than those
@@ -162,7 +163,7 @@ Various documentation, code, references:
 
 # LAN - TCP/IP Raw Sockets
 
-Instead of using a VXI-11 (which is a layer on top of TCP/IP sockets), some equipment doesn't bother and simply
+Instead of using VXI-11 (which is a layer on top of TCP/IP sockets), some equipment doesn't bother and simply
 transmits and receives commands and data using raw sockets.
 
 VXI-11 offers additional features such as abort and interrupt channels, but more often than not, this is not
@@ -176,8 +177,8 @@ you can issue multiple request before fetching the data.
 Telnet is a relatively thin layer over raw sockets: it's totally possible (and common) to `telnet` into a server
 which supports regular sockets and type the command that would otherwise be entered by a client.
 
-As a result, it's not clear to me whether there's a real difference in service on a scope that annouces raw
-sockets and telnet support over Ethernet.
+As a result, it's not clear to me whether there's a real difference in service on an instrument that announces raw
+sockets versus one that has telnet support over Ethernet.
 
 # LAN - HiSLIP
 
@@ -193,7 +194,8 @@ Ethernet channel.
 The official specification is 
 [here](https://www.ivifoundation.org/downloads/Protocol%20Specifications/IVI-6.1_HiSLIP-1.1-2011-02-24.pdf).
 
-I didn't run into any equipment with HiSLIP support (but I also didn't look for it!).
+Oscilloscopes like the gently priced [Keysight DSOZ204A](https://www.keysight.com/us/en/product/DSOZ204A/infiniium-oscilloscope-20-ghz.html), 
+$305k and up(!!!), have HiSLIP support, but there must be cheaper ones too.
 
 # LAN - VICP
 
@@ -211,7 +213,7 @@ References:
 # LAN - LXI Oversees LAN Instrumentation Standards
 
 The [Lan eXtensions for Instrumentation](https://en.wikipedia.org/wiki/LAN_eXtensions_for_Instrumentation)
-(LXI) consortium oversees a number of standards related to communication protocols for instrumentationa and
+(LXI) consortium oversees a number of standards related to communication protocols for instrumentation and
 data acquisition that use Ethernet.
 
 The list of standards can be found [here](https://lxistandard.org/Specifications/Specifications.aspx) and
@@ -219,14 +221,13 @@ includes the LXI Device Specification, HiSLIP, Clock Synchronization etc.
 
 # USB - USBTMC
 
-In the USB world, there are base USB specifications, which detail everything from the mechanical properties
+In the USB world, there are the base USB specifications which detail everything from the mechanical properties
 of connectors to overall protocol used to exchange data. And then there are numerous additional class
 specifications that describe how devices of a certain class are supposed to exchange data with a host.
 
 The [USB Test and Measurement Class Specification](https://sigrok.org/wiki/USBTMC) is the device class for, 
 well, test and measurement equipment.
-
-The [specification](https://www.usb.org/document-library/test-measurement-class-specification)
+The [specification document](https://www.usb.org/document-library/test-measurement-class-specification)
 is a suprisingly short 40 pages and more or less readable.
 
 It defines a number of endpoints (virtual data channels) that must be used to transmit and receive data, 
@@ -243,7 +244,7 @@ few simple ways to configure themselves.
 
 # GPIB / IEEE-488
 
-Going back all the way to the late 1960s, there was a time when all T&M equipment was equiped with
+Going back all the way to the late 1960s, there was a time when all T&M equipment had
 a GPIB interface. 
 
 Standarized as [IEEE-488](https://en.wikipedia.org/wiki/IEEE-488), it supports an 8-bit parallel bus 
@@ -259,8 +260,8 @@ of the IEEE-488.2 specification.
 One of the major factors behind its demise were the cost of the GPIB connector itself and the cable.
 
 Modern equipment has dropped the GPIB connector for LAN and USB ports, but you can still find plenty of
-GPIB equipment in the lab. (A kick-ass power supply or 6-digit multimeter from 30 years ago is very likely
-still a kick-ass power supply or multimeter today! And that's reflected in their prices on eBay.)
+GPIB equipment in the lab. A kick-ass power supply or 6-digit multimeter from 30 years ago is very likely
+still a kick-ass power supply or multimeter today! And that's reflected in their prices on eBay.
 
 If you want to control a GPIB-equiped device today, there are 
 [USB interface dongles](/2020/06/27/Tektronix-TDS420A-Remote-Control-over-GPIB.html#acquiring-a-usb-to-gpib-dongle) 
@@ -274,7 +275,7 @@ depends on your wallet or on your persistence in going through Google search res
 Resources: 
 * [Fundamentals of GPIB](https://www.youtube.com/watch?v=MH-srU3bPmU)
 
-    The first half of this 1988 video is suprisingly insructive!
+    The first half of this 1988 video is suprisingly instructive!
 
 * [What is GPIB / IEEE 488 Bus](https://www.electronics-notes.com/articles/test-methods/gpib-ieee-488-bus/what-is-gpib-ieee488.php) 
 
@@ -291,8 +292,8 @@ Resources:
 With all these different transport standards, you'd think it'll be a nightmare to remote control
 various instruments, but you'd be wrong (to a certain extent...)
 
-The IVI Foundation has the VISA API specification: an generic API that hides the lower level details
-of each transport protocol.
+The IVI Foundation has the [VISA API specification](https://www.ivifoundation.org/specifications/default.aspx): 
+an generic API that hides the lower level details of each transport protocol.
 
 There are commercial and open source implementation for different operating systems.
 
@@ -306,7 +307,7 @@ and prints the scope identification string over VXI-11:
 ```python
 import pyvisa
 
-rm = pyvisa.ResourceManager('@py')
+rm = pyvisa.ResourceManager()
 siglent = rm.open_resource("TCPIP::192.168.1.177")
 print(siglent.query('*IDN?'))
 ```
@@ -316,7 +317,7 @@ And this code does the same using USBTMC:
 ```python
 import pyvisa
 
-rm = pyvisa.ResourceManager('@py')
+rm = pyvisa.ResourceManager()
 siglent = rm.open_resource("USB0::0xF4EC::0xEE3A7:SDS2Xxxxxxxxxx")
 print(siglent.query('*IDN?'))
 ```
@@ -325,14 +326,20 @@ All it took was changing the resource path... Accessing a device over GPIB would
 
 Strictly speaking, `PyVISA-py` is the library that implements the Python VISA backends, while `PyVISA` is a
 utility library on top of that. In addition to `PyVISA-py`, `PyVISA` can also use the NI VISA or other
-backends.
+backends. On my Ubuntu Linux system, I installed the libraries by running:
+
+`pip3 install pyvisa pyvisa-py` 
+
+though depending on your preference, you could also use 
+
+`sudo apt install python3-pyvisa python3-pyvisa-py`
 
 # SCPI - The 'Universal' Command Language
 
 After going through all these transport layers, it finally time to go up one level in the stack.
 
 The [Standard Commands for Programmable Instruments](https://en.wikipedia.org/wiki/Standard_Commands_for_Programmable_Instruments)
-(SCPI aka 'skippy') standard is a specification from 1999 that's layered on top of the IEEE-488.2 command
+(SCPI) standard is a specification from 1999 that's layered on top of the IEEE-488.2 command
 specification. It can be downloaded [here](https://www.ivifoundation.org/docs/scpi-99.pdf).
 
 Let's to go straight to the source to see what SCPI is trying to achieve:
@@ -359,6 +366,33 @@ The only consistency here is that there is none.
 In practise, every kind of instrumentation equipment will need a vendor or even device specific driver 
 for remote control...
 
+# The Forgotten MATE-CIIL Command Language
+
+*This section was added in December 2022.*
+
+I was recently looking at adding a [`pymeasure`](https://github.com/pymeasure/pymeasure) driver
+for my Racal-Dana 1992 universal counter with GPIB interface.
+
+![Racal-Dana 1992](/assets/racal1992/racal1992.jpg)
+
+It took me a couple of hours of not getting anywhere at all before I found out my unit has a 
+GPIB plug-in card with a jumper that selects between the advertised GPIB commands from the manual,
+and an entirely different command set that's called MATE-CIIL.  MATE and CIIL are acronyms for 
+*Modular Automated Test Equipment* and *Control Interface Intermediate Language*.
+
+Google doesn't turn up a lot of information, but Project MATE was an initiative of the US Air 
+Force to convert CIIL with Test Module Adapter (TMA) into the device-specific, non-standard commands 
+of existing equipement.  There's supposed to a MATE STD 2806763 specification that defines the 
+CIIL commands for different types of instruments, but once again, Google doesn't get me any futher 
+other than confirming its existence.
+
+In the early 1990ies, HP came up with TML, Test Measurement Language, which was eventually
+made license-free and renamed as... SCPI.
+
+Like my Racal-Dana, you can find some equipment from the mid to late eighties that supports
+MATE/CIIL natively, without the need for an external TMA box, but all of that is now just a distant 
+memory.
+
 # To Be Continued...
 
 So far, everything covered here is only describes what's out there and how it all plays with eachother.
@@ -367,4 +401,7 @@ The next step is to show how all of this can be made to work, the pitfalls etc.
 
 That's for upcoming blog posts...
 
+# References
 
+* [GPIB 101 - A Tutorial about the GPIB Bus](https://www.icselect.com/pdfs/ab48_11%20GPIB-101.pdf)
+* [Setting Up GPIB Communication with a Racal-Dana 1992 Universal Counter](/2022/12/18/Setting-Up-a-GPIB-Communication-with-a-Racal-Dana-1992-Counter.html)

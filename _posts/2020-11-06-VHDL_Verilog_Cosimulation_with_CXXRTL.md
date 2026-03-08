@@ -16,7 +16,7 @@ input format (Verilog, blif, VHDL, SystemVerilog) to Yosys' internal RTLIL forma
 
 Most people think of Yosys as a tool to synthesize Verilog, and that's definitely the dominant use
 case. But in the past years, significant progress has been made in integrating open source VHDL
-compiler [gHDL](https://ghdl.readthedocs.io/en/latest/about.html) into Yosys as well. 
+compiler [gHDL](https://ghdl.github.io/ghdl/about.html) into Yosys as well. 
 
 The result of this effort is [ghdl-yosys-plugin](https://github.com/ghdl/ghdl-yosys-plugin). It's not
 part of the main Yosys GitHub repo due to differing open source licenses, but a stand-alone Yosys plugin
@@ -194,7 +194,7 @@ But here's something that no open source simulator has done before. Something th
 proprietary simulators for decades: cosimulation of mixed Verilog/VHDL designs! 
 
 *I stand corrected about the claim above: it's a pretty complicated hack compared to the seamless VHDL/Verilog
-cosimulation that's possible with CXXRTL, but [Robert Ou](robertou.com) cobbled a 
+cosimulation that's possible with CXXRTL, but [Robert Ou](https://robertou.com) cobbled a 
 [mixed Verilog VHDL simulation](https://github.com/rqou/myhdl-vhdl-verilog-test) together with ghdl, Icarus
 Verilog, and some VPI glue.*
 
@@ -429,7 +429,7 @@ Mixed VHDL/Verilog can now be done with pure open source tools, and it works wel
 
     My earlier blog posts about CXXRTL
 
-* [gHDL Documentation](https://ghdl.readthedocs.io/en/latest/about.html)
+* [gHDL Documentation](https://ghdl.github.io/ghdl/about.html)
 * [ghdl-yosys-plugin](https://github.com/ghdl/ghdl-yosys-plugin)
 
 

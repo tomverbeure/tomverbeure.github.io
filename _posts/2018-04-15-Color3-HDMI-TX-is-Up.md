@@ -32,3 +32,13 @@ timings (right now, the pixel clock is only 25MHz), that may require some extra 
 Next step: the HDMI receiver? Since there is no simply example design, that will require a lot more work, reading the Linux driver code 
 for the SiI9233 etc.
 
+# References
+
+All posts in this series:
+
+* [Hacking the eeColor Color3](/2018/04/08/Hacking-the-eeColor-Color3.html) 
+* [eeColor Color3: Getting Ready for Reverse Engineering](/2018/04/09/Color3-Getting-Ready-for-Reverse-Engineering.html)
+* [eeColor Color3: SiI9136 and SiI9233 Connections to FPGA](/2018/04/11/Color3-Sil9136-and-Sil9233-Connections-to-FPGA.html)
+* [eeColor Color3: HDMI TX is Up!](/2018/04/15/Color3-HDMI-TX-is-Up.html)
+* [eeColor Color3: SiI9233 and SiI9136 I2C Traces](/2018/04/22/Color3-Sil9233-and-Sil9136-I2C-Traces.html)
+* [eeColor Color3: HDMI RX to HDMI TX is UP!!!](/2018/04/23/Color3-HDMI-RX-to-HDMI-TX-is-UP.html)

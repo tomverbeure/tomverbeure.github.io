@@ -53,7 +53,7 @@ There are 2 main types of smoke detector: photoelectric and ionization based. Th
 the photoelectric ones respond faster to smoke created by smoldering fires while ionization based smoke 
 detectors respond faster to smoke produced by fanning flames. 
 
-For best protection, the US Fire Administration [recommends using both types](https://www.usfa.fema.gov/about/smoke_alarms_position.html)!
+For best protection, the US Fire Administration recommends using both types!
 
 In the center of my smoke detector is an integrated IR emitter and detector, so we're dealing with a
 photoelectric one here.

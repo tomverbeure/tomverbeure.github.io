@@ -17,7 +17,7 @@ Platform Designer.
 I also [mentioned](/2021/05/02/Intel-JTAG-UART.html#communicating-to-the-jtag-uart-with-a-script) how it's 
 a pain to communicate with the JTAG UART with anything other than nios2-terminal.
 
-After publishing that that blog post, somebody on Reddit offered some very interesting pointers to a
+After publishing that blog post, somebody on Reddit offered some very interesting pointers to a
 solution: the Quartus tools are using shared libraries (there's 862 of them in the Quartus 20.1 installation!),
 and 2 of them are of particular interest: `libjtag_client.so` is a large library that's used for all
 interactions with the Quartus `jtagd` daemon, and `libjtag_atlantic.so`, a much smaller library, is layered
@@ -32,7 +32,7 @@ all the hard work.
 
 # How to Use an Unknown Shared Library
 
-*Skip ahead to the next section if all you're interested in is the final result.*
+*Skip ahead to the next section if you're only interested in the final result.*
 
 If you ever find yourself in the position of needing to use a shared library without having any source
 code or include file at hand, you'll have to do some amount of reverse engineering but you can get
@@ -133,7 +133,7 @@ information. You can treat it as a handle without the need to know anything more
 
 *On Windows, `dumpbin /exports jtag_atlantic.dll` will give you a similar result.*
 
-To use the functions above your own code is, you must figure out the meaning of the function call 
+To use the functions above in your own code, you must figure out the meaning of the function call 
 parameters. It wouldn't be very hard to do, but it's even easier when others have already
 done it before you! Check out [`jtag_atlantic.h`](https://github.com/tomverbeure/alterajtaguart/blob/master/software/jtag_atlantic.h)
 from the [`thotypous/alterajtaguart`](https://github.com/thotypous/alterajtaguart) project on GitHub:

@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html class="client-nojs vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-enabled vector-feature-sticky-header-disabled vector-feature-page-tools-pinned-disabled vector-feature-toc-pinned-enabled vector-feature-main-menu-pinned-disabled vector-feature-limited-width-enabled vector-feature-limited-width-content-enabled vector-feature-zebra-design-disabled" lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8"/>
+<title>File:Common crystal radio circuit.svg - Wikipedia</title>
+<script>document.documentElement.className="client-js vector-feature-language-in-header-enabled vector-feature-language-in-main-page-header-disabled vector-feature-language-alert-in-sidebar-enabled vector-feature-sticky-header-disabled vector-feature-page-tools-pinned-disabled vector-feature-toc-pinned-enabled vector-feature-main-menu-pinned-disabled vector-feature-limited-width-enabled vector-feature-limited-width-content-enabled vector-feature-zebra-design-disabled";(function(){var cookie=document.cookie.match(/(?:^|; )enwikimwclientprefs=([^;]+)/);if(cookie){var featureName=cookie[1];document.documentElement.className=document.documentElement.className.replace(featureName+'-enabled',featureName+'-disabled');}}());RLCONF={"wgBreakFrames":false,"wgSeparatorTransformTable":["",""],"wgDigitTransformTable":["",""],"wgDefaultDateFormat":"dmy","wgMonthNames":["","January","February","March","April","May","June","July","August","September","October","November","December"],"wgRequestId":
+"2a2d7c05-153a-4f08-a553-d98bf4226693","wgCSPNonce":false,"wgCanonicalNamespace":"File","wgCanonicalSpecialPageName":false,"wgNamespaceNumber":6,"wgPageName":"File:Common_crystal_radio_circuit.svg","wgTitle":"Common crystal radio circuit.svg","wgCurRevisionId":0,"wgRevisionId":0,"wgArticleId":0,"wgIsArticle":true,"wgIsRedirect":false,"wgAction":"view","wgUserName":null,"wgUserGroups":["*"],"wgCategories":[],"wgPageContentLanguage":"en","wgPageContentModel":"wikitext","wgRelevantPageName":"File:Common_crystal_radio_circuit.svg","wgRelevantArticleId":0,"wgIsProbablyEditable":false,"wgRelevantPageIsProbablyEditable":false,"wgRestrictionCreate":[],"wgFlaggedRevsParams":{"tags":{"status":{"levels":1}}},"wgVisualEditor":{"pageLanguageCode":"en","pageLanguageDir":"ltr","pageVariantFallbacks":"en"},"wgMFDisplayWikibaseDescriptions":{"search":true,"watchlist":true,"tagline":false,"nearby":true},"wgWMESchemaEditAttemptStepOversample":false,"wgWMEPageLength":0,"wgNoticeProject":"wikipedia",
+"wgMediaViewerOnClick":true,"wgMediaViewerEnabledByDefault":true,"wgPopupsFlags":10,"wgULSCurrentAutonym":"English","wgEditSubmitButtonLabelPublish":true,"wgCentralAuthMobileDomain":false,"wgULSPosition":"interlanguage","wgULSisCompactLinksEnabled":true,"wgULSisLanguageSelectorEmpty":true,"GEHomepageSuggestedEditsEnableTopics":true,"wgGETopicsMatchModeEnabled":false,"wgGEStructuredTaskRejectionReasonTextInputEnabled":false,"wgGELevelingUpEnabledForUser":false};RLSTATE={"skins.vector.user.styles":"ready","ext.globalCssJs.user.styles":"ready","site.styles":"ready","user.styles":"ready","skins.vector.user":"ready","ext.globalCssJs.user":"ready","user":"ready","user.options":"loading","mediawiki.interface.helpers.styles":"ready","filepage":"ready","mediawiki.action.view.filepage":"ready","mediawiki.ui.button":"ready","skins.vector.styles":"ready","skins.vector.icons":"ready","mediawiki.ui.icon":"ready","ext.visualEditor.desktopArticleTarget.noscript":"ready","ext.wikimediaBadges":"ready",
+"ext.uls.interlanguage":"ready"};RLPAGEMODULES=["mediawiki.action.view.metadata","site","mediawiki.page.ready","skins.vector.js","skins.vector.es6","mmv.head","mmv.bootstrap.autostart","ext.visualEditor.desktopArticleTarget.init","ext.visualEditor.targetLoader","ext.eventLogging","ext.wikimediaEvents","ext.navigationTiming","ext.cx.eventlogging.campaigns","ext.centralNotice.geoIP","ext.centralNotice.startUp","ext.gadget.ReferenceTooltips","ext.gadget.charinsert","ext.gadget.extra-toolbar-buttons","ext.gadget.switcher","ext.centralauth.centralautologin","ext.popups","ext.echo.centralauth","ext.uls.compactlinks","ext.uls.interface"];</script>
+<script>(RLQ=window.RLQ||[]).push(function(){mw.loader.implement("user.options@12s5i",function($,jQuery,require,module){mw.user.tokens.set({"patrolToken":"+\\","watchToken":"+\\","csrfToken":"+\\"});});});</script>
+<link rel="stylesheet" href="/w/load.php?lang=en&amp;modules=ext.uls.interlanguage%7Cext.visualEditor.desktopArticleTarget.noscript%7Cext.wikimediaBadges%7Cfilepage%7Cmediawiki.action.view.filepage%7Cmediawiki.interface.helpers.styles%7Cmediawiki.ui.button%2Cicon%7Cskins.vector.icons%2Cstyles&amp;only=styles&amp;skin=vector-2022"/>
+<script async="" src="/w/load.php?lang=en&amp;modules=startup&amp;only=scripts&amp;raw=1&amp;skin=vector-2022"></script>
+<link rel="stylesheet" href="https://commons.wikimedia.org/w/index.php?title=MediaWiki:Filepage.css&amp;action=raw&amp;ctype=text/css"/>
+<meta name="ResourceLoaderDynamicStyles" content=""/>
+<link rel="stylesheet" href="/w/load.php?lang=en&amp;modules=site.styles&amp;only=styles&amp;skin=vector-2022"/>
+<meta name="generator" content="MediaWiki 1.41.0-wmf.4"/>
+<meta name="referrer" content="origin"/>
+<meta name="referrer" content="origin-when-crossorigin"/>
+<meta name="referrer" content="origin-when-cross-origin"/>
+<meta name="robots" content="max-image-preview:standard"/>
+<meta name="format-detection" content="telephone=no"/>
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Common_crystal_radio_circuit.svg/1200px-Common_crystal_radio_circuit.svg.png"/>
+<meta property="og:image:width" content="1200"/>
+<meta property="og:image:height" content="989"/>
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Common_crystal_radio_circuit.svg/800px-Common_crystal_radio_circuit.svg.png"/>
+<meta property="og:image:width" content="800"/>
+<meta property="og:image:height" content="659"/>
+<meta property="og:image" content="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Common_crystal_radio_circuit.svg/640px-Common_crystal_radio_circuit.svg.png"/>
+<meta property="og:image:width" content="640"/>
+<meta property="og:image:height" content="527"/>
+<meta name="viewport" content="width=1000"/>
+<meta property="og:title" content="File:Common crystal radio circuit.svg - Wikipedia"/>
+<meta property="og:type" content="website"/>
+<link rel="preconnect" href="//upload.wikimedia.org"/>
+<link rel="preconnect" href="//upload.wikimedia.org"/>
+<link rel="alternate" media="only screen and (max-width: 720px)" href="//en.m.wikipedia.org/wiki/File:Common_crystal_radio_circuit.svg"/>
+<link rel="apple-touch-icon" href="/static/apple-touch/wikipedia.png"/>
+<link rel="icon" href="/static/favicon/wikipedia.ico"/>
+<link rel="search" type="application/opensearchdescription+xml" href="/w/opensearch_desc.php" title="Wikipedia (en)"/>
+<link rel="EditURI" type="application/rsd+xml" href="//en.wikipedia.org/w/api.php?action=rsd"/>
+<link rel="canonical" href="https://commons.wikimedia.org/wiki/File:Common_crystal_radio_circuit.svg"/>
+<link rel="license" href="https://creativecommons.org/licenses/by-sa/3.0/"/>
+<link rel="alternate" type="application/atom+xml" title="Wikipedia Atom feed" href="/w/index.php?title=Special:RecentChanges&amp;feed=atom"/>
+<link rel="dns-prefetch" href="//meta.wikimedia.org" />
+<link rel="dns-prefetch" href="//login.wikimedia.org"/>
+</head>
+<body class="skin-vector skin-vector-search-vue mediawiki ltr sitedir-ltr mw-hide-empty-elt ns-6 ns-subject page-File_Common_crystal_radio_circuit_svg rootpage-File_Common_crystal_radio_circuit_svg skin-vector-2022 action-view"><a class="mw-jump-link" href="#bodyContent">Jump to content</a>
+<div class="vector-header-container">
+	<header class="vector-header mw-header">
+		<div class="vector-header-start">
+			<nav class="vector-main-menu-landmark" aria-label="Site" role="navigation">
+				
+<div id="vector-main-menu-dropdown" class="vector-menu vector-dropdown vector-menu-dropdown vector-main-menu-dropdown mw-ui-icon-flush-left mw-ui-icon-flush-right"  >
+	<input type="checkbox"
+		id="vector-main-menu-dropdown-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-vector-main-menu-dropdown"
+		class="vector-menu-checkbox "
+		
+		aria-label="Main menu"
+		
+	/>
+	<label
+		id="vector-main-menu-dropdown-label"
+		for="vector-main-menu-dropdown-checkbox"
+		class="vector-menu-heading mw-ui-button mw-ui-quiet mw-ui-icon-element "
+		aria-hidden="true"
+		
+	>
+		<span class="mw-ui-icon mw-ui-icon-menu mw-ui-icon-wikimedia-menu"></span>
+
+		<span class="vector-menu-heading-label">Main menu</span>
+	</label>
+	<div class="vector-menu-content vector-dropdown-content">
+
+
+				<div id="vector-main-menu-unpinned-container" class="vector-unpinned-container">
+		
+<div id="vector-main-menu" class="vector-main-menu vector-pinnable-element">
+	<div
+	class="vector-pinnable-header vector-main-menu-pinnable-header vector-pinnable-header-unpinned"
+	data-feature-name="main-menu-pinned"
+	data-pinnable-element-id="vector-main-menu"
+	data-pinned-container-id="vector-main-menu-pinned-container"
+	data-unpinned-container-id="vector-main-menu-unpinned-container"
+>
+	<div class="vector-pinnable-header-label">Main menu</div>
+	<button class="vector-pinnable-header-toggle-button vector-pinnable-header-pin-button" data-event-name="pinnable-header.vector-main-menu.pin">move to sidebar</button>
+	<button class="vector-pinnable-header-toggle-button vector-pinnable-header-unpin-button" data-event-name="pinnable-header.vector-main-menu.unpin">hide</button>
+</div>
+
+	
+<div id="p-navigation" class="vector-menu mw-portlet mw-portlet-navigation"  >
+	<div class="vector-menu-heading">
+		Navigation
+	</div>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-mainpage-description" class="mw-list-item"><a href="/wiki/Main_Page" title="Visit the main page [z]" accesskey="z"><span>Main page</span></a></li><li id="n-contents" class="mw-list-item"><a href="/wiki/Wikipedia:Contents" title="Guides to browsing Wikipedia"><span>Contents</span></a></li><li id="n-currentevents" class="mw-list-item"><a href="/wiki/Portal:Current_events" title="Articles related to current events"><span>Current events</span></a></li><li id="n-randompage" class="mw-list-item"><a href="/wiki/Special:Random" title="Visit a randomly selected article [x]" accesskey="x"><span>Random article</span></a></li><li id="n-aboutsite" class="mw-list-item"><a href="/wiki/Wikipedia:About" title="Learn about Wikipedia and how it works"><span>About Wikipedia</span></a></li><li id="n-contactpage" class="mw-list-item"><a href="//en.wikipedia.org/wiki/Wikipedia:Contact_us" title="How to contact Wikipedia"><span>Contact us</span></a></li><li id="n-sitesupport" class="mw-list-item"><a href="https://donate.wikimedia.org/wiki/Special:FundraiserRedirector?utm_source=donate&amp;utm_medium=sidebar&amp;utm_campaign=C13_en.wikipedia.org&amp;uselang=en" title="Support us by donating to the Wikimedia Foundation"><span>Donate</span></a></li></ul>
+		
+	</div>
+</div>
+
+	
+	
+<div id="p-interaction" class="vector-menu mw-portlet mw-portlet-interaction"  >
+	<div class="vector-menu-heading">
+		Contribute
+	</div>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="n-help" class="mw-list-item"><a href="/wiki/Help:Contents" title="Guidance on how to use and edit Wikipedia"><span>Help</span></a></li><li id="n-introduction" class="mw-list-item"><a href="/wiki/Help:Introduction" title="Learn how to edit Wikipedia"><span>Learn to edit</span></a></li><li id="n-portal" class="mw-list-item"><a href="/wiki/Wikipedia:Community_portal" title="The hub for editors"><span>Community portal</span></a></li><li id="n-recentchanges" class="mw-list-item"><a href="/wiki/Special:RecentChanges" title="A list of recent changes to Wikipedia [r]" accesskey="r"><span>Recent changes</span></a></li><li id="n-upload" class="mw-list-item"><a href="/wiki/Wikipedia:File_upload_wizard" title="Add images or other media for use on Wikipedia"><span>Upload file</span></a></li></ul>
+		
+	</div>
+</div>
+
+	
+</div>
+
+				</div>
+
+	</div>
+</div>
+		</nav>
+			
+<a href="/wiki/Main_Page" class="mw-logo">
+	<img class="mw-logo-icon" src="/static/images/icons/wikipedia.png" alt=""
+		aria-hidden="true" height="50" width="50">
+	<span class="mw-logo-container">
+		<img class="mw-logo-wordmark" alt="Wikipedia"
+			src="/static/images/mobile/copyright/wikipedia-wordmark-en.svg" style="width: 7.5em; height: 1.125em;">
+		<img class="mw-logo-tagline"
+			alt="The Free Encyclopedia"
+			src="/static/images/mobile/copyright/wikipedia-tagline-en.svg" width="117" height="13" style="width: 7.3125em; height: 0.8125em;">
+	</span>
+</a>
+
+		</div>
+		<div class="vector-header-end">
+			
+<div id="p-search" role="search" class="vector-search-box-vue  vector-search-box-collapses  vector-search-box-show-thumbnail vector-search-box-auto-expand-width vector-search-box">
+	<a href="/wiki/Special:Search"
+	
+		
+		
+		
+		title="Search Wikipedia [f]"
+		accesskey="f"
+		class="mw-ui-button mw-ui-quiet mw-ui-icon mw-ui-icon-element mw-ui-icon-wikimedia-search search-toggle">
+		<span>Search</span>
+	</a>
+	
+	<div>
+		<form action="/w/index.php" id="searchform"
+			class="vector-search-box-form">
+			<div id="simpleSearch"
+				class="vector-search-box-inner"
+				 data-search-loc="header-moved">
+				<input class="vector-search-box-input"
+					 type="search" name="search" placeholder="Search Wikipedia" aria-label="Search Wikipedia" autocapitalize="sentences" title="Search Wikipedia [f]" accesskey="f" id="searchInput"
+				>
+				<input type="hidden" name="title" value="Special:Search">
+				<input id="mw-searchButton"
+					 class="searchButton mw-fallbackSearchButton" type="submit" name="fulltext" title="Search Wikipedia for this text" value="Search">
+				<input id="searchButton"
+					 class="searchButton" type="submit" name="go" title="Go to a page with this exact name if it exists" value="Go">
+			</div>
+		</form>
+	</div>
+</div>
+
+			<nav class="vector-user-links" aria-label="Personal tools" role="navigation" >
+	
+<div id="p-vector-user-menu-overflow" class="vector-menu mw-portlet mw-portlet-vector-user-menu-overflow"  >
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-createaccount-2" class="user-links-collapsible-item mw-list-item"><a href="/w/index.php?title=Special:CreateAccount&amp;returnto=File%3ACommon+crystal+radio+circuit.svg" title="You are encouraged to create an account and log in; however, it is not mandatory"><span>Create account</span></a></li><li id="pt-login-2" class="user-links-collapsible-item mw-list-item"><a href="/w/index.php?title=Special:UserLogin&amp;returnto=File%3ACommon+crystal+radio+circuit.svg" title="You&#039;re encouraged to log in; however, it&#039;s not mandatory. [o]" accesskey="o"><span>Log in</span></a></li></ul>
+		
+	</div>
+</div>
+
+	
+<div id="vector-user-links-dropdown" class="vector-menu vector-dropdown vector-menu-dropdown vector-user-menu mw-ui-icon-flush-right vector-user-menu-logged-out"  title="Log in and more options" >
+	<input type="checkbox"
+		id="vector-user-links-dropdown-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-vector-user-links-dropdown"
+		class="vector-menu-checkbox "
+		
+		aria-label="Personal tools"
+		
+	/>
+	<label
+		id="vector-user-links-dropdown-label"
+		for="vector-user-links-dropdown-checkbox"
+		class="vector-menu-heading mw-ui-button mw-ui-quiet mw-ui-icon-element "
+		aria-hidden="true"
+		
+	>
+		<span class="mw-ui-icon mw-ui-icon-ellipsis mw-ui-icon-wikimedia-ellipsis"></span>
+
+		<span class="vector-menu-heading-label">Personal tools</span>
+	</label>
+	<div class="vector-menu-content vector-dropdown-content">
+
+
+		
+<div id="p-personal" class="vector-menu mw-portlet mw-portlet-personal user-links-collapsible-item"  title="User menu" >
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-createaccount" class="user-links-collapsible-item mw-list-item"><a href="/w/index.php?title=Special:CreateAccount&amp;returnto=File%3ACommon+crystal+radio+circuit.svg" title="You are encouraged to create an account and log in; however, it is not mandatory"><span class="mw-ui-icon mw-ui-icon-userAdd mw-ui-icon-wikimedia-userAdd"></span> <span>Create account</span></a></li><li id="pt-login" class="user-links-collapsible-item mw-list-item"><a href="/w/index.php?title=Special:UserLogin&amp;returnto=File%3ACommon+crystal+radio+circuit.svg" title="You&#039;re encouraged to log in; however, it&#039;s not mandatory. [o]" accesskey="o"><span class="mw-ui-icon mw-ui-icon-logIn mw-ui-icon-wikimedia-logIn"></span> <span>Log in</span></a></li></ul>
+		
+	</div>
+</div>
+
+<div id="p-user-menu-anon-editor" class="vector-menu mw-portlet mw-portlet-user-menu-anon-editor"  >
+	<div class="vector-menu-heading">
+		Pages for logged out editors <a href="/wiki/Help:Introduction" aria-label="Learn more about editing"><span>learn more</span></a>
+	</div>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="pt-anoncontribs" class="mw-list-item"><a href="/wiki/Special:MyContributions" title="A list of edits made from this IP address [y]" accesskey="y"><span>Contributions</span></a></li><li id="pt-anontalk" class="mw-list-item"><a href="/wiki/Special:MyTalk" title="Discussion about edits from this IP address [n]" accesskey="n"><span>Talk</span></a></li></ul>
+		
+	</div>
+</div>
+
+	
+	</div>
+</div>
+</nav>
+
+		</div>
+	</header>
+</div>
+<div class="mw-page-container">
+	<div class="mw-page-container-inner">
+		<div class="vector-main-menu-container vector-sidebar-container-no-toc">
+			<div id="mw-navigation">
+				<nav id="mw-panel" class="vector-main-menu-landmark" aria-label="Site" role="navigation">
+					<div id="vector-main-menu-pinned-container" class="vector-pinned-container">
+				
+					</div>
+		</nav>
+			</div>
+		</div>
+		<div class="vector-sitenotice-container">
+			<div id="siteNotice"><!-- CentralNotice --></div>
+		</div>
+		<div class="mw-content-container">
+			<main id="content" class="mw-body" role="main">
+				<header class="mw-body-header vector-page-titlebar">
+					<h1 id="firstHeading" class="firstHeading mw-first-heading">File:Common crystal radio circuit.svg</h1>
+				
+							
+<div id="p-lang-btn" class="vector-menu vector-dropdown vector-menu-dropdown mw-portlet mw-portlet-lang"  >
+	<input type="checkbox"
+		id="p-lang-btn-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-lang-btn"
+		class="vector-menu-checkbox mw-interlanguage-selector-empty"
+		aria-label="This article exist only in this language. Add the article for other languages"
+		
+		
+	/>
+	<label
+		id="p-lang-btn-label"
+		for="p-lang-btn-checkbox"
+		class="vector-menu-heading mw-ui-button mw-ui-quiet mw-portlet-lang-heading-empty"
+		aria-hidden="true"
+		
+	>
+		<span class="mw-ui-icon mw-ui-icon-language mw-ui-icon-wikimedia-language"></span>
+
+		<span class="vector-menu-heading-label"></span>
+	</label>
+	<div class="vector-menu-content vector-dropdown-content">
+
+		<div class="mw-portlet-empty-language-selector-body">
+						Page contents not supported in other languages.
+					</div>
+			
+	</div>
+</div>
+				</header>
+				<div class="vector-page-toolbar">
+					<div class="vector-page-toolbar-container">
+						<div id="left-navigation">
+							<nav aria-label="Namespaces">
+								
+<div id="p-associated-pages" class="vector-menu vector-menu-tabs mw-portlet mw-portlet-associated-pages"  >
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list">
+			<li id="ca-nstab-image" class="selected vector-tab-noicon mw-list-item"><a data-mw="interface" href="/wiki/File:Common_crystal_radio_circuit.svg" title="View the file page [c]" accesskey="c" class=""><span>File</span></a>
+</li>
+<li id="ca-talk" class="new vector-tab-noicon mw-list-item"><a data-mw="interface" href="/w/index.php?title=File_talk:Common_crystal_radio_circuit.svg&amp;action=edit&amp;redlink=1" rel="discussion" title="Discuss improvements to the content page (page does not exist) [t]" accesskey="t" class=""><span>Talk</span></a>
+</li>
+
+		</ul>
+		
+	</div>
+</div>
+
+								
+
+<div id="p-variants" class="vector-menu vector-dropdown vector-menu-dropdown mw-portlet mw-portlet-variants emptyPortlet"  >
+	<input type="checkbox"
+		id="p-variants-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-p-variants"
+		class="vector-menu-checkbox"
+		aria-label="Change language variant"
+		
+		
+	/>
+	<label
+		id="p-variants-label"
+		for="p-variants-checkbox"
+		class="vector-menu-heading "
+		aria-hidden="true"
+		
+	>
+		
+		<span class="vector-menu-heading-label">English</span>
+	</label>
+	<div class="vector-menu-content vector-dropdown-content">
+
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"></ul>
+		
+	</div>
+
+	</div>
+</div>
+							</nav>
+						</div>
+						<div id="right-navigation" class="vector-collapsible">
+							<nav aria-label="Views">
+								
+<div id="p-views" class="vector-menu vector-menu-tabs mw-portlet mw-portlet-views"  >
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list">
+			<li id="ca-view" class="selected vector-tab-noicon mw-list-item"><a data-mw="interface" href="/wiki/File:Common_crystal_radio_circuit.svg" class=""><span>Read</span></a>
+</li>
+<li id="ca-view-foreign" class="vector-tab-noicon mw-list-item"><a data-mw="interface" href="https://commons.wikimedia.org/wiki/File:Common_crystal_radio_circuit.svg" class=""><span>View on Commons</span></a>
+</li>
+
+		</ul>
+		
+	</div>
+</div>
+
+							</nav>
+				
+							<nav class="vector-page-tools-landmark" aria-label="More options">
+								
+<div id="vector-page-tools-dropdown" class="vector-menu vector-dropdown vector-menu-dropdown vector-page-tools-dropdown"  >
+	<input type="checkbox"
+		id="vector-page-tools-dropdown-checkbox"
+		role="button"
+		aria-haspopup="true"
+		data-event-name="ui.dropdown-vector-page-tools-dropdown"
+		class="vector-menu-checkbox "
+		
+		aria-label="Tools"
+		
+	/>
+	<label
+		id="vector-page-tools-dropdown-label"
+		for="vector-page-tools-dropdown-checkbox"
+		class="vector-menu-heading "
+		aria-hidden="true"
+		
+	>
+		
+		<span class="vector-menu-heading-label">Tools</span>
+	</label>
+	<div class="vector-menu-content vector-dropdown-content">
+
+
+									<div id="vector-page-tools-unpinned-container" class="vector-unpinned-container">
+						
+<div id="vector-page-tools" class="vector-page-tools vector-pinnable-element">
+	<div
+	class="vector-pinnable-header vector-page-tools-pinnable-header vector-pinnable-header-unpinned"
+	data-feature-name="page-tools-pinned"
+	data-pinnable-element-id="vector-page-tools"
+	data-pinned-container-id="vector-page-tools-pinned-container"
+	data-unpinned-container-id="vector-page-tools-unpinned-container"
+>
+	<div class="vector-pinnable-header-label">Tools</div>
+	<button class="vector-pinnable-header-toggle-button vector-pinnable-header-pin-button" data-event-name="pinnable-header.vector-page-tools.pin">move to sidebar</button>
+	<button class="vector-pinnable-header-toggle-button vector-pinnable-header-unpin-button" data-event-name="pinnable-header.vector-page-tools.unpin">hide</button>
+</div>
+
+	
+<div id="p-cactions" class="vector-menu mw-portlet mw-portlet-cactions emptyPortlet vector-has-collapsible-items"  title="More options" >
+	<div class="vector-menu-heading">
+		Actions
+	</div>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="ca-more-view" class="selected vector-more-collapsible-item mw-list-item"><a href="/wiki/File:Common_crystal_radio_circuit.svg"><span>Read</span></a></li><li id="ca-more-view-foreign" class="vector-more-collapsible-item mw-list-item"><a href="https://commons.wikimedia.org/wiki/File:Common_crystal_radio_circuit.svg"><span>View on Commons</span></a></li></ul>
+		
+	</div>
+</div>
+
+<div id="p-tb" class="vector-menu mw-portlet mw-portlet-tb"  >
+	<div class="vector-menu-heading">
+		General
+	</div>
+	<div class="vector-menu-content">
+		
+		<ul class="vector-menu-content-list"><li id="t-whatlinkshere" class="mw-list-item"><a href="/wiki/Special:WhatLinksHere/File:Common_crystal_radio_circuit.svg" title="List of all English Wikipedia pages containing links to this page [j]" accesskey="j"><span>What links here</span></a></li><li id="t-upload" class="mw-list-item"><a href="/wiki/Wikipedia:File_Upload_Wizard" title="Upload files [u]" accesskey="u"><span>Upload file</span></a></li><li id="t-specialpages" class="mw-list-item"><a href="/wiki/Special:SpecialPages" title="A list of all special pages [q]" accesskey="q"><span>Special pages</span></a></li><li id="t-print" class="mw-list-item"><a href="javascript:print();" rel="alternate" title="Printable version of this page [p]" accesskey="p"><span>Printable version</span></a></li><li id="t-info" class="mw-list-item"><a href="/w/index.php?title=File:Common_crystal_radio_circuit.svg&amp;action=info" title="More information about this page"><span>Page information</span></a></li></ul>
+		
+	</div>
+</div>
+
+</div>
+
+									</div>
+				
+	</div>
+</div>
+							</nav>
+						</div>
+					</div>
+				</div>
+				<div class="vector-column-end">
+					<nav class="vector-page-tools-landmark" aria-label="More options">
+						<div id="vector-page-tools-pinned-container" class="vector-pinned-container">
+			
+						</div>
+	</nav>
+				</div>
+				<div id="bodyContent" class="vector-body" aria-labelledby="firstHeading" data-mw-ve-target-container>
+					<div class="vector-body-before-content">
+							<div class="mw-indicators">
+		<div id="mw-indicator-commons-icon" class="mw-indicator"><a href="https://commons.wikimedia.org/wiki/File:Common_crystal_radio_circuit.svg" title="This is a file from the Wikimedia Commons"><img alt="This is a file from the Wikimedia Commons" src="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/15px-Commons-logo.svg.png" decoding="async" width="15" height="20" srcset="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/22px-Commons-logo.svg.png 1.5x, //upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/30px-Commons-logo.svg.png 2x" data-file-width="1024" data-file-height="1376" /></a></div>
+		</div>
+
+						<div id="siteSub" class="noprint">From Wikipedia, the free encyclopedia</div>
+					</div>
+					<div id="contentSub"><div id="mw-content-subtitle"></div></div>
+					
+					
+					<div id="mw-content-text" class="mw-body-content"><ul id="filetoc"><li><a href="#file">File</a></li>
+<li><a href="#filehistory">File history</a></li>
+<li><a href="#filelinks">File usage</a></li>
+<li><a href="#globalusage">Global file usage</a></li>
+<li><a href="#metadata">Metadata</a></li></ul><div class="fullImageLink" id="file"><a href="//upload.wikimedia.org/wikipedia/commons/b/b9/Common_crystal_radio_circuit.svg"><img alt="File:Common crystal radio circuit.svg" src="//upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Common_crystal_radio_circuit.svg/517px-Common_crystal_radio_circuit.svg.png" decoding="async" width="517" height="426" srcset="//upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Common_crystal_radio_circuit.svg/776px-Common_crystal_radio_circuit.svg.png 1.5x, //upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Common_crystal_radio_circuit.svg/1034px-Common_crystal_radio_circuit.svg.png 2x" data-file-width="517" data-file-height="426" /></a><div class="mw-filepage-resolutioninfo">Size of this PNG preview of this SVG file: <a href="//upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Common_crystal_radio_circuit.svg/517px-Common_crystal_radio_circuit.svg.png" class="mw-thumbnail-link">517 × 426 pixels</a>. <span class="mw-filepage-other-resolutions">Other resolutions: <a href="//upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Common_crystal_radio_circuit.svg/291px-Common_crystal_radio_circuit.svg.png" class="mw-thumbnail-link">291 × 240 pixels</a> | <a href="//upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Common_crystal_radio_circuit.svg/583px-Common_crystal_radio_circuit.svg.png" class="mw-thumbnail-link">583 × 480 pixels</a> | <a href="//upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Common_crystal_radio_circuit.svg/932px-Common_crystal_radio_circuit.svg.png" class="mw-thumbnail-link">932 × 768 pixels</a> | <a href="//upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Common_crystal_radio_circuit.svg/1243px-Common_crystal_radio_circuit.svg.png" class="mw-thumbnail-link">1,243 × 1,024 pixels</a> | <a href="//upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Common_crystal_radio_circuit.svg/2486px-Common_crystal_radio_circuit.svg.png" class="mw-thumbnail-link">2,486 × 2,048 pixels</a>.</span></div></div>
+<div class="fullMedia"><p><a href="//upload.wikimedia.org/wikipedia/commons/b/b9/Common_crystal_radio_circuit.svg" class="internal" title="Common crystal radio circuit.svg">Original file</a> &#8206;<span class="fileInfo">(SVG file, nominally 517 × 426 pixels, file size: 23 KB)</span>
+</p></div><div class="sharedUploadNotice">
+<div class="mw-parser-output">
+<style data-mw-deduplicate="TemplateStyles:r1097275936">.mw-parser-output .fmbox{clear:both;margin:0.2em 0;width:100%;border:1px solid #a2a9b1;background-color:#f8f9fa;box-sizing:border-box}.mw-parser-output .fmbox-warning{border:1px solid #bb7070;background-color:#ffdbdb}.mw-parser-output .fmbox-editnotice{background-color:transparent}.mw-parser-output .fmbox .mbox-text{border:none;padding:0.25em 0.9em;width:100%}.mw-parser-output .fmbox .mbox-image{border:none;padding:2px 0 2px 0.9em;text-align:center}.mw-parser-output .fmbox .mbox-imageright{border:none;padding:2px 0.9em 2px 0;text-align:center}.mw-parser-output .fmbox .mbox-invalid-type{text-align:center}</style><table id="mw-sharedupload" class="plainlinks fmbox fmbox-system" role="presentation"><tbody><tr><td class="mbox-image"><img alt="" src="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/30px-Commons-logo.svg.png" decoding="async" title="Wikimedia Commons logo" width="30" height="40" class="noviewer" srcset="//upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/45px-Commons-logo.svg.png 1.5x, //upload.wikimedia.org/wikipedia/en/thumb/4/4a/Commons-logo.svg/59px-Commons-logo.svg.png 2x" data-file-width="1024" data-file-height="1376" /></td><td class="mbox-text" style="text-align: center;">This is a file from the <a href="https://commons.wikimedia.org/wiki/Main_Page" class="extiw" title="commons:Main Page">Wikimedia Commons</a>. Information from its <b><a href="https://commons.wikimedia.org/wiki/File:Common_crystal_radio_circuit.svg" class="extiw" title="commons:File:Common crystal radio circuit.svg">description page there</a></b> is shown below.<br /><span style="font-size: smaller;">Commons is a freely licensed media file repository. <a href="https://commons.wikimedia.org/wiki/Commons:Welcome" class="extiw" title="commons:Commons:Welcome">You can help</a>.</span></td></tr></tbody></table>
+</div>
+</div>
+<div id="shared-image-desc"><div class="mw-parser-output"><h2><span class="mw-headline" id="Summary">Summary</span></h2>
+<div class="hproduct commons-file-information-table">
+<style data-mw-deduplicate="TemplateStyles:r726982256">.mw-parser-output table.commons-file-information-table,.mw-parser-output .fileinfotpl-type-information{border:1px solid #a2a9b1;background-color:#f8f9fa;padding:5px;font-size:95%;border-spacing:2px;box-sizing:border-box;margin:0;width:100%}.mw-parser-output table.commons-file-information-table>tbody>tr,.mw-parser-output .fileinfotpl-type-information>tbody>tr{vertical-align:top}.mw-parser-output table.commons-file-information-table>tbody>tr>td,.mw-parser-output table.commons-file-information-table>tbody>tr>th,.mw-parser-output .fileinfotpl-type-information>tbody>tr>td,.mw-parser-output .fileinfotpl-type-information>tbody>tr>th{padding:4px}.mw-parser-output .fileinfo-paramfield{background:#ccf;text-align:right;padding-right:0.4em;width:15%;font-weight:bold}.mw-parser-output .commons-file-information-table+table.commons-file-information-table,.mw-parser-output .commons-file-information-table+div.commons-file-information-table>table{border-top:0;padding-top:0;margin-top:-8px}@media only screen and (max-width:719px){.mw-parser-output table.commons-file-information-table,.mw-parser-output .commons-file-information-table .fileinfotpl-type-information{border-spacing:0;padding:0;word-break:break-word;width:100%!important}.mw-parser-output .commons-file-information-table>tbody,.mw-parser-output .fileinfotpl-type-information>tbody{display:block}.mw-parser-output .commons-file-information-table>tbody>tr>td,.mw-parser-output .commons-file-information-table>tbody>tr>th,.mw-parser-output .fileinfotpl-type-information>tbody>tr>td,.mw-parser-output .fileinfotpl-type-information>tbody>tr>th{padding:0.2em 0.4em;text-align:left;text-align:start}.mw-parser-output .commons-file-information-table>tbody>tr,.mw-parser-output .fileinfotpl-type-information>tbody>tr{display:flex;flex-direction:column}.mw-parser-output .commons-file-information-table+table.commons-file-information-table,.mw-parser-output .commons-file-information-table+div.commons-file-information-table>table{margin-top:-1px}.mw-parser-output .fileinfo-paramfield{box-sizing:border-box;flex:1 0 100%;width:100%}}</style>
+<table class="fileinfotpl-type-information vevent mw-content-ltr" style="direction: ltr;">
+
+<tbody><tr>
+<td id="fileinfotpl_desc" class="fileinfo-paramfield" lang="en">Description<span class="summary fn" style="display:none">Common crystal radio circuit.svg</span></td>
+<td class="description">
+<div class="description mw-content-ltr en" dir="ltr" lang="en"><span class="language en" title="English"><b>English: </b></span> Common <a href="https://en.wikipedia.org/wiki/crystal_radio" class="extiw" title="w:crystal radio">crystal radio</a> circuit, used in inexpensive crystal radios sold today.  The tuning coil <i>L</i> and capacitor <i>C1</i> together make up the <a href="https://en.wikipedia.org/wiki/tuned_circuit" class="extiw" title="w:tuned circuit">tuned circuit</a>; it selects the radio signal to be received, out of all the signals picked up by the antenna.  <i>C1</i> is adjustable, and is used to tune in different stations.   The crystal detector <i>D</i> rectifies the radio frequency current from the tuned circuit to pulsing direct current to extract the audio modulation from the radio frequency carrier wave.  The earphone <i>E</i> converts the audio current to sound waves.</div></td>
+</tr>
+
+<tr>
+<td id="fileinfotpl_date" class="fileinfo-paramfield" lang="en">Date</td>
+<td lang="en">
+<time class="dtstart" datetime="2010-05-18" lang="en" dir="ltr" style="white-space:nowrap">18 May 2010</time></td>
+</tr>
+
+<tr>
+<td id="fileinfotpl_src" class="fileinfo-paramfield" lang="en">Source</td>
+<td>
+<span class="int-own-work" lang="en">Own work</span></td>
+</tr>
+
+<tr>
+<td id="fileinfotpl_aut" class="fileinfo-paramfield" lang="en">Author</td>
+<td>
+<a href="//commons.wikimedia.org/wiki/User_talk:Chetvorno" title="User talk:Chetvorno">Chetvorno</a></td>
+</tr>
+
+<tr style="vertical-align: top"><td style="" class="fileinfo-paramfield">SVG&nbsp;development<div style="display: none;">InfoField</div></td><td style=""><div style="vertical-align:middle"><div style="display:inline-block;width:auto;white-space:nowrap;vertical-align:middle;direction:ltr;float:ltr;line-height:22px;height:24px;font-size:.96em;margin:0px;padding:2px 4px 2px 6px;color:#000;background:#F8F9FA;border:1px solid #BAB;padding:2px 4px 2px 0px;"><a href="//commons.wikimedia.org/wiki/File:W3C_grn.svg" class="image"><img alt="W3C grn.svg" src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/W3C_grn.svg/40px-W3C_grn.svg.png" decoding="async" width="40" height="24" srcset="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/W3C_grn.svg/60px-W3C_grn.svg.png 1.5x, https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/W3C_grn.svg/80px-W3C_grn.svg.png 2x" data-file-width="288" data-file-height="174"></a>&nbsp;<div lang="en" dir="ltr" class="description en" style="display:inline;">The <a href="//commons.wikimedia.org/wiki/Help:SVG" title="Help:SVG">SVG</a> code is <span class="plainlinks" style="background:#CE8"><a rel="nofollow" class="external text" href="https://validator.w3.org/check?uri=https%3A%2F%2Fcommons.wikimedia.org%2Fwiki%2FSpecial%3AFilepath%2FCommon_crystal_radio_circuit.svg&amp;doctype=Inline&amp;ss=1#source">valid</a></span>.</div></div><div style="display:inline-block;width:auto;white-space:nowrap;vertical-align:middle;direction:ltr;float:ltr;line-height:22px;height:24px;font-size:.96em;margin:0px;padding:2px 4px 2px 6px;color:#000;background:#F8F9FA;border:1px solid #BAB;"><a href="//commons.wikimedia.org/wiki/File:Adobe-yes.svg" class="image"><img alt="Adobe-yes.svg" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Adobe-yes.svg/23px-Adobe-yes.svg.png" decoding="async" width="23" height="22" srcset="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Adobe-yes.svg/35px-Adobe-yes.svg.png 1.5x, https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Adobe-yes.svg/47px-Adobe-yes.svg.png 2x" data-file-width="342" data-file-height="322"></a>&nbsp;<div lang="en" dir="ltr" class="description en" style="display:inline;">This  diagram was created with <a href="https://en.wikipedia.org/wiki/Adobe_Illustrator" class="extiw" title="w:Adobe Illustrator">Adobe Illustrator</a>.</div></div></div></td>
+</tr>
+</tbody></table>
+</div>
+<h2><span class="mw-headline" id="Licensing">Licensing</span></h2>
+<table class="licensetpl" style="display:none">
+<tbody><tr>
+<td><span class="licensetpl_short">Public domain</span><span class="licensetpl_long">Public domain</span><span class="licensetpl_link_req">false</span><span class="licensetpl_attr_req">false</span>
+</td></tr></tbody></table>
+<table style="width:100%; clear:both; margin:0.5em auto; background-color:#f7f8ff; border:2px solid #8888aa; direction: ltr; border-spacing: 8px; padding: 0px;" class="layouttemplate mw-content-ltr" lang="en">
+<tbody><tr>
+<td><img alt="Public domain" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/PD-icon.svg/64px-PD-icon.svg.png" decoding="async" title="Public domain" width="64" height="64" srcset="https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/PD-icon.svg/96px-PD-icon.svg.png 1.5x, https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/PD-icon.svg/128px-PD-icon.svg.png 2x" data-file-width="196" data-file-height="196">
+</td>
+<td>This work has been released into the <b><a href="https://en.wikipedia.org/wiki/en:public_domain" class="extiw" title="w:en:public domain">public domain</a></b> by its author, <b><a href="//commons.wikimedia.org/wiki/User_talk:Chetvorno" title="User talk:Chetvorno">Chetvorno</a></b>. This applies worldwide.<br><small>In some countries this may not be legally possible; if so:</small><br><i><a href="//commons.wikimedia.org/wiki/User_talk:Chetvorno" title="User talk:Chetvorno">Chetvorno</a> grants anyone the right to use this work <b>for any purpose</b>, without any conditions, unless such conditions are required by law.</i>
+</td></tr></tbody></table><h1 class="mw-slot-header"><mediainfoslotheader></mediainfoslotheader></h1><mediainfoview style="display: none"><mediainfoviewcaptions><div class="wbmi-entityview-captionsPanel oo-ui-layout oo-ui-panelLayout oo-ui-panelLayout-framed"><h3 class="wbmi-entityview-captions-header">Captions</h3><div class="wbmi-entityview-caption oo-ui-layout oo-ui-horizontalLayout"><label class="wbmi-language-label oo-ui-widget oo-ui-widget-enabled oo-ui-labelElement-label oo-ui-labelElement oo-ui-labelWidget">English</label><div lang="en" dir="ltr" class="wbmi-caption-value">A circuit diagram of a crystal radio</div></div></div></mediainfoviewcaptions><mediainfoviewstatements><div id="P180" data-property="P180" data-statements="[{&quot;mainsnak&quot;:{&quot;snaktype&quot;:&quot;value&quot;,&quot;property&quot;:&quot;P180&quot;,&quot;hash&quot;:&quot;8b88a28090a4d5c59bbd4a95d7c5653174f9f903&quot;,&quot;datavalue&quot;:{&quot;value&quot;:{&quot;entity-type&quot;:&quot;item&quot;,&quot;numeric-id&quot;:1045991,&quot;id&quot;:&quot;Q1045991&quot;},&quot;type&quot;:&quot;wikibase-entityid&quot;}},&quot;type&quot;:&quot;statement&quot;,&quot;id&quot;:&quot;M10386181$e93f0b62-48e6-0284-e0bb-ef810e7d35d0&quot;,&quot;rank&quot;:&quot;normal&quot;},{&quot;mainsnak&quot;:{&quot;snaktype&quot;:&quot;value&quot;,&quot;property&quot;:&quot;P180&quot;,&quot;hash&quot;:&quot;870cc484baa29d0c59376b965891f7864b47a0be&quot;,&quot;datavalue&quot;:{&quot;value&quot;:{&quot;entity-type&quot;:&quot;item&quot;,&quot;numeric-id&quot;:11656,&quot;id&quot;:&quot;Q11656&quot;},&quot;type&quot;:&quot;wikibase-entityid&quot;}},&quot;type&quot;:&quot;statement&quot;,&quot;id&quot;:&quot;M10386181$36674d34-46de-a0aa-2fa1-a77771ff196b&quot;,&quot;rank&quot;:&quot;normal&quot;},{&quot;mainsnak&quot;:{&quot;snaktype&quot;:&quot;value&quot;,&quot;property&quot;:&quot;P180&quot;,&quot;hash&quot;:&quot;80a58bebf637db9134f70aa7ec562b75d06a6342&quot;,&quot;datavalue&quot;:{&quot;value&quot;:{&quot;entity-type&quot;:&quot;item&quot;,&quot;numeric-id&quot;:5322,&quot;id&quot;:&quot;Q5322&quot;},&quot;type&quot;:&quot;wikibase-entityid&quot;}},&quot;type&quot;:&quot;statement&quot;,&quot;id&quot;:&quot;M10386181$99c7de98-43ca-8155-fa85-cf6eb105fd02&quot;,&quot;rank&quot;:&quot;normal&quot;},{&quot;mainsnak&quot;:{&quot;snaktype&quot;:&quot;value&quot;,&quot;property&quot;:&quot;P180&quot;,&quot;hash&quot;:&quot;6bf340a1b36f657442ca9ddf976f35b7c3b38cb6&quot;,&quot;datavalue&quot;:{&quot;value&quot;:{&quot;entity-type&quot;:&quot;item&quot;,&quot;numeric-id&quot;:5325,&quot;id&quot;:&quot;Q5325&quot;},&quot;type&quot;:&quot;wikibase-entityid&quot;}},&quot;type&quot;:&quot;statement&quot;,&quot;id&quot;:&quot;M10386181$8a3cb9ab-4722-b080-27fc-fb783c49b7ce&quot;,&quot;rank&quot;:&quot;normal&quot;},{&quot;mainsnak&quot;:{&quot;snaktype&quot;:&quot;value&quot;,&quot;property&quot;:&quot;P180&quot;,&quot;hash&quot;:&quot;daa833db375d470a8fa539638c65f770d7e5acac&quot;,&quot;datavalue&quot;:{&quot;value&quot;:{&quot;entity-type&quot;:&quot;item&quot;,&quot;numeric-id&quot;:186819,&quot;id&quot;:&quot;Q186819&quot;},&quot;type&quot;:&quot;wikibase-entityid&quot;}},&quot;type&quot;:&quot;statement&quot;,&quot;id&quot;:&quot;M10386181$4b229cbc-4b52-80e9-f280-c391c5128895&quot;,&quot;rank&quot;:&quot;normal&quot;}]" data-formatvalue="{&quot;{\&quot;value\&quot;:{\&quot;entity-type\&quot;:\&quot;property\&quot;,\&quot;numeric-id\&quot;:180,\&quot;id\&quot;:\&quot;P180\&quot;},\&quot;type\&quot;:\&quot;wikibase-entityid\&quot;}&quot;:{&quot;text\/html&quot;:{&quot;en&quot;:{&quot;&quot;:&quot;<a target=\&quot;_blank\&quot; title=\&quot;d:Special:EntityPage\/P180\&quot; href=\&quot;https:\/\/www.wikidata.org\/wiki\/Special:EntityPage\/P180\&quot;>depicts<\/a>&quot;}},&quot;text\/plain&quot;:{&quot;en&quot;:{&quot;&quot;:&quot;depicts&quot;}}},&quot;{\&quot;value\&quot;:{\&quot;entity-type\&quot;:\&quot;item\&quot;,\&quot;numeric-id\&quot;:1045991,\&quot;id\&quot;:\&quot;Q1045991\&quot;},\&quot;type\&quot;:\&quot;wikibase-entityid\&quot;}&quot;:{&quot;text\/html&quot;:{&quot;en&quot;:{&quot;P180&quot;:&quot;<a target=\&quot;_blank\&quot; title=\&quot;d:Special:EntityPage\/Q1045991\&quot; href=\&quot;https:\/\/www.wikidata.org\/wiki\/Special:EntityPage\/Q1045991\&quot;>circuit diagram<\/a>&quot;}},&quot;text\/plain&quot;:{&quot;en&quot;:{&quot;P180&quot;:&quot;circuit diagram&quot;}}},&quot;{\&quot;value\&quot;:{\&quot;entity-type\&quot;:\&quot;item\&quot;,\&quot;numeric-id\&quot;:11656,\&quot;id\&quot;:\&quot;Q11656\&quot;},\&quot;type\&quot;:\&quot;wikibase-entityid\&quot;}&quot;:{&quot;text\/html&quot;:{&quot;en&quot;:{&quot;P180&quot;:&quot;<a target=\&quot;_blank\&quot; title=\&quot;d:Special:EntityPage\/Q11656\&quot; href=\&quot;https:\/\/www.wikidata.org\/wiki\/Special:EntityPage\/Q11656\&quot;>diode<\/a>&quot;}},&quot;text\/plain&quot;:{&quot;en&quot;:{&quot;P180&quot;:&quot;diode&quot;}}},&quot;{\&quot;value\&quot;:{\&quot;entity-type\&quot;:\&quot;item\&quot;,\&quot;numeric-id\&quot;:5322,\&quot;id\&quot;:\&quot;Q5322\&quot;},\&quot;type\&quot;:\&quot;wikibase-entityid\&quot;}&quot;:{&quot;text\/html&quot;:{&quot;en&quot;:{&quot;P180&quot;:&quot;<a target=\&quot;_blank\&quot; title=\&quot;d:Special:EntityPage\/Q5322\&quot; href=\&quot;https:\/\/www.wikidata.org\/wiki\/Special:EntityPage\/Q5322\&quot;>capacitor<\/a>&quot;}},&quot;text\/plain&quot;:{&quot;en&quot;:{&quot;P180&quot;:&quot;capacitor&quot;}}},&quot;{\&quot;value\&quot;:{\&quot;entity-type\&quot;:\&quot;item\&quot;,\&quot;numeric-id\&quot;:5325,\&quot;id\&quot;:\&quot;Q5325\&quot;},\&quot;type\&quot;:\&quot;wikibase-entityid\&quot;}&quot;:{&quot;text\/html&quot;:{&quot;en&quot;:{&quot;P180&quot;:&quot;<a target=\&quot;_blank\&quot; title=\&quot;d:Special:EntityPage\/Q5325\&quot; href=\&quot;https:\/\/www.wikidata.org\/wiki\/Special:EntityPage\/Q5325\&quot;>inductor<\/a>&quot;}},&quot;text\/plain&quot;:{&quot;en&quot;:{&quot;P180&quot;:&quot;inductor&quot;}}},&quot;{\&quot;value\&quot;:{\&quot;entity-type\&quot;:\&quot;item\&quot;,\&quot;numeric-id\&quot;:186819,\&quot;id\&quot;:\&quot;Q186819\&quot;},\&quot;type\&quot;:\&quot;wikibase-entityid\&quot;}&quot;:{&quot;text\/html&quot;:{&quot;en&quot;:{&quot;P180&quot;:&quot;<a target=\&quot;_blank\&quot; title=\&quot;d:Special:EntityPage\/Q186819\&quot; href=\&quot;https:\/\/www.wikidata.org\/wiki\/Special:EntityPage\/Q186819\&quot;>headphone<\/a>&quot;}},&quot;text\/plain&quot;:{&quot;en&quot;:{&quot;P180&quot;:&quot;headphone&quot;}}}}" class="wbmi-entityview-statementsGroup wbmi-entityview-statementsGroup-P180 oo-ui-layout oo-ui-panelLayout oo-ui-panelLayout-framed"><div class="wbmi-statements-widget"><div class="wbmi-statement-header"><div class="wbmi-entity-data"><div class="wbmi-entity-title"><h3 class="wbmi-statements-title">Items portrayed in this file</h3><h4 class="wbmi-entity-label"><bdi><a target="_blank" title="d:Special:EntityPage/P180" href="https://www.wikidata.org/wiki/Special:EntityPage/P180">depicts</a></bdi></h4></div></div></div><div class="wbmi-content-items-group"><div class="wbmi-item wbmi-item-read"><div data-guid="M10386181$e93f0b62-48e6-0284-e0bb-ef810e7d35d0" class="wbmi-item-container"><div class="wbmi-entity-header"><div class="wbmi-entity-data"><div class="wbmi-entity-title"><h4 class="wbmi-entity-label"><bdi><a target="_blank" title="d:Special:EntityPage/Q1045991" href="https://www.wikidata.org/wiki/Special:EntityPage/Q1045991">circuit diagram</a></bdi></h4></div></div></div></div></div><div class="wbmi-item wbmi-item-read"><div data-guid="M10386181$36674d34-46de-a0aa-2fa1-a77771ff196b" class="wbmi-item-container"><div class="wbmi-entity-header"><div class="wbmi-entity-data"><div class="wbmi-entity-title"><h4 class="wbmi-entity-label"><bdi><a target="_blank" title="d:Special:EntityPage/Q11656" href="https://www.wikidata.org/wiki/Special:EntityPage/Q11656">diode</a></bdi></h4></div></div></div></div></div><div class="wbmi-item wbmi-item-read"><div data-guid="M10386181$99c7de98-43ca-8155-fa85-cf6eb105fd02" class="wbmi-item-container"><div class="wbmi-entity-header"><div class="wbmi-entity-data"><div class="wbmi-entity-title"><h4 class="wbmi-entity-label"><bdi><a target="_blank" title="d:Special:EntityPage/Q5322" href="https://www.wikidata.org/wiki/Special:EntityPage/Q5322">capacitor</a></bdi></h4></div></div></div></div></div><div class="wbmi-item wbmi-item-read"><div data-guid="M10386181$8a3cb9ab-4722-b080-27fc-fb783c49b7ce" class="wbmi-item-container"><div class="wbmi-entity-header"><div class="wbmi-entity-data"><div class="wbmi-entity-title"><h4 class="wbmi-entity-label"><bdi><a target="_blank" title="d:Special:EntityPage/Q5325" href="https://www.wikidata.org/wiki/Special:EntityPage/Q5325">inductor</a></bdi></h4></div></div></div></div></div><div class="wbmi-item wbmi-item-read"><div data-guid="M10386181$4b229cbc-4b52-80e9-f280-c391c5128895" class="wbmi-item-container"><div class="wbmi-entity-header"><div class="wbmi-entity-data"><div class="wbmi-entity-title"><h4 class="wbmi-entity-label"><bdi><a target="_blank" title="d:Special:EntityPage/Q186819" href="https://www.wikidata.org/wiki/Special:EntityPage/Q186819">headphone</a></bdi></h4></div></div></div></div></div></div></div></div><div id="P6216" data-property="P6216" data-statements="[{&quot;mainsnak&quot;:{&quot;snaktype&quot;:&quot;value&quot;,&quot;property&quot;:&quot;P6216&quot;,&quot;hash&quot;:&quot;f88a8b9472789ca66067ed50ce20dc2650af5744&quot;,&quot;datavalue&quot;:{&quot;value&quot;:{&quot;entity-type&quot;:&quot;item&quot;,&quot;numeric-id&quot;:88088423,&quot;id&quot;:&quot;Q88088423&quot;},&quot;type&quot;:&quot;wikibase-entityid&quot;}},&quot;type&quot;:&quot;statement&quot;,&quot;id&quot;:&quot;M10386181$FF13B14B-23B5-4587-B85E-9B76CDD3F7E3&quot;,&quot;rank&quot;:&quot;normal&quot;}]" data-formatvalue="{&quot;{\&quot;value\&quot;:{\&quot;entity-type\&quot;:\&quot;property\&quot;,\&quot;numeric-id\&quot;:6216,\&quot;id\&quot;:\&quot;P6216\&quot;},\&quot;type\&quot;:\&quot;wikibase-entityid\&quot;}&quot;:{&quot;text\/html&quot;:{&quot;en&quot;:{&quot;&quot;:&quot;<a target=\&quot;_blank\&quot; title=\&quot;d:Special:EntityPage\/P6216\&quot; href=\&quot;https:\/\/www.wikidata.org\/wiki\/Special:EntityPage\/P6216\&quot;>copyright status<\/a>&quot;}},&quot;text\/plain&quot;:{&quot;en&quot;:{&quot;&quot;:&quot;copyright status&quot;}}},&quot;{\&quot;value\&quot;:{\&quot;entity-type\&quot;:\&quot;item\&quot;,\&quot;numeric-id\&quot;:88088423,\&quot;id\&quot;:\&quot;Q88088423\&quot;},\&quot;type\&quot;:\&quot;wikibase-entityid\&quot;}&quot;:{&quot;text\/html&quot;:{&quot;en&quot;:{&quot;P6216&quot;:&quot;<a target=\&quot;_blank\&quot; title=\&quot;d:Special:EntityPage\/Q88088423\&quot; href=\&quot;https:\/\/www.wikidata.org\/wiki\/Special:EntityPage\/Q88088423\&quot;>copyrighted, dedicated to the public domain by copyright holder<\/a>&quot;}},&quot;text\/plain&quot;:{&quot;en&quot;:{&quot;P6216&quot;:&quot;copyrighted, dedicated to the public domain by copyright holder&quot;}}}}" class="wbmi-entityview-statementsGroup wbmi-entityview-statementsGroup-P6216 oo-ui-layout oo-ui-panelLayout oo-ui-panelLayout-framed"><div class="wbmi-statements-widget"><div class="wbmi-statement-header"><div class="wbmi-entity-data"><div class="wbmi-entity-title"><h4 class="wbmi-entity-label"><bdi><a target="_blank" title="d:Special:EntityPage/P6216" href="https://www.wikidata.org/wiki/Special:EntityPage/P6216">copyright status</a></bdi></h4></div></div></div><div class="wbmi-content-items-group"><div class="wbmi-item wbmi-item-read"><div data-guid="M10386181$FF13B14B-23B5-4587-B85E-9B76CDD3F7E3" class="wbmi-item-container"><div class="wbmi-entity-header"><div class="wbmi-entity-data"><div class="wbmi-entity-title"><h4 class="wbmi-entity-label"><bdi><a target="_blank" title="d:Special:EntityPage/Q88088423" href="https://www.wikidata.org/wiki/Special:EntityPage/Q88088423">copyrighted, dedicated to the public domain by copyright holder</a></bdi></h4></div></div></div></div></div></div></div></div><div id="P275" data-property="P275" data-statements="[{&quot;mainsnak&quot;:{&quot;snaktype&quot;:&quot;value&quot;,&quot;property&quot;:&quot;P275&quot;,&quot;hash&quot;:&quot;c50f467f552350584a199dd3c9ceadf026c05180&quot;,&quot;datavalue&quot;:{&quot;value&quot;:{&quot;entity-type&quot;:&quot;item&quot;,&quot;numeric-id&quot;:98592850,&quot;id&quot;:&quot;Q98592850&quot;},&quot;type&quot;:&quot;wikibase-entityid&quot;}},&quot;type&quot;:&quot;statement&quot;,&quot;id&quot;:&quot;M10386181$2B1DAEE5-C2E8-46F8-B597-03C2C30967C6&quot;,&quot;rank&quot;:&quot;normal&quot;}]" data-formatvalue="{&quot;{\&quot;value\&quot;:{\&quot;entity-type\&quot;:\&quot;property\&quot;,\&quot;numeric-id\&quot;:275,\&quot;id\&quot;:\&quot;P275\&quot;},\&quot;type\&quot;:\&quot;wikibase-entityid\&quot;}&quot;:{&quot;text\/html&quot;:{&quot;en&quot;:{&quot;&quot;:&quot;<a target=\&quot;_blank\&quot; title=\&quot;d:Special:EntityPage\/P275\&quot; href=\&quot;https:\/\/www.wikidata.org\/wiki\/Special:EntityPage\/P275\&quot;>copyright license<\/a>&quot;}},&quot;text\/plain&quot;:{&quot;en&quot;:{&quot;&quot;:&quot;copyright license&quot;}}},&quot;{\&quot;value\&quot;:{\&quot;entity-type\&quot;:\&quot;item\&quot;,\&quot;numeric-id\&quot;:98592850,\&quot;id\&quot;:\&quot;Q98592850\&quot;},\&quot;type\&quot;:\&quot;wikibase-entityid\&quot;}&quot;:{&quot;text\/html&quot;:{&quot;en&quot;:{&quot;P275&quot;:&quot;<a target=\&quot;_blank\&quot; title=\&quot;d:Special:EntityPage\/Q98592850\&quot; href=\&quot;https:\/\/www.wikidata.org\/wiki\/Special:EntityPage\/Q98592850\&quot;>released into the public domain by the copyright holder<\/a>&quot;}},&quot;text\/plain&quot;:{&quot;en&quot;:{&quot;P275&quot;:&quot;released into the public domain by the copyright holder&quot;}}}}" class="wbmi-entityview-statementsGroup wbmi-entityview-statementsGroup-P275 oo-ui-layout oo-ui-panelLayout oo-ui-panelLayout-framed"><div class="wbmi-statements-widget"><div class="wbmi-statement-header"><div class="wbmi-entity-data"><div class="wbmi-entity-title"><h4 class="wbmi-entity-label"><bdi><a target="_blank" title="d:Special:EntityPage/P275" href="https://www.wikidata.org/wiki/Special:EntityPage/P275">copyright license</a></bdi></h4></div></div></div><div class="wbmi-content-items-group"><div class="wbmi-item wbmi-item-read"><div data-guid="M10386181$2B1DAEE5-C2E8-46F8-B597-03C2C30967C6" class="wbmi-item-container"><div class="wbmi-entity-header"><div class="wbmi-entity-data"><div class="wbmi-entity-title"><h4 class="wbmi-entity-label"><bdi><a target="_blank" title="d:Special:EntityPage/Q98592850" href="https://www.wikidata.org/wiki/Special:EntityPage/Q98592850">released into the public domain by the copyright holder</a></bdi></h4></div></div></div></div></div></div></div></div><div id="P571" data-property="P571" data-statements="[{&quot;mainsnak&quot;:{&quot;snaktype&quot;:&quot;value&quot;,&quot;property&quot;:&quot;P571&quot;,&quot;hash&quot;:&quot;641f3750e75362d5024a5e33df30b7872a3f0f0a&quot;,&quot;datavalue&quot;:{&quot;value&quot;:{&quot;time&quot;:&quot;+2010-05-18T00:00:00Z&quot;,&quot;timezone&quot;:0,&quot;before&quot;:0,&quot;after&quot;:0,&quot;precision&quot;:11,&quot;calendarmodel&quot;:&quot;http:\/\/www.wikidata.org\/entity\/Q1985727&quot;},&quot;type&quot;:&quot;time&quot;}},&quot;type&quot;:&quot;statement&quot;,&quot;id&quot;:&quot;M10386181$9D043350-244E-4EE9-A2D2-514E4C078B09&quot;,&quot;rank&quot;:&quot;normal&quot;}]" data-formatvalue="{&quot;{\&quot;value\&quot;:{\&quot;entity-type\&quot;:\&quot;property\&quot;,\&quot;numeric-id\&quot;:571,\&quot;id\&quot;:\&quot;P571\&quot;},\&quot;type\&quot;:\&quot;wikibase-entityid\&quot;}&quot;:{&quot;text\/html&quot;:{&quot;en&quot;:{&quot;&quot;:&quot;<a target=\&quot;_blank\&quot; title=\&quot;d:Special:EntityPage\/P571\&quot; href=\&quot;https:\/\/www.wikidata.org\/wiki\/Special:EntityPage\/P571\&quot;>inception<\/a>&quot;}},&quot;text\/plain&quot;:{&quot;en&quot;:{&quot;&quot;:&quot;inception&quot;}}},&quot;{\&quot;value\&quot;:{\&quot;time\&quot;:\&quot;+2010-05-18T00:00:00Z\&quot;,\&quot;timezone\&quot;:0,\&quot;before\&quot;:0,\&quot;after\&quot;:0,\&quot;precision\&quot;:11,\&quot;calendarmodel\&quot;:\&quot;http:\\\/\\\/www.wikidata.org\\\/entity\\\/Q1985727\&quot;},\&quot;type\&quot;:\&quot;time\&quot;}&quot;:{&quot;text\/html&quot;:{&quot;en&quot;:{&quot;P571&quot;:&quot;18 May 2010&quot;}},&quot;text\/plain&quot;:{&quot;en&quot;:{&quot;P571&quot;:&quot;18 May 2010&quot;}}}}" class="wbmi-entityview-statementsGroup wbmi-entityview-statementsGroup-P571 oo-ui-layout oo-ui-panelLayout oo-ui-panelLayout-framed"><div class="wbmi-statements-widget"><div class="wbmi-statement-header"><div class="wbmi-entity-data"><div class="wbmi-entity-title"><h4 class="wbmi-entity-label"><bdi><a target="_blank" title="d:Special:EntityPage/P571" href="https://www.wikidata.org/wiki/Special:EntityPage/P571">inception</a></bdi></h4></div></div></div><div class="wbmi-content-items-group"><div class="wbmi-item wbmi-item-read"><div data-guid="M10386181$9D043350-244E-4EE9-A2D2-514E4C078B09" class="wbmi-item-container"><div class="wbmi-entity-header"><div class="wbmi-entity-data"><div class="wbmi-entity-title"><h4 class="wbmi-entity-label"><bdi>18 May 2010</bdi></h4></div></div></div></div></div></div></div></div><div id="P7482" data-property="P7482" data-statements="[{&quot;mainsnak&quot;:{&quot;snaktype&quot;:&quot;value&quot;,&quot;property&quot;:&quot;P7482&quot;,&quot;hash&quot;:&quot;83568a288a8b8b4714a68e7239d8406833762864&quot;,&quot;datavalue&quot;:{&quot;value&quot;:{&quot;entity-type&quot;:&quot;item&quot;,&quot;numeric-id&quot;:66458942,&quot;id&quot;:&quot;Q66458942&quot;},&quot;type&quot;:&quot;wikibase-entityid&quot;}},&quot;type&quot;:&quot;statement&quot;,&quot;id&quot;:&quot;M10386181$0EF480C3-EF12-4696-8ACC-F6886CA911C8&quot;,&quot;rank&quot;:&quot;normal&quot;}]" data-formatvalue="{&quot;{\&quot;value\&quot;:{\&quot;entity-type\&quot;:\&quot;property\&quot;,\&quot;numeric-id\&quot;:7482,\&quot;id\&quot;:\&quot;P7482\&quot;},\&quot;type\&quot;:\&quot;wikibase-entityid\&quot;}&quot;:{&quot;text\/html&quot;:{&quot;en&quot;:{&quot;&quot;:&quot;<a target=\&quot;_blank\&quot; title=\&quot;d:Special:EntityPage\/P7482\&quot; href=\&quot;https:\/\/www.wikidata.org\/wiki\/Special:EntityPage\/P7482\&quot;>source of file<\/a>&quot;}},&quot;text\/plain&quot;:{&quot;en&quot;:{&quot;&quot;:&quot;source of file&quot;}}},&quot;{\&quot;value\&quot;:{\&quot;entity-type\&quot;:\&quot;item\&quot;,\&quot;numeric-id\&quot;:66458942,\&quot;id\&quot;:\&quot;Q66458942\&quot;},\&quot;type\&quot;:\&quot;wikibase-entityid\&quot;}&quot;:{&quot;text\/html&quot;:{&quot;en&quot;:{&quot;P7482&quot;:&quot;<a target=\&quot;_blank\&quot; title=\&quot;d:Special:EntityPage\/Q66458942\&quot; href=\&quot;https:\/\/www.wikidata.org\/wiki\/Special:EntityPage\/Q66458942\&quot;>original creation by uploader<\/a>&quot;}},&quot;text\/plain&quot;:{&quot;en&quot;:{&quot;P7482&quot;:&quot;original creation by uploader&quot;}}}}" class="wbmi-entityview-statementsGroup wbmi-entityview-statementsGroup-P7482 oo-ui-layout oo-ui-panelLayout oo-ui-panelLayout-framed"><div class="wbmi-statements-widget"><div class="wbmi-statement-header"><div class="wbmi-entity-data"><div class="wbmi-entity-title"><h4 class="wbmi-entity-label"><bdi><a target="_blank" title="d:Special:EntityPage/P7482" href="https://www.wikidata.org/wiki/Special:EntityPage/P7482">source of file</a></bdi></h4></div></div></div><div class="wbmi-content-items-group"><div class="wbmi-item wbmi-item-read"><div data-guid="M10386181$0EF480C3-EF12-4696-8ACC-F6886CA911C8" class="wbmi-item-container"><div class="wbmi-entity-header"><div class="wbmi-entity-data"><div class="wbmi-entity-title"><h4 class="wbmi-entity-label"><bdi><a target="_blank" title="d:Special:EntityPage/Q66458942" href="https://www.wikidata.org/wiki/Special:EntityPage/Q66458942">original creation by uploader</a></bdi></h4></div></div></div></div></div></div></div></div></mediainfoviewstatements></mediainfoview>
+<!-- 
+NewPP limit report
+Parsed by mw2391
+Cached time: 20230409223148
+Cache expiry: 1814400
+Reduced expiry: false
+Complications: []
+CPU time usage: 0.137 seconds
+Real time usage: 0.188 seconds
+Preprocessor visited node count: 5133/1000000
+Post‐expand include size: 35322/2097152 bytes
+Template argument size: 6635/2097152 bytes
+Highest expansion depth: 35/100
+Expensive parser function count: 3/500
+Unstrip recursion depth: 0/20
+Unstrip post‐expand size: 2190/5000000 bytes
+Lua time usage: 0.056/10.000 seconds
+Lua memory usage: 1947927/52428800 bytes
+Number of Wikibase entities loaded: 1/400
+-->
+<!--
+Transclusion expansion time report (%,ms,calls,template)
+100.00%  175.056      1 -total
+ 93.14%  163.047      1 Template:Information
+ 56.67%   99.210      1 Template:Igen
+ 48.31%   84.570      1 Template:InFi
+ 32.19%   56.350      1 Template:Created_with_Adobe_Illustrator
+ 18.96%   33.198      1 Template:SVGvalid
+ 18.12%   31.719      2 Template:Created_with/layout
+ 18.10%   31.693      1 Template:Ifsvg
+ 16.13%   28.245      2 Template:Autotranslate
+ 13.94%   24.406      1 Template:ValidSVG
+-->
+
+<!-- Saved in parser cache with key commonswiki:pcache:idhash:10386181-0!wb=3 and timestamp 20230409223147 and revision id 456358787. Rendering was triggered because: page-view
+ -->
+</div></div>
+<h2 id="filehistory">File history</h2>
+<div id="mw-imagepage-section-filehistory">
+<p>Click on a date/time to view the file as it appeared at that time.
+</p>
+<table class="wikitable filehistory">
+<tr><th></th><th>Date/Time</th><th>Thumbnail</th><th>Dimensions</th><th>User</th><th>Comment</th></tr>
+<tr><td>current</td><td class="filehistory-selected" style="white-space: nowrap;"><a href="//upload.wikimedia.org/wikipedia/commons/b/b9/Common_crystal_radio_circuit.svg">20:03, 19 July 2018</a></td><td><a href="//upload.wikimedia.org/wikipedia/commons/b/b9/Common_crystal_radio_circuit.svg"><img alt="Thumbnail for version as of 20:03, 19 July 2018" src="//upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Common_crystal_radio_circuit.svg/120px-Common_crystal_radio_circuit.svg.png" decoding="async" width="120" height="99" data-file-width="517" data-file-height="426" /></a></td><td>517 × 426 <span style="white-space: nowrap;">(23 KB)</span></td><td>Chetvorno</td><td dir="ltr">Improved placement of parts, simplified labels, added label for antenna</td></tr>
+<tr><td></td><td style="white-space: nowrap;"><a href="//upload.wikimedia.org/wikipedia/commons/archive/b/b9/20180719200302%21Common_crystal_radio_circuit.svg">02:42, 28 January 2016</a></td><td><a href="//upload.wikimedia.org/wikipedia/commons/archive/b/b9/20180719200302%21Common_crystal_radio_circuit.svg"><img alt="Thumbnail for version as of 02:42, 28 January 2016" src="//upload.wikimedia.org/wikipedia/commons/thumb/archive/b/b9/20180719200302%21Common_crystal_radio_circuit.svg/120px-Common_crystal_radio_circuit.svg.png" decoding="async" width="120" height="99" data-file-width="517" data-file-height="426" /></a></td><td>517 × 426 <span style="white-space: nowrap;">(33 KB)</span></td><td>Chetvorno</td><td dir="ltr">Increased line width and tweaked location of antenna and ground</td></tr>
+<tr><td></td><td style="white-space: nowrap;"><a href="//upload.wikimedia.org/wikipedia/commons/archive/b/b9/20160128024228%21Common_crystal_radio_circuit.svg">21:54, 9 June 2010</a></td><td><a href="//upload.wikimedia.org/wikipedia/commons/archive/b/b9/20160128024228%21Common_crystal_radio_circuit.svg"><img alt="Thumbnail for version as of 21:54, 9 June 2010" src="//upload.wikimedia.org/wikipedia/commons/thumb/archive/b/b9/20160128024228%21Common_crystal_radio_circuit.svg/102px-Common_crystal_radio_circuit.svg.png" decoding="async" width="102" height="120" data-file-width="364" data-file-height="426" /></a></td><td>364 × 426 <span style="white-space: nowrap;">(28 KB)</span></td><td>Chetvorno</td><td dir="ltr">Replaced circuit diagram with identical one lacking blocking capacitor</td></tr>
+<tr><td></td><td style="white-space: nowrap;"><a href="//upload.wikimedia.org/wikipedia/commons/archive/b/b9/20100609215428%21Common_crystal_radio_circuit.svg">04:30, 21 May 2010</a></td><td><a href="//upload.wikimedia.org/wikipedia/commons/archive/b/b9/20100609215428%21Common_crystal_radio_circuit.svg"><img alt="Thumbnail for version as of 04:30, 21 May 2010" src="//upload.wikimedia.org/wikipedia/commons/thumb/archive/b/b9/20100609215428%21Common_crystal_radio_circuit.svg/120px-Common_crystal_radio_circuit.svg.png" decoding="async" width="120" height="99" data-file-width="517" data-file-height="426" /></a></td><td>517 × 426 <span style="white-space: nowrap;">(34 KB)</span></td><td>Chetvorno</td><td dir="ltr">{{Information |Description={{en|Common <a href="/w/index.php?title=Wikipedia:Crystal_radio&amp;action=edit&amp;redlink=1" class="new" title="Wikipedia:Crystal radio (page does not exist)">Wikipedia:crystal radio</a> circuit, used in educational crystal radios sold today.  The tuned circuit &#039;&#039;L1&#039;&#039;, &#039;&#039;C1&#039;&#039; is tuned to different stations by a variable capacitor. The crystal detector &#039;&#039;D1&#039;&#039; rectifies the</td></tr>
+</table>
+
+</div>
+<h2 id="filelinks">File usage</h2>
+<div id='mw-imagepage-section-linkstoimage'>
+<div class="linkstoimage" id="linkstoimage">The following pages on the English Wikipedia use this file (pages on other projects are not listed):</div><ul class="mw-imagepage-linkstoimage">
+<li class="mw-imagepage-linkstoimage-ns0"><a href="/wiki/Crystal_detector" title="Crystal detector">Crystal detector</a></li>
+<li class="mw-imagepage-linkstoimage-ns0"><a href="/wiki/Crystal_radio" title="Crystal radio">Crystal radio</a></li>
+</ul>
+</div>
+<h2 id="globalusage">Global file usage</h2>
+<div id="mw-imagepage-section-globalusage"><p>The following other wikis use this file:
+</p><ul>
+<li class='mw-gu-onwiki-no_wikipedia_org'>Usage on no.wikipedia.org
+<ul>	<li><a class="external" href="https://no.wikipedia.org/wiki/Krystallmottaker">Krystallmottaker</a></li>
+	<li><a class="external" href="https://no.wikipedia.org/wiki/Bruker:Phidus/sandkasse-14">Bruker:Phidus/sandkasse-14</a></li>
+</ul></li>
+<li class='mw-gu-onwiki-zh_wikipedia_org'>Usage on zh.wikipedia.org
+<ul>	<li><a class="external" href="https://zh.wikipedia.org/wiki/%E7%9F%BF%E7%9F%B3%E6%94%B6%E9%9F%B3%E6%9C%BA">矿石收音机</a></li>
+</ul></li>
+</ul>
+</div><h2 id="metadata">Metadata</h2>
+<div class="mw-imagepage-section-metadata"><p>This file contains additional information, probably added from the digital camera or scanner used to create or digitize it.
+</p><p>
+If the file has been modified from its original state, some details may not fully reflect the modified file.</p><table id="mw_metadata" class="mw_metadata collapsed">
+<tbody><tr class="exif-imagewidth mw-metadata-collapsible"><th>Width</th><td>516.64417</td></tr><tr class="exif-imagelength mw-metadata-collapsible"><th>Height</th><td>426.11536</td></tr></tbody></table>
+</div><!--esi <esi:include src="/esitest-fa8a495983347898/content" /> --><noscript><img src="//en.wikipedia.org/wiki/Special:CentralAutoLogin/start?type=1x1" alt="" title="" width="1" height="1" style="border: none; position: absolute;" /></noscript>
+<div class="printfooter" data-nosnippet="">Retrieved from "<a dir="ltr" href="https://en.wikipedia.org/wiki/File:Common_crystal_radio_circuit.svg">https://en.wikipedia.org/wiki/File:Common_crystal_radio_circuit.svg</a>"</div></div>
+					<div id="catlinks" class="catlinks catlinks-allhidden" data-mw="interface"></div>
+				</div>
+			</main>
+			
+		</div>
+		<div class="mw-footer-container">
+			
+<footer id="footer" class="mw-footer" role="contentinfo" >
+	<ul id="footer-info">
+</ul>
+
+	<ul id="footer-places">
+	<li id="footer-places-privacy"><a href="https://foundation.wikimedia.org/wiki/Privacy_policy">Privacy policy</a></li>
+	<li id="footer-places-about"><a href="/wiki/Wikipedia:About">About Wikipedia</a></li>
+	<li id="footer-places-disclaimers"><a href="/wiki/Wikipedia:General_disclaimer">Disclaimers</a></li>
+	<li id="footer-places-contact"><a href="//en.wikipedia.org/wiki/Wikipedia:Contact_us">Contact Wikipedia</a></li>
+	<li id="footer-places-mobileview"><a href="//en.m.wikipedia.org/w/index.php?title=File:Common_crystal_radio_circuit.svg&amp;mobileaction=toggle_view_mobile" class="noprint stopMobileRedirectToggle">Mobile view</a></li>
+	<li id="footer-places-developers"><a href="https://developer.wikimedia.org">Developers</a></li>
+	<li id="footer-places-statslink"><a href="https://stats.wikimedia.org/#/en.wikipedia.org">Statistics</a></li>
+	<li id="footer-places-cookiestatement"><a href="https://foundation.wikimedia.org/wiki/Cookie_statement">Cookie statement</a></li>
+</ul>
+
+	<ul id="footer-icons" class="noprint">
+	<li id="footer-copyrightico"><a href="https://wikimediafoundation.org/"><img src="/static/images/footer/wikimedia-button.png" srcset="/static/images/footer/wikimedia-button-1.5x.png 1.5x, /static/images/footer/wikimedia-button-2x.png 2x" width="88" height="31" alt="Wikimedia Foundation" loading="lazy" /></a></li>
+	<li id="footer-poweredbyico"><a href="https://www.mediawiki.org/"><img src="/static/images/footer/poweredby_mediawiki_88x31.png" alt="Powered by MediaWiki" srcset="/static/images/footer/poweredby_mediawiki_132x47.png 1.5x, /static/images/footer/poweredby_mediawiki_176x62.png 2x" width="88" height="31" loading="lazy"/></a></li>
+</ul>
+
+</footer>
+
+		</div>
+	</div> 
+</div> 
+<script>(RLQ=window.RLQ||[]).push(function(){mw.config.set({"wgHostname":"mw2361","wgBackendResponseTime":123,"wgPageParseReport":{"limitreport":{"cputime":"0.001","walltime":"0.001","ppvisitednodes":{"value":2,"limit":1000000},"postexpandincludesize":{"value":0,"limit":2097152},"templateargumentsize":{"value":0,"limit":2097152},"expansiondepth":{"value":1,"limit":100},"expensivefunctioncount":{"value":0,"limit":500},"unstrip-depth":{"value":0,"limit":20},"unstrip-size":{"value":0,"limit":5000000},"entityaccesscount":{"value":0,"limit":400},"timingprofile":["100.00%    0.000      1 -total"]},"cachereport":{"origin":"mw2361","timestamp":"20230420053710","ttl":1814400,"transientcontent":false}}});});</script>
+</body>
+</html>

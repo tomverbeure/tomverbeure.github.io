@@ -1,0 +1,24 @@
+
+Source: https://users.ntplx.net/~andrew/gps/58532Amod.html
+
+The Symmetricom 58532A L1 GPS Antenna only support 5V (4.5-5.5 VDC). Most of the GPS systems (like the TS2100) 
+supported only 5V DC bias voltage over the antenna feed. Some of the newer systems, like the 
+Microsemi/Symmetricom SyncServer, provide a 12V DC bias voltage on the antenna feed.
+
+The Symmetricom 58532A antenna includes NO voltage regulator and a TVS zener diode for surge and over voltage 
+protection. This has a clamp voltage of about 10v. The internal circuit includes an amplifier and bandpass filter. 
+These devices are driven by a simple resistor voltage divider and makes about 3.3V from a 5V feed (@20ma).
+
+The board layout includes space for a LDO regulator and needed ceramic capacitors but they were not included 
+(for cost reasons?). It's a simple process to change/remove/add the needed components to provide on-board 
+voltage regulation supporting 5 to 15 volts from the antenna feed.
+
+Parts needed:
+
+* 4.15v LDO voltage regulator (AP7380-41Y-13)
+* 10uf 25v ceramic capacitor (C1206C106K3RACTU)
+* 10uf 50v ceramic capacitor (C1210C106K5RACTU)
+* 15V TVS zener diode (SMA6J15A-TR)
+* Parts to remove:
+* 47 ohm resister
+* 5V TVS zener diode

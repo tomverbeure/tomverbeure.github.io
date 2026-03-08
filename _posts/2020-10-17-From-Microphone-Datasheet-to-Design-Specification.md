@@ -19,7 +19,7 @@ The application itself is only a means to an end. Most important is understandin
 how of every design decision along the way: if there's, say, a filter with a 70dB stop band
 attenuation at 10kHz, I want to know the justification for that.
 
-After diving into [CIC filters](/2020/09/30/Moving-Average-and-CIC-Filters.html), 
+After diving into [CIC filters](/2020/09/30/Moving-Average-and-CIC-Filters.html),
 the characteristics of the 
 [sigma-delta generated PDM signal of a MEMS microphone](/2020/10/04/PDM-Microphones-and-Sigma-Delta-Conversion.html), 
 and [learning how to come up with FIR filter coefficients](/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html)
@@ -180,7 +180,7 @@ We can finally move on the requirements of our design:
 # Stop Band Attenuation for a Decimation Filter
 
 I already wrote about the 
-[Basics of Decimation](2020/09/30/Moving-Average-and-CIC-Filters.html#intermission-the-basics-of-decimation)
+[Basics of Decimation](/2020/09/30/Moving-Average-and-CIC-Filters.html#intermission-the-basics-of-decimation)
 earlier, but didn't mention one of the most important parts:
 
 **Higher decimation ratios require higher stop band attenuation to get the same noise floor.**

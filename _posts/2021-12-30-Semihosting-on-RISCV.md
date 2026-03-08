@@ -20,7 +20,7 @@ toolbox.
 
 When running code on an embedded CPU, it's very often helpful to have an interface to a
 PC to run some kind of console or terminal for control, debugging, and logging. A UART is obviously
-very popular for this, but I often also use a [JTAG UART](2021/05/02/Intel-JTAG-UART.html), 
+very popular for this, but I often also use a [JTAG UART](/2021/05/02/Intel-JTAG-UART.html), 
 which can be easier to integrate if you already have a JTAG connection to for FPGA for 
 other reasons.
 

@@ -66,7 +66,7 @@ have tons of different operations that are both cascaded sequentially and workin
 Even if the latencies through each core math block were fixed, it'd still be a real pain
 to ensure that all operands to all blocks were correctly latency aligned.
 
-Comes to the rescue: the [SpinalHDL LatencyAnalysis](https://spinalhdl.github.io/SpinalDoc/spinal/lib/utils/#special-utilities)
+Comes to the rescue: the [SpinalHDL LatencyAnalysis](https://spinalhdl.github.io/SpinalDoc-RTD/master/SpinalHDL/Libraries/utils.html#special-utilities)
 function!
 
 Its function is a simple as it is brilliant: given a set of signals that are connected to each other

@@ -69,8 +69,11 @@ Here's the recipe that worked for my Ubuntu 18.04 distribution:
 sudo apt-get install linux-headers-$(uname -r)
     ```
 
-    In theory, you will need to redo this step whenever you (or the automated updating system of your
-    distribution!) upgrade your kernel to a later version.
+    `uname -r` returns the directory name for the Linux kernel that you're running.
+    In my case, it's `5.3.0-53-generic`.
+
+    You will need to redo this step whenever you (or the automated updating system of your
+    distribution!) upgrade your kernel to a later version. It's really annoying...
 
 * Download the latest version of the Linux-GPIB package
 
@@ -92,7 +95,7 @@ sudo make install
     This will install the gpib drivers in `/lib/module/<kernel version>/gpib`:
 
     ```
-cd /lib/modules/5.3.0-53-generic/gpib
+cd /lib/modules/$(uname -r)/gpib
 find .
     ```
     ```
@@ -444,4 +447,8 @@ scopehal/glscopeclient, I will write a TCP/IP to GPIB server instead. `glscopecl
 has a TCP/IP socket based transport driver, so by using such a server, no additional transport driver 
 would need to be written.
 
+
+# References
+
+* [Installing Linux GPIB Drivers for the Agilent 82357B](/2023/01/29/Installing-Linux-GPIB-Drivers-for-the-Agilent-82357B.html)
 

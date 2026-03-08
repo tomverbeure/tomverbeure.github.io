@@ -88,10 +88,10 @@ The board was designed with [KiCAD](https://kicad.org/).
 The PMOD was tested on an [Intel Max10 development board](https://www.intel.com/content/www/us/en/programmable/products/boards_and_kits/dev-kits/altera/max-10-fpga-development-kit.html), 
 but it should be trivial to make it work on any FPGA board that has a PMOD connector.
 
-The [RTL](blob/main/fpga/spinal/src/main/scala/spdif/SpdifOut.scala) is written in 
+The [RTL](https://github.com/tomverbeure/spdif_pmod/blob/main/fpga/spinal/src/main/scala/spdif/SpdifOut.scala) is written in 
 [SpinalHDL](https://spinalhdl.github.io/SpinalDoc-RTD/), which gets converted into Verilog.
 
-There's also a small [testbench](tree/main/fpga/tb/spdif) that uses 
+There's also a small [testbench](https://github.com/tomverbeure/spdif_pmod/tree/main/fpga/tb/spdif) that uses 
 [CXXRTL](https://tomverbeure.github.io/2020/08/08/CXXRTL-the-New-Yosys-Simulation-Backend.html) 
 to simulate the whole thing. The testbench is not self-checking. You'll need to eyeball the waveforms to verify
 that things are working...

@@ -27,7 +27,7 @@ He also wrote [a blog post](https://kbob.github.io/2019/08/23/led-cubes) with
 a history of LED cubes as well as some implementation details.
 
 At the Hackaday Superconference 2019, [Greg Davill](https://twitter.com/GregDavill) 
-took things to the [next level](https://gregdavill.com/blog/2020/6/13/miniature-3456x-led-cube). 
+took things to the [next level](https://hackaday.com/2019/09/05/handmade-led-cube-is-a-work-of-art/)
 After first building something with off-the-shelve LED matrix panels, like kbob and everybody
 else, he designed one from scratch, LED PCB and aluminum frame included. 
 
@@ -476,7 +476,7 @@ glue on each bolt to create an insulation layer.
 ![Screw with layer of UV hardening glue](/assets/led_cube/uv_hardening_glue.jpg)
 
 These glues sell for just a couple of dollars on AliExpress or 
-[Amazon](https://www.amazon.com/Paddsun-Second-Plastic-Welding-Compound/dp/B078V45GYY) and
+Amazon and
 despite the terrible chemical smell, they're awesome. I use them all the time to hold delicately 
 soldered wires in place on a PCB.
 
