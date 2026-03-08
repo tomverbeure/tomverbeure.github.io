@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Galois Field Mastrovito Multiplier Fail
-date:  2023-09-16 00:00:00 -1000
+date:  2026-03-08 00:00:00 -1000
 categories:
 ---
 

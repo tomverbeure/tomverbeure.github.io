@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Galois Field Arithmetic
-date:  2023-09-05 00:00:00 -1000
+date:  2026-03-08 00:00:00 -1000
 categories:
 ---
 
