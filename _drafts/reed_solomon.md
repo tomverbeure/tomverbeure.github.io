@@ -316,4 +316,6 @@ however, the correct value is the result that is most common.
 
     [Encoder doesn't cover all cases?](https://github.com/RedFlag2017/rs-codec/blob/master/00_src/rs_enc/gf256mul.v)
 
+* [A Low-Power Design for Reed Solomon Decoders - Hsie-Chia Chang and Chen-Yi Lee](/assets/reed_solomon/doc/A Low-Power Design for Reed-Solomon Decoders.pdf)
+* [High-Speed Architectures for Reed–Solomon Decoders - Dilip V. Sarwate and Naresh R. Shanbhag](/assets/reed_solomon/doc/High-Speed Architectures_for_RS_dec.pdf)
 
