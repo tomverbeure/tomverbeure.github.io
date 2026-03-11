@@ -1207,7 +1207,9 @@
                 <li>The maximum BW in the far right column is the number of real bits that can transfered, after
                     correction for symbol coding (8/10b, 128/132b, 16/18b) and, if required by the specification,
                     Reed-Solomon forward error correction (FEC) overhead. Some protocols, such as non-UBR DisplayPort 
-                    rates, support but don't require FEC. In that case, the maximum BW assumes FEC is not used.</li>
+                    rates, support but don't require FEC. In that case, the maximum BW assumes FEC is not used.
+                    DP UBR modes require the use of RS(198,194) FEC. HDMI FRL uses RS(544,514). Non-UBR DP
+                    mode support RS(254,250), but it's only mandatory when DSC is enabled.</li>
             </ul>
 
             <script type="text/javascript">
@@ -1333,17 +1335,18 @@
                                            13;          // RFC 4175 additional header
 
                     var transports = {
-                        "dp_ubr20"          : { name: "DisplayPort UBR20 (20 GHz)",         dsc:1, bw: 20000000000*4 /132*128 /254*250 },
-                        "dp_ubr13"          : { name: "DisplayPort UBR13.5 (13.5 GHz)",     dsc:1, bw: 13500000000*4 /132*128 /254*250 },
-                        "dp_ubr10"          : { name: "DisplayPort UBR10 (10 GHz)",         dsc:1, bw: 10000000000*4 /132*128 /254*250 },
+                        // UBR use RS(198,194), lower speeds use RS(254,250) but it's optional.
+                        "dp_ubr20"          : { name: "DisplayPort UBR20 (20 GHz)",         dsc:1, bw: 20000000000*4 /132*128 /198*194 },
+                        "dp_ubr13"          : { name: "DisplayPort UBR13.5 (13.5 GHz)",     dsc:1, bw: 13500000000*4 /132*128 /198*194 },
+                        "dp_ubr10"          : { name: "DisplayPort UBR10 (10 GHz)",         dsc:1, bw: 10000000000*4 /132*128 /198*194 },
                         "dp_hbr3"           : { name: "DisplayPort HBR3 (8.1 GHz)",         dsc:1, bw: 8100000000 *4 /10*8 },
                         "dp_hbr2"           : { name: "DisplayPort HBR2 (5.4 GHz)",         dsc:1, bw: 5400000000 *4 /10*8 },
                         "dp_hbr"            : { name: "DisplayPort HBR (2.7 GHz)",          dsc:1, bw: 2700000000 *4 /10*8 },
                         "dp_rbr"            : { name: "DisplayPort RBR (1.64 GHz)",         dsc:1, bw: 1640000000 *4 /10*8 },
 
-                        "dpam_ubr20"        : { name: "DP UBR20 Type-C Alt Mode (20 GHz)",      dsc:1, bw: 20000000000*2 /132*128 /254*250 },
-                        "dpam_ubr13"        : { name: "DP UBR13.5 Type-C Alt Mode (13.5 GHz)",  dsc:1, bw: 13500000000*2 /132*128 /254*250 },
-                        "dpam_ubr10"        : { name: "DP UBR10 Type-C Alt Mode (10 GHz)",      dsc:1, bw: 10000000000*2 /132*128 /254*250 },
+                        "dpam_ubr20"        : { name: "DP UBR20 Type-C Alt Mode (20 GHz)",      dsc:1, bw: 20000000000*2 /132*128 /198*194 },
+                        "dpam_ubr13"        : { name: "DP UBR13.5 Type-C Alt Mode (13.5 GHz)",  dsc:1, bw: 13500000000*2 /132*128 /198*194 },
+                        "dpam_ubr10"        : { name: "DP UBR10 Type-C Alt Mode (10 GHz)",      dsc:1, bw: 10000000000*2 /132*128 /198*194 },
                         "dpam_hbr3"         : { name: "DP HBR3 Type-C Alt Mode (8.1 GHz)",      dsc:1, bw: 8100000000 *2 /10*8 },
                         "dpam_hbr2"         : { name: "DP HBR2 Type-C Alt Mode (5.4 GHz)",      dsc:1, bw: 5400000000 *2 /10*8 },
                         "dpam_hbr"          : { name: "DP HBR Type-C Alt Mode (2.7 GHz)",       dsc:1, bw: 2700000000 *2 /10*8 },
