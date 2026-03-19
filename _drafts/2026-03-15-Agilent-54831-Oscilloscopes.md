@@ -8,6 +8,49 @@ categories:
 * TOC
 {:toc}
 
+# Introduction
+
+After 6 months of deprivation, a new season of 
+[Silicon Valley Electronics Flea markets](https://www.electronicsfleamarket.com/)
+is upon us! I never make it there at opening time, an ungodly 6am. Even
+6:45am is a struggle, but it was not a moment too soon, because one vendor
+was selling not one but two broken Agilent 54831 oscilloscopes, but only if you 
+bought them together, for $200. While I considered the marital implications of 
+having to defend 2 additional boat anchors in my garage, others were lining up 
+after me, so I made the courageous executive decision to take the deal.
+
+
+# The Agilent 54831
+
+The specs of the 54831 are still pretty decent by hobbyist standards: 
+
+* 4 channels
+* 600 MHz BW
+* 4 Gsps
+
+There are some limitations: channels 1 and 2 and channels 3 and 4 share the same
+AD convertor. To reach 4 Gsps, you can only either channel 1 or channel 2 but not
+both, and either channel 3 or channel 4 but not both. Otherwise the sample rate
+drops to 2 Gsps.
+
+The 54832 is the slightly more potent sibling of the 54831 with an analog bandwidth 
+of 1 GHz, but just like the Tektronix TDS 754D and the TDS 784D, the 54831 can be
+upgraded to a 54832 with a single resistor modification.
+
+The 54831 dates from the mid nineties and is one of the earlier lines of test
+equipment that use Windows as their base operating system.  There are a few 
+revisions, some earlier models ran Windows 98 but soon HP switched to Windows
+XP. 
+
+# 
+
+my units are a 54831M and a 54831B. The former runs Windows 98, the
+latter Windows XP. Or at least, that's what they're supposed to run based on the
+Microsoft license stickers at the back of the units. In reality, neither of them
+worked, as disclosed by the seller, but in different ways:
+
+* other than emitting long beeps, the 54831M doesn't do anything at all. Ther
+
 * 54831M 
 * Doesn't boot
     * Long beeps
