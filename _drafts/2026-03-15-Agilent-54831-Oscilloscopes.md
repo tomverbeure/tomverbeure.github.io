@@ -42,6 +42,9 @@ EEVblog:
 
 Others:
 
+* [groups.io: Capacitor and thermal paste](https://groups.io/g/HP-Agilent-Keysight-equipment/topic/agilent_infiniium_54831m/117057746)
+* [5V supply for adapter](https://wonghoi.humgar.com/blog/2016/07/)
+
 * [Agilent 54831B Oscilloscope Taming](https://tolisdiy.com/2019/10/04/agilent-54831b-oscilloscope-taming/)
 
 * [Windows XP ISO](https://archive.org/details/windows-xp-all-sp-msdn-iso-files-en-de-ru-tr-x86-x64)
