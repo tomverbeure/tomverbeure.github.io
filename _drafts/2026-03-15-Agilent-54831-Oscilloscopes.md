@@ -57,7 +57,7 @@ worked, as disclosed by the seller, but in different ways:
 * Windows 98
 * 10 GB IBM TravelStar
     * Disk image OK
-* CPU: Pentium III SL52R - Socket PG370
+* CPU: Pentium III SL52R - Socket PG370 - Coppermine - 1 GHz, 256 KB L2
     * Plug and unplug fixed non-boot issue
 * Cooler: Thermaltalk Golden Orb Mini
    * https://www.electromyne.de/public/catalog_xmlxslproducts.aspx?art=viewproduct&suid=11565&productid=1028313753&zid=210bd6ab-f876-4795-91f7-6b11a146206f&ln=gb
@@ -96,3 +96,5 @@ Others:
 * [groups.io - 54831B drive image](https://groups.io/g/HP-Agilent-Keysight-equipment/topic/54831b_drive_image/75212695)
 
 # References
+
+* [Pentium III thermal design guide](https://download.intel.com/design/intarch/applnots/27332504.pdf)
