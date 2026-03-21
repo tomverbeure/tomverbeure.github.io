@@ -29,12 +29,12 @@ The specs of the 54831 are still pretty decent by hobbyist standards:
 * 4 Gsps
 
 There are some limitations: channels 1 and 2 and channels 3 and 4 share the same
-AD convertor. To reach 4 Gsps, you can only either channel 1 or channel 2 but not
+AD converter. To reach 4 Gsps, you can use only either channel 1 or channel 2 but not
 both, and either channel 3 or channel 4 but not both. Otherwise the sample rate
 drops to 2 Gsps.
 
 The 54832 is the slightly more potent sibling of the 54831 with an analog bandwidth 
-of 1 GHz, but just like the Tektronix TDS 754D and the TDS 784D, the 54831 can be
+of 1 GHz, but like the Tektronix TDS 754D and the TDS 784D, the 54831 can be
 upgraded to a 54832 with a single resistor modification.
 
 The 54831 dates from the mid nineties and is one of the earlier lines of test
@@ -42,14 +42,32 @@ equipment that use Windows as their base operating system.  There are a few
 revisions, some earlier models ran Windows 98 but soon HP switched to Windows
 XP. 
 
-# 
+For many years, Agilent used a Motorola VP22 motherboard to manage the test equipment 
+and that's mine have as well. They're
 
-my units are a 54831M and a 54831B. The former runs Windows 98, the
-latter Windows XP. Or at least, that's what they're supposed to run based on the
+# My Units
+
+**Unit A: 54831 ** 
+
+* Motorola VP22
+* Pentium III 1GHz (Xeon, Cascades, SL52)
+* 256MB of RAM
+* 10 GB IBM TravelStar hardrive
+* CDROM drive
+* LS120 floppy drive
+* Customer hardware numbers:
+* VIN
+* OS
+* Scope software
+
+
+
+The units that I bought are a 54831M and a 54831B. The former runs Windows 98, the
+latter Windows XP, or at least that's what they're supposed to run based on the
 Microsoft license stickers at the back of the units. In reality, neither of them
 worked, as disclosed by the seller, but in different ways:
 
-* other than emitting long beeps, the 54831M doesn't do anything at all. Ther
+* other than emitting long beeps, the 54831M didn't do anything at all. 
 
 * 54831M 
 * Doesn't boot
