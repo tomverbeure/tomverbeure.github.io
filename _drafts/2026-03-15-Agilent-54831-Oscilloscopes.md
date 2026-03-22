@@ -119,13 +119,13 @@ The other components are standard PC stuff:
 # Unit A: Agilent 54831M
 
 The M version is the military version. That doesn't mean it has different specs, it's
-just that it has been assembled in Singapore, a country that's considered more trustworthy... or
-so 
-[someone claims on The Internet](https://www.eevblog.com/forum/testgear/agilent-54831d-modernising/msg4616725/#msg4616725).
+just that it has been assembled in Singapore, a country that's considered more trustworthy than
+Malaysia where scopes were usually assembled (or so 
+[someone claims on The Internet](https://www.eevblog.com/forum/testgear/agilent-54831d-modernising/msg4616725/#msg4616725).)
 
 ![Unit A backside](/assets/hp54831/unit_a_backside.jpg)
 
-Either way, the seller had claimed that this unit didn't work at all, and he was right.
+Either way, the seller claimed that this unit didn't work at all, and he was right.
 When plugging the power cord, it immediately started to squeal long ominous beeps and that
 was it.
 
