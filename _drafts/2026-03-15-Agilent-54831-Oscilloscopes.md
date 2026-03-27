@@ -14,10 +14,10 @@ After 6 months of deprivation, a new season of
 [Silicon Valley Electronics Flea markets](https://www.electronicsfleamarket.com/)
 is upon us! I never make it there at opening time, an ungodly 6am. Even
 getting there at 6:45am was a struggle, but not a moment too soon because one vendor
-was selling not one but two broken Agilent 54831 oscilloscopes, but only if you 
-bought them together, for $200. While I considered the marital implications of 
-having to defend 2 additional boat anchors in my garage, others were lining up 
-after me, so I made the courageous executive decision to take the deal.
+was selling not one but two broken Agilent 54831 oscilloscopes, $200 for both of them.
+While I considered the marital implications of having to defend 2 additional boat anchors 
+in my garage, others were lining up after me, so I made the courageous executive decision to 
+take the deal.
 
 ![Oscilloscopes in the trunk of a car](/assets/hp54831/scopes_in_car.jpg)
 
