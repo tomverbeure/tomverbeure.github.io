@@ -149,6 +149,8 @@ chassis with some rubber feet to reduce the chance of damage due to rough handli
 fix the drive to the platform aren't accessible, so you need to remove the platform first, then
 remove the drive.
 
+*Removing the hard drive**
+
 I disassembled pretty much the whole PC section of the scope to get to the hard drive:
 
 * Disconnect all cables
@@ -195,6 +197,60 @@ The hard drive platform is freed!
 
 ![Hard drive platform freed](/assets/hp54831/unit_a_hd_freed.jpg)
 
+**Creating a hard drive backup image**
+
+I use a cheap [USB to SATA IDE adapter cable](https://www.amazon.com/dp/B08KT3F998) 
+to connect the drive to a PC, and [HDD Raw Copy Tool](https://hddguru.com/software/HDD-Raw-Copy-Tool/)
+to create a backup image.
+
+Contrary to my expectations, the TravelStar HD worked fine! I could copy the whole drive
+without any errors:
+
+![HDD Raw Copy Tool success](/assets/hp54831/unit_a_hdd_raw_success.png)
+
+I still expect that this drive will die eventually, but with a backup on hand, I reinstalled
+the drive back into the scope.
+
+# Getting the PC to Boot
+
+The drive was functional, but the scope didn't boot. I decided to strip the motherboard from all 
+custom card and make it work as if it were just a 23 year old PC with only DRAM and an old PCI VGA 
+card that I had laying around. That didn't work either.
+
+The error signature was just a repeating pattern of a long beep followed by a long pause. It didn't
+match any of the standard AMI BIOS error codes. 
+
+<iframe width="640" height="360" src="https://www.youtube.com/embed/a4_unllx8ho?si=M-3o9IvE535NNHnN" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+What if the issue was the CPU itself?
+
+First step is to figure out how to remove the cooler:
+
+![Thermaltake Golden Orb Mini CPU coolor](/assets/hp54831/unit_a_cpu_cooler.jpg)
+
+With help from Mastodon, I was able to figure out that the cooler is a 
+[ThermalTake Golden Orb Mini](https://www.electromyne.de/public/catalog_xmlxslproducts.aspx?art=viewproduct&suid=11565&productid=1028313753&zid=210bd6ab-f876-4795-91f7-6b11a146206f&ln=gb). 
+There's even still a website with a 
+[review and installation procedure](https://www.frostytech.com/articles/256/index.html)!
+And that's a good thing, because I don't think I would have figured out that you need do a
+clockwise rotation of the cooler to detach it from the CPU.
+
+![CPU cooler removed](/assets/hp54831/unit_a_cpu_cooler_removed.jpg)
+
+On a whim, I remove the CPU from the socket, then plugged it back in and...
+
+![Boot screen on VGA monitor](/assets/hp54831/unit_a_boot_screen_on_monitor.jpg)
+
+The dumb thing worked! Removing and reinserting the CPU was really all it took. 
+
+Another 15 minutes of installing the PCI boards and cables again, and I got to see
+this:
+
+![Unit A is working](/assets/hp54831/unit_a_works.jpg)
+
+
+
+# Ttest
 
 The units that I bought are a 54831M and a 54831B. The former runs Windows 98, the
 latter Windows XP, or at least that's what they're supposed to run based on the
@@ -212,8 +268,6 @@ worked, as disclosed by the seller, but in different ways:
 * CPU: Pentium III SL52R - Socket PG370 - Coppermine - 1 GHz, 256 KB L2
     * Plug and unplug fixed non-boot issue
 * Cooler: Thermaltalk Golden Orb Mini
-   * https://www.electromyne.de/public/catalog_xmlxslproducts.aspx?art=viewproduct&suid=11565&productid=1028313753&zid=210bd6ab-f876-4795-91f7-6b11a146206f&ln=gb
-   * [Review and installation procedure](https://www.frostytech.com/articles/256/index.html)
 * Motherboard: VP22
     * [Retroweb](https://theretroweb.com/motherboards/s/motorola-vp22)
 
