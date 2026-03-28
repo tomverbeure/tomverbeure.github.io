@@ -12,12 +12,11 @@ categories:
 
 After 6 months of deprivation, a new season of 
 [Silicon Valley Electronics Flea markets](https://www.electronicsfleamarket.com/)
-is upon us! I never make it there at opening time, an ungodly 6am. Even
-getting there at 6:45am was a struggle, but not a moment too soon because one vendor
-was selling not one but two broken Agilent 54831 oscilloscopes, $200 for both of them.
-While I considered the marital implications of having to defend 2 additional boat anchors 
-in my garage, others were lining up after me, so I made the courageous executive decision to 
-take the deal.
+is upon us! I didn't make it there at 6am opening time, even getting there at 6:45am was 
+a struggle, but not a moment too soon because one vendor was selling not one but two broken 
+Agilent 54831 oscilloscopes, $200 for both of them.  While I considered the marital 
+implications of having to defend 2 additional boat anchors in my garage, others were lining 
+up after me, so I made the courageous executive decision to take the deal.
 
 ![Oscilloscopes in the trunk of a car](/assets/hp54831/scopes_in_car.jpg)
 
@@ -87,7 +86,7 @@ It's really just a PC with some custom PCI plug-in boards. From top to bottom:
   This board, based on a 
   [CHIPS F65550](https://www.vgamuseum.info/index.php/cpu/item/185-chips-technologies-f65550), 
   is more than a regular VGA board: it has a flat panel interface to the LCD front panel and an 
-  LCD backlight controller. It also has a bridge cable to the next board that carries the 
+  LCD backlight controller. There's also a bridge cable to the next board that carries the 
   real-time waveform overlay.
 
   ![Annotated display board](/assets/hp54831/display_board_annotated.jpg)
@@ -110,39 +109,92 @@ It's really just a PC with some custom PCI plug-in boards. From top to bottom:
 The other components are standard PC stuff:
 
 * [Motorola VP22 motherboard](https://theretroweb.com/motherboards/s/motorola-vp22)
-* Pentium III 1 GHz (SL52R, 370 socket)
+* [Pentium III 1 GHz (SL52R, 370 socket)](https://theretroweb.com/chips/1482)
 * CDROM drive
 * [Superdisk LS120 floppy drive](https://en.wikipedia.org/wiki/SuperDisk)
-* 10 GB IBM TravelStar harddrive
+* 10 GB IBM TravelStar hard drive
 
 
 # Unit A: Agilent 54831M
 
-The M version is the military version. That doesn't mean it has different specs, it's
+The "M" stands for military version. That doesn't mean it has different specs, it's
 just that it has been assembled in Singapore, a country that's considered more trustworthy than
-Malaysia where scopes were usually assembled (or so 
+Malaysia, where HP scopes were usually assembled (or so 
 [someone claims on The Internet](https://www.eevblog.com/forum/testgear/agilent-54831d-modernising/msg4616725/#msg4616725).)
 
 ![Unit A backside](/assets/hp54831/unit_a_backside.jpg)
 
-Either way, the seller claimed that this unit didn't work at all, and he was right.
+The seller claimed that this unit didn't work at all, and he was right.
 When plugging the power cord, it immediately started to squeal long ominous beeps and that
 was it.
 
-Time to gather information about the scope. Here's the shortlist:
+This unit has VIN# M42 (Rev.A.02.30), a production date of October 31, 2003 and
+according to the Microsoft license sticker it's one of the early versions that runs Win98.
 
-* Agilent 54831M
-* Motorola VP22 motherboard
-* Pentium III 1GHz (SL52R)
-* 256MB of RAM
-* 10 GB IBM TravelStar harddrive
-* CDROM drive
-* LS120 floppy drive
-* VIN# M42 (Rev.A.02.30)
-* Windows 98 SE Embedded
-* Production date: 10/31/03
+# First Suspect: the IBM TravelStar HD
 
-So this is one of the early versions that runs Win98, the scope was introduced sometime 2002.
+My [Rohde & Schwarz AMIQ](/2025/04/26/RS-AMIQ-Teardown-Analog-Deep-Dive.html) came with a
+non-functional IBM TravelStar HD. They are only slightly less notorious than the 
+IBM Death...DeskStar drives and known to fail with a stuck read/write head assembly, so
+I assume that this would be the case here as well.
+
+The first step was to extract the drive, check if it was still working outside of the
+scope, and create a backup image.
+
+[![Unit A: hard drive mounted in case](/assets/hp54831/unit_a_hardrive_in_case.jpg)](/assets/hp54831/unit_a_hardrive_in_case.jpg)
+*(Click to enlarge)*
+
+HP always mounts their spinning disk hard drives a separate platform that's mounted on the main
+chassis with some rubber feet to reduce the chance of damage due to rough handling. The screws that
+fix the drive to the platform aren't accessible, so you need to remove the platform first, then
+remove the drive.
+
+I disassembled pretty much the whole PC section of the scope to get to the hard drive:
+
+* Disconnect all cables
+
+    Make sure to first unlock the flex cables before pulling them out!
+
+    ![Flex cable lock](/assets/hp54831/unit_a_flex_cable.jpg)
+
+    The IDC flat cable connectors have a metal retaining clip around them.
+    Make sure you remove those first before trying to pull the connectors out. It's easy
+    to do with a screw driver.
+
+    ![IDC connector metal clip](/assets/hp54831/unit_a_idc_cable_clip.jpg)
+
+* Remove all the PCI boards
+* Remove adapter board that merges floppy drive and hard drive cables
+
+    ![floppy/hard drive adapter board](/assets/hp54831/unit_a_floppy_hd_adapter_board.jpg)
+
+* Remove the CDROM drive
+
+    This requires removing a screw on the long stick across the case and one screw on the
+    back of the case. See arrows:
+
+    [![Remove CDROM drive](/assets/hp54831/unit_a_remove_CDROM.jpg)](/assets/hp54831/unit_a_remove_CDROM.jpg)
+    *(Click to enlarge)*
+
+    After this, you can slide the drive back a little bit and lift it out of the case.
+
+* Remove the DRAM stick to access the bottom screw of the hard drive platform
+
+* Unscrew the hard drive platform
+
+    You now have access to all 4 screws of the platform.
+
+    ![Screwdriver in bottom left hard drive platform screw](/assets/hp54831/unit_a_unscrew_hd_platform.jpg)
+
+
+*Only after removing the platform by removing all 4 screws did I notice that the bottom 2 rubbers 
+feet were not completely enclosed by the platform. It should be possible to remove the platform with 
+a bit of force, without losening the bottom 2 of the 4 screws.*
+
+The hard drive platform is freed!
+
+![Hard drive platform freed](/assets/hp54831/unit_a_hd_freed.jpg)
+
 
 The units that I bought are a 54831M and a 54831B. The former runs Windows 98, the
 latter Windows XP, or at least that's what they're supposed to run based on the
