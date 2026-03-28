@@ -149,7 +149,7 @@ chassis with some rubber feet to reduce the chance of damage due to rough handli
 fix the drive to the platform aren't accessible, so you need to remove the platform first, then
 remove the drive.
 
-*Removing the hard drive**
+**Removing the hard drive**
 
 I disassembled pretty much the whole PC section of the scope to get to the hard drive:
 
@@ -248,9 +248,62 @@ this:
 
 ![Unit A is working](/assets/hp54831/unit_a_works.jpg)
 
+# Unit B: Agilent 54831B
+
+I immediately started on the second unit. This one a slightly younger B version, made
+in Malaysia with VIN# M32 (REV.A.03.50), running Windows XP Professional instead.
+
+![Backside of unit b](/assets/hp54831/unit_b_backside.jpg)
+
+As told by the seller, this one light up, but get stuck at the boot screen. And indeed:
+
+![Boot screen. No drives](/assets/hp54831/unit_b_boot_screen_no_drives.jpg)
+
+We can see the same 1 GHz Pentium III, the DRAM got an upgrade from 256 to 512 MB, but
+no drives of any kind are detected. Which made sense once I opened it up:
+
+![No drives and cables inside...](/assets/hp54831/unit_b_no_drives_inside.jpg)
+
+The BIOS doesn't detect any drives, because there aren't any... There are also no
+IDE cables and the custom board with the specialty LS120 floppy drive connector is missing
+as well. I can live without floppy drive, I need a hard drive and a CDROM drive is nice to
+have.
+
+# A CompactFlash Adapter without Cable 
+
+I usually replace spinning disk hard drives with CompactFlash cards. In the past, I've used
+adapter boards that accept a 40-pin IDE cable, but this time I found something better: an
+[adapter board that plugs straight into the PC motherboard:
+
+![CompactFlash to IDE adapter](/assets/hp54831/unit_b_cf_adapter.jpg)
+
+You can find them [here on Amazon](https://www.amazon.com/dp/B07LBLXDZM), only $8 for 2.
+
+The adapter board requires an external 5V or 3V supply through 4-pin Molex floppy 
+connector. For another $8, I bought 4 of them, again [on Amazon](https://www.amazon.com/dp/B0CLD7YRWC).
+
+The scope has a 2-pin connector with 5V and GND, I cut that off and connected it to the Molex
+connector:
+
+![CompactFlash adapter with power cable and flash card](/assets/hp54831/unit_b_cf_adapter_with_power_cable.jpg)
+
+There are 3 LEDs on the adapter with "Detect", "Active" and "Power" next to them. None of
+these worked, but when plugged into the motherboard, a 16GB CF card got detected just fine:
+
+![Boot screen with CompactFlash card and CDROM drive detected](/assets/hp54831/unit_b_boot_screen_with_cf_and_cdrom.jpg)
+
+Note that the CDROM drive is also detected, because I bought 
+[2 40-pin flat cables](https://www.amazon.com/dp/B00Z5AVRDY) 
+as well, for $9. It's weird that 2 simple cables are more expensive than 2 adapter boards 
+with active components.
+
+Here are the adapter and the CDROM cables installed in the motherboard:
+
+![CF adapter with card and CDROM flat cable plugged into motherboard](/assets/hp54831/unit_b_cf_and_cdrom_connected.jpg)
 
 
-# Ttest
+
+# Ttest 
 
 The units that I bought are a 54831M and a 54831B. The former runs Windows 98, the
 latter Windows XP, or at least that's what they're supposed to run based on the
