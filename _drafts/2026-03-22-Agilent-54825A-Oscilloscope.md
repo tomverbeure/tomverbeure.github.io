@@ -9,6 +9,16 @@ categories:
 {:toc}
 
 
+# Remove front panel
+
+* Remove flex cable to AutoProbe/QuickProbre board
+* Push QuickProbe panel out with screwdriver
+* Remove 5 nuts of BNC connectors
+* Remove 2 Torx 10 screws
+* Remove front panel
+* Remove 10 screws from front panel. They have different length!
+* Power button goes via flex cable to keyboard PCB and then through the keyboard flat cable to PC plug-in board!
+
 # References
 
 **EEVBlog forum**
@@ -37,4 +47,6 @@ categories:
 * [HP 54820A - Infinium 500 MHz Oscilloscope Repair](https://www.youtube.com/watch?v=171fjiSZzJ4)
 
     Dallas chip. Shows how to remove the front plate.
+
+* [HP 54845A - Replace battery on PC interface board](https://www.youtube.com/watch?v=lVuNaHJ7las)
 
