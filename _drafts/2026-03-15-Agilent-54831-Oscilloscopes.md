@@ -301,29 +301,50 @@ Here are the adapter and the CDROM cables installed in the motherboard:
 
 ![CF adapter with card and CDROM flat cable plugged into motherboard](/assets/hp54831/unit_b_cf_and_cdrom_connected.jpg)
 
+# Installing the Software
+
+Next up: finding the software to run the scope. The hard part is not finding one, this scope
+is quite popular with hobbyists who are willing to share, it's to figure which one to use.
+
+I ended up using an image from the [OneDrive of Tony_G](https://onedrive.live.com/?redeem=aHR0cHM6Ly8xZHJ2Lm1zL2YvcyFBbXFhcjhfWFE5VXpqNlloTjF4SGRNOHRRZEtNT0E&id=33D543D7CFAF9A6A%21250657&cid=33D543D7CFAF9A6A).
+It contains way more than I needed, but the golden ticket was the 6.38 GB `xp54831.vhdx` file under
+the `54831M` directory. Check out `Install hints.pdf` in the same folder. It comes down to this:
+
+* Install [Rufus](https://rufus.ie/en/), a utility to create bootable USB drives.
+* Connect the CompactFlash card to your PC with a CompactFlash to USB adapter like
+  [this one on Amazon](https://www.amazon.com/dp/B08P517NW5?th=1). I used a 16 GB
+  CF card. I think 8 GB should work too, but I'm not 100% sure.
+* Copy over `xp54831.vhdx` to the CF card with Rufus.
+
+Once done, install the CF card into the scope and boot. The image that you installed on the
+drive contains a Symantec Ghost sub-image. When you boot the scope, you should see a Windows 98
+splash screen (not WinXP!) and Symantec Ghost. Follow the instructions of the PDF file and
+eventually, it will end like this:
+
+![Ghost - Clone Complete](/assets/hp54831/unit_b_ghost_complete.jpg)
+
+Reboot again, and you'll see this, finally:
+
+![WinXP splash](/assets/hp54831/unit_b_win_xp_splash.jpg)
+
+And this:
+
+![Scope showing 4 waveforms with lots of noise](/assets/hp54831/unit_b_scope_waveforms_with_noise.jpg)
+
+The software is working, but there's an aweful lot of noise on those signals. If you're seeing that,
+don't worry: this happens when the scope isn't calibrated. Got to "Calibration" in one of the menus,
+let it run all the way, it takes around 1 hours, and the noise should be gone. 
+
+The scope is working!
+
+# Thermal Alarm
+
+Or maybe not...
 
 
-# Ttest 
 
-The units that I bought are a 54831M and a 54831B. The former runs Windows 98, the
-latter Windows XP, or at least that's what they're supposed to run based on the
-Microsoft license stickers at the back of the units. In reality, neither of them
-worked, as disclosed by the seller, but in different ways:
 
-* other than emitting long beeps, the 54831M didn't do anything at all. 
-
-* 54831M 
-* Doesn't boot
-    * Long beeps
-* Windows 98
-* 10 GB IBM TravelStar
-    * Disk image OK
-* CPU: Pentium III SL52R - Socket PG370 - Coppermine - 1 GHz, 256 KB L2
-    * Plug and unplug fixed non-boot issue
-* Cooler: Thermaltalk Golden Orb Mini
-* Motherboard: VP22
-    * [Retroweb](https://theretroweb.com/motherboards/s/motorola-vp22)
-
+# Test 
 
 EEVblog:
 
