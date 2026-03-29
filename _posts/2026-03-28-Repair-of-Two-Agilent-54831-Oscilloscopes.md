@@ -409,6 +409,10 @@ Remove this resistor for the upgrade:
 
 ![One resistor removed](/assets/hp54831/resistor_array_after_mod.jpg)
 
+After rebooting, the scope identifies itself as an Agilent 54832B:
+
+![About Infiniium windows showing 54832B](/assets/hp54831/unit_b_about_infiniium_after_mod.jpg)
+
 To test the modification, I fed back the AUX Out at the back of the scope to channel 1,
 with 50 Ohm termination active.
 
