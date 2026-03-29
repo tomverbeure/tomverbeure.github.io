@@ -413,8 +413,10 @@ After rebooting, the scope identifies itself as an Agilent 54832B:
 
 ![About Infiniium windows showing 54832B](/assets/hp54831/unit_b_about_infiniium_after_mod.jpg)
 
-To test the modification, I fed back the AUX Out at the back of the scope to channel 1,
+To test the modification, I fed the AUX Out[^aux_out] signal at the back of the scope into channel 1,
 with 50 Ohm termination active.
+
+[^aux_out]: Make sure to select the 10 MHz output for AUX Out in the Calibration menu.
 
 Before the mod, the rise time averaged to 481 ps:
 
