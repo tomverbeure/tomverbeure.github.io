@@ -442,6 +442,8 @@ For $200 and around $30 in additional components, I got myself 2 working
 $200, which I think is an excellent deal for the buyer. I'm keeping the
 other one.
 
+*All words in this blog post were written by a human.*
+
 # References
 
 * [Agilent Model 54830 Series Oscilloscopes - Service Guide](https://xdevs.com/doc/HP_Agilent_Keysight/HP%2054830,%2054831,%2054832X%20Service.pdf)
