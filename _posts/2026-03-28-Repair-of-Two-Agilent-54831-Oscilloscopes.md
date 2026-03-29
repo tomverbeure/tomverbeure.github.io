@@ -141,7 +141,7 @@ according to the Microsoft license sticker it's one of the early versions that r
 My [Rohde & Schwarz AMIQ](/2025/04/26/RS-AMIQ-Teardown-Analog-Deep-Dive.html) came with a
 non-functional IBM TravelStar HD. They are only slightly less notorious than the 
 IBM Death...DeskStar drives and known to fail with a stuck read/write head assembly, so
-I assume that this would be the case here as well.
+I assumed that this would be the case here as well.
 
 The first step was to extract the drive, check if it was still working outside of the
 scope, and create a backup image.
@@ -149,10 +149,10 @@ scope, and create a backup image.
 [![Unit A: hard drive mounted in case](/assets/hp54831/unit_a_hardrive_in_case.jpg)](/assets/hp54831/unit_a_hardrive_in_case.jpg)
 *(Click to enlarge)*
 
-HP always mounts their spinning disk hard drives on a separate platform that's mounted on the main
-chassis with some rubber feet to reduce the chance of damage due to rough handling. The screws that
-fix the drive to the platform aren't accessible, so you need to remove the platform first, then
-remove the drive.
+HP always puts their spinning disk hard drives on a separate platform that's mounted on the main
+chassis with some rubber feet to reduce the chance of damage due to rough handling or vibrations. 
+The screws that fix the drive to the platform aren't accessible, so you need to remove the platform 
+first, then remove the drive.
 
 **Removing the hard drive**
 
@@ -166,7 +166,7 @@ I disassembled pretty much the whole PC section of the scope to get to the hard 
 
     The IDC flat cable connectors have a metal retaining clip around them.
     Make sure you remove those first before trying to pull the connectors out. It's easy
-    to do with a screw driver.
+    to do with a screwdriver.
 
     ![IDC connector metal clip](/assets/hp54831/unit_a_idc_cable_clip.jpg)
 
@@ -219,10 +219,10 @@ the drive back into the scope.
 # Getting the PC to Boot
 
 The drive was functional, but the scope didn't boot. I decided to strip the motherboard from all 
-custom cards and make it work as if it were just a 23 year old PC with only DRAM and an old PCI VGA 
+custom cards and make it work as if it were a 23 year old PC with only DRAM and an old PCI VGA 
 card that I had lying around. That didn't work either.
 
-The error signature was just a repeating pattern of a long beep followed by a long pause. It didn't
+The error signature was a repeating pattern of a long beep followed by a long pause. It didn't
 match any of the standard AMI BIOS error codes. 
 
 <iframe width="640" height="360" src="https://www.youtube.com/embed/a4_unllx8ho?si=M-3o9IvE535NNHnN" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
@@ -234,7 +234,7 @@ First step is to figure out how to remove the cooler:
 ![Thermaltake Golden Orb Mini CPU coolor](/assets/hp54831/unit_a_cpu_cooler.jpg)
 
 With help from Mastodon, I was able to figure out that the cooler is a 
-[ThermalTake Golden Orb Mini](https://www.electromyne.de/public/catalog_xmlxslproducts.aspx?art=viewproduct&suid=11565&productid=1028313753&zid=210bd6ab-f876-4795-91f7-6b11a146206f&ln=gb). 
+[Thermaltake Golden Orb Mini](https://www.electromyne.de/public/catalog_xmlxslproducts.aspx?art=viewproduct&suid=11565&productid=1028313753&zid=210bd6ab-f876-4795-91f7-6b11a146206f&ln=gb). 
 There's even still a website with a 
 [review and installation procedure](https://www.frostytech.com/articles/256/index.html)!
 And that's a good thing, because I don't think I would have figured out that you need to do a
@@ -242,7 +242,7 @@ clockwise rotation of the cooler to detach it from the CPU.
 
 ![CPU cooler removed](/assets/hp54831/unit_a_cpu_cooler_removed.jpg)
 
-On a whim, I remove the CPU from the socket, then plugged it back in and...
+On a whim, I remove the CPU from the socket, plugged it back in and...
 
 ![Boot screen on VGA monitor](/assets/hp54831/unit_a_boot_screen_on_monitor.jpg)
 
@@ -252,6 +252,8 @@ Another 15 minutes of installing the PCI boards and cables again, and I got to s
 this:
 
 ![Unit A is working](/assets/hp54831/unit_a_works.jpg)
+
+Success!
 
 # Unit B: Agilent 54831B
 
@@ -278,14 +280,14 @@ have.
 
 I usually replace spinning disk hard drives with CompactFlash cards. In the past, I've used
 adapter boards that accept a 40-pin IDE cable, but this time I found something better: an
-[adapter board that plugs straight into the PC motherboard:
+adapter board that plugs straight into the PC motherboard:
 
 ![CompactFlash to IDE adapter](/assets/hp54831/unit_b_cf_adapter.jpg)
 
 You can find them [here on Amazon](https://www.amazon.com/dp/B07LBLXDZM), only $8 for 2.
 
 The adapter board requires an external 5V or 3V supply through 4-pin Molex floppy 
-connector. For another $8, I bought 4 of them, again [on Amazon](https://www.amazon.com/dp/B0CLD7YRWC).
+connector. For another $8, I bought 4 of those, again [on Amazon](https://www.amazon.com/dp/B0CLD7YRWC).
 
 The scope has a 2-pin connector with 5V and GND, I cut that off and connected it to the Molex
 connector:
@@ -293,13 +295,13 @@ connector:
 ![CompactFlash adapter with power cable and flash card](/assets/hp54831/unit_b_cf_adapter_with_power_cable.jpg)
 
 There are 3 LEDs on the adapter with "Detect", "Active" and "Power" next to them. None of
-these worked, but when plugged into the motherboard, a 16GB CF card got detected just fine:
+these worked, but when plugged into the motherboard, my 16GB CF card got detected just fine:
 
 ![Boot screen with CompactFlash card and CDROM drive detected](/assets/hp54831/unit_b_boot_screen_with_cf_and_cdrom.jpg)
 
 Note that the CDROM drive is also detected, because I bought 
 [2 40-pin flat cables](https://www.amazon.com/dp/B00Z5AVRDY) 
-as well, for $9. It's weird that 2 simple cables are more expensive than 2 adapter boards 
+for $9. It's weird that 2 simple cables are more expensive than 2 adapter boards 
 with active components.
 
 Here are the adapter and the CDROM cables installed in the motherboard:
@@ -308,12 +310,19 @@ Here are the adapter and the CDROM cables installed in the motherboard:
 
 # Installing the Software
 
-Next up: finding the software to run the scope. The hard part is not finding one, this scope
+**Important: if your 54831 originally came with Windows 98 SE, a Windows XP image may or may not
+work. Some scopes with Windows 98 have PCI extension boards that are not compatible with the WinXP
+drivers.**
+
+Next up: finding the software to run the scope. The hard part is not finding the software, this scope
 is quite popular with hobbyists who are willing to share, it's to figure which one to use.
 
-I ended up using an image from the [OneDrive of Tony_G](https://onedrive.live.com/?redeem=aHR0cHM6Ly8xZHJ2Lm1zL2YvcyFBbXFhcjhfWFE5VXpqNlloTjF4SGRNOHRRZEtNT0E&id=33D543D7CFAF9A6A%21250657&cid=33D543D7CFAF9A6A).
-It contains way more than I needed, but the golden ticket was the 6.38 GB `xp54831.vhdx` file under
-the `54831M` directory. Check out `Install hints.pdf` in the same folder. It comes down to this:
+I ended up using an image stored on the [OneDrive of Tony_G](https://onedrive.live.com/?redeem=aHR0cHM6Ly8xZHJ2Lm1zL2YvcyFBbXFhcjhfWFE5VXpqNlloTjF4SGRNOHRRZEtNT0E&id=33D543D7CFAF9A6A%21250657&cid=33D543D7CFAF9A6A). (Thanks Tony!)
+It contains way more than I needed, but the golden ticket was the 6.38 GB `xp54831.vhdx` file in
+the `54831M` directory. Also check out `Install hints.pdf` in the same folder with the installation
+instructions.
+
+It all comes down to this:
 
 * Install [Rufus](https://rufus.ie/en/), a utility to create bootable USB drives.
 * Connect the CompactFlash card to your PC with a CompactFlash to USB adapter like
@@ -336,15 +345,11 @@ And this:
 
 ![Scope showing 4 waveforms with lots of noise](/assets/hp54831/unit_b_scope_waveforms_with_noise.jpg)
 
-The software is working, but there's an awful lot of noise on those signals. If you're seeing that,
+The software is functional, but there's an awful lot of noise on those signals. If you're seeing that,
 don't worry: this happens when the scope isn't calibrated. Go to "Calibration" in one of the menus,
-let it run all the way, it takes around 1 hour, and the noise should be gone. 
-
-The scope is working...
+let it run all the way, it takes around 1 hour, and the noise should be gone. Hurray!
 
 # CPU Temperature Alarm
-
-... or maybe not.
 
 After a while, the scope gave off this persistent alarm:
 
@@ -358,8 +363,8 @@ the PC Health Status section of the BIOS menu and disable the CPU temperature al
 
 ![CPU temperature alarm disabled](/assets/hp54831/unit_b_temp_alarm_disabled.jpg)
 
-This made the alarm go away, which is much easier to fix than replacing capacitors on the
-motherboard or the main power supply: apply thermal paste, reseat the cooler...
+This made the alarm go away. That's great because it's much easier to fix the temperature than to replace 
+the capacitors on the motherboard or the main power supply: apply thermal paste, reseat the cooler.
 
 The temperature of the CPU in the BIOS screen was 64C. This is not very high by today's
 standards, but the 
@@ -368,9 +373,11 @@ sets a maximum junction temperature of 75C.
 
 One of the benefits of running Windows XP is that many tools and USB memory
 sticks just work. I installed [Core Temp](https://www.alcpu.com/CoreTemp/) to continuously
-monitor the temperatures after adding thermal paste and reseating the cooler: it is
-*really* important that you feel some kind of click when you rotate the cooler 
-counter-clockwise when putting it in place.
+monitor the temperatures after adding thermal paste and reseating the cooler. 
+
+Note that it is *really* important that you feel a subtle click when you rotate the cooler 
+counter-clockwise to secure it in place. At the same time, you can't rotate too hard because
+the metal tabs on the CPU socket can shear off or you can crack the CPU die. 
 
 Here's the result after:
 
@@ -402,9 +409,10 @@ Remove this resistor for the upgrade:
 
 ![One resistor removed](/assets/hp54831/resistor_array_after_mod.jpg)
 
-To test the modification, I fed back AUX Out to channel 1 with 50 Ohm termination.
+To test the modification, I fed back the AUX Out at the back of the scope to channel 1,
+with 50 Ohm termination active.
 
-Before, the rise time averaged to 481 ps:
+Before the mod, the rise time averaged to 481 ps:
 
 ![Rise time before modification](/assets/hp54831/rise_time_before_mod.png)
 

@@ -544,6 +544,7 @@ complex multiplication at the output of each sub-filter of the polyphase bank. A
 this multiplication can be removed entirely if we can choose a decimation factor that
 is odd or if it only has one prime factor of 2.
 
+*All words in this blog post were written by a human.*
 
 # References
 
