@@ -274,7 +274,7 @@ sudo apt install procinfo netatalk avahi-daemon
     of Apple's zero-configuration Bonjour networking feature. It's what will allow
     your Mac to see the thinmachine server on the network.
 
-    ![thinmachine seen in the Apple network](/assets/thinmachine/thinclient_on_the_network.png)
+    ![thinmachine seen in the Apple network](/assets/thinmachine/thinclient_on_the_network.jpg)
 
     [Netatalk](https://en.wikipedia.org/wiki/Netatalk) is an open source implementation
     of the Apple Filing Protocol. Among other things, it has support for Apple Time Machine. 
@@ -394,7 +394,7 @@ Select Time Machine in your Mac System Preferences, if it's not already
 part of your menu bar, press *Select Disk*, and watch ThinMachine being
 available as an option:
 
-![Select thinmachine](/assets/thinmachine/select_thin_machine.png)
+![Select thinmachine](/assets/thinmachine/select_thin_machine.jpg)
 
 Since my TimeCapsule has been stolen in the past, I want my backup data
 to be encrypted. It's the safe thing to do. The actual encryption and decryption
@@ -402,12 +402,12 @@ happens on your Mac, the thin client is not involved in that part of the backup
 process. Just make sure you don't lose the password, because there's no way to 
 recover your data without it.
 
-![Set backup password](/assets/thinmachine/backup_password.png)
+![Set backup password](/assets/thinmachine/backup_password.jpg)
 
 And then it's time to start the first backup session. It will be long, long
 wait...
 
-![Start of backup session](/assets/thinmachine/backup_start.png)
+![Start of backup session](/assets/thinmachine/backup_start.jpg)
 
 # Accelerating Time Machine Backups
 

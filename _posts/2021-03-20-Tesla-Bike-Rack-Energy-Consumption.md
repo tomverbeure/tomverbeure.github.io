@@ -49,7 +49,7 @@ the rack from my car, my baseline is having the rack mounted without bikes.
 On a sunny Saturday morning, I decided to do 2 identical drives, one with and one without bikes, and compare
 the results.
 
-![Map with Test Route](/assets/tesla/test_route.png)
+![Map with Test Route](/assets/tesla/test_route.jpg)
 
 Here are the parameters:
 

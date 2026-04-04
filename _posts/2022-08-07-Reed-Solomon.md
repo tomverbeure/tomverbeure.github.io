@@ -47,7 +47,7 @@ but a lot of the material online is theoretical, math heavy, and not intuitive. 
 for me...
 
 That changed when I found this 
-[Introduction to Reed-Solomon](https://innovation.vivint.com/introduction-to-reed-solomon-bc264d0794f8)
+[Introduction to Reed-Solomon](https://web.archive.org/web/20250409174023/https://innovation.vivint.com/introduction-to-reed-solomon-bc264d0794f8?gi=8075d916fdf6)
 article. It explains how polynomials and polynomial evaluation at certain points are a way to
 create a code with redundancy, and how to recover the original message back from it. The article
 is excellent, and it makes some of what I'm covering below unnecessary or redundant (ha!), 
@@ -157,7 +157,7 @@ Here's an example of a polynomial of degree 3, $$f(x)=2 + 3x -5x^2 + x^3$$, eval
 *I used the excellent [desmos graphing calculator](https://www.desmos.com/calculator) to create this
 function plot.*
 
-When given the points $$(-1, 7), (0,2), (1, 1), (2, -4)$$, we can fill in the values into 
+When given the points $$(-1, -7), (0,2), (1, 1), (2, -4)$$, we can fill in the values into 
 $$f(x) = c_0 + c_1 x + c_2 x^2 + c_3 x^3$$ for each of point, which results in the following set 
 of 4 linear equations with 4 unknowns:
 
