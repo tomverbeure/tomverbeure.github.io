@@ -21,7 +21,8 @@ There were 2 major issues:
 
 # A Late Nineties PC
 
-The top side of the AMIQ contains a regular turn-of-the-century PC: motherboard, power supply,
+Much like [my Agilent 54831 oscilloscope](/2026/03/28/Repair-of-Two-Agilent-54831-Oscilloscopes.html),
+the top side of the AMIQ contains a regular turn-of-the-century PC: motherboard, power supply,
 hard drive, floppy drive and something that's plugged in an ISA slot.
 
 [![AMIQ top size with PC motherboard](/assets/amiq/amiq_pc_motherboard_side.jpg)](/assets/amiq/amiq_pc_motherboard_side.jpg)
@@ -36,21 +37,22 @@ hard drive, floppy drive and something that's plugged in an ISA slot.
   it has 4 PCI, 1 AGP, 2 16 ISA slots, a floppy and IDE interface and the usually assortment of 
   smaller interfaces for mouse, keyboard, serial port etc.
 
-  My motherboard came with an IDT WinChip C6 CPU and a whopping 64MB of SDRAM. The CPU is rated
-  at 200 MHz, but the boot screen reports a 120 MHz processor clock. I haven't yet tried to increase
-  the clock to 200 MHz.
+  My motherboard came with an [IDT WinChip C6 CPU](https://theretroweb.com/chips/1832) 
+  and a whopping 64MB of SDRAM. The CPU is rated at 200 MHz, but the boot screen reports a 120 MHz 
+  processor clock. I haven't yet tried to increase the clock to 200 MHz.
 
-* IBM TravelStar hard drive
+* [IBM TravelStar](https://en.wikipedia.org/wiki/Travelstar) hard drive
 
-  This drive has a capacity of 6.4GB of which only ~2GB is used for the AMIQ. It uses a parallel
-  IDE interface. This type of hard drive has a reputation of failing read/write heads, which is 
-  probably what happened with mine.
+  This drive has a capacity of 6.4GB of which only ~2GB is used for the AMIQ. It's equipped with
+  a parallel IDE interface. This type of hard drive has a reputation of failing read/write heads, 
+  which is probably what happened with mine.
 
 * 3 1/2" floppy drive
 * Power supply
 
-At the bottom right of the image, we can see a board that's plugged into the one of the 2 16-bit
-ISA slots. This is the interface that connects the PC system with the signal generation board.
+At the bottom right of the image, we can see a board with 2 flat cables that's plugged into the 
+one of the 2 16-bit ISA slots. This is the interface that connects the PC system with the signal 
+generation board.
 
 # Assessing the Damage
 
@@ -68,7 +70,8 @@ The PC system on my AMIQ was in bad shape.  It had the following issues:
 
 If you want to do any restoration work on the AMIQ, you need to operate it like a PC, with
 a keyboard and a display connected. I found a Korean keyboard with PS2 connector on Craigslist 
-for $20. An ATI (meh) Rage XL PCI with VGA output from eBay set me back another $20. 
+for $20. An [ATI (meh) Rage XL PCI](https://vintage3d.org/rageXL.php) 
+with VGA output from eBay set me back another $20. 
 I think pretty much any video card with PCI should work as long as it's not some power 
 hungry monster. 
 
