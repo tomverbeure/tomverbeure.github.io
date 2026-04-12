@@ -8,6 +8,12 @@ categories:
 * TOC
 {:toc}
 
+* DVB-T Hierarchical: SFQ-B16 - option 0
+* ITU-T J.83/B:       SFQ-B13 - option 2
+* BER:                SFQ-B17 - option 3
+* Satellite Turbo:              option 6
+* Implusive Noise:              option 7
+
 # Battery replacement
 
 # References
