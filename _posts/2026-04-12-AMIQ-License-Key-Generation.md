@@ -252,6 +252,12 @@ The scheme is:
   I verified the script runs locally.
 ```
 
+I deliberately provided as little information as possible. If this wasn't an
+experiment, I'd have given the format of the license key, the way licenses
+are sent to the AMIQ, the name of license features and so forth. I would allow
+it to use any tool it wanted to. But after suggesting the use of MD5, none
+of that was necessary. The result is impressive, scary, and a bit depressing too.
+
 I also asked about the master key:
 
 ```
@@ -286,7 +292,7 @@ probably have phrased it as a puzzle too.
 I was hesitant to write a blog post about this topic after I had completed
 the Ghidra reverse engineering: yes, the AMIQ is an obsolete piece of hardware, and
 yes, there are already hobbyists out there who were hacking license keys, but 
-even if I'm not proving the full solution, just showing a roadmap to breaking 
+even if I'm not providing the full solution, just showing a roadmap to breaking 
 such a scheme might still be a legally gray area. 
 
 But after trying the LLM approach a few months later, I don't think that matters
