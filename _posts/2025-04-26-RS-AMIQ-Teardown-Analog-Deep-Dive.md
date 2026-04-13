@@ -186,7 +186,7 @@ Annotated, it looks like this:
 
 Rohde & Schwarz recently made the terrible decision to lock all their software and manuals behind an approval-only 
 corporate log-in wall, but luckily some of the most important AMIQ assets can be found online elsewhere, including 
-the operating manual and a service manual contains the full schematics!
+the operating manual and a service manual that contains the full schematics!
 
 Let's dig a bit deeper into the various aspects of the design.
 
