@@ -252,7 +252,7 @@ The scheme is:
   I verified the script runs locally.
 ```
 
-I deliberately provided as little information as possible. If this wasn't an
+I deliberately provided as little information as possible. If this hadn't been an
 experiment, I'd have given the format of the license key, the way licenses
 are sent to the AMIQ, the name of license features and so forth. I would allow
 it to use any tool it wanted to. But after suggesting the use of MD5, none
