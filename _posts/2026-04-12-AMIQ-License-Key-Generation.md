@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Breaking Rohde & Schwarz AMIQ License Key Generation - the Hard and the Easy Way
+title: Breaking Rohde & Schwarz AMIQ License Keys - the Hard and the Easy Way
 date:   2026-04-12 00:00:00 -1000
 categories:
 ---
