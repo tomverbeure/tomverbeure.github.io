@@ -31,6 +31,8 @@ The stimuli for my
 are generated offline by WinIQSim and uploaded to the AMIQ over GPIB, but
 some protocols are only enabled if the right license is installed.
 
+![Rohde & Schwarz AMIQ](/assets/amiq/amiq_frontside.jpg)
+
 I have no use for these features, but the thought of not having them enabled
 is unbearable. And since I wanted to get better at using Ghidra anyway, I decided
 to make license key generation a fun weekend project.
