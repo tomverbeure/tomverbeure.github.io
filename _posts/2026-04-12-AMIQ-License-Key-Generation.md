@@ -301,3 +301,4 @@ was "because I can".
 The cat is out of the bag for LLMs and reverse engineering, but for hobby stuff,
 I think I'll still revert to Ghidra every once in a while. 
 
+*Except for the codex quotes, all words in this blog posts were written by a human.*
