@@ -13,23 +13,22 @@ categories:
 # Introduction
 
 One of the guilty pleasures of playing with old test equipment is to enable all
-functionality that's reserved for a model number or disabled by a license key.
+functionality that's reserved for a different model number or disabled by a license key.
 
-
-Sometimes this requires a small HW modification, I just 
+Sometimes this requires a small HW modification; I just 
 [upgraded my Agilent 53831B to a 53832B](/2026/03/28/Repair-of-Two-Agilent-54831-Oscilloscopes.html#upgrade-to-1-ghz-bandwidth)
 by removing one resistor, but it's more common now to do this in software: I
 don't think there's a single hobbyist owner of a Rigol oscilloscope who hasn't
-done an upgrade to a higher BW version. These are examples where an upgrade path 
+done an upgrade to a higher bandwidth version. These are examples where an upgrade path 
 wasn't supposed to happen: they are different products with different prices, 
-it's just cheaper to produce one version and create seperate SKUs in software.
+it's just cheaper to produce one version and create separate SKUs in software.
 
 Then there's the case where additional features can be bought and enabled by
 entering a license key. 
 
 The stimuli for my 
 [Rohde & Schwarz AMIQ vector signal generator](/2025/04/26/RS-AMIQ-Teardown-Analog-Deep-Dive.html)
-are generated off-line by the WinIQSim and uploaded to the AMIQ over GPIB, but
+are generated offline by WinIQSim and uploaded to the AMIQ over GPIB, but
 some protocols are only enabled if the right license is installed.
 
 I have no use for these features, but the thought of not having them enabled
@@ -38,14 +37,14 @@ to make license key generation a fun weekend project.
 
 # How AMIQ License Keys Work
 
-AMIQ licenses are added by selecting the desired feature and the 
+AMIQ licenses are added by selecting the desired feature and entering the 
 associated key code.
 
 ![WinIQSim set license](/assets/license/winiqsim_set_license.jpg)
 
 WinIQSim doesn't do anything with the key other than passing it on unchanged
-to the AMIQ, over RS232 or GPIB, with an SCPI code. When there's a PCI
-video card plugged in the motherboard, the AMIQ software prints out
+to the AMIQ, over RS-232 or GPIB, with an SCPI code. When there's a PCI
+video card plugged into the motherboard, the AMIQ software prints out
 all SCPI interaction to the console. That makes it really easy to observe
 what's going on:
 
@@ -58,7 +57,7 @@ Real world license keys are useful to verify that you've correctly reverse
 engineered the algorithm. It's trivial to find these: R&S 
 prints them on labels on the back of the unit. If you don't own one, just go 
 to eBay and check the photos: the front panel has the serial number, the back 
-one or more license keys. 
+has one or more license keys. 
 
 Here's an example of an eBay license key for feature AMIQ-K11:
 
@@ -66,20 +65,20 @@ Here's an example of an eBay license key for feature AMIQ-K11:
 
 The AMIQ uses a late nineties MSI motherboard that's prone to suffering from leaking
 capacitors. I had to replace all of them on mine. 25 years later, there isn't a lot 
-of AMIQ related chatter in hobbyist forums and blog posts, probably because almost 
+of AMIQ-related chatter in hobbyist forums and blog posts, probably because almost 
 all units have died long ago. Still,
 the ["Enabling options for R&S test equipment" thread on the EEVblog forum](https://www.eevblog.com/forum/testgear/enabling-options-for-rs-test-equipment/)
 has a few AMIQ mentions.
 
 If you don't mind getting your hands dirty, you can patch an EEPROM on the
-AMIQ signal generation board to change feature activiation, as discussed 
+AMIQ signal generation board to change feature activation, as discussed 
 [here](https://www.eevblog.com/forum/testgear/enabling-options-for-rs-test-equipment/msg3471250/#msg3471250):
 
 ![EEPROM programmer](/assets/license/eeprom_programmer.jpg)
 
 But someone also posted this [nugget](https://www.eevblog.com/forum/testgear/enabling-options-for-rs-test-equipment/msg4626139/#msg4626139):
 
-![EEVblog forum post about AMIQ using md5](/assets/license/eevblog_amiq_md5.png)
+![EEVblog forum post about AMIQ using MD5](/assets/license/eevblog_amiq_md5.png)
 
 That's a useful piece of information, because the
 [MD5 hashing algorithm](https://en.wikipedia.org/wiki/MD5) uses 4 initialization variables:
@@ -92,21 +91,19 @@ var int c0 := 0x98badcfe   // C
 var int d0 := 0x10325476   // D
 ```
 
-These kind of constants are bread crumbs to locate MD5 code in a binary.
+These constants are breadcrumbs to locate MD5 code in a binary.
 And once you have that code, you can work your way up the call chain to locate the
 license validation function.
 
-# Ghidra and DOS/4GW
-
-AMIQ disk images can be found sites such as [KO4BB](https://www.ko4bb.com/getsimple/).
+AMIQ disk images can be found on sites such as [KO4BB](https://www.ko4bb.com/getsimple/).
 The main executable is `AMIQMAIN.EXE`. The AMIQ runs 
 16-bit [DR-DOS](https://en.wikipedia.org/wiki/DR-DOS) but the main program is 32-bit
 by using the [DOS/4GW DOS extender](https://en.wikipedia.org/wiki/DOS/4G).
 
-To reverse engineer, [Ghidra](https://en.wikipedia.org/wiki/Ghidra) is stil the tool
+To reverse engineer, [Ghidra](https://en.wikipedia.org/wiki/Ghidra) is still the tool
 of choice. It doesn't support DOS/4GW executables by default, but 
 [ghidra-lx-loader](https://github.com/yetmorecode/ghidra-lx-loader)
-is a plug-in that supports it. After installing, Ghidra issued some warnings about
+is a plug-in that does. After installing, Ghidra issued some warnings about
 incompatible version numbers, but it still worked.
 
 And then it's off to the races...
@@ -144,7 +141,7 @@ Yes, it's there:
 ![MD5 init value search in Ghidra](/assets/license/ghidra_md5_init_value.jpg)
 
 *The `AMIQMAIN.EXE` doesn't have debug symbols. The function names in what
-follows were assigned by myself during the reverse engineering process.*
+follows were assigned by my during the reverse engineering process.*
 
 The init value is used in `init_md5()`:
 
@@ -152,7 +149,7 @@ The init value is used in `init_md5()`:
 
 `init_md5()` is called by `md5_calc()`:
 
-![MD5 calculation routing](/assets/license/ghidra_md5_calc.jpg)
+![MD5 calculation routine](/assets/license/ghidra_md5_calc.jpg)
 
 Which is used by `validate_serial_nr()`:
 
@@ -161,7 +158,7 @@ Which is used by `validate_serial_nr()`:
 The serial number calculation isn't a pure MD5: there's some additional byte
 wrangling that you'll have to figure out for yourself. It's not terribly complicated.
 
-With the algorithmn reverse engineered, it's easy to write a Python script 
+With the algorithm reverse engineered, it's easy to write a Python script 
 that creates license codes. Here's the output of the script for the eBay machine
 that I showed earlier:
 
@@ -181,7 +178,7 @@ Here's the start of that function:
 
 ![License activation manager checking for a master key](/assets/license/ghidra_disabled_master_key_check.jpg)
 
-Before running the license key through the MD5 routing, the code first checks
+Before running the license key through the MD5 routine, the code first checks
 the key against `0x1BD3D6A`, a master unlock key. Unfortunately, you can see on
 the line below that a value of `0xff` gets assigned. You need to assign `0x01` to enable
 a key. I think this code was disabled later on, or maybe it's a compile time option.
@@ -233,7 +230,7 @@ You can't look outside or install other program. But the license key uses
 md5 one way or the other.
 ```
 
-20 minute later, it had solved the problem:
+20 minutes later, it had solved the problem:
 
 ```
 The scheme is:
@@ -287,7 +284,7 @@ probably have phrased it as a puzzle too.
 I was hesitant to write a blog post about this topic after I had completed
 the Ghidra reverse engineering: yes, the AMIQ is an obsolete piece of hardware, and
 yes, there are already hobbyists out there who were hacking license keys, but 
-even if I'm not provindg the full solution, just showing a roadmap to breaking 
+even if I'm not proving the full solution, just showing a roadmap to breaking 
 such a scheme might still be a legally gray area. 
 
 But after trying the LLM approach a few months later, I don't think that matters
@@ -296,8 +293,11 @@ authentication algorithms is now fundamentally broken and literally anyone can b
 them. All you need is the executable, an LLM, and a single prompt.
 
 And in a way that's a real shame. Manually reverse engineering is fun: you get to 
-slowly peel an onion, you find easter eggs along way, and stumble into a master
-key that turns out phone number. And you learn as you go. Throwing the executable
-into an LLM is easy, but unsatisfying. But the cat is out of the bag, there's no
-way back.
+slowly peel an onion, you find easter eggs along the way, and stumble into a master
+key that turns out to be a phone number. And you learn as you go. Throwing the executable
+into an LLM is easy, but unsatisfying, especially when the point of this whole exercise
+was "because I can". 
+
+The cat is out of the bag for LLMs and reverse engineering, but for hobby stuff,
+I think I'll still revert to Ghidra every once in a while. 
 
