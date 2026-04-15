@@ -16,7 +16,7 @@ One of the guilty pleasures of playing with old test equipment is to enable all
 functionality that's reserved for a different model number or disabled by a license key.
 
 Sometimes this requires a small HW modification; I just 
-[upgraded my Agilent 53831B to a 53832B](/2026/03/28/Repair-of-Two-Agilent-54831-Oscilloscopes.html#upgrade-to-1-ghz-bandwidth)
+[upgraded my Agilent 54831B to a 54832B](/2026/03/28/Repair-of-Two-Agilent-54831-Oscilloscopes.html#upgrade-to-1-ghz-bandwidth)
 by removing one resistor, but it's more common now to do this in software: I
 don't think there's a single hobbyist owner of a Rigol oscilloscope who hasn't
 done an upgrade to a higher bandwidth version. These are examples where an upgrade path 
