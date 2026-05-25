@@ -68,7 +68,7 @@ The PC system on my AMIQ was in bad shape.  It had the following issues:
 * barely working floppy drive
 * CR2032 battery empty
 
-![Capacitors and fan](/assets/amiq/restauration/caps_and_fan.jpg)
+![Capacitors and fan](/assets/amiq/restoration/caps_and_fan.jpg)
 
 # Installing a Video Card and Keyboard
 
@@ -90,13 +90,13 @@ short-circuit.  A temporary solution at best.
 **You are not supposed to power up a device with bad electrolytics and a broken fan**, 
 but I did it anyway. This was the first sign of life:
 
-[![First boot image](/assets/amiq/restauration/first_boot.jpg)](/assets/amiq/restauration/first_boot.jpg)
+[![First boot image](/assets/amiq/restoration/first_boot.jpg)](/assets/amiq/restoration/first_boot.jpg)
 *(Click to enlarge)*
 
 For $3, I bought this [PCI riser adapter from mini-box.com](https://www.mini-box.com/s.nl/it.A/id.289/.f?sc=8&category=1549)
 to make the video card fit when the motherboard is mounted in the case.
 
-[![PCI riser adapter](/assets/amiq/restauration/pci_riser_adapter.jpg)](/assets/amiq/restauration/pci_riser_adapter.jpg)
+[![PCI riser adapter](/assets/amiq/restoration/pci_riser_adapter.jpg)](/assets/amiq/restoration/pci_riser_adapter.jpg)
 *(Click to enlarge)*
 
 Much better! 
@@ -113,7 +113,7 @@ I didn't have any thermal paste on hand, so instead of replacing the full assemb
 the fan from the heatsink and installed just that. 
 (I *should* apply new thermal paste at some point...)
 
-![Cooler Master cooler](/assets/amiq/restauration/cooler_master_cooler.jpg)
+![Cooler Master cooler](/assets/amiq/restoration/cooler_master_cooler.jpg)
 
 # Replace the BIOS Backup Battery
 
@@ -126,7 +126,7 @@ The motherboard was produced in the late nineties and early 2000s, right around 
 electrolytic capacitor disaster that hit pretty much all PC electronics back then and this one is no
 exception.
 
-![Rusted and bulging caps](/assets/amiq/restauration/rusted_caps.jpg)
+![Rusted and bulging caps](/assets/amiq/restoration/rusted_caps.jpg)
 
 There are 33 electrolytic radial caps on the motherboard and while it's not possible to
 visually determine if the smaller ones have issues, all the larger ones have traces of rust
@@ -205,14 +205,14 @@ rid of it.
 I replaced mine with a 16GB CompactFlash drive that I had laying around and an $8 
 [2.5" 44-pin IDE to CompactFlash adapter](https://www.amazon.com/dp/B00S6GIHS2?th=1).
 
-![CompactFlash to 44-pin IDE adapter](/assets/amiq/restauration/cf2ide_adapter.jpg)
+![CompactFlash to 44-pin IDE adapter](/assets/amiq/restoration/cf2ide_adapter.jpg)
 
 Once removed, I tried to extract the data on the HD one more time with a $10
 [USB-to-SATA/IDE adapter](https://www.amazon.com/dp/B08KT3F998), but that didn't work either.
 When these drives fail, it's usually because their heads gets stuck in their 
 protected-against-vibration idle position. There isn't much software can do about that...
 
-![USB to SATA/IDE adapter](/assets/amiq/restauration/usb_to_sata_ide_adapter.jpg)
+![USB to SATA/IDE adapter](/assets/amiq/restoration/usb_to_sata_ide_adapter.jpg)
 
 # Digital Architecture of the Signal Generation Board and How to Configure It
 
@@ -363,7 +363,7 @@ reliably enough for practical use. My AMIQ was no different. I still wanted to g
 installation the way R&S intended it to be, so I spent another $30 for a
 [GoTEK 3.5 Floppy Drive Emulator](https://www.amazon.com/dp/B0762NCHC6).
 
-![GoTEK floppy drive emulator](/assets/amiq/restauration/GoTEK_floppy_driver_emulator.png)
+![GoTEK floppy drive emulator](/assets/amiq/restoration/GoTEK_floppy_driver_emulator.png)
 
 Replacing the old AMIQ floppy drive with a new one is not for the faint of heart: you
 need to take pretty much the whole unit apart. I didn't bother, and just connected the
@@ -376,7 +376,7 @@ The emulator works as follows:
 * with the USB Floppy Emulator software, write up to 100 different
   1.44MB floppy disk images to a USB stick.
 
-  ![USB floppy manager](/assets/amiq/restauration/USB_floppy_manager.png)
+  ![USB floppy manager](/assets/amiq/restoration/USB_floppy_manager.png)
 
 * insert the USB stick in the emulator hardware
 * select the desired image with the buttons of the front panel
@@ -405,7 +405,7 @@ hardware configuration.
 
 Here's a look at the `\AMIQ` directory of a working disk image:
 
-![AMIQ directory on hard drive](/assets/amiq/restauration/AMIQ_installed_dir.png)
+![AMIQ directory on hard drive](/assets/amiq/restoration/AMIQ_installed_dir.png)
 
 You can see 3 `SEQ_*.LHZ` files: there are compressed bitstream images for AMIQ
 sequencer FPGA. During the floppy drive installation, one of them was decompressed
