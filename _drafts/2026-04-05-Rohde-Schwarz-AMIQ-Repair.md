@@ -10,8 +10,9 @@ categories:
 
 # Introduction
 
-[My Rohde & Schwarz AMIQ teardown blog post](/2025/04/26/RS-AMIQ-Teardown-Analog-Deep-Dive.html)
-featured a working unit, but that wasn't the case when I first received it. On the contrary, many
+[My Rohde & Schwarz AMIQ teardown](/2025/04/26/RS-AMIQ-Teardown-Analog-Deep-Dive.html)
+and [Breaking R&S AMIQ License Keys](/2026/04/12/AMIQ-License-Key-Generation.html)
+blog posts featured a working unit, but that wasn't the case when I first received it. On the contrary, many
 hours were spent getting it up and running.
 
 There were 2 major issues:
@@ -32,7 +33,8 @@ hard drive, floppy drive and something that's plugged in an ISA slot.
 
   You can find the details at 
   [The Retro Web](https://theretroweb.com/motherboards/s/msi-ms-5169-al9), 
-  but it's an pretty standard late nineties affair with support for a large selection of socket 7 
+  but it's a standard late nineties affair with support for a large selection of 
+  [socket 7](https://en.wikipedia.org/wiki/Socket_7)
   CPUs from Intel, AMD and Winchip. It's compatible with SDR UDIMM RAM and 72-pin EDO RAM and 
   it has 4 PCI, 1 AGP, 2 16 ISA slots, a floppy and IDE interface and the usually assortment of 
   smaller interfaces for mouse, keyboard, serial port etc.
@@ -69,15 +71,18 @@ The PC system on my AMIQ was in bad shape.  It had the following issues:
 # Installing a Video Card and Keyboard
 
 If you want to do any restoration work on the AMIQ, you need to operate it like a PC, with
-a keyboard and a display connected. I found a Korean keyboard with PS2 connector on Craigslist 
+a PS2[^PS2] keyboard and a display connected. I found a Korean keyboard on Craigslist 
 for $20. An [ATI (meh) Rage XL PCI](https://vintage3d.org/rageXL.php) 
 with VGA output from eBay set me back another $20. 
 I think pretty much any video card with PCI should work as long as it's not some power 
 hungry monster. 
 
-Forget about just plugging in the VGA card in the PCI slot because the AMIQ case is in the way. 
+[^PS2]: The motherboard has 2 USB ports, but a USB keyboard did't work. I don't know if that's
+        a BIOS limitation or one of Caldera OpenDOS that is used as OS.
+
+Forget about *just* plugging in the VGA card in the PCI slot because the AMIQ case is in the way. 
 To make it work, I had unscrew the motherboard, remove the interface board to the signal generation 
-PCB, and awkwardly float the motherboard with some insulation foam underneath to prevent a 
+PCB, and awkwardly float the motherboard with some ESD insulation foam underneath to prevent a 
 short-circuit.  A temporary solution at best.
 
 **You are not supposed to power up a device with bad electrolytics and a broken fan**, 
@@ -86,17 +91,21 @@ but I did it anyway. This was the first sign of life:
 [![First boot image](/assets/amiq/first_boot.jpg)](/assets/amiq/first_boot.jpg)
 *(Click to enlarge)*
 
-For only $3, I bought this [PCI riser adapter from mini-box.com](https://www.mini-box.com/s.nl/it.A/id.289/.f?sc=8&category=1549)
+For $3, I bought this [PCI riser adapter from mini-box.com](https://www.mini-box.com/s.nl/it.A/id.289/.f?sc=8&category=1549)
 to make the video card fit when the motherboard is mounted in the case.
 
 [![PCI riser adapter](/assets/amiq/pci_riser_adapter.jpg)](/assets/amiq/pci_riser_adapter.jpg)
 *(Click to enlarge)*
 
-Much better!
+Much better! 
+
+You'll need this kind of solution if you want to plug in the video card and the ISA plug-in 
+card that connects the motherboard to the signal generation board: the flat cables to that 
+board are too short otherwise.
 
 # Locked CPU Fan
 
-The fan was completely locked. I don't know how that happens? I replaced it with a socket 7
+The fan was locked solid. I don't know how that happens? I replaced it with a socket 7
 cooler from Cooler Master, another $20 spent on eBay. The new fan comes with a heatsink, but
 I didn't have any thermal paste on hand, so instead of replacing the full assembly, I unscrewed
 the fan from the heatsink and installed just that. 
@@ -104,13 +113,92 @@ the fan from the heatsink and installed just that.
 
 ![Cooler Master cooler](/assets/amiq/cooler_master_cooler.jpg)
 
+# Replace the BIOS Backup Battery
+
+Without this battery, the BIOS won't retain its settings. Expect this battery, a run-off-the-mill
+CR2032 to be empty. 
+
+# Replacing the Motherboard Capacitors
+
+The motherboard was produced in the late nineties and early 2000s, right around the time of the
+electrolytic capacitor disaster that hit pretty much all PC electronics back then and this one is no
+exception.
+
+![Rusted and bulging caps](/assets/amiq/rusted_caps.jpg)
+
+There are 33 electrolytic radial caps on the motherboard and while it's not possible to
+visually determine if the smaller ones have issues, all the larger ones have traces of rust
+at the top. There weren't any signs of leaks, which is great because the fluid inside a cap
+is corrosive and will eat away the hairline PCB traces.
+
+To give an idea how bad the capacitor situation was, I measured 2.5uF on a 1500uF 
+capacitor. It's a miracle that the motherboard was able to boot at all.
+
+Here's the full list:
+
+| Quantity 	| Capacity 	| Voltage 	| Diameter 	| Spacing 	|
+|:--------:	|---------:	|--------:	|---------:	|--------:	|
+|     2    	|   1500uF 	|     10V 	|     10mm 	|     5mm 	|
+|    10    	|   1000uF 	|    6.3V 	|      8mm 	|   3.5mm 	|
+|     5    	|    470uF 	|     16V 	|      8mm 	|   3.5mm 	|
+|     7    	|    100uF 	|     16V 	|      5mm 	|     2mm 	|
+|     2    	|     47uF 	|     25V 	|      5mm 	|     2mm 	|
+|     7    	|     10uF 	|     25V 	|      4mm 	|   1.5mm 	|
+
+You can use my [Mouser shopping list](https://www.mouser.com/Tools/Project/Share?AccessID=875b0d6d85)
+if you want, but **you do so at your own risk**: 
+
+* Not all new capacitors have a low 
+  [equivalent series resistance (ESR)](https://en.wikipedia.org/wiki/Equivalent_series_resistance).
+
+  Low ESR is important for capacitors that are part of switching voltage
+  regulators because they tend to be exposed to high currents which, in combination
+  with resistance, results in higher power consumption and thus lower power efficiency.
+  It also reduces the lifetime of the capacitor.
+
+  I didn't know for which AMIQ capacitors a low ESR mattered so I winged it. In the list 
+  above, the 1500uF, 1000uF and 470uF ones have a low ESR. The others don't. 
+
+* The quantities in the shopping list don't match those of the table above. That's because 
+  I ordered one or two spares in case I screwed up. The smaller caps are cheap and harder
+  to handle. In hindsight, I should have bought even a few more spares.
+
+* The voltages don't always match: the ones in the shopping list are sometimes
+  higher than the original because the ones with the original voltage weren't available.
+  That's fine, don't worry about it.
+
+I replaced all of othe capacitors. If I had to do it again, I'd probably test one of the 
+small 10uF capacitors and check they were still fine. Some of them are hard to access,
+squeezed between connectors.
+
+Since this was my first recapping job, I watched a bunch of Youtube videos to see how it's
+done. I won't go into all the details here , but here are a few quick ones:
+
+* Pay attention to the polarity of the capacitors that you remove.
+* Use a soldering iron temperature that is higher than 350C. The motherboard has a lot 
+  of layers that will make the applied heat dissipate away.
+* If you’re using a manual desoldering pump like the excellent 
+  [Engineer SS-03 Solder Sucker](https://www.amazon.com/ENGINEER-Engineer-Solder-Suction-SS-03/dp/B0D7Q293KV), 
+  make sure to place it against the pin that’s being desoldered at an angle of around 45 degrees. I 
+  held it almost perpendicular to the motherboard on top and, somewhat counter-intuitively, that 
+  reduces the sucking power of the pump by a lot.
+* Add some fresh solder first. It helps a lot. Ideally, use low temperature solder for that.
+* Make use of gravity. For some of the smaller capacitors, the easiest was to put the PCB upside 
+  down (capacitors at the bottom), heat up the pins and watch the capacitor fall out.
+* Immediately replace a removed capacitor with a new one, instead of first removing all of them. That reduces the chances of mistakes.
+
+Late nineties motherboards already had many layers and small traces. A lot could have gone wrong, 
+but after the recap the motherboard miraculously powered up without any issues.
+
 # Replacing the Spinning Disk Hard Drive with a CompactFlash Drive
 
-After powering up, the harddrive made a gnarly clicking sound and the BIOS wasn't able to 
-boot from it. Late nineties IBM TravelStar drives may not be as notorious as their DeskStar
-bretheren for being total pieces of shit, but they have a reputation of failing just the same.
+At boot, the hard drive made a gnarly clicking sound and while the BIOS was able to detect it,
+it couldn't read from it. Late nineties IBM TravelStar drives may not be as notorious as their 
+DeskStar bretheren for being total pieces of shit, but they have a reputation of failing just the 
+same.
 
-If you're lucky and the drive still works, you're on borrowed time and should still get rid of it.
+If you're lucky and the drive still works, you're living on borrowed time and should still get 
+rid of it.
 
 I replaced mine with a 16GB CompactFlash drive that I had laying around and an $8 
 [2.5" 44-pin IDE to CompactFlash adapter](https://www.amazon.com/dp/B00S6GIHS2?th=1).
@@ -123,6 +211,61 @@ When these drives fail, it's usually because their heads gets stuck in their
 protected-against-vibration idle position. There isn't much software can do about that...
 
 ![USB to SATA/IDE adapter](/assets/amiq/usb_to_sata_ide_adapter.jpg)
+
+We have a new drive installed now, let's give the firmware it deserves...
+
+# Installing Firmware - The Official Way
+
+If you start with a blank hard drive, the official way to set up the machine is with 2 Rohde & Schwarz 
+floppy disks: the PREPARE disk and the PROGRAM disk.  The AMIQ has been end-of-lifed a long time
+ago and you can't get them anymore, but I was able to find a copy for AMIQ version 4.00. Not the 
+latest one, there's at least a 4.01 version out there, but we'll get to that later.
+
+The PREPARE disk contains a minimal operating system and various hardware related files, but
+not the main AMIQ application. The PROGRAM disk contains additional utilities and the main
+application.
+
+Assuming the AMIQ has a working floppy drive (spoiler: it almost certainly won't), the setup is as follows:
+
+* Insert the PREPARE disk.
+* Have the PC boot up from floppy.
+
+  If the AMIQ still has the recommended settings for normal use, booting from floppy
+  will be disabled. You'll need to go to the BIOS menu to enable it.
+
+After booting, you'll go through a bunch of setup screens:
+
+* Format the new disk with FDISK.
+
+  The maximum partition size is 2GB, but you have option to add multiple
+  partitions and thus multiple drive letters. I think the remote software
+  is able to deal with that when uploading waveforms: just specify the right
+  drive letter.
+
+* Enter a bunch AMIQ model information:
+
+  * Model: Mine is an AMIQ04 
+  * IQ_Analog/Digital Board version number
+
+    There are 4 options, 02/03/04 which you'd think match the model number, but
+    apparently not... otherwise they wouldn't ask? I guessed 04 for mine and
+    that worked.
+
+  * Enter serial number
+
+  The AMIQ signal generation board has a CPLD and 2 FPGAs. The information above
+  determines which one is used. For whatever reason, R&S decided that it wasn't
+  worth having some PC readable configuration register to make that automatic.
+
+1. 
+
+The embedded AMIQ application runs on DOS4GW on top of DR-DOS. The official way to 
+
+
+XXX When using the official installation way, `B.OUT` got replaced by `NONE.OUT` in
+`B.CFG`.
+
+# Extacting data from the SATA/IDE drive
 
 The USB to SATA/IDE adapter is optional if you don't care about extracting the old HD data, 
 but I don't think I'd have been able to complete the installation without 
@@ -246,106 +389,6 @@ a `S.OUT`, `B.OUT` and `CONTROL.SVF` file in the `C:\AMIQ` directory. The `SEQ_*
 will be there as well, but the `CONT_*.LZH` won't be. The `PREPARE` installation should
 has all versions of them though.
 
-# Installing Firmware - The Official Way
-
-If you start with a blank hard drive, the official way to set up the machine is with 2 Rohde & Schwarz 
-provided floppy disks: the PREPARE disk and the PROGRAM disk.  The AMIQ has been end-of-lifed a long time
-ago and you can't get them anymore, but I was able to find a copy for version 4.00. Not the latest version, 
-there's at least 4.01 version out there, but we'll get to that later.
-
-The PREPARE disk contains a minimal operating system and various hardware related files, but
-not the main AMIQ application. The PROGRAM disk contains additional utilities and the main
-application.
-
-The setup is as follows:
-
-1. Insert the PREPARE disk.
-1. Have the PC boot up from floppy.
-
-  If the AMIQ still has the recommended settings for normal use, booting from floppy
-  will be disabled. You'll need to go to the BIOS menu to enable it.
-
-  After booting, you'll go through a bunch of setup screens.
-
-1. Format the new disk with FDISK.
-
-  The maximum partition size is 2GB, but you have option to add multiple
-  partitions and thus multiple drive letters. I think the remote software
-  is able to deal with that when uploading waveforms: just specify the right
-  drive letter.
-
-1. Enter a bunch AMIQ model information:
-
-  * Model: Mine is an AMIQ04 
-  * IQ_Analog/Digital Board version number
-
-    There are 4 options, 02/03/04 which you'd think match the model number, but
-    apparently not... otherwise they wouldn't ask? I guessed 04 for mine and
-    that worked.
-
-  * Enter serial number
-
-  The AMIQ signal generation board has a CPLD and 2 FPGAs. The information above
-  determines which one is used. For whatever reason, R&S decided that it wasn't
-  worth having some PC readable configuration register to make that automatic.
-
-1. 
-
-The embedded AMIQ application runs on DOS4GW on top of DR-DOS. The official way to 
-
-
-XXX When using the official installation way, `B.OUT` got replaced by `NONE.OUT` in
-`B.CFG`.
-
-# Motherboard Capacitors
-
-The motherboard was produced in the late nineties and early 2000s, right around the time of the
-electrolytic capacitor disaster that hit pretty much all PC electronics back and mine is no
-exception.
-
-![Rusted and bulging caps](/assets/amiq/rusted_caps.jpg)
-
-There are 33 electrolytic caps on the motherboard and while it's not possible to
-visually determine if the smaller ones have issues, all the larger ones have traces of rust
-at the top. There weren't any signs of leaks, which is great because the fluid inside a cap
-is corrosive and will eat away the hairline PCB traces.
-
-To give an idea how bad the capacitor situation was, I measured a 2.5uF on a 1500uF 
-capacitor. It's really a miracle that the motherboard was able to boot.
-
-Here's the full list:
-
-| Quantity 	| Capacity 	| Voltage 	| Diameter 	| Spacing 	|
-|:--------:	|---------:	|--------:	|---------:	|--------:	|
-|     2    	|   1500uF 	|     10V 	|     10mm 	|     5mm 	|
-|    10    	|   1000uF 	|    6.3V 	|      8mm 	|   3.5mm 	|
-|     5    	|    470uF 	|     16V 	|      8mm 	|   3.5mm 	|
-|     7    	|    100uF 	|     16V 	|      5mm 	|     2mm 	|
-|     2    	|     47uF 	|     25V 	|      5mm 	|     2mm 	|
-|     7    	|     10uF 	|     25V 	|      4mm 	|   1.5mm 	|
-
-
-You can use my [Mouser shopping list](https://www.mouser.com/Tools/Project/Share?AccessID=875b0d6d85)
-if you want, but **you do so at your own risk**: 
-
-* Not all new capacitors have a low 
-  [equivalent series resistance (ESR)](https://en.wikipedia.org/wiki/Equivalent_series_resistance).
-
-  Low ESR is important for capacitors that are part of switching voltage
-  regulators because they tend to be exposed to high currents which, in combination
-  with resistance, results in higher power consumption and thus lower power efficiency.
-  It also reduces the lifetime of the capacitor.
-
-  I didn't know for which AMIQ capacitors low ESR mattered so I winged it. In the list 
-  above, the 1500uF, 1000uF and 470uF ones have a low ESR. The others don't. 
-
-* The quantities in the shopping list don't match those of the table above. That's because 
-  I ordered one or two spares in case I screwed up. The smaller caps are cheap and harder
-  to handle. In hindsight, I should have bought even a few more spares.
-
-* The voltages don't always match: the ones in the shopping list are sometimes
-  higher than the original because the ones with the original voltage weren't available.
-  Don't worry about it.
 
 # Recapping Tools
 
@@ -536,53 +579,6 @@ Finished
 
 Took around 8 minutes even if 'Finished' showed up immediately.
 
-
-
-# Capacitors
-
-Caps: they're all aluminum electrolytic radial ones.
-
-* scan front to back - left to right
-
-* 1x 470uF/16V - USB connectors 
-* 3x 10uF/25V (tiny)
-* 2x 1500uF/10V
-* 4x 1000uF/6.3V
-* 1x 1000uF/6.3V
-* 1x 470uF/16V
-
-* 1x 10uF/25V (tiny)
-* 1x 470uF/16V
-* 4x 1000uF/6.3V
-* 1x 100uF/16V
-
-* 3x 1000uF/6.3V
-* 1x 10uF/25V
-* 1x 100uF/16V
-
-* 1x 1000uF/10V
-* 1x 100uF/16V
-
-* 1x 470uF/16V
-* 1x 100uF/16V
-
-* 2x 100uF/16V
-
-* 1x 470uF/16V
-* 2x 10uF/25V
-
-* 2x 47uF/25V
-* 1x 100uF/16V
-
-Summary:
-
-* 5x 470uF/16V      - 8.3mm diam    - 3.2mm spacing
-* 2x 1500uF/10V     - 10.2mm        - 5.5mm
-* 10x 1000uF/6.3V   - 8.3mm         - 3.6mm
-* 7x 10uF/25V       - 4.2mm         - 2mm
-* 7x 100uF/16V      - 5.3mm         - 2mm
-* 2x 47uF/25V       - 5.3mm         - 2mm
-
 # Booting up
 
 * Plug in VGA GPU
@@ -754,3 +750,6 @@ tom@zen:~/projects/tomverbeure.github.io/assets/amiq$ xxd EEPROM_AMIQ04b.BIN
 * [HDDSurgery: HDDS HGST 2.5” Ramp Set](https://hddsurgery.com/data-recovery-tools/hdds-hgst-2-5-inch-ramp-set)
 * [DonorDrives](https://www.donordrives.com/)
 * [Clicking Noise? Causes and solutions?](https://forum.hddguru.com/viewtopic.php?f=16&t=7457)
+
+# Footnotes
+
