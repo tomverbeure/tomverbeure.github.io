@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Rohde & Schwarz AMIQ Modulation Generator - Reviving the PC System 
-date:   2026-04-05 00:00:00 -1000
+date:   2026-05-25 00:00:00 -1000
 categories:
 ---
 
@@ -15,6 +15,8 @@ and [Breaking R&S AMIQ License Keys](/2026/04/12/AMIQ-License-Key-Generation.htm
 blog posts featured a working unit, but that wasn't the case when I first received it. On the contrary, many
 hours were spent getting it up and running.
 
+![Rohde & Schwarz AMIQ](/assets/amiq/teardown/amiq_frontside.jpg)
+
 There were 2 major issues:
 
 * all the electrolytic capacitors of the PC motherboard has to be replaced
@@ -26,7 +28,7 @@ Much like [my Agilent 54831 oscilloscope](/2026/03/28/Repair-of-Two-Agilent-5483
 the top side of the AMIQ contains a regular turn-of-the-century PC: motherboard, power supply,
 hard drive, floppy drive and something that's plugged in an ISA slot.
 
-[![AMIQ top size with PC motherboard](/assets/amiq/amiq_pc_motherboard_side.jpg)](/assets/amiq/amiq_pc_motherboard_side.jpg)
+[![AMIQ top size with PC motherboard](/assets/amiq/teardown/amiq_pc_motherboard_side.jpg)](/assets/amiq/teardown/amiq_pc_motherboard_side.jpg)
 *(Click to enlarge)*
 
 * MSI MS-5169 motherboard
@@ -66,7 +68,7 @@ The PC system on my AMIQ was in bad shape.  It had the following issues:
 * barely working floppy drive
 * CR2032 battery empty
 
-![Capacitors and fan](/assets/amiq/caps_and_fan.jpg)
+![Capacitors and fan](/assets/amiq/restauration/caps_and_fan.jpg)
 
 # Installing a Video Card and Keyboard
 
@@ -88,13 +90,13 @@ short-circuit.  A temporary solution at best.
 **You are not supposed to power up a device with bad electrolytics and a broken fan**, 
 but I did it anyway. This was the first sign of life:
 
-[![First boot image](/assets/amiq/first_boot.jpg)](/assets/amiq/first_boot.jpg)
+[![First boot image](/assets/amiq/restauration/first_boot.jpg)](/assets/amiq/restauration/first_boot.jpg)
 *(Click to enlarge)*
 
 For $3, I bought this [PCI riser adapter from mini-box.com](https://www.mini-box.com/s.nl/it.A/id.289/.f?sc=8&category=1549)
 to make the video card fit when the motherboard is mounted in the case.
 
-[![PCI riser adapter](/assets/amiq/pci_riser_adapter.jpg)](/assets/amiq/pci_riser_adapter.jpg)
+[![PCI riser adapter](/assets/amiq/restauration/pci_riser_adapter.jpg)](/assets/amiq/restauration/pci_riser_adapter.jpg)
 *(Click to enlarge)*
 
 Much better! 
@@ -111,7 +113,7 @@ I didn't have any thermal paste on hand, so instead of replacing the full assemb
 the fan from the heatsink and installed just that. 
 (I *should* apply new thermal paste at some point...)
 
-![Cooler Master cooler](/assets/amiq/cooler_master_cooler.jpg)
+![Cooler Master cooler](/assets/amiq/restauration/cooler_master_cooler.jpg)
 
 # Replace the BIOS Backup Battery
 
@@ -124,7 +126,7 @@ The motherboard was produced in the late nineties and early 2000s, right around 
 electrolytic capacitor disaster that hit pretty much all PC electronics back then and this one is no
 exception.
 
-![Rusted and bulging caps](/assets/amiq/rusted_caps.jpg)
+![Rusted and bulging caps](/assets/amiq/restauration/rusted_caps.jpg)
 
 There are 33 electrolytic radial caps on the motherboard and while it's not possible to
 visually determine if the smaller ones have issues, all the larger ones have traces of rust
@@ -203,14 +205,14 @@ rid of it.
 I replaced mine with a 16GB CompactFlash drive that I had laying around and an $8 
 [2.5" 44-pin IDE to CompactFlash adapter](https://www.amazon.com/dp/B00S6GIHS2?th=1).
 
-![CompactFlash to 44-pin IDE adapter](/assets/amiq/cf2ide_adapter.jpg)
+![CompactFlash to 44-pin IDE adapter](/assets/amiq/restauration/cf2ide_adapter.jpg)
 
 Once removed, I tried to extract the data on the HD one more time with a $10
 [USB-to-SATA/IDE adapter](https://www.amazon.com/dp/B08KT3F998), but that didn't work either.
 When these drives fail, it's usually because their heads gets stuck in their 
 protected-against-vibration idle position. There isn't much software can do about that...
 
-![USB to SATA/IDE adapter](/assets/amiq/usb_to_sata_ide_adapter.jpg)
+![USB to SATA/IDE adapter](/assets/amiq/restauration/usb_to_sata_ide_adapter.jpg)
 
 We have a new drive installed now, let's give the firmware it deserves...
 
@@ -396,7 +398,7 @@ has all versions of them though.
 practice ground for beginners like me, but Santa had given me a desoldering station and
 I was eager to try it out.
 
-![Workbench with recapping tools and motherboard](/assets/amiq/recapping_items.jpg)
+![Workbench with recapping tools and motherboard](/assets/amiq/restauration/recapping_items.jpg)
 
 Here are the tools that I used:
 
