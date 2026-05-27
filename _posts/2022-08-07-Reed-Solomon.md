@@ -488,9 +488,9 @@ Here's how that works out for our example:
 
   $$(0, 2),(2, -4),(3, -7),(4, -2) \rightarrow (2, 3, -5, 1)$$
 
-  $$(1, 6),(2, -4),(3, -7),(4, -2) \rightarrow (2, 3, -5, 1)$$
+  $$(1, 6),(2, -4),(3, -7),(4, -2) \rightarrow (22, -56/3, 5/2, 1/6)$$
 
-* The coefficients $$(2,3,-5,1)$$ come up 6 times. All other solutions are different
+* The coefficients $$(2,3,-5,1)$$ come up 5 times. All other solutions are different
   from each other, so $$(2,3,-5,1)$$ is the winner. This is also the correct solution.
 
 This may be a straightforward error correcting algorithm, but it's not
