@@ -27,15 +27,15 @@ described in my previous blog post, but I'll recap it here:
 
   $$ g(x) = (x - \alpha_0)(x - \alpha_1) \dots (x - \alpha_{n-k-1}) $$
 
-  This polynomial expends to this:
+  This polynomial expands to this:
 
   $$ g(x) = g_0 + g_1 x + g_2 x^2 + \dots + g_{n-k-1} x^{n-k-1} $$
 
-* Let's define the following division:
+* Define the following division:
 
   $$ \frac{ p(x) x^{n-k} }{ g(x) }  = q(x) g(x) + r(x) $$
 
-  So $$r(x)$$ is the remainder of that division. It has $$(n-k)$$ coefficients 
+  $$r(x)$$ is the remainder of that division. It has $$(n-k)$$ coefficients 
   $$(r_0, r_1, ... , r_{n-k}) $$.
 
 * Define the code word polynomial as follows:
@@ -48,16 +48,85 @@ described in my previous blog post, but I'll recap it here:
 
   The subtraction is only needed for the theoretical case where the symbols are not from
   a $$\text{GF}(2^n)$$ Galois field. If the symbols are from a Galois field, then addition
-  and subtractions are the same thing.
+  and subtraction are the same operation and the equation becomes:
+
+  $$ c(x) = q(x) r(x) = p(x) x^{n-k} + r(x) $$
 
 * The code word consists of the coefficients of $$s(x)$$:
   
-  $$(c_0, c_1, \dots, c_n ) $$
+  $$(c_0, c_1, \dots, c_{n-1} ) $$
 
-  Of those symbols, $$(c_0, c_1, \dots, c_{k-1})$$ comes from $$r(x)$$ and
-  $$(c_k, c_{k+1}, \dots, c_{n-k-1})$$ come from $$p(x)$$ and identical to
-  message $$(m_0, m_1, \dots, m_{k-1})$$.
+  Of those symbols, $$(c_0, c_1, \dots, c_{k-1})$$ comes from $$r(x)$$. Meanwhile,
+  $$(c_k, c_{k+1}, \dots, c_{n-1})$$ comes from $$p(x)$$ and is identical to
+  original message $$(m_0, m_1, \dots, m_{k-1})$$.
 
+# Parameters Necessary for Reed-Solomon Coding
+
+I don't know how to perform Reed-Solomon decoding with regular numbers[^regular_numbers], so let's switch
+to Galois fields for everything that follows.
+
+[^regular_numbers]: It is possible to do Reed-Solomon-like error decoding with regular numbers, 
+                    but it's an esoteric topic that, again, I know nothing about, and it also
+                    wouldn't be useful to the vast majority of people who read this.
+
+In my previous blog post, I listed a bunch of parameters that must be agreed on between
+transmitter and receiver to establish a protocol. I will revisit those parameters and
+make them more concrete for the Galois field case.
+
+* the alphabet of the symbols
+
+  The alphabet consist of all the values that can be assigned to a symbol. When 
+  a power-of-two Galois field $$GF(2^m)$$ is used, symbols map directly to binary
+  words. Set $$m$$ to 8 and a byte can be used immediately as a symbol.
+
+  Almost all real world Reed-Solmon codes are defined over a $$GF(2^m)$$ Galois
+  field, but the [Reed-Solomon error correction example on Wikipedia](https://en.wikipedia.org/wiki/Reed–Solomon_error_correction#Example)
+  is for a $$GF(929)$$ code, which is used in [PDF417 bar codes](https://en.wikipedia.org/wiki/PDF417).
+
+* the primitive polynomial of the finite field 
+
+  Every element $$s$$ of the alphabet can be written as a polynomial $$s(x)$$ with coefficients 
+  $$(s_0, \dots, s_{m-1})$$. If you multiply $$s$$ by itself, $$s^i$$ and divide by polynomial $$g(x)$$
+  then the remainder will be of the same order as $$s(x)$$ and thus an element of the alphabet.
+
+  A primitive polynomial $$g(x)$$ is chosen such that $$s^i$$ covers all elements 
+  of the alphabet, except 0. The primitve polynomial is said to define the finite field,
+  because it determines what happens when you multiply 2 elements of the field with
+  each other.
+
+  Primitive polynomials need to have certain mathematical characteristics, but there are
+  plenty of choices for $$GF(2^8)$$.
+
+* the length $$k$$ of the message word
+
+* the length $$n$$ of the code word
+
+  A popular choice for $$n$$ and $$k$$ is 255 and 233, which results in a
+  RS(255,223) code. It adds 32 symbols to the message and allows correcting up 
+  to 16 symbol errors in the code word.
+
+  The code word is almost always smaller than the size of the alphabet. For
+  $$GF(2^8)$$, that means $$n < 256$$. 
+  
+  Here's why: from the earlier blog post, we know that 
+  Reed-Solomon coding is all about evaluating a polynomial at more points 
+  than there are number of symbols in the message word. 
+
+  When using $$GF(2^8)$$, there are only 256 discrete points at which
+  the message polynomial can be evaluated so that's the hard limit. The reason to
+  use one less than this hard limit has to do with the fact that all points
+  except 0 can be part of a multiplicative group, which leads to an implementation
+  where the encoding can be done with a generator polynomial and a LSFR-style 
+  shift-register.[^extended_rs]
+
+  It's important to be aware of *shortened Reed-Solomon codes*. For example,
+  [DVB-T](https://en.wikipedia.org/wiki/DVB-T) uses RS(204,188). In practice,
+  this is RS(255,239) code, but 51 bytes of the message are always set to 0.
+
+[^extended_rs]: It is possible to do Reed-Solomon coding where the code word matches
+                the size of the alphabet. That's called *extended RS* coding, but 
+
+* the generator polynomial of the code 
 
 # Reed-Solomon Decoding Pipeline
 
