@@ -1,7 +1,7 @@
 ---
 layout: post
-title: Galois Field Arithmetic
-date:  2026-03-08 00:00:00 -1000
+title: A Galois Field Arithmetic Primer
+date:  2026-05-30 00:00:00 -1000
 categories:
 ---
 
@@ -13,66 +13,70 @@ categories:
 
 # Introduction
 
-In [my blog post about Reed-Solomon coding](/2022/08/07/Reed-Solomon.html), 
+In [my blog post about Reed-Solomon coding](/2022/08/07/Reed-Solomon.html),
 I used regular integers for all calculations.  These are unpractical for a real-world 
-implementation, but since everybody knows integers math since first grade, it made things 
+implementation, but since everybody knows integer math since first grade, it made things 
 easier to learn things one step at a time.
 
-Instead of working with pure integers, actual Reed-Solomon implementations will
-use elements from a [Galois or Finite field](https://en.wikipedia.org/wiki/Finite_field) 
-as symbols.
+Instead of working with pure integers, actual Reed-Solomon implementations 
+uses elements from a [Galois or finite field](https://en.wikipedia.org/wiki/Finite_field) 
+as symbols. 
 
-In this blog post, I will first talk a bit about Galois fields. I will rely heavily on 
-examples instead of 
+I've been sitting on writing about Reed-Solomon decoding for almost 4 years now[^galois_kickoff], and I'm 
+still not quite there, but a first step is to have enough Galois field understanding
+so that the lack of it isn't an obstacle. That's what this blog is about. Don't expect a solid
+theoretical treatise, you can find many of those as part of univerity courses, but something
+that is sufficient to refer back to in the future when I've forgotten some of the details. 
 
-Not nearly enough to
-have a solid theoretical understanding, just sufficiently so that I can refer back to
-it when I've forgotten some of the details. You can find much better material online if 
-you want to get a better understanding. Check out in the [References](#references) section
-below from a bunch of links.
+[^galois_kickoff]: According to my git log, the first words of this blog posts were written
+                   in september 2023.
 
-Once these basics are out of the way, I'll dive into some details related to hardware
-implementation of Galois field multipliers.
+If you want to get a deeper understanding, Check out the [references](#references) at the bottom. 
 
-# Galois Field
+# A Galois Field Introduction by Example
 
-In mathematic, a field is a set of elements for which addition, subtraction, multiplication
-and division operations have been defined, with propertes that are the same the ones
-that we take for granted when dealing with rational or real numbers, such as the associative
-and distributive properties.
+In mathematics, a field is a set of elements for which addition, subtraction, multiplication
+and division operations have been defined, with properties that we take for granted when dealing 
+with rational or real numbers, such as the associative and distributive properties[^assoc_dist_prop]. 
 
-A Galois field is a field that has a limited number of elements, but that still has
-these kind of operations and properties.
+[^assoc_dist_prop]: The [associative property](https://en.wikipedia.org/wiki/Associative_property) 
+                    states that a * (b * c) = (a * b) * c. 
+                    The [distributive property](https://en.wikipedia.org/wiki/Distributive_property) 
+                    states that a * (b + c) = (a * b) + (a * c).
 
-A good example of a Galois field is GF(5). It has the integer numbers 0 to 4 as elements.
-Addition, subtraction, and multiplicaiton work the same as for regular integers, except that each such operation 
-is followed by a modulo 5 operation. Division is defined as a multiplication by the inverse:
+For rational or real numbers, the number of elements in the field is infinite. A Galois field 
+only has a limited number of elements, yet still has these kind of operations and properties.
 
-$$ \frac{a}{b} = a \cdot b^{-1} $$
+A good example of a Galois field is $$\text{GF}(5)$$ which integer numbers 0 to 4 as elements.
+Addition, subtraction, and multiplication work the same as for regular integers but each 
+such operation is followed by a modulo 5 operation. 
 
-Here are a few example operations in GF(5):
+Here are a few example operations in $$\text{GF}(5)$$:
 
 $$
 \begin{align}
 1 + 3 = (1+3) \bmod 5 = 4 \bmod 5 = 4     \\
 2 + 7 = (2+6) \bmod 5 = 8 \bmod 5 = 3     \\
-3 \cdot 4 = (3 \cdot 4) \bmod 5 = 36 \bmod 5 = 1     \\
+3 \cdot 4 = (3 \cdot 4) \bmod 5 = 12 \bmod 5 = 2     \\
 \end{align}
 $$
 
-**Division**
+Division is a bit less intuitive. It is defined as the multiplication by the inverse of the
+divisor:
 
-Division is a bit less intuitive: we need the multiplicative inverse of the divisor, which can be
-found by checking all possible element. Let's say we want to do 2/3 in GF(5). 3 is the divisor. 
-We need to find $$3^{-1}$$ so that $$3 \cdot 3^{-1} = 1$$. 
+$$ \frac{a}{b} = a \cdot b^{-1} $$
 
-There are 5 different options 0,1,2,3,4.
+One way of finding the multiplicative inverse of the divisor is by multiplying it with all possible 
+elements and checking if the result is 1. 
+
+Let's say we want to do $$2/3$$ in $$\text{GF}(5)$$. We need to find $$3^{-1}$$ so that $$3 
+\cdot 3^{-1} = 1$$. There are 5 different options 0,1,2,3,4:
 
 $$
 \begin{align}
 (3 \cdot 0) \bmod 5 = 0 \\
 (3 \cdot 1) \bmod 5 = 3 \\
-(3 \cdot 2) \bmod 5 = 1 \\
+\boldsymbol{(3 \cdot 2) \bmod 5 = 1} \\
 (3 \cdot 3) \bmod 5 = 4 \\
 (3 \cdot 4) \bmod 5 = 2 \\
 \end{align}
@@ -82,14 +86,39 @@ We can see that $$(3 \cdot 2)\bmod 5 = 1$$, so $$3^{-1}=2$$.
 
 And thus:
 
-$$2/3 = (2 \cdot 2) \bmod 5 = 4$$
+$$2/3 = 2 \cdot 3^{-1} = (2 \cdot 2) \bmod 5 = 4$$
 
-**A Prime Number of Elements**
+There are other ways to calculate the multiplicative inverse. For simple cases, you can use
+[Fermat's Little Theorem](https://en.wikipedia.org/wiki/Fermat%27s_little_theorem),
+which says:
 
-One thing to note is that the number of elements in a Galois field must always be a
-a prime number. This is because the division operation would otherwise be ill defined.
+$$a^{p-1} \equiv 1 \pmod{p}$$
 
-For example, let's try to find the multiplicative inverse of 2 when doing a modulo 6 operation:
+or, after dividing both sides by $$a$$:
+
+$$a^{p-2} \equiv a^{-1} \pmod{p}$$
+
+In our example $$a=3$$ and $$p=5$$, so:
+
+$$ 3^{-1} = 3^{5-2} = 3^3 = 27 $$
+
+$$ 27 \pmod{5} = 2 $$
+
+A more general algorithm is the 
+[Extended Euclidean Algorithm](https://en.wikipedia.org/wiki/Extended_Euclidean_algorithm).
+
+# Base Galois Fields
+
+The example above is one of a base Galois field
+
+$$\text{GF}(p)$$
+
+$$p$$ is the base number of a one-dimensional mathematical universe. In a base
+Galois field, $$p$$ must always be a prime number, otherwise the division operation 
+would be ill defined. 
+
+For example, if we'd set $$p=6$$ and tried to find the multiplicative inverse of 2,
+we'd get the following:
 
 $$
 \begin{align}
@@ -103,14 +132,23 @@ $$
 $$
 
 There's no solution with a result of 1. Since there's at least one element for which a
-multiplicative inverse doesn't exist, GF(6) can't be a field.
+multiplicative inverse doesn't exist, you can create a field for $$p=1$$ and thus
+$$\text{GF}(6)$$ can't exist.
 
-**Real World Example of a Galois Field**
+Another issue for $$p=6$$ is that you can get a result of 0 when multiplying 2 non-zero
+numbers:
 
-Since a Galois field must have a prime number of elements, only GF(2) can map directly
-to the zeros and ones of digital logic. All other fields will have an odd number of elements.
-But that doesn't mean that there aren't any real-world cases where these kind of Galois
-fields are used: the [Wikipedia article on Reed-Solomon error correction](https://en.wikipedia.org/wiki/Reed–Solomon_error_correction#Error_locator_polynomial)
+$$ 2 \cdot 3 = 6 \equiv 0 \pmod{6} $$
+
+That's behavior unbecoming of a proper field!
+
+
+**Real world example of a base Galois field**
+
+Since a Galois field must have a prime number of elements, only $$\text{GF}(2)$$ maps directly
+to the zeros and ones of digital logic; all other fields have an odd number of elements. 
+Still, there are some real-world cases where these kind of Galois fields are used:
+the [Wikipedia article on Reed-Solomon error correction](https://en.wikipedia.org/wiki/Reed–Solomon_error_correction#Error_locator_polynomial)
 has an example that uses GF(929), a field that is used for coding [PD417](https://en.wikipedia.org/wiki/PDF417)
 bar codes.
 
@@ -123,7 +161,7 @@ protocols that run at rates of gigabits or bytes per second.
 
 **GF(2)**
 
-Before taking the next step, let's first look at the only basic operation that does map
+Before taking the next step, let's first look at the only basic operation that maps
 neatly to ones and zeros: GF(2). The binary Galois field only has 2 symbols: 0 and 1.
 
 It has the following addition table:
@@ -153,67 +191,148 @@ subtraction is the same as addition.
 
 These are promising properties for a hardware implementation.
 
-# Galois Field Extensions
+# Extended Galois Fields 
 
-The Galois fields discussed in the previous section, constructed out of a single prime number, are sometimes 
-called base Galois fields. It turns out that you can create new Galois fields, called Galois field extensions,
-out of a base Galois field by grouping multiple base elements together into an ordered tuple.
+From a base Galois field $$\text{GF}(p)$$ can construct an extended Galois field
 
-The notation for a Galois field extension is as follows: $$\text{GF}(p^n)$$, where $$p$$ is the base
-prime number, and $$n$$ is the order of the extended Galois field.  The total number of elements
-in an extended Galois field is $$p^n$$.
+$$\text{GF}(p^n)$$
 
-For example, $$\text{GF}(2^4)$$ is a Galois field for which  each element consists of an ordered tuple 
-$$(a_3, a_2, a_1, a_0)$$ of 4 $$\text{GF}(2)$$ elements.  The total number of elements of this field is 16. 
+$$p$$ is still the size of mathematical universe in one dimension and prime. 
+$$n$$ is the number of dimensions. The total number of elements in the extended
+Galois field is simply $$p^n$$. An element $$a$$ of such a Galois field could be
+written as a vector:
 
-*You'll sometimes see this written a $$\text{GF}(16)$$, which isn't ambiguous since all the factors 
-of 16 are 2, so there's only 1 prime number possible, but my personal preference is to always write 
-it down as $$\text{GF}(2^4)$$.*
+$$( a_{n-1}, \cdots, a_1, a_0 ) $$
 
-**Extended Galois Field Addition**
+Or as a polynomial:
 
-All Galois fields require addition, subtraction, multiplication, and division operation. For Galois
-field extensions, we turn to polynomials to define these operations.
+$$ a_{n-1} x^{n-1} + \cdots + a_1 x + a_0 $$
 
-The elements within each tuple are mapped to  coefficients of a polynomial:
+For algorithms that are implemented in hardware, it's extremely common to deal with
+$$\text{GF}(2^n)$$, and $$\text{GF}(2^8)$$ especially: this results in 8 dimensions 
+of values 0 and 1 which conveniently maps to a byte.
 
-$$(a_3, a_2, a_1, a_0) \rightarrow a_3 x^3 + a_2 x^2 + a_1 x + a_0$$
+*You'll sometimes see an extended Galois field written with argument in parenthesis 
+worked out, e.g. $$\text{GF}(2^8)$$ written a $$\text{GF}(256)$$. This is not an ambiguous
+notation since you can infer this to be a Galois field extension because 256 is not a prime,
+but my personal preference is to always use the $$\text{GF}(2^8)$$ notation.*
 
-Addition of 2 tuples becomes a polynomial addition:
+All Galois fields require an addition, subtraction, multiplication, and division operation. For Galois
+field extensions, we turn the polynomial notation and polynomial operations to make
+this happen.
+
+**Extended Galois field addition**
+
+To add 2 elements $$a$$ and $$b$$:
 
 $$
 \begin{align}
-(a_3, a_2, a_1, a_0) + (b_3, b_2, b_1, b_0)  \\
-\rightarrow (a_3 x^3 + a_2 x^2 + a_1 x + a_0) + (b_3 x^3 + b_2 x^2 + b_1 x + b_0) \\
+(a_3 x^3 + a_2 x^2 + a_1 x + a_0) + (b_3 x^3 + b_2 x^2 + b_1 x + b_0) \\
 \rightarrow (a_3+b_3) x^3 + (a_2 + b_2) x^2 + (a_1 + b_1) x + (a_0 + b_0)
 \end{align}
 $$
 
-Notice how, for addition, the polynomial order of the result remains the same: addition of
-2 elements of an extended Galois field automatically still belong to the same Galois field.
+The base Galois field rules apply for the addition of each of the terms.
 
-**Extended Galois Field Multiplication**
+Here's a $$\text{GF}(2^4)$$ example:
 
-For multiplication, we also use polynomial multiplication, but with an additional
-step: pure multiplication would result in polynomials of an order that doesn't always fall
-within the order of the multiplicatoin operands, which violates the requirement for
-a field. We can fix this by following each multipication with division with a so called
-*primitive polynomial* $$p(x)$$ and only retaining the remainder, just like we did for base Galois 
-fields, where we applied a modulo operation to keep the results in check.
+$$ (1,0,0,1) + (0,0,1,1) = $$
 
-**Primitive Polynomial**
+$$ ( 1 x^3 + 0 x^2 + 0 x + 1 ) +  ( 0 x^3 + 0 x^2 + 1 x + 1 )  = $$
 
-There are some requirements to primitive polynomial $$p(x)$$. One of the most important ones
-is that it needs to be irreducible, with coefficients of the base Galois field. An
-irreducible polynomial can not be factored into multiple lower order polynomials.
+$$ (1+0) x^3 + (0+0) x^2 + (0+1) x + (1+1) = $$
 
-*Note the similarity here with base Galois fields, where the modulo operation must be
-done with a prime number, one that can not be factored into multiple smaller integer.*
+$$ 1 x^3 + 0 x^2 + 1 x + 0 = $$
 
-A primitive polynomial defines how Galois field calculations behave, so standardized
-protocols always specify which primitive polynomial to use. If you want to use your own
+$$ (1,0,1,0) $$
+
+Note how for the last term $$(1+1) = 0$$. That's the base $$\text{GF}(2)$$
+operation.
+
+For polynomial addition, the order of the result remains the same: addition of
+2 elements of an extended Galois field automatically belong to the same extended Galois field.
+
+**Extended Galois field multiplication**
+
+Like base Galois field multiplication, the extended version uses a multiplication followed
+by division and retaining the remainder. Like addition, this is done with polynomials.
+
+$$ m(x) = a(x) \cdot b(x) \pmod{p(x)} $$
+
+The modulo operation is necessary to ensure that the result of the multiplication is
+a polynomial with the same maximum order. To make that happen, the order of polynomial
+$$p(x)$$ must be one higher than the polynomials that are used to represent the
+field elements.
+
+For example, for $$GF(2^8)$$, the elements have 8 dimensions and are represented
+with polynomials with an order of 7: $$a_7 x^7 + \cdots + a_1 x + a_0$$. A regular
+polynomial multiplication with element $$b$$ gives a polynomial with highest
+order term $$x^{14}$$. The modulo operation with a polynomial with maximum
+term $$x^8$$ will reduce the result back to one with maximum term $$x^7$$.
+
+**Defining irreducible polynomial**
+
+The key requirements of polynomial $$p(x)$$ is that it is irreducible.  An irreducible 
+polynomial can not be factored into multiple lower order polynomials.
+
+*Note the similarity with base Galois fields $$\text{GF}(p)$$, where $$p$$ must be
+a prime number, one that can not be factored into multiple smaller integers.*
+
+Much like the earlier example where we couldn't find a multiplicative inverse for some 
+elements when $$p=6$$, a reducible polynomial makes it impossible to properly define
+extended Galois field operations.
+
+For example, for $$\text{GF}(2^4)$$, let's saw we'd chose $$p(x) = x^4 + 1 $$ as defining
+polynomial and multiply 2 elements:
+
+$$
+\begin{gather}
+( x^3 + x^2 + x + 1) (x + 1) \pmod{x^4 + 1} = \\
+(1 \cdot 1) x^4 + (1 \cdot 1 + 1 \cdot 1) x^3 + (1 \cdot 1 + 1 \cdot 1) x^2 + (1 \cdot 1 + 1 \cdot 1) x + (1 \cdot 1) \pmod{x^4 + 1} = \\
+(x^4 + 1) \pmod{x^4 + 1} = \\
+0
+\end{gather}
+$$
+
+In other words, we have again a case where multiplying non-zero elements resulted in zero,
+which is not allowed for a field.
+
+The defining irreducible polynomial determines how Galois field multiplication behaves, 
+so standardized protocols must specify which defining polynomial to use. However,
+when reading about Galois fields in the context of coding, you'll rarely see this term
+because most of these applications will use primitive polynomial.
+
+**Primitive polynomial**
+
+A primitive polynomial is an irreducible polynomial with one additional characteristic:
+
+If you want to use your own
 coding protocol, you could try to find a primitive polynomial yourself, but it's much easier 
-to just select one from one of tables that can be found online.
+to just select one from one of tables that can be found online, such as 
+[this one](https://www.partow.net/programming/polynomials/index.html).
+
+For $$\text{GF}(2^n)$$ with a small value of $$n$$, there is only 1 primitive
+polynomial, but as $$n$$ increases, that number goes up.
+
+For example, $$\text{GF}(2^2)$$ has only this:
+
+$$ p(x) = x^4 + x^1 + 1 $$
+
+But $$\text{GF}(2^8)$$ has these:
+
+$$
+\begin{gather}
+x^8 + x^4 + x^3 + x^2 + 1 \\
+x^8 + x^5 + x^3 + x^1 + 1 \\
+x^8 + x^6 + x^4 + x^3 + x^2 + x^1 + 1 \\
+x^8 + x^6 + x^5 + x^1 + 1 \\
+x^8 + x^6 + x^5 + x^2 + 1 \\
+x^8 + x^6 + x^5 + x^3 + 1 \\
+x^8 + x^7 + x^6 + x^1 + 1
+x^8 + x^7 + x^6 + x^5 + x^2 + x^1 + 1 \\
+\end{gather}
+$$
+
 
 Computers work with bytes. Many protocols use the $$\text{GF}(2^8)$$ field,
 so that a byte can be directly mapped to a tuple of size 8. One of the most used
@@ -447,8 +566,12 @@ of the base field GF(2). XXXX does this only work for GF(2) ?
 
 * [Wikipedia - Finite field](https://en.wikipedia.org/wiki/Finite_field)
 
+* [Primitive Polynomial List](https://www.partow.net/programming/polynomials/index.html)
+
 * [Python galois package](https://galois.readthedocs.io/)
 
 * [Parallel Multiplier Designs for the Galois/Counter Mode of Operation](https://pdfs.semanticscholar.org/1246/a9ad98dc0421ccfc945e6529c886f23e848d.pdf
+
+# Footnotes
 
 
