@@ -213,7 +213,7 @@ of values 0 and 1 which conveniently maps to a byte.
 
 *You'll sometimes see an extended Galois field written with argument in parenthesis 
 worked out, e.g. $$\text{GF}(2^8)$$ written a $$\text{GF}(256)$$. This is not an ambiguous
-notation since you can infer this to be a Galois field extension because 256 is not a prime,
+notation: you can infer this to be a Galois field extension because 256 is not a prime,
 but my personal preference is to always use the $$\text{GF}(2^8)$$ notation.*
 
 All Galois fields require an addition, subtraction, multiplication, and division operation. For Galois
@@ -227,7 +227,7 @@ To add 2 elements $$a$$ and $$b$$:
 $$
 \begin{align}
 (a_3 x^3 + a_2 x^2 + a_1 x + a_0) + (b_3 x^3 + b_2 x^2 + b_1 x + b_0) \\
-\rightarrow (a_3+b_3) x^3 + (a_2 + b_2) x^2 + (a_1 + b_1) x + (a_0 + b_0)
+= (a_3+b_3) x^3 + (a_2 + b_2) x^2 + (a_1 + b_1) x + (a_0 + b_0)
 \end{align}
 $$
 
@@ -263,47 +263,108 @@ a polynomial with the same maximum order. To make that happen, the order of poly
 $$p(x)$$ must be one higher than the polynomials that are used to represent the
 field elements.
 
-For example, for $$GF(2^8)$$, the elements have 8 dimensions and are represented
-with polynomials with an order of 7: $$a_7 x^7 + \cdots + a_1 x + a_0$$. A regular
+For example, for $$GF(2^4)$$, the elements have 4 dimensions and are represented
+with polynomials with an order of 3: $$a_3 x^3 + a_2 x^2 + a_1 x + a_0$$. A regular
 polynomial multiplication with element $$b$$ gives a polynomial with highest
-order term $$x^{14}$$. The modulo operation with a polynomial with maximum
-term $$x^8$$ will reduce the result back to one with maximum term $$x^7$$.
+order term $$x^{6}$$. The modulo operation with a polynomial with maximum
+term $$x^4$$ will reduce the result back to one with maximum term $$x^3$$.
 
 **Defining irreducible polynomial**
 
-The key requirements of polynomial $$p(x)$$ is that it is irreducible.  An irreducible 
-polynomial can not be factored into multiple lower order polynomials.
+The following requirement are key for a field defining polynomial for $$\text{GF}(p^n)$$:
 
-*Note the similarity with base Galois fields $$\text{GF}(p)$$, where $$p$$ must be
+* the polynomial is of order $$n$$: $$p(x) = x^n + p_{n-1} x^{n-1} + \cdots + p x^1 + p_0 $$ with $$p_n \neq 0 $$.
+* the coeffient of $$x^n$$ is always 1. The polynomial is 
+  [monic](https://en.wikipedia.org/wiki/Monic_polynomial).
+* the remaining coefficients are from the base field $$\text{GF}(p)$$
+* the polynomial is irreducible in the field of $$\text{GF}(p)$$.
+
+    An irreducible polynomial can not be factored into multiple lower order polynomials.
+
+*Note the similarity with base Galois field $$\text{GF}(p)$$, where $$p$$ must be
 a prime number, one that can not be factored into multiple smaller integers.*
 
-Much like the earlier example where we couldn't find a multiplicative inverse for some 
-elements when $$p=6$$, a reducible polynomial makes it impossible to properly define
-extended Galois field operations.
+Pay attention to the part where I write that it needs to be irreducible *in the field of $$\text{GF}(p)$$*.
+What this means it that we only test this polynomial for irreducibility with
+values from $$\text{GF}(p)$$, not $$\text{GF}(p^n)$$.
 
-For example, for $$\text{GF}(2^4)$$, let's saw we'd chose $$p(x) = x^4 + 1 $$ as defining
+One thing to test when checking for irreducibility is to verify that none of the 
+base Galois field elements are a root of $$p(x)$$. In the case of working with
+$$\text{GF}(2^4)$$, this means checking that $$p(0) = 0 $$ and $$p(1) = 0 $$ though
+those 2 checks are not sufficient to ensure irreduciblity.
+
+Much like the earlier example where $$2 \cdot 3 \pmod{6} = 0$$, a reducible 
+polynomial makes it impossible to properly define extended Galois field operations.
+
+For example, for $$\text{GF}(2^4)$$, if we select $$p(x) = x^4 + 1 $$ as defining
 polynomial and multiply 2 elements:
 
 $$
 \begin{gather}
 ( x^3 + x^2 + x + 1) (x + 1) \pmod{x^4 + 1} = \\
 (1 \cdot 1) x^4 + (1 \cdot 1 + 1 \cdot 1) x^3 + (1 \cdot 1 + 1 \cdot 1) x^2 + (1 \cdot 1 + 1 \cdot 1) x + (1 \cdot 1) \pmod{x^4 + 1} = \\
-(x^4 + 1) \pmod{x^4 + 1} = \\
+x^4 + (1 + 1) x^3 + (1 + 1) x^2 + (1 + 1) x + 1 \pmod{x^4 + 1} = \\
+x^4 + 1 \pmod{x^4 + 1} = \\
 0
 \end{gather}
 $$
 
-In other words, we have again a case where multiplying non-zero elements resulted in zero,
+In other words, we have again a case where multiplying non-zero elements results in zero,
 which is not allowed for a field.
 
 The defining irreducible polynomial determines how Galois field multiplication behaves, 
 so standardized protocols must specify which defining polynomial to use. However,
 when reading about Galois fields in the context of coding, you'll rarely see this term
-because most of these applications will use primitive polynomial.
+because most of these applications will use something stronger than
+an irreducible polynomial: a primitive polynomial.
 
 **Primitive polynomial**
 
-A primitive polynomial is an irreducible polynomial with one additional characteristic:
+A primitive polynomial is an irreducible polynomial $$p(x)$$ with one additional characteristic:
+it defines a field where the powers of a root element $$\alpha$$ generate all non-zero elements 
+of the field.
+
+What does this mean? And what is $$\alpha$$ anyway?
+
+$$\alpha$$ is defined as an element of $$\text{GF}(p^n)$$ that satisfies
+the following equation:
+
+$$ p(\alpha) = 0 $$
+
+In other words, $$\alpha$$ is a root of $$p(x)$$.
+
+It is crucial to understand that the equation above is the formal definition of 
+$$\alpha$$. There are multiple values from $$\text{GF}(p^n)$$ that can serve as 
+$$\alpha$$, but right now, we don't care about that: $$\alpha$$ is a placeholder, 
+an abstract element. You compare it complex value $$i$$ being formally defined
+as a solution of $$ x^2 + 1 = 0 $$ in the complex field: the equation is the
+definition.
+
+If $$p(x)$$ is irreducible, how can $$\alpha$$ be a root of it? That's because
+the irreducibility criterion only applies for elements of $$\text{GF}(p)$$, 
+not for elements of $$\text{GF}(p^n)$$! This is just the way $$x^2 +1$$ is
+irreducible over the real numbers, but once you introduce $$i$$, it can
+be factored as $$(x+i)(x-i)$$.
+
+$$p(x)$$ is a monic polynomial of order $$n$$:
+
+$$p(x) = x^n + p_{n-1} x^{n-1} + \cdots + p_1 x^1 + p_0 $$
+
+Using the definition of $$\alpha$$:
+
+$$p(\alpha) = \alpha^n + p_{n-1} \alpha^{n-1} + \cdots + p_1 \alpha^1 + p_0 = 0 $$
+
+Simple rearrangment gives this:
+
+$$ \alpha^n = - ( p_{n-1} \alpha^{n-1} + \cdots + p_1 \alpha^1 + p_0 ) $$
+
+In the case of $$\text{GF}(2^n)$$, subtraction is the same as addition, so you get this:
+
+$$ \alpha^n = p_{n-1} \alpha^{n-1} + \cdots + p_1 \alpha^1 + p_0  $$
+
+Either way, we have derived a reduction rule that tells us how to deal with $$\alpha^i$$
+where $$i \ge n$$.
+
 
 If you want to use your own
 coding protocol, you could try to find a primitive polynomial yourself, but it's much easier 
@@ -422,134 +483,6 @@ or XOR in the case of a binary base field, each component. But the exponential
 notation is great for multiplication: you can add the exponents and then do module 16
 on the result. There's no need for a polynomial division.
 
-# Mastrovito Multiplier
-
-Reference: A Novel Architecture for Galois Fields $$\text{GF}(2^m)$$ Multipliers Based on Mastrovito Scheme
-
-* irreducible  polynomial: $$p(x) = z^m + p_{m-1} \cdot z^{m-1} + \ldots + p_1 \cdot z + 1 $$.
-
-  $$p(x)$$ is also called the field generator polynomial.
-
-* basis: $$\vec{s} = [1,\alpha,\alpha^2,\ldots,\alpha^{m-1}]$$
-
-* $$\alpha$$ is a root of $$p(z)$$, so: 
-
-    $$\alpha^m = p_{m-1} \cdot \alpha^{m-1} + \ldots + p_1 \cdot \alpha + 1 $$
-
-    XXX why is this?
-
-* elements A and B
-
-    $$A = a_0 + a_1 \alpha + \ldots + a_{m-1}\alpha^{m-1} \tag{1}$$
-
-    $$B = b_0 + b_1 \alpha + \ldots + b_{m-1}\alpha^{m-1} \tag{1}$$
-
-* With $$\vec{a} = [a_0, a_1, \ldots, a_{m_1}]$$ and $$\vec{b} = [b_0, b_1, \ldots, b_{m_1}]$$,
-  this can also be written as:
-
-    $$A = \vec{s} \cdot \vec{a}^\intercal$$ 
-
-    $$B = \vec{s} \cdot \vec{b}^\intercal$$
-
-* C is the multiplication of A and B:
-
-    $$C = b_0 \cdot A + b_1 \cdot A \cdot \alpha + \ldots + b_{m-1} \cdot A \cdot \alpha^{m-1} \tag{1}$$
-
-    *Note how there's a scalar multiplication between $$b_i$$ and vector A.*
-
-* This can also be written as:
-
-    $$C = [ A, A \cdot \alpha, \ldots, A \cdot \alpha^{m-1} ] \cdot \vec{b}^\intercal$$
-
-*  The following vectors are the standard-basis components of $$A\cdot\alpha^i$$:
-
-    $$M_i = [ M_{0,i}, M_{1,i}, \ldots M_{m-1,i} ]$$
-
-    and thus:
-
-    $$ A\cdot\alpha^i = \vec{s} \cdot M_i^\intercal$$
-
-    $$ C = \vec{s} \cdot [c_0, c_1, \ldots, c_{m-1}]^\intercal $$
-
-    $$ C = \vec{s} \cdot [ M_0^\intercal, M_1^\intercal, \ldots, M_{m-1}^\intercal ] \cdot \vec{b}^\intercal $$
-
-A Mastrovito multiplier have two steps:
-
-1. Calculate matrix $$\mathbf{M}$$ using coefficient $$a_i$$ and coefficients $$p_i$$ from $$p(z)$$
-2. Evaluate $$c_j = M_{j,0} \cdot b_0 + M_{j,1} \cdot b_1 + \ldots + M_{j,m_1} \cdot b_{m-1}$$
-
-Step 2 does not require $$p(x)$$ and has a fixed number of XOR and AND gates, but step 1 is more
-complex.
-
-* Start with $$M_0$$:
-
-    $$M_0 = [a_0, a_1, \ldots, a_{m-1} ]$$
-
-* $$M_i$$ can be generated from $$M_{i-1}$$ by multiplying with $$\alpha$$:
-
-    $$\vec{s} \cdot M_i^\intercal = \alpha \cdot \vec{s} \cdot M_{i-1}^\intercal$$
-
-    $$\alpha \cdot \vec{s} \cdot M_{i-1}^\intercal =  \alpha \cdot (M_{0,i-1} +  M_{1,i-1} \cdot \alpha + \ldots + M_{m-1,i-1} \cdot \alpha^{m-1})$$
-
-    $$ =  M_{0,i-1} \cdot \alpha +  M_{1,i-1} \cdot \alpha^2 + \ldots + M_{m-1,i-1} \cdot \alpha^{m})$$
-
-    $$\alpha^{m}$$ can be replaced by $$p_{m-1} \cdot \alpha^{m-1} + \ldots + p_1 \cdot \alpha + 1$$:
-
-    $$ =  M_{0,i-1} \cdot \alpha +  M_{1,i-1} \cdot \alpha^2 + \ldots + M_{m-1,i-1} \cdot (p_{m-1} \cdot \alpha^{m-1} + \ldots + p_1 \cdot \alpha + 1)$$
-
-    Regroup for $$\alpha^i$$:
-
-    $$ =  M_{m-1,i-1} +  (M_{0,i-1} + p_1 \cdot M_{m-1,i-1})  \cdot \alpha + \ldots + (M_{m-2,i-1} + M_{m-1,i-1} \cdot p_{m-1}) \cdot \alpha^{m-1}$$
-
-* Algorithm to calculate all values of $$M_i$$:
-
-    $$M_0 = [a_0, a_1, \ldots, a_{m-1} ]$$
-
-    $$M_{0,i} = M_{m-1,i-1}$$
-
-    $$M_{j,i} = M_{j-1,i-1} + M_{m-1,i-1} \cdot p_j$$
-
-
-# Example
-
-Example for $$\text{GF}(2^4)$$:
-
-$$\vec{a} = [ a_0, a_1, a_2, a_3 ]$$
-
-$$\vec{b} = [ a_0, b_1, b_2, b_3 ]$$
-
-$$\vec{s} = [ 1, \alpha, \alpha^2, \alpha^3]$$
-
-$$p(x) = 1 + x + x^4$$
-
-$$\vec{p} = [p_0, p_1, p_2, p_3, p_4] = [1,1,0,0,1]$$
-
-$$M_0 = [ a_0, a_1, a_2, a_3 ]$$
-
-$$
-M_1 = [  (a_3                ),
-         (a_0 + a_3 \cdot p_1), 
-         (a_1 + a_3 \cdot p_2), 
-         (a_2 + a_3 \cdot p_3) 
-         ]
-$$
-
-$$
-M_2 = [ (a_2 + a_3 \cdot p_3), 
-        (a_3                ) + (a_2 + a_3 \cdot p_3) \cdot p_1, 
-        (a_0 + a_3 \cdot p_1) + (a_2 + a_3 \cdot p_3) \cdot p_2, 
-        (a_1 + a_3 \cdot p_2) + (a_2 + a_3 \cdot p_3) \cdot p_3 
-        ]
-$$
-
-$$
-M_3 = [ ((a_1 + a_3 \cdot p_2) + (a_2 + a_3 \cdot p_3) \cdot p_3), 
-        ((a_2 + a_3 \cdot p_3))                                   + ((a_1 + a_3 \cdot p_2) + (a_2 + a_3 \cdot p_3) \cdot p_3)) + a_3 \cdot p_1, 
-        ((a_3                  + (a_2 + a_3 \cdot p_3) \cdot p_1) + ((a_1 + a_3 \cdot p_2) + (a_2 + a_3 \cdot p_3) \cdot p_3)) + a_3 \cdot p_2, 
-        ((a_0 + a_3 \cdot p_1) + (a_2 + a_3 \cdot p_3) \cdot p_2) + ((a_1 + a_3 \cdot p_2) + (a_2 + a_3 \cdot p_3) \cdot p_3)) + a_3 \cdot p_3 
-        ]
-$$
-
 # Linear Combination
 
 It is possible to find an element $$\beta$$ from $$(0, 1, \alpha, \alpha^2, \ldots, \alpha^{14})$$ so that 
@@ -568,8 +501,6 @@ of the base field GF(2). XXXX does this only work for GF(2) ?
 * [Primitive Polynomial List](https://www.partow.net/programming/polynomials/index.html)
 
 * [Python galois package](https://galois.readthedocs.io/)
-
-* [Parallel Multiplier Designs for the Galois/Counter Mode of Operation](https://pdfs.semanticscholar.org/1246/a9ad98dc0421ccfc945e6529c886f23e848d.pdf)
 
 # Primitivy check:
 
