@@ -498,6 +498,8 @@ of the base field GF(2). XXXX does this only work for GF(2) ?
 
 * [Wikipedia - Finite field](https://en.wikipedia.org/wiki/Finite_field)
 
+* [CMU - Finite Fields](https://www.cs.cmu.edu/~cdm/resources/41-ffields.pdf)
+
 * [Primitive Polynomial List](https://www.partow.net/programming/polynomials/index.html)
 
 * [Python galois package](https://galois.readthedocs.io/)
