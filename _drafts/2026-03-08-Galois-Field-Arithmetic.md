@@ -18,25 +18,27 @@ implementation, but since everybody knows integer math since first grade, it mad
 easier to learn things one step at a time.
 
 Instead of working with pure integers, actual Reed-Solomon implementations 
-uses elements from a [Galois or finite field](https://en.wikipedia.org/wiki/Finite_field) 
+use elements from a [Galois or finite field](https://en.wikipedia.org/wiki/Finite_field) 
 as symbols. 
 
-I've been sitting on writing about Reed-Solomon decoding for almost 4 years now[^galois_kickoff], and I'm 
-still not quite there, but a first step is to have enough Galois field understanding
-so that the lack of it isn't an obstacle. That's what this blog is about. Don't expect a solid
-theoretical treatise, you can find many of those as part of univerity courses, but something
-that is sufficient to refer back to in the future when I've forgotten some of the details. 
+I've been sitting on implementing and writing about a Reed-Solomon decoder for almost 
+4 years now[^galois_kickoff], and I'm still not quite there, but a first step is to have 
+enough Galois field understanding so that the lack of it isn't an obstacle. That's what 
+this blog is about. Don't expect a solid theoretical treatise, you can find many of those 
+as part of univerity courses, but something that is sufficient to refer back to in the 
+future when I've forgotten some of the details. 
 
 [^galois_kickoff]: According to my git log, the first words of this blog posts were written
                    in september 2023.
 
-If you want to get a deeper understanding, Check out the [references](#references) at the bottom. 
+If you want to get a deeper understanding, check out the [references](#references) at the bottom. 
 
 # A Galois Field Introduction by Example
 
 In mathematics, a field is a set of elements for which addition, subtraction, multiplication
 and division operations have been defined, with properties that we take for granted when dealing 
-with rational or real numbers, such as the associative and distributive properties[^assoc_dist_prop]. 
+with rational or real numbers, such as the associative and distributive properties[^assoc_dist_prop],
+the rules for adding and multiplying with 0, and so forth.
 
 [^assoc_dist_prop]: The [associative property](https://en.wikipedia.org/wiki/Associative_property) 
                     states that a * (b * c) = (a * b) * c. 
@@ -46,7 +48,7 @@ with rational or real numbers, such as the associative and distributive properti
 For rational or real numbers, the number of elements in the field is infinite. A Galois field 
 only has a limited number of elements, yet still has these kind of operations and properties.
 
-A good example of a Galois field is $$\text{GF}(5)$$ which integer numbers 0 to 4 as elements.
+A good example of a Galois field is $$\text{GF}(5)$$ which has integer numbers 0 to 4 as elements.
 Addition, subtraction, and multiplication work the same as for regular integers but each 
 such operation is followed by a modulo 5 operation. 
 
@@ -69,7 +71,7 @@ One way of finding the multiplicative inverse of the divisor is by multiplying i
 elements and checking if the result is 1. 
 
 Let's say we want to do $$2/3$$ in $$\text{GF}(5)$$. We need to find $$3^{-1}$$ so that $$3 
-\cdot 3^{-1} = 1$$. There are 5 different options 0,1,2,3,4:
+\cdot 3^{-1} = 1$$. There are 5 different options $$0,1,2,3,4$$:
 
 $$
 \begin{align}
@@ -131,37 +133,37 @@ $$
 $$
 
 There's no solution with a result of 1. Since there's at least one element for which a
-multiplicative inverse doesn't exist, you can create a field for $$p=1$$ and thus
+multiplicative inverse doesn't exist, you can't create a field for $$p=6$$ and thus
 $$\text{GF}(6)$$ can't exist.
 
 Another issue for $$p=6$$ is that you can get a result of 0 when multiplying 2 non-zero
 numbers:
 
-$$ 2 \cdot 3 = 6 \equiv 0 \pmod{6} $$
+$$ 2 \cdot 3 \pmod{6} = 6 \pmod{6} = 0 $$
 
 That's behavior unbecoming of a proper field!
 
 
-**Real world example of a base Galois field**
+# A Real World Example of a Base Galois Field
 
 Since a Galois field must have a prime number of elements, only $$\text{GF}(2)$$ maps directly
 to the zeros and ones of digital logic; all other fields have an odd number of elements. 
 Still, there are some real-world cases where these kind of Galois fields are used:
 the [Wikipedia article on Reed-Solomon error correction](https://en.wikipedia.org/wiki/Reed–Solomon_error_correction#Error_locator_polynomial)
-has an example that uses GF(929), a field that is used for coding [PD417](https://en.wikipedia.org/wiki/PDF417)
+has an example that uses $$\text{GF}(929)$$, a field that is used for coding [PD417](https://en.wikipedia.org/wiki/PDF417)
 bar codes.
 
 ![PD417 bar code](/assets/reed_solomon/Wikipedia_PDF417.png)<br/>
 *&copy; [Markus.Jungbauer - Wikipedia](https://en.wikipedia.org/wiki/PDF417#/media/File:Wikipedia_PDF417.png)*
 
-Modulo 929 calculations are fine for bar codes, where you only need to process a few per 
-second at most. But they're not something you'd want to use for high speed communication
+Modulo 929 calculations are fine for bar codes, you only need to process a few per 
+second at most, but they're not something you'd want to use for high speed communication
 protocols that run at rates of gigabits or bytes per second. 
 
-**GF(2)**
+# GF(2)
 
-Before taking the next step, let's first look at the only basic operation that maps
-neatly to ones and zeros: GF(2). The binary Galois field only has 2 symbols: 0 and 1.
+Before taking the next step, let's first look at the only base field that maps
+neatly to ones and zeros: $$\text{GF}(2)$$. The binary Galois field only has 2 symbols: 0 and 1.
 
 It has the following addition table:
 
@@ -185,27 +187,27 @@ $$
 \end{align}
 $$
 
-Addition maps to a XOR and multiplication to an AND gate! Another property of note is that
+Addition maps to a XOR and multiplication to an AND gate. Another property of note is that
 subtraction is the same as addition. 
 
 These are promising properties for a hardware implementation.
 
 # Extended Galois Fields 
 
-From a base Galois field $$\text{GF}(p)$$ can construct an extended Galois field
+From a base Galois field $$\text{GF}(p)$$ one can construct an extended Galois field
 
 $$\text{GF}(p^n)$$
 
 $$p$$ is still the size of mathematical universe in one dimension and prime. 
 $$n$$ is the number of dimensions. The total number of elements in the extended
-Galois field is simply $$p^n$$. An element $$a$$ of such a Galois field could be
+Galois field is $$p^n$$. An element $$a$$ of such a Galois field could be
 written as a vector:
 
 $$( a_{n-1}, \cdots, a_1, a_0 ) $$
 
 Or as a polynomial:
 
-$$ a_{n-1} x^{n-1} + \cdots + a_1 x + a_0 $$
+$$ a(x) = a_{n-1} x^{n-1} + \cdots + a_1 x + a_0 $$
 
 For algorithms that are implemented in hardware, it's extremely common to deal with
 $$\text{GF}(2^n)$$, and $$\text{GF}(2^8)$$ especially: this results in 8 dimensions 
@@ -217,10 +219,10 @@ notation: you can infer this to be a Galois field extension because 256 is not a
 but my personal preference is to always use the $$\text{GF}(2^8)$$ notation.*
 
 All Galois fields require an addition, subtraction, multiplication, and division operation. For Galois
-field extensions, we turn the polynomial notation and polynomial operations to make
+field extensions, we turn to the polynomial notation and polynomial operations to make
 this happen.
 
-**Extended Galois field addition**
+# Extended Galois Field Addition
 
 To add 2 elements $$a$$ and $$b$$:
 
@@ -248,20 +250,20 @@ $$ (1,0,1,0) $$
 Note how for the last term $$(1+1) = 0$$. That's the base $$\text{GF}(2)$$
 operation.
 
-For polynomial addition, the order of the result remains the same: addition of
+For addition, the order of the resulting polynomial remains the same: addition of
 2 elements of an extended Galois field automatically belong to the same extended Galois field.
 
-**Extended Galois field multiplication**
+# Extended Galois Field Multiplication
 
 Like base Galois field multiplication, the extended version uses a multiplication followed
 by division and retaining the remainder. Like addition, this is done with polynomials.
 
-$$ m(x) = a(x) \cdot b(x) \pmod{p(x)} $$
+$$ m(x) = a(x) \cdot b(x) \pmod{f(x)} $$
 
 The modulo operation is necessary to ensure that the result of the multiplication is
-a polynomial with the same maximum order. To make that happen, the order of polynomial
-$$p(x)$$ must be one higher than the polynomials that are used to represent the
-field elements.
+a polynomial with the same maximum order as the operands. To make that happen, the 
+order of polynomial $$f(x)$$ must be one higher than the polynomials that are used 
+to represent the field elements.
 
 For example, for $$GF(2^4)$$, the elements have 4 dimensions and are represented
 with polynomials with an order of 3: $$a_3 x^3 + a_2 x^2 + a_1 x + a_0$$. A regular
@@ -269,14 +271,14 @@ polynomial multiplication with element $$b$$ gives a polynomial with highest
 order term $$x^{6}$$. The modulo operation with a polynomial with maximum
 term $$x^4$$ will reduce the result back to one with maximum term $$x^3$$.
 
-**Defining irreducible polynomial**
+# A Field Defining Irreducible Polynomial
 
-The following requirement are key for a field defining polynomial for $$\text{GF}(p^n)$$:
+The following requirements are key for a field defining polynomial for $$\text{GF}(p^n)$$:
 
-* the polynomial is of order $$n$$: $$p(x) = x^n + p_{n-1} x^{n-1} + \cdots + p x^1 + p_0 $$ with $$p_n \neq 0 $$.
-* the coeffient of $$x^n$$ is always 1. The polynomial is 
+* the polynomial is of order $$n$$: $$ f(x) = x^n + f_{n-1} x^{n-1} + \cdots + f x^1 + f_0 $$.
+* the coeffient of $$x^n$$ is always 1, even if $$p > 2$$. The polynomial is 
   [monic](https://en.wikipedia.org/wiki/Monic_polynomial).
-* the remaining coefficients are from the base field $$\text{GF}(p)$$
+* the remaining coefficients are from the base field $$\text{GF}(p)$$.
 * the polynomial is irreducible in the field of $$\text{GF}(p)$$.
 
     An irreducible polynomial can not be factored into multiple lower order polynomials.
@@ -285,19 +287,21 @@ The following requirement are key for a field defining polynomial for $$\text{GF
 a prime number, one that can not be factored into multiple smaller integers.*
 
 Pay attention to the part where I write that it needs to be irreducible *in the field of $$\text{GF}(p)$$*.
-What this means it that we only test this polynomial for irreducibility with
-values from $$\text{GF}(p)$$, not $$\text{GF}(p^n)$$.
+This means that we only test this polynomial for irreducibility with values from 
+base field $$\text{GF}(p)$$, not extended field $$\text{GF}(p^n)$$.
 
-One thing to test when checking for irreducibility is to verify that none of the 
-base Galois field elements are a root of $$p(x)$$. In the case of working with
-$$\text{GF}(2^4)$$, this means checking that $$p(0) = 0 $$ and $$p(1) = 0 $$ though
-those 2 checks are not sufficient to ensure irreduciblity.
+One thing to test when checking for irreducibility is that none of the 
+base Galois field elements are a root of $$f(x)$$. In the case of working with
+$$\text{GF}(2^4)$$, this means checking that $$f(0) \ne 0$$ and $$f(1) \ne 0$$, though
+those checks alone are not sufficient to ensure irreduciblity.
 
 Much like the earlier example where $$2 \cdot 3 \pmod{6} = 0$$, a reducible 
 polynomial makes it impossible to properly define extended Galois field operations.
 
-For example, for $$\text{GF}(2^4)$$, if we select $$p(x) = x^4 + 1 $$ as defining
-polynomial and multiply 2 elements:
+For example, if for $$\text{GF}(2^4)$$ we select reducible polynomial $$f(x) = x^4 + 1 $$ 
+as defining polynomial[^reducible], then we get the following multiplication:
+
+[^reducible]: $$f(x)$$ is reducible because $$f(1) = 1^4 + 1 = 0$$. 
 
 $$
 \begin{gather}
@@ -314,11 +318,11 @@ which is not allowed for a field.
 
 The defining irreducible polynomial determines how Galois field multiplication behaves, 
 so standardized protocols must specify which defining polynomial to use. However,
-when reading about Galois fields in the context of coding, you'll rarely see this term
-because most of these applications will use something stronger than
-an irreducible polynomial: a primitive polynomial.
+when reading about Galois fields in the context of error coding, you'll rarely see this term
+because most of these applications use something stronger than an irreducible polynomial: 
+a primitive polynomial.
 
-**Primitive polynomial**
+# A Primitive Polynomial
 
 A primitive polynomial is an irreducible polynomial $$p(x)$$ with one additional characteristic:
 it defines a field where the powers of a root element $$\alpha$$ generate all non-zero elements 
