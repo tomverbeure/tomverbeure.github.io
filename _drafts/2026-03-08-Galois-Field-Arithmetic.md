@@ -275,7 +275,7 @@ term $$x^4$$ will reduce the result back to one with maximum term $$x^3$$.
 
 The following requirements are key for a field defining polynomial for $$\text{GF}(p^n)$$:
 
-* the polynomial is of order $$n$$: $$ f(x) = x^n + f_{n-1} x^{n-1} + \cdots + f x^1 + f_0 $$.
+* the polynomial is of order $$n$$: $$ f(x) = x^n + f_{n-1} x^{n-1} + \cdots + f x + f_0 $$.
 * the coeffient of $$x^n$$ is always 1, even if $$p > 2$$. The polynomial is 
   [monic](https://en.wikipedia.org/wiki/Monic_polynomial).
 * the remaining coefficients are from the base field $$\text{GF}(p)$$.
@@ -316,7 +316,7 @@ $$
 In other words, we have again a case where multiplying non-zero elements results in zero,
 which is not allowed for a field.
 
-The defining irreducible polynomial determines how Galois field multiplication behaves, 
+The field defining irreducible polynomial determines how Galois field multiplication behaves, 
 so standardized protocols must specify which defining polynomial to use. However,
 when reading about Galois fields in the context of error coding, you'll rarely see this term
 because most of these applications use something stronger than an irreducible polynomial: 
@@ -324,8 +324,8 @@ a primitive polynomial.
 
 # A Primitive Polynomial
 
-A primitive polynomial is an irreducible polynomial $$p(x)$$ with one additional characteristic:
-it defines a field where the powers of a root element $$\alpha$$ generate all non-zero elements 
+A primitive polynomial is an irreducible polynomial $$f(x)$$ with one additional characteristic:
+it defines a field for which the powers of a root element $$\alpha$$ generate all non-zero elements 
 of the field.
 
 What does this mean? And what is $$\alpha$$ anyway?
@@ -333,9 +333,9 @@ What does this mean? And what is $$\alpha$$ anyway?
 $$\alpha$$ is defined as an element of $$\text{GF}(p^n)$$ that satisfies
 the following equation:
 
-$$ p(\alpha) = 0 $$
+$$ f(\alpha) = 0 $$
 
-In other words, $$\alpha$$ is a root of $$p(x)$$.
+In other words, $$\alpha$$ is a root of $$f(x)$$.
 
 It is crucial to understand that the equation above is the formal definition of 
 $$\alpha$$. There are multiple values from $$\text{GF}(p^n)$$ that can serve as 
@@ -344,31 +344,168 @@ an abstract element. You compare it complex value $$i$$ being formally defined
 as a solution of $$ x^2 + 1 = 0 $$ in the complex field: the equation is the
 definition.
 
-If $$p(x)$$ is irreducible, how can $$\alpha$$ be a root of it? That's because
-the irreducibility criterion only applies for elements of $$\text{GF}(p)$$, 
-not for elements of $$\text{GF}(p^n)$$! This is just the way $$x^2 +1$$ is
-irreducible over the real numbers, but once you introduce $$i$$, it can
-be factored as $$(x+i)(x-i)$$.
+If $$f(x)$$ is irreducible, how can $$\alpha$$ be a root of it? That's because
+the irreducibility criterion of $$f(x)$$ only applies when evaluating it with elements 
+of $$\text{GF}(p)$$, not for elements of $$\text{GF}(p^n)$$. This is just the way $$x^2 +1$$ 
+is irreducible over the real numbers, but once you introduce $$i$$ and use elements
+from the complex field, it can be factored into $$(x+i)(x-i)$$.
 
-$$p(x)$$ is a monic polynomial of order $$n$$:
+$$f(x)$$ is a monic polynomial of order $$n$$:
 
-$$p(x) = x^n + p_{n-1} x^{n-1} + \cdots + p_1 x^1 + p_0 $$
+$$f(x) = x^n + f_{n-1} x^{n-1} + \cdots + f_1 x + f_0 $$
 
 Using the definition of $$\alpha$$:
 
-$$p(\alpha) = \alpha^n + p_{n-1} \alpha^{n-1} + \cdots + p_1 \alpha^1 + p_0 = 0 $$
+$$f(\alpha) = \alpha^n + f_{n-1} \alpha^{n-1} + \cdots + f_1 \alpha + f_0 = 0 $$
 
 Simple rearrangment gives this:
 
-$$ \alpha^n = - ( p_{n-1} \alpha^{n-1} + \cdots + p_1 \alpha^1 + p_0 ) $$
+$$ \alpha^n = - ( f_{n-1} \alpha^{n-1} + \cdots + f_1 \alpha + f_0 ) $$
 
 In the case of $$\text{GF}(2^n)$$, subtraction is the same as addition, so you get this:
 
-$$ \alpha^n = p_{n-1} \alpha^{n-1} + \cdots + p_1 \alpha^1 + p_0  $$
+$$ \alpha^n = f_{n-1} \alpha^{n-1} + \cdots + f_1 \alpha + f_0  $$
 
-Either way, we have derived a reduction rule that tells us how to deal with $$\alpha^i$$
-where $$i \ge n$$.
+We have derived a reduction rule that tells us how to deal with $$\alpha^i$$
+when $$i \ge n$$.
 
+Let's put this into practise... 
+
+$$\text{GF}(2^4)$$ only has 1 primitive polynomial:
+
+$$ f(x) = x^4 + x^1 + 1 $$
+
+Using the reduction formula 
+
+$$ \alpha^4 = \alpha + 1 $$
+
+we can construct all non-zero elements of the field using only exponentials:
+
+| Power | Split | Substitution | Multiply | $$\pmod{f(x)}$$ |
+| --- | --- | --- | --- | --- |
+| $$\alpha^{0}$$ | $$1$$ | $$1$$ | $$1$$ | $$1$$ |
+| $$\alpha^{1}$$ | $$\alpha$$ | $$\alpha$$ | $$\alpha$$ | $$\alpha$$ |
+| $$\alpha^{2}$$ | $$\alpha^{2}$$ | $$\alpha^{2}$$ | $$\alpha^{2}$$ | $$\alpha^{2}$$ |
+| $$\alpha^{3}$$ | $$\alpha^{3}$$ | $$\alpha^{3}$$ | $$\alpha^{3}$$ | $$\alpha^{3}$$ |
+| $$\alpha^{4}$$ | $$\alpha^{4}$$ | $$\alpha + 1$$ | $$\alpha + 1$$ | $$\alpha + 1$$ |
+| $$\alpha^{5}$$ | $$\alpha^{4} \cdot \alpha$$ | $$(\alpha + 1) \cdot \alpha$$ | $$\alpha^{2} + \alpha$$ | $$\alpha^{2} + \alpha$$ |
+| $$\alpha^{6}$$ | $$\alpha^{5} \cdot \alpha$$ | $$(\alpha^{2} + \alpha) \cdot \alpha$$ | $$\alpha^{3} + \alpha^{2}$$ | $$\alpha^{3} + \alpha^{2}$$ |
+| $$\alpha^{7}$$ | $$\alpha^{6} \cdot \alpha$$ | $$(\alpha^{3} + \alpha^{2}) \cdot \alpha$$ | $$\alpha^{4} + \alpha^{3}$$ | $$\alpha^{3} + \alpha + 1$$ |
+| $$\alpha^{8}$$ | $$\alpha^{7} \cdot \alpha$$ | $$(\alpha^{3} + \alpha + 1) \cdot \alpha$$ | $$\alpha^{4} + \alpha^{2} + \alpha$$ | $$\alpha^{2} + 1$$ |
+| $$\alpha^{9}$$ | $$\alpha^{8} \cdot \alpha$$ | $$(\alpha^{2} + 1) \cdot \alpha$$ | $$\alpha^{3} + \alpha$$ | $$\alpha^{3} + \alpha$$ |
+| $$\alpha^{10}$$ | $$\alpha^{9} \cdot \alpha$$ | $$(\alpha^{3} + \alpha) \cdot \alpha$$ | $$\alpha^{4} + \alpha^{2}$$ | $$\alpha^{2} + \alpha + 1$$ |
+| $$\alpha^{11}$$ | $$\alpha^{10} \cdot \alpha$$ | $$(\alpha^{2} + \alpha + 1) \cdot \alpha$$ | $$\alpha^{3} + \alpha^{2} + \alpha$$ | $$\alpha^{3} + \alpha^{2} + \alpha$$ |
+| $$\alpha^{12}$$ | $$\alpha^{11} \cdot \alpha$$ | $$(\alpha^{3} + \alpha^{2} + \alpha) \cdot \alpha$$ | $$\alpha^{4} + \alpha^{3} + \alpha^{2}$$ | $$\alpha^{3} + \alpha^{2} + \alpha + 1$$ |
+| $$\alpha^{13}$$ | $$\alpha^{12} \cdot \alpha$$ | $$(\alpha^{3} + \alpha^{2} + \alpha + 1) \cdot \alpha$$ | $$\alpha^{4} + \alpha^{3} + \alpha^{2} + \alpha$$ | $$\alpha^{3} + \alpha^{2} + 1$$ |
+| $$\alpha^{14}$$ | $$\alpha^{13} \cdot \alpha$$ | $$(\alpha^{3} + \alpha^{2} + 1) \cdot \alpha$$ | $$\alpha^{4} + \alpha^{3} + \alpha$$ | $$\alpha^{3} + 1$$ |
+| $$\alpha^{15}$$ | $$\alpha^{14} \cdot \alpha$$ | $$(\alpha^{3} + 1) \cdot \alpha$$ | $$\alpha^{4} + \alpha$$ | $$1$$ |
+
+In the table above, $$\alpha^4$$ is reduced with the reduction formula, and each row
+after is reduced by the row before it. The 2 factors are then multiplied which results
+in a maximum order of 4. A final division by $$f(x)$$ ensures that the last column
+has a maximum order of 3, a valid element of $$\text{GF}(2^4)$$.[^extra_reduction]
+
+The key observation is that the last column goes through all 15 non-zero elements.
+
+[^extra_reduction]: Instead of the $$\pmod{f(x)}$$, the result of the multiplication
+                    can also be reduced by reducing the remaining $$\alpha^4$$ term
+                    once more. The end result is the same.
+
+Here is what happens when you use an irreducible polynomial that is not primitive:
+
+$$ f(x) = x^4 + x^3 + x^2 + x + 1 $$
+
+| Power | Split | Substitution | Multiply | $$\pmod{f(x)}$$ |
+| --- | --- | --- | --- | --- |
+| $$\alpha^{0}$$ | $$1$$ | $$1$$ | $$1$$ | $$1$$ |
+| $$\alpha^{1}$$ | $$\alpha$$ | $$\alpha$$ | $$\alpha$$ | $$\alpha$$ |
+| $$\alpha^{2}$$ | $$\alpha^{2}$$ | $$\alpha^{2}$$ | $$\alpha^{2}$$ | $$\alpha^{2}$$ |
+| $$\alpha^{3}$$ | $$\alpha^{3}$$ | $$\alpha^{3}$$ | $$\alpha^{3}$$ | $$\alpha^{3}$$ |
+| $$\alpha^{4}$$ | $$\alpha^{4}$$ | $$\alpha^{3} + \alpha^{2} + \alpha + 1$$ | $$\alpha^{3} + \alpha^{2} + \alpha + 1$$ | $$\alpha^{3} + \alpha^{2} + \alpha + 1$$ |
+| $$\alpha^{5}$$ | $$\alpha^{4} \cdot \alpha$$ | $$(\alpha^{3} + \alpha^{2} + \alpha + 1) \cdot \alpha$$ | $$\alpha^{4} + \alpha^{3} + \alpha^{2} + \alpha$$ | $$1$$ |
+| $$\alpha^{6}$$ | $$\alpha^{5} \cdot \alpha$$ | $$(1) \cdot \alpha$$ | $$\alpha$$ | $$\alpha$$ |
+| $$\alpha^{7}$$ | $$\alpha^{6} \cdot \alpha$$ | $$(\alpha) \cdot \alpha$$ | $$\alpha^{2}$$ | $$\alpha^{2}$$ |
+| $$\alpha^{8}$$ | $$\alpha^{7} \cdot \alpha$$ | $$(\alpha^{2}) \cdot \alpha$$ | $$\alpha^{3}$$ | $$\alpha^{3}$$ |
+| $$\alpha^{9}$$ | $$\alpha^{8} \cdot \alpha$$ | $$(\alpha^{3}) \cdot \alpha$$ | $$\alpha^{4}$$ | $$\alpha^{3} + \alpha^{2} + \alpha + 1$$ |
+| $$\alpha^{10}$$ | $$\alpha^{9} \cdot \alpha$$ | $$(\alpha^{3} + \alpha^{2} + \alpha + 1) \cdot \alpha$$ | $$\alpha^{4} + \alpha^{3} + \alpha^{2} + \alpha$$ | $$1$$ |
+| $$\alpha^{11}$$ | $$\alpha^{10} \cdot \alpha$$ | $$(1) \cdot \alpha$$ | $$\alpha$$ | $$\alpha$$ |
+| $$\alpha^{12}$$ | $$\alpha^{11} \cdot \alpha$$ | $$(\alpha) \cdot \alpha$$ | $$\alpha^{2}$$ | $$\alpha^{2}$$ |
+| $$\alpha^{13}$$ | $$\alpha^{12} \cdot \alpha$$ | $$(\alpha^{2}) \cdot \alpha$$ | $$\alpha^{3}$$ | $$\alpha^{3}$$ |
+| $$\alpha^{14}$$ | $$\alpha^{13} \cdot \alpha$$ | $$(\alpha^{3}) \cdot \alpha$$ | $$\alpha^{4}$$ | $$\alpha^{3} + \alpha^{2} + \alpha + 1$$ |
+| $$\alpha^{15}$$ | $$\alpha^{14} \cdot \alpha$$ | $$(\alpha^{3} + \alpha^{2} + \alpha + 1) \cdot \alpha$$ | $$\alpha^{4} + \alpha^{3} + \alpha^{2} + \alpha$$ | $$1$$ |
+
+This time around, the pattern repeats every 5 elements: a non-primitive polynomial
+does not construct the whole field with just exponentiation of $$\alpha$$.
+
+# From Abstract Alpha to a Real Value
+
+So far, $$\alpha$$ has been an abstract element that hasn't been assigned a real
+value. That can be trivially fixed by assigning $$\alpha$$ a value of $$x$$:
+
+That's really it!
+
+| Power | $$\pmod{f(x)}$$ | $$\alpha \to x$$ | Binary |
+| --- | --- | --- | --- |
+| $$\alpha^{0}$$ | $$1$$ | $$1$$ | 0001 |
+| $$\alpha^{1}$$ | $$\alpha$$ | $$x$$ | 0010 |
+| $$\alpha^{2}$$ | $$\alpha^{2}$$ | $$x^{2}$$ | 0100 |
+| $$\alpha^{3}$$ | $$\alpha^{3}$$ | $$x^{3}$$ | 1000 |
+| $$\alpha^{4}$$ | $$\alpha + 1$$ | $$x + 1$$ | 0011 |
+| $$\alpha^{5}$$ | $$\alpha^{2} + \alpha$$ | $$x^{2} + x$$ | 0110 |
+| $$\alpha^{6}$$ | $$\alpha^{3} + \alpha^{2}$$ | $$x^{3} + x^{2}$$ | 1100 |
+| $$\alpha^{7}$$ | $$\alpha^{3} + \alpha + 1$$ | $$x^{3} + x + 1$$ | 1011 |
+| $$\alpha^{8}$$ | $$\alpha^{2} + 1$$ | $$x^{2} + 1$$ | 0101 |
+| $$\alpha^{9}$$ | $$\alpha^{3} + \alpha$$ | $$x^{3} + x$$ | 1010 |
+| $$\alpha^{10}$$ | $$\alpha^{2} + \alpha + 1$$ | $$x^{2} + x + 1$$ | 0111 |
+| $$\alpha^{11}$$ | $$\alpha^{3} + \alpha^{2} + \alpha$$ | $$x^{3} + x^{2} + x$$ | 1110 |
+| $$\alpha^{12}$$ | $$\alpha^{3} + \alpha^{2} + \alpha + 1$$ | $$x^{3} + x^{2} + x + 1$$ | 1111 |
+| $$\alpha^{13}$$ | $$\alpha^{3} + \alpha^{2} + 1$$ | $$x^{3} + x^{2} + 1$$ | 1101 |
+| $$\alpha^{14}$$ | $$\alpha^{3} + 1$$ | $$x^{3} + 1$$ | 1001 |
+| $$\alpha^{15}$$ | $$1$$ | $$1$$ | 0001 |
+
+It seems dumb to go through the whole $$\alpha$$ business when we could 
+have used $$x$$ all along, and in practice that's true: as far as I know,
+every practical implementation substitutes $$\alpha$$ that way.
+
+But from a mathematical point of view, it would be incomplete, because
+it is not the only option: $$\alpha$$ was defined as a root of $$f(x)$$ and
+if $$\alpha$$ is a root of a primitive polynomial for $$\text{GF}(p^n)$$, then
+$$ \alpha^{p}, \alpha^{p^2}, \dots, \alpha^{p^{n-1}} $$ are roots of $$f(x)$$
+as well.
+
+For our $$\text{GF}(2^4)$$ example, that means that all of the following values can 
+be used as a replacement of $$\alpha$$:
+
+$$ x, x^2, x^4, x^8 $$
+
+Here's how $$\alpha^i$$ maps for $$\alpha = x^4$$:
+
+| Power | $$\pmod{f(x)}$$ | $$\alpha \to x^4$$ | $$\pmod{f(x)}$$ | Binary |
+| --- | --- | --- | --- | --- |
+| $$\alpha^{0}$$ | $$1$$ | $$1$$ | $$1$$ | 0001 |
+| $$\alpha^{1}$$ | $$\alpha$$ | $$x^{4}$$ | $$x + 1$$ | 0011 |
+| $$\alpha^{2}$$ | $$\alpha^{2}$$ | $$x^{8}$$ | $$x^{2} + 1$$ | 0101 |
+| $$\alpha^{3}$$ | $$\alpha^{3}$$ | $$x^{12}$$ | $$x^{3} + x^{2} + x + 1$$ | 1111 |
+| $$\alpha^{4}$$ | $$\alpha + 1$$ | $$x^{4} + 1$$ | $$x$$ | 0010 |
+| $$\alpha^{5}$$ | $$\alpha^{2} + \alpha$$ | $$x^{8} + x^{4}$$ | $$x^{2} + x$$ | 0110 |
+| $$\alpha^{6}$$ | $$\alpha^{3} + \alpha^{2}$$ | $$x^{12} + x^{8}$$ | $$x^{3} + x$$ | 1010 |
+| $$\alpha^{7}$$ | $$\alpha^{3} + \alpha + 1$$ | $$x^{12} + x^{4} + 1$$ | $$x^{3} + x^{2} + 1$$ | 1101 |
+| $$\alpha^{8}$$ | $$\alpha^{2} + 1$$ | $$x^{8} + 1$$ | $$x^{2}$$ | 0100 |
+| $$\alpha^{9}$$ | $$\alpha^{3} + \alpha$$ | $$x^{12} + x^{4}$$ | $$x^{3} + x^{2}$$ | 1100 |
+| $$\alpha^{10}$$ | $$\alpha^{2} + \alpha + 1$$ | $$x^{8} + x^{4} + 1$$ | $$x^{2} + x + 1$$ | 0111 |
+| $$\alpha^{11}$$ | $$\alpha^{3} + \alpha^{2} + \alpha$$ | $$x^{12} + x^{8} + x^{4}$$ | $$x^{3} + 1$$ | 1001 |
+| $$\alpha^{12}$$ | $$\alpha^{3} + \alpha^{2} + \alpha + 1$$ | $$x^{12} + x^{8} + x^{4} + 1$$ | $$x^{3}$$ | 1000 |
+| $$\alpha^{13}$$ | $$\alpha^{3} + \alpha^{2} + 1$$ | $$x^{12} + x^{8} + 1$$ | $$x^{3} + x + 1$$ | 1011 |
+| $$\alpha^{14}$$ | $$\alpha^{3} + 1$$ | $$x^{12} + 1$$ | $$x^{3} + x^{2} + x$$ | 1110 |
+| $$\alpha^{15}$$ | $$1$$ | $$1$$ | $$1$$ | 0001 |
+
+The binary representation is different than for the $$\alpha = x$$, but from
+a mathematical point of view, it doesn't really matter. 
+
+And, again, in the real world, every one just uses $$\alpha=x$$.
+
+
+# Old stuff
 
 If you want to use your own
 coding protocol, you could try to find a primitive polynomial yourself, but it's much easier 
@@ -378,7 +515,7 @@ to just select one from one of tables that can be found online, such as
 For $$\text{GF}(2^n)$$ with a small value of $$n$$, there is only 1 primitive
 polynomial, but as $$n$$ increases, that number goes up.
 
-For example, $$\text{GF}(2^2)$$ has only this:
+For example, $$\text{GF}(2^4)$$ has only this:
 
 $$ p(x) = x^4 + x^1 + 1 $$
 
