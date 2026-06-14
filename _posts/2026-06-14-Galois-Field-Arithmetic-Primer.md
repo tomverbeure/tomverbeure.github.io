@@ -581,11 +581,6 @@ I know nothing about.
 
 # Linear Feedback Shift Register 
 
-In my Reed-Solomon blog post, I went over 
-[polynomial division in hardware](/2022/08/07/Reed-Solomon.html#polynomial-division-in-hardware).
-The feedback path of an LFSR is exactly that, and when $$\alpha = x$$, then 
-the multiplication by $$\alpha$$ is just a shift of the shift register.
-
 Looking back at a previous table of the $$\text{GF}(2^4)$$ example, 
 the shift register action is easy to see when you start with a register 
 value of 0001: 
