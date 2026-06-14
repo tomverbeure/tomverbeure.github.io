@@ -13,7 +13,7 @@ categories:
 # Introduction
 
 In [my blog post about Reed-Solomon coding](/2022/08/07/Reed-Solomon.html),
-I used regular integers for all calculations.  These are unpractical for a real-world 
+I used regular integers for all calculations.  These are impractical for a real-world 
 implementation, but since everybody knows integer math since first grade, it made things 
 easier to learn things one step at a time.
 
@@ -25,11 +25,11 @@ I've been sitting on implementing and writing about a Reed-Solomon decoder for a
 4 years now[^galois_kickoff], and I'm still not quite there, but a first step is to have 
 enough Galois field understanding so that the lack of it isn't an obstacle. That's what 
 this blog is about. Don't expect a solid theoretical treatise, you can find many of those 
-as part of univerity courses, but something that is sufficient to refer back to in the 
+as part of university courses, but something that is sufficient to refer back to in the 
 future when I've forgotten some of the details. 
 
 [^galois_kickoff]: According to my git log, the first words of this blog posts were written
-                   in september 2023.
+                   in September 2023.
 
 If you want to get a deeper understanding, check out the [references](#references) at the bottom. 
 
@@ -57,7 +57,7 @@ Here are a few example operations in $$\text{GF}(5)$$:
 $$
 \begin{align}
 1 + 3 = (1+3) \bmod 5 = 4 \bmod 5 = 4     \\
-2 + 7 = (2+6) \bmod 5 = 8 \bmod 5 = 3     \\
+2 + 6 = (2+6) \bmod 5 = 8 \bmod 5 = 3     \\
 3 \cdot 4 = (3 \cdot 4) \bmod 5 = 12 \bmod 5 = 2     \\
 \end{align}
 $$
@@ -146,11 +146,11 @@ That's behavior unbecoming of a proper field!
 
 # A Real World Example of a Base Galois Field
 
-Since a Galois field must have a prime number of elements, only $$\text{GF}(2)$$ maps directly
+Since a base Galois field must have a prime number of elements, only $$\text{GF}(2)$$ maps directly
 to the zeros and ones of digital logic; all other fields have an odd number of elements. 
 Still, there are some real-world cases where these kind of Galois fields are used:
 the [Wikipedia article on Reed-Solomon error correction](https://en.wikipedia.org/wiki/Reed–Solomon_error_correction#Error_locator_polynomial)
-has an example that uses $$\text{GF}(929)$$, a field that is used for coding [PD417](https://en.wikipedia.org/wiki/PDF417)
+has an example that uses $$\text{GF}(929)$$, a field that is used for coding [PDF417](https://en.wikipedia.org/wiki/PDF417)
 bar codes.
 
 ![PD417 bar code](/assets/reed_solomon/Wikipedia_PDF417.png)<br/>
@@ -214,7 +214,7 @@ $$\text{GF}(2^n)$$, and $$\text{GF}(2^8)$$ especially: this results in 8 dimensi
 of values 0 and 1 which conveniently maps to a byte.
 
 *You'll sometimes see an extended Galois field written with argument in parenthesis 
-worked out, e.g. $$\text{GF}(2^8)$$ written a $$\text{GF}(256)$$. This is not an ambiguous
+worked out, e.g. $$\text{GF}(2^8)$$ written as $$\text{GF}(256)$$. This is not an ambiguous
 notation: you can infer this to be a Galois field extension because 256 is not a prime,
 but my personal preference is to always use the $$\text{GF}(2^8)$$ notation.*
 
@@ -276,7 +276,7 @@ term $$x^4$$ will reduce the result back to one with maximum term $$x^3$$.
 The following requirements are key for a field defining polynomial for $$\text{GF}(p^n)$$:
 
 * the polynomial is of order $$n$$: $$ f(x) = x^n + f_{n-1} x^{n-1} + \cdots + f x + f_0 $$.
-* the coeffient of $$x^n$$ is always 1, even if $$p > 2$$. The polynomial is 
+* the coefficient of $$x^n$$ is always 1, even if $$p > 2$$. The polynomial is 
   [monic](https://en.wikipedia.org/wiki/Monic_polynomial).
 * the remaining coefficients are from the base field $$\text{GF}(p)$$.
 * the polynomial is irreducible in the field of $$\text{GF}(p)$$.
@@ -293,7 +293,7 @@ base field $$\text{GF}(p)$$, not extended field $$\text{GF}(p^n)$$.
 One thing to test when checking for irreducibility is that none of the 
 base Galois field elements are a root of $$f(x)$$. In the case of working with
 $$\text{GF}(2^4)$$, this means checking that $$f(0) \ne 0$$ and $$f(1) \ne 0$$, though
-those checks alone are not sufficient to ensure irreduciblity.
+those checks alone are not sufficient to ensure irreducibility.
 
 Much like the earlier example where $$2 \cdot 3 \pmod{6} = 0$$, a reducible 
 polynomial makes it impossible to properly define extended Galois field operations.
@@ -340,7 +340,7 @@ In other words, $$\alpha$$ is a root of $$f(x)$$.
 It is crucial to understand that the equation above is the formal definition of 
 $$\alpha$$. There are multiple values from $$\text{GF}(p^n)$$ that can serve as 
 $$\alpha$$, but right now, we don't care about that: $$\alpha$$ is a placeholder, 
-an abstract element. You compare it complex value $$i$$ being formally defined
+an abstract element. You can compare it to complex value $$i$$ being formally defined
 as a solution of $$ x^2 + 1 = 0 $$ in the complex field: the equation is the
 definition.
 
@@ -358,7 +358,7 @@ Using the definition of $$\alpha$$:
 
 $$f(\alpha) = \alpha^n + f_{n-1} \alpha^{n-1} + \cdots + f_1 \alpha + f_0 = 0 $$
 
-Simple rearrangment gives this:
+Simple rearrangement gives this:
 
 $$ \alpha^n = - ( f_{n-1} \alpha^{n-1} + \cdots + f_1 \alpha + f_0 ) $$
 
@@ -369,9 +369,9 @@ $$ \alpha^n = f_{n-1} \alpha^{n-1} + \cdots + f_1 \alpha + f_0  $$
 We have derived a reduction rule that tells us how to deal with $$\alpha^i$$
 when $$i \ge n$$.
 
-Let's put this into practise... 
+Let's put this into practice... 
 
-$$\text{GF}(2^4)$$ only has 1 primitive polynomial:
+$$\text{GF}(2^4)$$ has this primitive polynomial:
 
 $$ f(x) = x^4 + x^1 + 1 $$
 
@@ -509,7 +509,12 @@ And, again, in the real world, every one just uses $$\alpha=x$$.
 If you want to use your own coding protocol, you could try to find a primitive 
 polynomial yourself, but it's much easier to just select one from one of tables 
 that can be found online, such as 
-[this one](https://www.partow.net/programming/polynomials/index.html).
+[this one](https://www.partow.net/programming/polynomials/index.html)[^not_exhaustive].
+
+[^not_exhaustive]: The list of primitive polynomials on this website is not
+                   exhaustive. For example, it only lists $$x^4 + x + 1$$ for
+                   $$\text{GF}(2^4)$$ but not $$x^4 + x^3 + 1$$.
+
 
 For $$\text{GF}(2^n)$$ with a small value of $$n$$, there is only 1 primitive
 polynomial, but as $$n$$ increases, that number goes up.
@@ -537,9 +542,9 @@ $$
 Modern x86 CPUs have dedicated instructions for $$\text{GF}(2^8)$$ operations
 with the following polynomial:
 
-$$ x^8 + x^4 + x^3 + x^2 + 1 $$
+$$ x^8 + x^4 + x^3 + x + 1 $$
 
-Suprisingly, while this polynomial is irreducible, it is not primitive! It's used
+Surprisingly, while this polynomial is irreducible, it is not primitive! It's used
 by the Rijndael algorithm, the basis for AES encryption. 
 
 # The Benefit of Primitive Polynomials
@@ -548,9 +553,9 @@ So what are some benefits of a primitive polynomial over just an irreducible one
 
 **Maximum length sequences**
 
-A [linear feedback shift registers (LFSR)](https://en.wikipedia.org/wiki/Linear-feedback_shift_register)
+A [linear feedback shift register (LFSR)](https://en.wikipedia.org/wiki/Linear-feedback_shift_register)
 is nothing more than a device that multiplies a current value by $$\alpha$$,
-to create values from $$\alpha^0$$ to $$\alpha^{n-1}$$. They're used as pseudo-random 
+to create values from $$\alpha^0$$ to $$\alpha^{2^n-2}$$. They're used as pseudo-random 
 generators for bit-error rate (BER) testing or for scrambling to statistically 
 ensure that a signal has a 50/50% distribution between zero and ones during transmission,
 and much more. For this kind of application it only makes sense to generate the longest 
@@ -563,13 +568,16 @@ by multiplying 2 polynomials, you can also do it by adding exponents,
 much like you can do multiplication for real numbers by adding logarithms.
 
 This only works if those exponents cover the whole field, which is only
-true for fields with a primitive polynomial.
+true if the element used for the exponent table is primitive. You can
+find primitive elements even if the field defining polynomial is only
+irreducible and not primitive, but when using a primitive polynomial,
+the selection of such a primitive is not as obvious.
 
 **Error correcting codes and cryptography**
 
-A primitive polynomial is often critical to make error correcting and some cryptopgraphy 
+A primitive polynomial is often critical to make error correcting and some cryptography 
 algorithms work. Explaining this is out of scope of this blog post... it's also something
-I know nothingn about.
+I know nothing about.
 
 # Linear Feedback Shift Register 
 
@@ -611,16 +619,19 @@ CPUs are not particularly good at doing fast polynomial multiplication
 and modulo operations in the $$\text{GF}(2^n)$$ field, but they have
 large and fast caches.
 
-If $$n$$ isn't to large, you can do multiplication of 2 numbers as follows:
+If $$n$$ isn't too large, you can do multiplication of 2 numbers as follows:
 
 $$ a(x) \cdot b(x) \to \alpha^i \cdot \alpha^j = \alpha^{i+j} \to m(x) $$
 
-In other words, you replace the multiplication by 2 lookups to convert, say, the
-8-bit values to new 8-bit the represent the exponent, you add the exponents, and
+You replace the multiplication by 2 lookups to convert, say, the
+8-bit values to new 8-bit values that represent the exponent, you add the exponents, and
 you do a different lookup to convert the final exponent back to the 8-bit value.
 
 Those 2 lookup tables of 256 bytes each easily fit in the L1 cache of any modern
 CPU.
+
+Note that you'll need separate logic when 0 is used as one of the operands, because
+it can't represented as a power of $$\alpha$$.
 
 If you have plenty of block RAMs left on an FPGA, this technique can also be used
 there, but it usually makes more sense to implement the multiplication with logic
