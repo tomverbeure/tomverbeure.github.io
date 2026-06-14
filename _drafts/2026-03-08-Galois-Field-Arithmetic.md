@@ -325,7 +325,7 @@ a primitive polynomial.
 # A Primitive Polynomial
 
 A primitive polynomial is an irreducible polynomial $$f(x)$$ with one additional characteristic:
-it defines a field for which the powers of a root element $$\alpha$$ generate all non-zero elements 
+it defines a field for which the powers of a primitive element $$\alpha$$ generate all non-zero elements 
 of the field.
 
 What does this mean? And what is $$\alpha$$ anyway?
@@ -504,22 +504,22 @@ a mathematical point of view, it doesn't really matter.
 
 And, again, in the real world, every one just uses $$\alpha=x$$.
 
+# Selecting Primitive Polynomials
 
-# Old stuff
-
-If you want to use your own
-coding protocol, you could try to find a primitive polynomial yourself, but it's much easier 
-to just select one from one of tables that can be found online, such as 
+If you want to use your own coding protocol, you could try to find a primitive 
+polynomial yourself, but it's much easier to just select one from one of tables 
+that can be found online, such as 
 [this one](https://www.partow.net/programming/polynomials/index.html).
 
 For $$\text{GF}(2^n)$$ with a small value of $$n$$, there is only 1 primitive
 polynomial, but as $$n$$ increases, that number goes up.
 
-For example, $$\text{GF}(2^4)$$ has only this:
+We already saw that $$\text{GF}(2^4)$$ has this one:
 
-$$ p(x) = x^4 + x^1 + 1 $$
+$$ x^4 + x^1 + 1 $$
 
-But $$\text{GF}(2^8)$$ has these:
+And that's the only one it has. For $$\text{GF}(2^8)$$ you have much more
+options:
 
 $$
 \begin{gather}
@@ -529,107 +529,91 @@ x^8 + x^6 + x^4 + x^3 + x^2 + x^1 + 1 \\
 x^8 + x^6 + x^5 + x^1 + 1 \\
 x^8 + x^6 + x^5 + x^2 + 1 \\
 x^8 + x^6 + x^5 + x^3 + 1 \\
-x^8 + x^7 + x^6 + x^1 + 1
+x^8 + x^7 + x^6 + x^1 + 1 \\
 x^8 + x^7 + x^6 + x^5 + x^2 + x^1 + 1 \\
 \end{gather}
 $$
 
+Modern x86 CPUs have dedicated instructions for $$\text{GF}(2^8)$$ operations
+with the following polynomial:
 
-Computers work with bytes. Many protocols use the $$\text{GF}(2^8)$$ field,
-so that a byte can be directly mapped to a tuple of size 8. One of the most used
-primitive polynomials for $$\text{GF}(2^8)$$ is
+$$ x^8 + x^4 + x^3 + x^2 + 1 $$
 
-$$p(x) = x^8 + x^4 + x^3 + x^2 + 1$$
+Suprisingly, while this polynomial is irreducible, it is not primitive! It's used
+by the Rijndael algorithm, the basis for AES encryption. 
 
-It is so popular that modern CPU ISA have instructions to perform Galois field operations 
-specifically for this primitive polynomial. The Rijndael algorithm, the basis for AES encryption,
-uses this polynomial. It is also used for Reed-Solomon coding in the CCSDS standard for space 
-communication. And many others.
+# The Benefit of Primitive Polynomials
 
-**Extended Galois Field Elements**
+So what are some benefits of a primitive polynomial over just an irreducible one?
 
-We now know that elements of an extended Galois field are tuples, and now to perform
-operations on them, but some details of what those elements looks like. 
+**Maximum length sequences**
 
-Let's use $$\text{GF}(2^4)$$ as an example, with $$p(x)=x^4+x+1$$ as primitive polynomial.
-The field contains 16 elements. We need a zero, a one, and 14 additional elements that
-we name $$\alpha^1$$ to $$\alpha^{14}$$. Here's the total set of field elements:
+A [linear feedback shift registers (LFSR)](https://en.wikipedia.org/wiki/Linear-feedback_shift_register)
+is nothing more than a device that multiplies a current value by $$\alpha$$,
+to create values from $$\alpha^0$$ to $$\alpha^{n-1}$$. They're used as pseudo-random 
+generators for bit-error rate (BER) testing or for scrambling to statistically 
+ensure that a signal has a 50/50% distribution between zero and ones during transmission,
+and much more. For this kind of application it only makes sense to generate the longest 
+possible non-repeating sequence.
 
-$$(0, 1, \alpha^1, \alpha^2, \alpha^3, \ldots, \alpha^{14})$$
+**Simplified implementation of multiplication**
 
-We're using an exponent to number each $$\alpha$$ because that's how we're going to
-construct their tuple values.
+While you can perform a Galois Field multiplication the direct way, 
+by multiplying 2 polynomials, you can also do it by adding exponents, 
+much like you can do multiplication for real numbers by adding logarithms.
 
-For the 0 and 1 field elements, we choose tuples $$(0,0,0,0)$$ and $$(0,0,0,1)$$.
-$$\alpha^1$$ is called the primitive element. From the remaining 14 tuples, there are
-multiple options that can serve a primitive element, but let's choose tuple $$(0,0,1,0)$$.
-From here we can derive the tuple values for the remaining elements by using 
-polynomial multiplication.
+This only works if those exponents cover the whole field, which is only
+true for fields with a primitive polynomial.
+
+**Error correcting codes and cryptography**
+
+A primitive polynomial is often critical to make error correcting and some cryptopgraphy 
+algorithms work. Explaining this is out of scope of this blog post... it's also something
+I know nothingn about.
+
+# Linear Feedback Shift Register 
+
+In my Reed-Solomon blog post, I went over 
+[polynomial division in hardware](/2022/08/07/Reed-Solomon.html#polynomial-division-in-hardware).
+The feedback path of an LFSR is exactly that, and when $$\alpha = x$$, then 
+the multiplication by $$\alpha$$ is just a shift of the shift register.
+
+Looking back at a previous table of the $$\text{GF}(2^4)$$ example, 
+the shift register action is easy to see when you start with a register 
+value of 0001: 
+
+| Power | $$\pmod{f(x)}$$ | $$\alpha \to x$$ | Binary |
+| --- | --- | --- | --- |
+| $$\alpha^{0}$$ | $$1$$ | $$1$$ | 0001 |
+| $$\alpha^{1}$$ | $$\alpha$$ | $$x$$ | 0010 |
+| $$\alpha^{2}$$ | $$\alpha^{2}$$ | $$x^{2}$$ | 0100 |
+| $$\alpha^{3}$$ | $$\alpha^{3}$$ | $$x^{3}$$ | 1000 |
+| $$\alpha^{4}$$ | $$\alpha + 1$$ | $$x + 1$$ | 0011 |
+| ... | ... | ... | ... |
+
+We can also see that, before the polynomial division, the maximum exponent 
+of $$\alpha$$ is never higher than 4. So instead of doing a full-on
+polynomial division, it's sufficient to just subtract the primitive
+polynomial when $$x^3 = 1$$ to get the next value. In $$\text{GF}(2)$$
+math, that can be done with just a XOR operation, which leads us
+to this circuit:
+
+[![LFSR diagram](/assets/reed_solomon/galois-LFSR.svg)](/assets/reed_solomon/galois-LFSR.svg)
+*(Click to enlarge)*
+
+We've derived what's called the 
+[Galois LFSR](https://en.wikipedia.org/wiki/Linear-feedback_shift_register#Galois_LFSRs)
+in the Wikipedia article.
 
 
-$$
-\begin{align}
-\alpha^1 = (0,0,1,0) = x \\
-\alpha^2 = \alpha^1\alpha^1 = x\cdot x = x^2 =  (0,1,0,0) \\
-\alpha^3 = \alpha^2\alpha^1 = x^2\cdot x = x^3 =  (1,0,0,0) \\
-\end{align}
-$$
-
-So far so good. But now it gets interesting:
-
-$$\alpha^4 = \alpha^3\alpha^1 = x^3\cdot x = x^4 = ???$$
-
-$$x^4$$ is a polynomial with an order that it higher than what's allowed a $$\text{GF}(2^4)$$
-field. We need to use the primitive polynomial to get the result back in check:
-
-$$x^4 \bmod p(x) = x^4 \bmod (x^4+x+1) = x+1 $$
-
-$$
-\begin{align}
-\alpha^4 = \alpha^3\alpha^1 = x^3\cdot x = x+1 =  (0,0,1,1) \\
-\alpha^5 = \alpha^4\alpha^1 = (x+1)x = x^2+x =  (0,1,1,0) \\
-\alpha^6 = \alpha^5\alpha^1 = (x^2+x)x = x^3+x^2 =  (1,1,0,0) \\
-\alpha^7 = \alpha^6\alpha^1 = (x^3+x^2)x = x^4+x^3 = x^3+x+1 =  (1,0,1,1) \\
-\end{align}
-$$
-
-For $$a^7$$, we could have done the polynomial division of $$x^4+x^3$$ with the primitive $$p(x)$$, 
-but since we already calculated earlier that $$x^4$$ translates into $$x+1$$, it was easier to 
-just do a substitution.
-
-$$
-\begin{align}
-\alpha^8 = \alpha^7\alpha^1 = (x^3+x+1)x = x^4+x^2+x = x^2+x+x+1 = x^2+1 =  (0,1,0,1) \\
-\alpha^9 = x^3+x = (1,0,1,0) \\
-\alpha^{10} = x^2+x+1 = (0,1,1,1) \\
-\alpha^{11} = x^3+x^2+x = (1,1,1,0) \\
-\alpha^{12} = x^3+x^2+x+1 = (1,1,1,1) \\
-\alpha^{13} = x^3+x^2+1 = (1,1,0,1) \\
-\alpha^{14} = x^3+1 = (1,0,0,1) \\
-\alpha^{15} = 1 = (0,0,0,1) \\
-\alpha^{16} = x = (0,0,1,0) \\
-\end{align}
-$$
-
-After $$\alpha^{14}$$, we restart at 1, or $$\alpha^0$$, and then $$\alpha^1$$, and so forth. The
-whole sequence repeats again.
-
-The take-away here is that there two main ways in which elements of a field can be described:
-
-* a tuple that maps directly to a polynomial
-* an element $$\alpha$$ with a certain exponent
-
-The tuple and polynomial representation are great to do additions: you can just add,
-or XOR in the case of a binary base field, each component. But the exponential
-notation is great for multiplication: you can add the exponents and then do module 16
-on the result. There's no need for a polynomial division.
+# Old Stuff
 
 # Linear Combination
 
 It is possible to find an element $$\beta$$ from $$(0, 1, \alpha, \alpha^2, \ldots, \alpha^{14})$$ so that 
 each element $$\alpha^i$$ can be written as:
 
-$$\alpha^i = b_3\beta^8 + b_2\beta^3 +b_1\beta^2 +b_0\beta^1   $$
+$$\alpha^i = b_3\beta^8 + b_2\beta^4 +b_1\beta^2 +b_0\beta^1   $$
 
 This is called a normal basis. The coefficients $$b_i$$ are elements
 of the base field GF(2). XXXX does this only work for GF(2) ?
