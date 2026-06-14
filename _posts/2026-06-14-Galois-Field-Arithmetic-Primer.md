@@ -637,6 +637,8 @@ If you have plenty of block RAMs left on an FPGA, this technique can also be use
 there, but it usually makes more sense to implement the multiplication with logic
 gates, e.g. with a Mastrovito multiplier, but that's a topic for another time.
 
+*All words in this blog posts were written by a human.*
+
 # References
 
 * [Wikipedia - Finite field](https://en.wikipedia.org/wiki/Finite_field)
