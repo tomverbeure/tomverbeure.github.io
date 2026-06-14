@@ -634,47 +634,6 @@ gates, e.g. with a Mastrovito multiplier, but that's a topic for another time.
 
 * [Primitive Polynomial List](https://www.partow.net/programming/polynomials/index.html)
 
-* [Python galois package](https://galois.readthedocs.io/)
-
-# Primitivy check:
-
-  * Start with GF(2^4)
-  * Come up with an irreducible polynomial: $$p(x) = x^4 + x + 1$$
-  * Check that it is irreducible for GF(2)
-    * $$p(0) = 1, p(1) = 1$$ -> 0 and 1 are not roots.
-    * It is not divisible by the only irreducible polynomial of degree 2, $$x^2 + x + 1 $$.
-  * Define a root $$\alpha$$ as follows: $$ p(\alpha) = 0$$.
-    * This is a *formal definition*, much like $$i$$ is defined as $$x^2 + 1 = 0$$ 
-  * Reduction rule: $$ p(\alpha) = 0 \rightarrow \alpha^4 + \alpha + 1 = 0 \rightarrow \alpha^4 = \alpha + 1$$
-    * The reduction rule is used to lower exponents when they exceed $$n-1$$ of $$\text{GF}(p^n)$$.
-    * We don't need a numerical value for $$\alpha$$, it's an abstract element, a placeholder that
-      simply followed the reduction rule.
-  * Now calculate all powers of $$\alpha$$, from 1 to 15, but reduce powers that are larger than 4. We start with a power
-    of alpha and end with the polynomial representation of alpha.
-    * $$\alpha^1 = \alpha$$
-    * $$\alpha^2 = \alpha^2$$
-    * $$\alpha^3 = \alpha^3$$
-    * $$\alpha^4 = \alpha^1 + 1$$
-    * $$\alpha^5 = \alpha \cdot \alpha^4 = \alpha (\alpha + 1) = \alpha^2 + \alpha$$
-    * $$\alpha^5 = \alpha \cdot \alpha^5 = \alpha (\alpha^2 + \alpha) = \alpha^3 + \alpha^2$$
-    * $$\alpha^6 = \alpha \cdot \alpha^5 = \alpha (\alpha^3 + \alpha^2) = \alpha^4 + \alpha^2 = \alpha^2 + \alpha + 1$$
-    * ...
-  * If it turns out that we only get 1 for $$\alpha^{15}$$, then we have verified that the cycle spans all
-    multiplicative elements $$(1, \alpha, \alpha^2, \cdots, \alpha^{14})$$, that $$p(x)$$ is a primitive
-    polynomial and that $$\alpha$$ is a root of the primitive. 
-  * $$\alpha$$ is a field generator.
-  * We can now assign a value to alpha. The easiest choice is to $$alpha = 0 x^3 + 0 x^2 + 1 x + 0 = x = 0010$$.
-    For this case, the polynomial representation of $$\alpha$$ maps directly to a bit vector.
-    But there are other options too. The total number of options is determined by the Euler totient function $$\varphi(n)$$. For
-    $$\text{GF}(2^4)$$, there are 16 elements. The number of options is $$ \varphi(16-1) = 15(1 - 1/3)(1 - 1/5) = 8 $$. But
-    that's for all possible primitive polynomials combined. For a given primitive polynomial, the number of possible
-    roots is 4: $$\alpha^1, \alpha^2, \alpha^4, \alpha^8$$. All of these can be used as field generators.
-  * Let's say we use $$\beta=\alpha^2$$ are root. In that case, $$\beta^1 = \alpha^2 = 0100$$. We can then 
-    complete the table by continuing to multiply by $$\beta$$. 
-  * In practice, protocols always use $$\alpha^1$$ as field generator.
-    * Note that a field generator is not the same as a code generator!
-
-
 # Footnotes
 
 
