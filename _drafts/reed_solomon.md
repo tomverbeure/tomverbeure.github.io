@@ -288,6 +288,16 @@ however, the correct value is the result that is most common.
     Compares a recursive approach with Mastrovito and Karatsuba. Karatsuba is smaller and faster
     than Mastrovito, even for GF(2^8)?
 
+# Linear Combination
+
+It is possible to find an element $$\beta$$ from $$(0, 1, \alpha, \alpha^2, \ldots, \alpha^{14})$$ so that 
+each element $$\alpha^i$$ can be written as:
+
+$$\alpha^i = b_3\beta^8 + b_2\beta^4 +b_1\beta^2 +b_0\beta^1   $$
+
+This is called a normal basis. The coefficients $$b_i$$ are elements
+of the base field GF(2). XXXX does this only work for GF(2) ?
+
 # Implementations
 
 * [libcorrect](https://github.com/quiet/libcorrect)

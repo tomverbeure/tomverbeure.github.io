@@ -605,19 +605,26 @@ We've derived what's called the
 [Galois LFSR](https://en.wikipedia.org/wiki/Linear-feedback_shift_register#Galois_LFSRs)
 in the Wikipedia article.
 
+# Multiplication through Addition of Exponents
 
-# Old Stuff
+CPUs are not particularly good at doing fast polynomial multiplication
+and modulo operations in the $$\text{GF}(2^n)$$ field, but they have
+large and fast caches.
 
-# Linear Combination
+If $$n$$ isn't to large, you can do multiplication of 2 numbers as follows:
 
-It is possible to find an element $$\beta$$ from $$(0, 1, \alpha, \alpha^2, \ldots, \alpha^{14})$$ so that 
-each element $$\alpha^i$$ can be written as:
+$$ a(x) \cdot b(x) \to \alpha^i \cdot \alpha^j = \alpha^{i+j} \to m(x) $$
 
-$$\alpha^i = b_3\beta^8 + b_2\beta^4 +b_1\beta^2 +b_0\beta^1   $$
+In other words, you replace the multiplication by 2 lookups to convert, say, the
+8-bit values to new 8-bit the represent the exponent, you add the exponents, and
+you do a different lookup to convert the final exponent back to the 8-bit value.
 
-This is called a normal basis. The coefficients $$b_i$$ are elements
-of the base field GF(2). XXXX does this only work for GF(2) ?
+Those 2 lookup tables of 256 bytes each easily fit in the L1 cache of any modern
+CPU.
 
+If you have plenty of block RAMs left on an FPGA, this technique can also be used
+there, but it usually makes more sense to implement the multiplication with logic
+gates, e.g. with a Mastrovito multiplier, but that's a topic for another time.
 
 # References
 
