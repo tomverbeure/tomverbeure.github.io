@@ -1,7 +1,7 @@
 ---
 layout: post
 title: A Galois Field Arithmetic Primer
-date:  2026-05-30 00:00:00 -1000
+date:  2026-06-14 00:00:00 -1000
 categories:
 ---
 
