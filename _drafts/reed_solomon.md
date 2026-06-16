@@ -288,6 +288,8 @@ however, the correct value is the result that is most common.
     Compares a recursive approach with Mastrovito and Karatsuba. Karatsuba is smaller and faster
     than Mastrovito, even for GF(2^8)?
 
+* [Screaming Fast Galois Field Arithmetic Using Intel SIMD Instructions](https://www.ssrc.us/media/pubs/c9a735170a7e1aa648b261ec6ad615e34af566db.pdf)
+
 # Linear Combination
 
 It is possible to find an element $$\beta$$ from $$(0, 1, \alpha, \alpha^2, \ldots, \alpha^{14})$$ so that 
