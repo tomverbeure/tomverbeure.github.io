@@ -209,6 +209,14 @@ Or as a polynomial:
 
 $$ a(x) = a_{n-1} x^{n-1} + \cdots + a_1 x + a_0 $$
 
+*When polynomials are used to represent elements of an extended Galois field, 
+don't think of $$x$$ as a variable that you plug numbers into. In this context, 
+the powers $$ 1, x, x^2, \cdots, x^{n-1} $$ are mostly a formal expression to 
+separate the dimensions. Think of it how integer 
+$$ 5367 $$ can be written as $$ 5 \cdot 1000 + 3 \cdot 100 + 6 \cdot 10 + 7 $$. 
+That analogy breaks when coeffients for integers exceed 9, because unlike Galois
+field coefficients, you get spillover to the next power of 10*.
+
 For algorithms that are implemented in hardware, it's extremely common to deal with
 $$\text{GF}(2^n)$$, and $$\text{GF}(2^8)$$ especially: this results in 8 dimensions 
 of values 0 and 1 which conveniently maps to a byte.
@@ -581,11 +589,6 @@ I know nothing about.
 
 # Linear Feedback Shift Register 
 
-In my Reed-Solomon blog post, I went over 
-[polynomial division in hardware](/2022/08/07/Reed-Solomon.html#polynomial-division-in-hardware).
-The feedback path of an LFSR is exactly that, and when $$\alpha = x$$, then 
-the multiplication by $$\alpha$$ is just a shift of the shift register.
-
 Looking back at a previous table of the $$\text{GF}(2^4)$$ example, 
 the shift register action is easy to see when you start with a register 
 value of 0001: 
@@ -599,12 +602,18 @@ value of 0001:
 | $$\alpha^{4}$$ | $$\alpha + 1$$ | $$x + 1$$ | 0011 |
 | ... | ... | ... | ... |
 
-We can also see that, before the polynomial division, the maximum exponent 
-of $$\alpha$$ is never higher than 4. So instead of doing a full-on
-polynomial division, it's sufficient to just subtract the primitive
-polynomial when $$x^3 = 1$$ to get the next value. In $$\text{GF}(2)$$
+When multiplying by $$\alpha$$, we can also see that, before the polynomial division, 
+the maximum exponent of $$\alpha$$ is never higher than 4. When it is 4, instead of doing 
+a full-on polynomial division, it's sufficient to just subtract the field defining
+polynomial to get the next value[^small_integer_remainder]. In $$\text{GF}(2)$$
 math, that can be done with just a XOR operation, which leads us
 to this circuit:
+
+[^small_integer_remainder]: This is similar to avoiding a division when you need to
+                            calculate the remainder after dividing by, say, 5: you can
+                            just subtract 5 if you know for sure that the operand is 
+                            between 5 and 9, or don't do anything if the value is between
+                            0 and 4.
 
 [![LFSR diagram](/assets/reed_solomon/galois-LFSR.svg)](/assets/reed_solomon/galois-LFSR.svg)
 *(Click to enlarge)*
