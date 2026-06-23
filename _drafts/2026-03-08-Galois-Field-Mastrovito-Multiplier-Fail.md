@@ -1,7 +1,7 @@
 ---
 layout: post
-title: Galois Field Mastrovito Multiplier Fail
-date:  2026-03-08 00:00:00 -1000
+title: The Galois Field Mastrovito Multiplier
+date:  2026-06-20 00:00:00 -1000
 categories:
 ---
 
@@ -12,55 +12,71 @@ categories:
 
 # Introduction
 
-A year ago, in [my blog post about Reed-Solomon coding](/2022/08/07/Reed-Solomon.html), 
-I used regular integers for all calculations.  These are unpractical for a real-world 
-implementation, but since everybody knows integers math since first grade, it made things 
-easier to learn things one step at a time.
+This blog post discusses and compares two hardware implementations of a Galois field 
+$$\text{GF}(2^m} multiplier: the traditional one and the Mastrovito multiplier, which 
+is supposed to be have better area and latency characteristics.
 
-Instead of working with pure integers, actual Reed-Solomon implementations will
-use elements from a [Galois or Finite field](https://en.wikipedia.org/wiki/Finite_field) 
-as symbols, or to be even more precise, a Galois field extension, which is a field that
-is created from multiple elements of a base field.
+Both of these are bit-parallel multiplier and, as presented here, they are combinatorial:
+when fed with 2 operands $$a$$ and $$b$$, they immediately output results $$c$$.
 
-In practice, the base field will always be $$\text{GF}(2)$$, with as only elements 0 and 1,
-and the field extension could be something like $$\text{GF}(2^8)$$, a tuple of 8 $$\text{GF}(2)$$
-elements, which coveniently maps to a byte.
+3 years ago, I spent a lot of time researching this topic and I implemented the first
+version of a Python script that generated Verilog versions of both multiplier, hoping
+that Mastrovito version would significantly do better than the traditional one. It didn't
+*at all*. Instead of dropping the subject entirely, I decided to pick up the subject
+again, check what why it didn't work and at least get a blog post out of it. That's
+when I figured out that I had been the issue all along: I had made some implementation
+short-cuts.
 
-There's a lot of beginners material on Galois fields on the web. My personal favorite is 
-this [Nasa tutorial on Reed-Solomon error correcting coding](https://ntrs.nasa.gov/api/citations/19900019023/downloads/19900019023.pdf).
-I won't discuss that there.
+I now have a Verilog generator that works. The Mastrovito improvements are still
+kind of underwhelming, but when high speed is essential, it may help out someone.
 
-Instead, this blog post discusses a particular hardware implementation of a Galois field 
-multiplier: the Mastrovito multiplier, and how it turned out to be a useless yak shaving operation.
+# Extended Galois Fields
 
-I'm writing this down primarily so that I have a record of the references that I gathered,
-and the work that I did. And maybe it will prevent somebody else from straying away
-from stuff that actually matters.
+In a previous blog post, I wrote how an extended Galois field $$\text{GF}(2^m)$$ is defined by
+a field-defining irreducible polynomial
 
-The basics of mathematics in Galois fields and their extension are 
+$$p(x) = x^m + p_{m-1} x^{m-1} + \cdots + p_1 x + p_0, \quad p_i \in \text{GF}(2) $$
 
-# Extended Galois Field Multiplication
+and an element $$\alpha$$ of the field, which is a root of $$p(x)$$.
 
-In an extended Galois field, each element is presented by an ordered tuple
-of base elements. Let's assume we're dealing with $$\text{GF}(2^4)$$, when 
-the tuple will be 4 base elements $$(a_3, a_2, a_1, a_0), where each base element can be either 
-0 or 1.
+When using a polynomial basis $$(1, \alpha, \alpha^2, \cdots, \alpha_{m-1})$$ to represent
+elements of $$\text{GF}(2^m)$$, an element $$a$$ can be represented with a vector
 
-The 4-tuple map to a polynomial:
+$$(a_0, a_1, \dots, a^{m-1})$$ 
 
-$$(a_3, a_2, a_1, a_0) \rightarrow a(x) = a_3 x^3 + a_2 x^2 + a_1 x + a_0$$
+and corresponding polynomial
 
-Multiplication is an extended Galois field is defined as the multiplication
-of the two operand polynomials $$a(x)$$ and $$b(x)$$, followed by a division
-by the primitive polynomial $$p(x)$$ that defines the Galois field extensio, and
-retaining the remainder. The second step is called *modular reduction*.
+$$ a = a_{m-1} \alpha^{m-1} + \cdots + a_2 \alpha^2 + a_1 \alpha + a_0$$
 
-$$c(x) = a(x) \cdot b(x) \bmod p(x) $$
+It is common to use \(x\) as a shorthand for this root \(\alpha\). With that
+notation, the same element can be written as
 
-**Polynomial Multiplication**
+$$ a = a_{m-1} x^{m-1} + \cdots + a_2 x^2 + a_1 x + a_0$$
 
-For the first part, polynomial multiplication $$m(x)=a(x)\cdot b(x)$$, we can use 
-the method we learned in school by writing down the distributive property in a table:
+There are other ways than the polynomial basis, often called the standard basis, 
+to represent elements of $$\text{GF}(2^m)$$. Instead of 
+$$(1, \alpha, \alpha^2, \dots, \alpha_{m-1})$$, you could use something else,
+say $$(\beta_0, \beta_1, \dots, \beta_{m-1})$$, as basis and represent an element
+as $$(b_0, b_1, \dots, b_{m-1})$$, so that:
+
+$$ a = b_{m-1} \beta^{m-1} + \cdots + b_2 \beta^2 + b_1 \beta + b_0$$
+
+This is no different than regular linear algebra where the same space can be describes
+with different coordinate systems.
+
+
+# Traditional Galois Field Polynomial Multiplication
+
+![Traditional Multiplier](/assets/reed_solomon/multiplier-trad_mult.svg)
+
+**Step 1: Polynomial Multiplication**
+
+For polynomial multiplication $$m(x)=a(x)\cdot b(x)$$, we can use the method we learned 
+in school by writing down the distributive property in a table:
+
+$$ a(x) = a_3 x^3 + a_2 x^2 + a_1 x + a_0 $$
+
+$$ b(x) = b_3 x^3 + b_2 x^2 + b_1 x + b_0 $$
 
 $$
 \begin{array}{}
@@ -103,8 +119,6 @@ $$
 \end{array}
 $$
 
-Note that there's no spill-over from one column to the next.
-
 When implemented in hardware, each base element multiplication is a 
 2-input AND gate, and each addition is a XOR gate.
 
@@ -118,7 +132,7 @@ Generalized, if each element consists of $$n$$ bits, we have
 * $$n^2$$ AND gates
 * $$(n-1)^2$$ XOR gates
 
-**Modular Reduction**
+**Step 2: Modular Reduction**
 
 For polynomial division, we can again fall back to how things were
 done at school. The order of the primitive polynomial $$p(x)$$ will
@@ -126,20 +140,29 @@ always be 1 higher than the polynomials of the elements.
 
 The highest term of $$p(x)$$ is always 1.
 
+Hardware Galois field multipliers are nearly always designed for an application specific use case,
+so the values of the $$(p_0, dots, p_{m-1})$$ coefficients are fixed. 
+
+In the equation of $$r(1)$$ above, that means that all $$p_i$$ factors resolve to either 0 or 1,
+and the only operators left are additions that map to XOR gates.
+
+Let's set $$p(x) = x^4 + x + 1$$ or $$p=(1,1,0,0,1)$$.
+
+
 $$
 \begin{array}{l}
 &  & x^6 & x^5 & x^4 & x^3 & x^2 & x^1 & x^0 \\
 \hline
 \text{Term 1:}& r_0(x) = & m_6 & m_5 & m_4 & m_3 & m_2 & m_1 & m_0 \\
-\text{Term 2:}&  & 1 & p_3 & p_2 & p_1 & p_0  \\
-\text{Factor:}&  & m_6 & p_3m_6 & p_2m_6 & p_1m_6 & p_0m_6 \\
+\text{Term 2:}&          & 1 & p_3 & p_2 & p_1 & p_0  \\
+\text{Factor:}&          & m_6 & p_3m_6 & p_2m_6 & p_1m_6 & p_0m_6 \\
 \hline
 \text{Sum:}& r_1(x) = & m_6 + m_6 & m_5 + p_3m_6 & m_4 + p_2m_6 & m_3 + p_1m_6 & m_2 + p_0m_6 & m_1 & m_0 \\
+           &          & 0         & m_5 + p_3m_6 & m_4 + p_2m_6 & m_3 + p_1m_6 & m_2 + p_0m_6 & m_1 & m_0 \\
+           &          & 0         & m_5          & m_4          & m_3 +    m_6 & m_2 +    m_6 & m_1 & m_0 \\
 \end{array}
 $$
 
-In $$\text{GF}(2)$$ math, addition and subtraction are the same, so the highest term of $$r_m(x)$$ will always 
-be zero.
 
 Let's now repeat this step until we have only 4 non-zero $$r_m(x)$$ coefficients left:
 
@@ -203,10 +226,6 @@ Generalized:
 
 * $$n(n-1)$$ AND operations
 * $$n(n-1)$$ XOR operations
-
-But it gets better: usually, all $$\text{GF}(2^n}$$ math in a hardware design uses the same
-primitive polynomial $$p(x)$$. Because of this, $$p_n$$ in all the equations above can be
-replaced by either a 0 or a 1.
 
 # Galois Field Extensions
 
@@ -497,8 +516,78 @@ $$\alpha^i = b_3\beta^8 + b_2\beta^3 +b_1\beta^2 +b_0\beta^1   $$
 This is called a normal basis. The coefficients $$b_i$$ are elements
 of the base field GF(2). XXXX does this only work for GF(2) ?
 
+# Old
+
+Here are elements $$A$$ and $$B$$ from $$\text{GF}(2^m)$$:
+
+$$ A = a_0 + a_1 \alpha + \cdots + a_{m-1} \alpha^{m-1} = \vec{s} \cdot \vec{a}^T $$
+
+$$ B = b_0 + b_1 \alpha + \cdots + b_{m-1} \alpha^{m-1} = \vec{s} \cdot \vec{b}^T $$
+
+Let $$C$$ but the multiplication of $$A$$ and $$B$$:
+
+$$ C = A \cdot B $$
+
+$$ C = A \cdot ( b_0 + b_1 \alpha + \cdots + b_{m-1} \alpha^{m-1} ) $$
+
+$$ C = [ A, A \cdot \alpha, \cdots, A \cdot \alpha^{m-1} ] \cdot \vec{b}^T $$
+
+
+
+And an element 
+$$\vec{a}=(a_0, a_1, \cdot, a^{m-1})$$
+
+Since $$\alpha$$ is a root, we can derive this reduction formula that allows
+us to reduce $$\alpha^i$$ with $$i \ge m$$ to a linear combination of $$\alpha^j$$
+where $$j < m$$.
+
+$$ \alpha^m =  p_{m-1} \alpha^{m-1} + \cdots + p_1 \alpha + p_0 $$
+
+
+The same element from a given $$\text{GF}(2^m)$$ can be represented in different ways.
+The most common one is the one where it's represented as a vector of $$m$$ elements
+from base Galois field $$\text{GF}(2)$$ that 
+
+$$(a_3, a_2, a_1, a_0) \rightarrow a(x) = a_3 x^3 + a_2 x^2 + a_1 x + a_0$$
+
+
+An element $$(a_3, a_2, a_1, a_0)$$ of the field, where each base element can be either 
+
+
+
+In an extended Galois field, each element is presented by an ordered tuple
+of base elements. Let's assume we're dealing with $$\text{GF}(2^4)$$, when 
+the tuple will be 4 base elements $$(a_3, a_2, a_1, a_0)$$, where each base element can be either 
+0 or 1.
+
+The 4-tuple map to a polynomial:
+
+$$(a_3, a_2, a_1, a_0) \rightarrow a(x) = a_3 x^3 + a_2 x^2 + a_1 x + a_0$$
+
+Multiplication is an extended Galois field is defined as the multiplication
+of the two operand polynomials $$a(x)$$ and $$b(x)$$, followed by a division
+by the primitive polynomial $$p(x)$$ that defines the Galois field extensio, and
+retaining the remainder. The second step is called *modular reduction*.
+
+$$c(x) = a(x) \cdot b(x) \bmod p(x) $$
 
 # References
+
+* [Applied Algebra, Algebraic Algorithms and Error-Correcting Codes: 6th International Conference, AAECC-6 (1988)](https://www.amazon.com/dp/3540510834)
+
+  Proceedings of the conference with the original Mastrovito paper.
+
+* [A Novel Architecture for Galois Fields GF(2^m) Multipliers Based on Mastrovito Scheme - N. Petra et al. (2007)](https://ieeexplore.ieee.org/document/4336296)
+
+  IEEE paywall. Used for the implmentation in this blog post.
+
+* [Mastrovito Multiplier for General Irreducible Polynomial - Halbutogullari and Koc (2000)](https://cetinkayakoc.net/docs/c18.pdf)
+
+  Free available from author. Explained well.
+
+* [Systematic Design Approach of Mastrovito Multipliers over GF(2^m) - Tong Zhang and Keshab K. Parhi (2000)](https://sites.ecse.rpi.edu/~tzhang/pub/SIPS2000.pdf)
+
+  Same result as Koc, but more algorithmic approach?
 
 * [Wikipedia - Finite field](https://en.wikipedia.org/wiki/Finite_field)
 

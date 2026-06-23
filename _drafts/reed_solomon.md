@@ -308,7 +308,7 @@ of the base field GF(2). XXXX does this only work for GF(2) ?
 
 * [RSCODE Reed-Solomon Encoder / Decoder Library](http://beartronics.com/rscode.html)
 
-    * [Introduction to Reed Solomon Codes](https://rscode.sourceforge.net/rs.html)
+  * [Introduction to Reed Solomon Codes](https://rscode.sourceforge.net/rs.html)
 
 * [CoolRunner-II CPLD Galois Field GF(2m) Multiplier](https://docs.xilinx.com/v/u/en-US/xapp371)
 
@@ -321,8 +321,8 @@ of the base field GF(2). XXXX does this only work for GF(2) ?
 
 * [Reed-Solomon poly to power and power to poly multiply](https://github.com/freecores/reed_solomon_decoder/blob/master/rtl/GF_matrix_dec.v)
 
-    * [8-bit inverse](https://github.com/winsonbook/Reed-Solomon-/blob/master/Inverse_8_bit.v)
-    * [8-bit determinant](https://github.com/winsonbook/Reed-Solomon-/blob/master/Determinant.v)
+  * [8-bit inverse](https://github.com/winsonbook/Reed-Solomon-/blob/master/Inverse_8_bit.v)
+  * [8-bit determinant](https://github.com/winsonbook/Reed-Solomon-/blob/master/Determinant.v)
 
 * [Reed-Solomon with case statement](https://github.com/RedFlag2017/rs-codec/blob/master/00_src/rs_dec/gf256mul_dec.v)
 
@@ -330,4 +330,19 @@ of the base field GF(2). XXXX does this only work for GF(2) ?
 
 * [A Low-Power Design for Reed Solomon Decoders - Hsie-Chia Chang and Chen-Yi Lee](/assets/reed_solomon/doc/A Low-Power Design for Reed-Solomon Decoders.pdf)
 * [High-Speed Architectures for Reed–Solomon Decoders - Dilip V. Sarwate and Naresh R. Shanbhag](/assets/reed_solomon/doc/High-Speed Architectures_for_RS_dec.pdf)
+
+**Berlekamp encoder optimization**
+
+* [Bit-serial Reed - Solomon encoders - Berlekamp](https://ieeexplore.ieee.org/document/1056591)
+
+  Uses a special basis to reduce complexity in the encoder.
+
+* [The VLSI design of a Reed-Solomon Encoder Using Berlekamp's Bit-Serail Multiplier Algorithm](https://tmo.jpl.nasa.gov/progress_report/42-70/70H.PDF)
+* [Voyager 1 and Reed-Solomon - Estevez](https://destevez.net/2021/12/voyager-1-and-reed-solomon/)
+* [Reed-Solomon Codes and the Exploration of the Solar System](https://dataverse.jpl.nasa.gov/previewers/pdf_embed.html?fileid=34447&siteUrl=http://dataverse.jpl.nasa.gov&datasetid=34446&datasetversion=2.0&locale=en)
+
+* [Efficient standard basis Reed-Solomon encoder](https://ieeexplore.ieee.org/document/550579)
+
+  *The hardware complexity of this encoder is identical to the well-known Berlekamp encoder.*
+  
 
