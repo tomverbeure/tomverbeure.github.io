@@ -47,7 +47,7 @@ but a lot of the material online is theoretical, math heavy, and not intuitive. 
 for me...
 
 That changed when I found this 
-[Introduction to Reed-Solomon](https://innovation.vivint.com/introduction-to-reed-solomon-bc264d0794f8)
+[Introduction to Reed-Solomon](https://web.archive.org/web/20250409174023/https://innovation.vivint.com/introduction-to-reed-solomon-bc264d0794f8?gi=8075d916fdf6)
 article. It explains how polynomials and polynomial evaluation at certain points are a way to
 create a code with redundancy, and how to recover the original message back from it. The article
 is excellent, and it makes some of what I'm covering below unnecessary or redundant (ha!), 
@@ -488,9 +488,9 @@ Here's how that works out for our example:
 
   $$(0, 2),(2, -4),(3, -7),(4, -2) \rightarrow (2, 3, -5, 1)$$
 
-  $$(1, 6),(2, -4),(3, -7),(4, -2) \rightarrow (2, 3, -5, 1)$$
+  $$(1, 6),(2, -4),(3, -7),(4, -2) \rightarrow (22, -56/3, 5/2, 1/6)$$
 
-* The coefficients $$(2,3,-5,1)$$ come up 6 times. All other solutions are different
+* The coefficients $$(2,3,-5,1)$$ come up 5 times. All other solutions are different
   from each other, so $$(2,3,-5,1)$$ is the winner. This is also the correct solution.
 
 This may be a straightforward error correcting algorithm, but it's not
