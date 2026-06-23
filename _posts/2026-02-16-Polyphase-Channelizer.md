@@ -370,7 +370,7 @@ But that's something that will be fixed in the next section...
 
 # Disappearing the Complex Rotator
 
-In the straightforward case, we had to switch a polyphase decomposition to move the decimator from behind
+In the straightforward case, we had to switch to a polyphase decomposition to move the decimator from behind
 the filter to in front of the filter. But that decomposition introduces single timestep delays which
 prevents moving the decimator even further to the front of the rotator.
 
@@ -388,7 +388,7 @@ the decimation. Or the angle by which the rotator moves forward each step is now
 
 ![Original vs decimated rotator](/assets/polyphase/polyphase_het/polyphase_het-decimated_phasor.svg)
 
-After decimation, the exponent of the rotator now has factor $$M$$ add to it:
+After decimation, the exponent of the rotator now has factor $$M$$ added to it:
 
 $$
 e^{-j \theta_c M m}, m = \lfloor \frac{n}{M} \rfloor
@@ -407,15 +407,13 @@ $$
 e^{-j \theta_c M m} \stackrel{?}{=} 1 + 0j
 $$
 
-We don't want this to be dependent on $$m$$, so we're really finding a solution for this equation:
+We don't want this to be dependent on $$m$$, so we're really trying to find a solution for this equation:
 
 $$
 e^{-j \theta_c M } \stackrel{?}{=} 1 + 0j
 $$
 
 The rotator is one whenever it makes a full circle or whenever the exponent is an integer multiple of $$2 \pi$$. 
-$$m$$ is an integer. If the equation above is satisfied without $$m$$, then it will also be satisfied after 
-adding $$m$$ to the exponent.
 
 $$
 \theta_c M = k \; 2 \pi
@@ -499,7 +497,7 @@ H_\text{bpf}(z) & = & H_\text{lpf}(e^{-j \theta_c} z) \\
 \end{alignedat}
 $$
 
-Do the polyphase decomposition. Instead of summing all the terms the full $$h[n]$$ polynomial in one go,
+Do the polyphase decomposition. Instead of summing all the terms of the full $$h[n]$$ polynomial in one go,
 we sum the terms of $$M$$ different polyphase polynomials separately, and then add them together:
 
 $$
@@ -525,7 +523,7 @@ H_\text{bpf}(z) & = &  h_0 e^{j \theta_c 0} z^{ 0} &+& h_3 e^{j \theta_c 3} z^{-
 \end{alignedat}
 $$
 
-In each of the polyphase sub-filters, the factor $$e^{j \theta_c m} z^{-m}$$ is not dependent on $$n$$
+In each of the polyphase sub-filters, the factor $$e^{j \theta_c m} z^{-m}$$ is independent of $$n$$
 and can be moved ahead of the inner sum:
 
 $$
@@ -578,7 +576,7 @@ H_\text{bpf}(z) = \sum_{m=0}^{M-1} e^{j \frac{2 \pi}{M} k m} z^{-m} H_m(z^M)
 $$
 
 $$e^{j \frac{2 \pi}{M} k m}$$ is a scalar value, so we can move the multiplication 
-to the back of the filter:
+behind the filter:
 
 $$
 H_\text{bpf}(z) = \sum_{m=0}^{M-1} z^{-m} H_m(z^M) e^{j \frac{2 \pi}{M} k m} 
@@ -620,7 +618,7 @@ This is a truly remarkable outcome:
 
 * **The coefficients don't depend on the targeted channel frequency.**
 
-  We did this also by extracting the rotators from the filters (as long as the channel $k$ 
+  We did this also by extracting the rotators from the filters (as long as the channel $$k$$ 
   meets our criterion above of being an integer multiple of the decimation rate).
 
 * **The rotators are located behind the filters.**
@@ -630,7 +628,7 @@ This is a truly remarkable outcome:
 The importance of the last 2 points can't be overstated: if you want to change the channel $$k$$ that needs to
 be brought to base band from one to another, all you need to change are the rotators.
 
-Compared the last checkpoint, the resource requirements have also been reduced roughly by half:
+Compared to the last checkpoint, the resource requirements have also been reduced roughly by half:
 
 * the 201 filter taps are multiplied by a real input at a rate of 10M per second = 2.01B multiplications.
 * 10 rotators multiply the real output of the filters by a complex number at 10M per second = 200M multiplications.
@@ -643,15 +641,15 @@ And still we are not done...
 
 # The Polyphase Channelizer
 
-So far, we've focused on finding an optimal solution to extracting the signal of one channel out of a possible many 
-to baseband. We're now expanding our scope: what if we want to extract the signal of all channels in parallel?
+So far, we've focused on finding an optimal solution to extracting the signal of one channel to baseband, 
+out of many possible channels. We're now expanding our scope: what if we want to extract the signal of all channels in parallel?
 
 This is where the conclusion of previous section pays off ever more: since only the final rotators are channel
-dependent, all we need is an additional set of rotators for each channel. The filters remain untouched. That's
-a huge win: from the resource calculation, we can already conclude that the filters tend to be require the
+dependent, all we need is an additional set of rotators for each extra channel. The filters remain untouched. That's
+a huge win: from the resource calculation, we can already conclude that the filters tend to require the
 large majority of multipliers. And that's for a filter with 201 taps, which is relatively modest. In today's
-world, channels are often stacked one next to the other with a very narrow transistion band and narrow
-transistion bands require very steep filters to separate one from the other.
+world, channels are often stacked one next to the other with a very narrow transition band and narrow
+transition bands require very steep filters to separate one from the other.
 
 ![Polyphase channelizer with 2 channels](/assets/polyphase/polyphase_het/polyphase_het-polyphase_multi_chan.svg)
 
@@ -714,14 +712,15 @@ Finally, we're at the end of a journey that gives us this wonderful result:
 The Fourier transform is known primarily for converting signals from the time domain to the
 frequency domain and back, but you don't have to use it for frequency stuff, as is the case here.
 The output of the IFFT in the polyphase channelizer is an array with the samples of all
-channels of a given time tick. The IFFT is simply used as an algorithmic accelerator.
+channels of a given time tick. The IFFT is used as an algorithmic accelerator that has
+time domain values at the input and time domain values at the output.
 
 This is as good a time as any to link to my favorite Youtube video of all time:
 "The Fast Fourier Transform (FFT): Most Ingenious Algorithm Ever?"
 
 <iframe width="640" height="360" src="https://www.youtube.com/embed/h7apO7q16V0?si=8zM2mOaMBD0byhyb" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
-It develops the FFT algorithm, and like the polyphase channelizer, it doesn't use the FFT
+It develops the FFT algorithm from scratch. And like the polyphase channelizer, it doesn't use the FFT
 for time domain/frequency conversion, but to accelerate the multiplication of polynomials.
 
 # From Theory to Practice
@@ -734,8 +733,8 @@ inactive channels have a large noise component.
 ![Spectrum of signal with 2 active channels](/assets/polyphase/polyphase_het/polyphase_het_sim-signal_multi_spectrum.svg)
 
 NumPy has all kinds of nice operators to manipulate multi-dimensional arrays, but my
-knowledge about them is thin. So the code below won't be the most canonical way
-of doing things!
+knowledge about them is thin, so the code below won't be the most canonical way
+of doing things.
 
 Split up the taps of low-pass filter `h_lpf` into `h_poly`, its polyphase decomposition:
 
@@ -794,9 +793,9 @@ Let's do a step-by-step recap:
 
 * We started with a very naive implementation of a single channel downconverter.
 * Using a straightforward polyphase decomposition, we came up with a much more efficient design but
-  with one major flaw: it required a rotator that runs at the input sample rate.
-* With a bit of algebra, we were able to move that rotator to the back of the pipeline,
-  after the decimator. No more units running at input sample rate!
+  with one major flaw: it still required a rotator that runs at the input sample rate.
+* With a bit of algebra, we moved that rotator to the back of the pipeline,
+  after the decimator. No more units running at the input sample rate!
 * A smart choice of the sample rate allowed us to get rid of the rotator altogether.
 * Some more algebra allowed us to cut the number of multiplications by half and
   isolate all channel specific calculations to the very end of the pipeline.
@@ -805,7 +804,7 @@ Let's do a step-by-step recap:
 * That cost became even lower by recognizing the presence of an inverse discrete Fourier
   transform and using an IFFT to accelerate the calculations.
 
-I just love how everything, like a plan, comes beautifully together.
+I just love when everything, like a plan, comes beautifully together.
 
 I deliberately left out the parts of the video where harris discusses cases where channel centers
 have a fixed offset from where they should be. It would make this blog post even longer, but these
@@ -818,7 +817,7 @@ polyphase filter banks and polyphase channelizers. I want to dive into those as 
 One thing that I didn't cover is the intuitive explanation about how polyphase channelizers
 work. harris talks about rotating spectra, aliased to the same baseband, that cancel each other
 out for different rotators. While I kind of get what he's trying to say, the truth is that I
-currently don't have the kind of intuition that harris has, so I'll 
+currently don't have the intuition that harris has, so I'll 
 defer [to the video](https://youtu.be/afU9f5MuXr8?t=2151) for that.
 
 Many thanks to [Joshua](https://joshuawise.com) for reviewing!
