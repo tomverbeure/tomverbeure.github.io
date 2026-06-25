@@ -13,6 +13,34 @@ categories:
 
 # Introduction
 
+My previous episodes about the polyphase channelizer assumed a decimation factor that is the
+same as the number of channels. That is a common configuration, but it doesn't have to be like
+that.
+
+In [the video](https://youtu.be/afU9f5MuXr8?t=2949) 
+on which this blog post series is based, fred harris makes a strong case for filter that
+consists of a 3-stage pipeline of a decimation polyphase filter, a decimating half-band filter, and
+an interpolation polyphase filter to reduce the number of multiplications. Instead of 
+1 M:1 decimation filter, the polyphase filter does a M:2 decimation and the half-band a
+2:1 decimation.
+
+This kind of configuration is beneficial when transition band is extremely narrow compared
+to the input sample rate. 
+
+with a decimation factor that is lower than the number of channels: it significantly
+
+increases the transition band of the bandpass filter that separates the channels and with
+that it also reduces the number of taps.
+
+As was the case for the polyphase channelizer with offset, the video doesn't work out all the
+details to get to a working solution. The goal of this blog post is to fill in those gaps.
+
+# The Impact of Transition Band on Anti-Aliasing Filter Complexity
+
+Conceptually, a polyphase channelizer receives an input stream with a sample rate $$F_s$$,
+
+
+
 
 # References
 
