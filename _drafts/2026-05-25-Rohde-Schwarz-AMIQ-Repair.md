@@ -66,14 +66,14 @@ The PC system on my AMIQ was in bad shape.  It had the following issues:
 * locked-up CPU fan 
 * broken hard drive
 * barely working floppy drive
-* CR2032 battery empty
+* empty CR2032 battery
 
 ![Capacitors and fan](/assets/amiq/restoration/caps_and_fan.jpg)
 
 # Installing a Video Card and Keyboard
 
 If you want to do any restoration work on the AMIQ, you need to operate it like a PC, with
-a PS2[^PS2] keyboard and a display connected. I found a Korean keyboard on Craigslist 
+a PS/2[^PS2] keyboard and a display connected. I found a Korean keyboard on Craigslist 
 for $20. An [ATI (meh) Rage XL PCI](https://vintage3d.org/rageXL.php) 
 with VGA output from eBay set me back another $20. 
 I think pretty much any video card with PCI should work as long as it's not some power 
@@ -107,7 +107,7 @@ board are too short otherwise.
 
 # Locked CPU Fan
 
-The fan was locked solid. I don't know how that happens? I replaced it with a socket 7
+The CPU fan was locked solid. I don't know how that happens? I replaced it with a socket 7
 cooler from Cooler Master, another $20 spent on eBay. The new fan comes with a heatsink, but
 I didn't have any thermal paste on hand, so instead of replacing the full assembly, I unscrewed
 the fan from the heatsink and installed just that. 
@@ -177,7 +177,7 @@ squeezed between connectors.
 *(Click to enlarge)*
 
 Since this was my first recapping job, I watched a bunch of Youtube videos to see how it's
-done. I won't go into all the details here , but here are a few quick ones:
+done. I won't go into all the details here , but here are some notes:
 
 * Pay attention to the polarity of the capacitors that you remove.
 * Use a soldering iron temperature that is higher than 350C. The motherboard has a lot 
@@ -187,7 +187,7 @@ done. I won't go into all the details here , but here are a few quick ones:
   make sure to place it against the pin that’s being desoldered at an angle of around 45 degrees. I 
   held it almost perpendicular to the motherboard on top and, somewhat counter-intuitively, that 
   reduces the sucking power of the pump by a lot.
-* Add some fresh solder first. It helps a lot. Ideally, use low temperature solder for that.
+* Add some fresh solder first. It makes big difference. Ideally, use low temperature solder for that.
 * Make use of gravity. For some of the smaller capacitors, the easiest was to put the PCB upside 
   down (capacitors at the bottom), heat up the pins and watch the capacitor fall out.
 * Immediately replace a removed capacitor with a new one, instead of first removing all of them. That reduces the chances of mistakes.
@@ -197,7 +197,7 @@ but after the recap the motherboard miraculously powered up without any issues.
 
 # Replacing the Spinning Disk Hard Drive with a CompactFlash Drive
 
-At boot, the hard drive made a gnarly clicking sound and while the BIOS was able to detect it,
+At boot, the hard drive made a gnarly clicking sound and while the BIOS was able to detect the drive,
 it couldn't read from it. Late nineties IBM TravelStar drives may not be as notorious as their 
 DeskStar bretheren for being total pieces of shit, but they have a reputation of failing just the 
 same.
@@ -229,17 +229,17 @@ There are 3 programmable logic chips on the PCB:
 
 * Sequencer FPGA
 
-  This Altera EPF10K10 Flex10 FPGA is, found on sheet 7 of the schematics, resonsible for general 
+  This Altera EPF10K10 Flex10 FPGA, found on sheet 7 of the schematics, is resonsible for general 
   PCB management. Like all FPGAs, its bitstream is volatile so a new configuration is required after 
   each power-up. 
   Unlike most FPGA boards, there is no bitstream configuration flash on the PCB: the FPGA is set
-  to "passive parallel asynchronous: configuration mode and bitstream is loaded by the PC over the 
+  to *passive parallel asynchronous* configuration mode and the bitstream is loaded by the PC over the 
   ISA bus each time.
 
 * BER FPGA
 
   Another Altera EPF10K10 Flex10 FPGA, located on sheet 28 of the schematic. This FPGA is primarily
-  responsible for controller the bit error rate (BER) external interface. This feature is only
+  responsible for the bit error rate (BER) external interface. This feature is only
   supported when option AMIQ-B1 is enabled, but the FPGA is always there. In fact, even with 
   the BER option disabled, the FPGA is still responsible for driving the JTAG interface to used
   to configure the controller CPLD.
@@ -252,11 +252,149 @@ There are 3 programmable logic chips on the PCB:
   is SDRAM controller. CPLDs tend to have much less logic resources but back when they were popular, they
   were faster than FPGAs.
 
-  CPLDs retain their configuration after losing power so they only need to be programmed once. The controller CPLD 
-  is programmed during initial device setup. Programming happens over JTAG. The JTAG pins are driven by the BER FPGA
-  which must have some JTAG finite state machine that is controller by the ISA bus.
+  CPLDs retain their configuration after losing power so they only need to be programmed once. The controller 
+  CPLD is programmed during initial device setup or recovery. It's not reprogrammed after each power up.  
+  Programming happens over the JTAG pins that are driven by the BER FPGA, which is in turn controlled by the 
+  ISA bus.
 
-The `AMIQ` directory of the R&S `PREPARE` recovery disk contains all the FPGA and CPLD configuration files:
+# Installing Firmware - The Official Way
+
+If you start with a blank hard drive, the official way to set up the machine is with the Rohde & Schwarz 
+`PREPARE` and `PROGRAM` disk.  The AMIQ has been end-of-lifed a long time ago and you can't officially get 
+them anymore, but I was able to find a copy for AMIQ software release 4.00. Not the latest one, there's at 
+least a 4.01 version out there, but good enough to get you going.
+
+The original archive with the installation files and instructions is here:
+
+* [AMIQ_recovery-4.00.tar.gz](/assets/amiq/recovery/AMIQ_recovery-4.00.tar.gz)
+
+The `PREPARE` disk contains a minimal operating system and various hardware related files, but
+not the main AMIQ application. The `PROGRAM` disk contains additional utilities and the main
+application.
+
+Assuming your AMIQ has a working floppy drive (spoiler: it almost certainly won't), the installation goes 
+as follows:
+
+* Insert the `PREPARE` disk.
+* Have the PC boot up from floppy.
+
+  If the AMIQ still has the recommended settings for normal use, booting from floppy
+  will be disabled. You'll need to go to the BIOS menu to enable it.
+
+The installation system uses a bunch of DOS `.BAT` files. That makes is relatively easy
+to figure out what's going on.
+
+After booting, the system goes through a bunch of steps:
+
+* Format the new disk with FDISK.
+
+  The maximum partition size is 2GB, but you have the option to add multiple
+  partitions and thus multiple drive letters. 
+  [WinIQSim](/2025/04/26/RS-AMIQ-Teardown-Analog-Deep-Dive.html#winiqsim-software), 
+  the Windows control software can deal with that when uploading waveforms: just specify the 
+  right drive letter.
+
+* Enter a bunch AMIQ model information:
+
+  * Desired AMIQ Model: 02, 03 or 04
+
+    Mine is an AMIQ04 model.
+
+  * AMIQ IQ_Analog/Digital Board variant 02, 03, or 04
+
+    There are 3 options, 02/03/04 which you'd think match the model number, but
+    apparently not... otherwise they wouldn't ask again? I guessed 04 for mine and
+    that worked. 
+
+    ![AMIQ IQ board selection](/assets/amiq/restoration/amiq_iq_board_selection.jpg)
+
+  * Serial number
+
+    This will normally be printed on the front panel of the device. Chances are
+    that it doesn't matter what you fill in here: if the EEPROM on the signal generation
+    board has already been programmed with a serial number, it won't be overwritten
+    by this step.
+
+* Copy over files from the floppy to the hard drive
+
+* Reboot machine, change BIOS settings to boot from hard drive
+
+* Insert `PROGRAM` disk
+
+* Reboot again
+
+* When a floppy with an `AMIQ.DAT` file is found on the floppy drive, the system will
+  automatically copy all its contents and overwrite the existing software
+  installation. The `AMIQ.DAT` file is nothing but a ZIP archive that has been given
+  a different filename extension.
+
+Done!
+
+
+# Installation Alternative 1: Floppy Drive Emulator
+
+I have a lot of old test equipment with floppy drives, literally none of them working
+reliably enough for practical use. My AMIQ was no different. I still wanted to get a clean
+installation the way R&S intended it to be, so I spent another $30 for a
+[GoTEK 3.5 Floppy Drive Emulator](https://www.amazon.com/dp/B0762NCHC6).
+
+![GoTEK floppy drive emulator](/assets/amiq/restoration/GoTEK_floppy_driver_emulator.png)
+
+Premanently replacing the old AMIQ floppy drive with a new one is not for the faint of heart: 
+you need to take pretty much the whole unit apart. I didn't bother, and just connected the
+emulator temporarily, with the case open:
+
+![Floppy emulator on open chassis](/assets/amiq/restoration/floppy_emulator.jpg)
+
+The emulator works as follows: 
+
+* With the USB Floppy Emulator software, write up to 100 different
+  1.44MB floppy disk images to a USB drive.
+
+  ![USB floppy manager](/assets/amiq/restoration/USB_floppy_manager.png)
+
+* Insert the USB stick in the emulator hardware
+* Select the desired image number with the buttons of the front panel
+
+That's it! The software is clunky, but it works.
+
+USB floppy manager expects disk images in .img format. You can download them here:
+
+* [AMIQ-prepare-1.40.img.gz](/assets/amiq/recovery/AMIQ-prepare-1.40.img.gz)
+* [AMIQ-program-4.00.img.gz](/assets/amiq/recovery/AMIQ-program-4.00.img.gz)
+
+They've been compressed with gzip. 
+
+Even if you want to use a real floppy drive, these images are still useful to prepare
+the 2 floppies.
+
+# Installation Alternative 2: Installed Drive Image
+
+*I used this method before I got my hands on the official installation disks. It
+took ages to make it work.*
+
+If you don't want to go through the whole floppy drive (emulator) business, you can just
+copy an AMIQ hard drive image backup straight to the new drive. This is definitely the
+easiest option... if it works. The problem is that a drive image is created for a given
+hardware configuration.
+
+Here's a look at the `\AMIQ` directory of a working disk image:
+
+![AMIQ directory on hard drive](/assets/amiq/restoration/AMIQ_installed_dir.png)
+
+You can see 3 `SEQ_*.LHZ` files: there are compressed bitstream images for AMIQ
+sequencer FPGA. During the floppy drive installation, one of them was decompressed
+as `S.OUT`, depending on the AMIQ model number. This is the bitstream that gets
+uploaded after power up. If you want to patch a disk image to make it work with a 
+different sequencer bitstream, you'll have to replace `S.OUT` with one of the
+decompressed other `SEQ_*.LHZ` files.
+
+The `PREPARE` disk also contains 3 `CONT_*.LHZ` files on the PREPARE disk, but
+you won't find them on the disk image: that's because the contents of these files
+are flashed to the CPLD one time during the `PREPARE` installation step. They don't
+need to be reflashed again after each power-up. You only need to worry about this
+if our device was running a very old firmware version. If that's the case, here
+the `\AMIQ` directory of the `PREPARE` disk:
 
 ```
 tom@zen:/media/tom/14E4-1358/AMIQ$ ll
@@ -282,8 +420,8 @@ LZH files are file compression format that was popular in the nineties.
 
 * Like the control CPLD, there are 3 bitstreams `SEQ_*.LZH` for the sequencer FPGA. One of the files gets
   uncompressed and renamed to `S.OUT`. There is only 1 bitstream version of the BER FPGA:
-  `B.LZH`. It gets decompressed and renamed to `B.OUT. `AMIQINIT.EXE` is used to send the `S.OUT` and
-  `B.OUT` bitstreams to the FPGAs.
+  `B.LZH`. It gets decompressed and renamed to `B.OUT.` `AMIQINIT.EXE` is used to send the `S.OUT` and
+  `B.OUT` bitstreams to the FPGAs during each boot cycle.
 
 You may see this error on your AMIQ-connected VGA monitor:
 
@@ -291,143 +429,32 @@ You may see this error on your AMIQ-connected VGA monitor:
 
 This is guaranteed to be a case of using the wrong SEQ bitstream or CONTROL configuration file.
 
-If you have an AMIQ for which the HD has been installed the official way, you'll find
-a `S.OUT`, `B.OUT` and `CONTROL.SVF` file in the `C:\AMIQ` directory. The `SEQ_*.LZH` files
-will be there as well, but the `CONT_*.LZH` won't be. The `PREPARE` installation disk
-has all versions of them though.
+# Controlling the AMIQ with a PC
 
-# Installing Firmware - The Official Way
+When everything installed correctly, you should be able to control the AMIQ with a PC
+through the WinIQSim software, using either an RS-232 or GPIB cable... in theory.
 
-If you start with a blank hard drive, the official way to set up the machine is with the Rohde & Schwarz 
-`PREPARE` and `PROGRAM` disk.  The AMIQ has been end-of-lifed a long time ago and you can't get 
-them anymore, but I was able to find a copy for AMIQ software release 4.00. Not the latest one, there's at 
-least a 4.01 version out there, but good enough to get you going.
+In practice, it will often just not work: with RS-232, I was able to make a reliable
+connection, but it's slow and the uploading a waveform would often end with a transmission
+error. GPIB initially didn't work at all: I could send commands with software other
+than WinIQSim, but WinIQSim itself refused to even initiate a connection. Others have seen
+this as well, and have gone as far as building a PC just for this purpose, with a 20 year
+old motherboard and running Windows XP.
 
-The original archive with the installation files and instructions is here:
+In my case, that wasn't necessary: suddenly, after many hours of trying, it *did* work! But
+I have no clue what I did to make that happen.
 
-* [AMIQ_recovery-4.00.tar.gz](/assets/amiq/recovery/AMIQ_recovery-4.00.tar.gz)
+Either way, here's the photo of the AMIQ sending a multi-channel signal to a Rohde & Schwarz
+SFQ TV Test Transmitter that is configured as RF I/Q vector signal generator, and a
+spectrum analyzer showing the end result:
+ 
+![Advantatest R2372 on top of AMIQ on top of SFQ](/assets/amiq/restoration/amiq_sfq_r2373.jpg)
 
-The `PREPARE` disk contains a minimal operating system and various hardware related files, but
-not the main AMIQ application. The PROGRAM disk contains additional utilities and the main
-application.
+The natural RF vector signal generator for the AMIQ is the R&S AMIQ, but those are still pricy.
+The SFQ is not a bad alternative. While it's supposed to generate its own test signals for
+DVB-T, DVB-H and a bunch of other digital TV standards, the external I/Q inputs go well with
+the AMIQ. 
 
-Assuming your AMIQ has a working floppy drive (spoiler: it almost certainly won't), the installation goes 
-as follows:
-
-* Insert the `PREPARE` disk.
-* Have the PC boot up from floppy.
-
-  If the AMIQ still has the recommended settings for normal use, booting from floppy
-  will be disabled. You'll need to go to the BIOS menu to enable it.
-
-The installation system uses a bunch of DOS `.BAT` files. That makes is relatively easy
-to figure out what's going on.
-
-After booting, the system will go through the bunch of steps:
-
-* Format the new disk with FDISK.
-
-  The maximum partition size is 2GB, but you have option to add multiple
-  partitions and thus multiple drive letters. WinIQSim, the Windows control software
-  can deal with that when uploading waveforms: just specify the right drive letter.
-
-* Enter a bunch AMIQ model information:
-
-  * Desired AMIQ Model: 02, 03 or 04
-
-    Mine is an AMIQ04 model.
-
-  * AMIQ IQ_Analog/Digital Board variant 02, 03, or 04
-
-    There are 3 options, 02/03/04 which you'd think match the model number, but
-    apparently not... otherwise they wouldn't ask again? I guessed 04 for mine and
-    that worked.
-
-  * Serial number
-
-    This will normally be printed on the front panel of the device. Chances are
-    that it doesn't matter what you fill in here: if the EEPROM on the signal generation
-    board has already been programmed with a serial number, it won't be overwritten
-    by this step.
-
-* Copy over files from the floppy to the hard drive
-
-* Reboot machine, change BIOS settings to boot from hard drive
-
-* Insert PROGRAM disk
-
-* Reboot again
-
-* When a floppy with an `AMIQ.DAT` file is found on the floppy drive, the system will
-  automatically copy over all its contents and overwrite the existing software
-  installation. The `AMIQ.DAT` file is nothing but a ZIP archive that has been given
-  a different filename extension.
-
-Done!
-
-# Installation Alternative 1: Floppy Drive Emulator
-
-I have a lot of old test equipment with floppy drives, literally none of them working
-reliably enough for practical use. My AMIQ was no different. I still wanted to get a clean
-installation the way R&S intended it to be, so I spent another $30 for a
-[GoTEK 3.5 Floppy Drive Emulator](https://www.amazon.com/dp/B0762NCHC6).
-
-![GoTEK floppy drive emulator](/assets/amiq/restoration/GoTEK_floppy_driver_emulator.png)
-
-Replacing the old AMIQ floppy drive with a new one is not for the faint of heart: you
-need to take pretty much the whole unit apart. I didn't bother, and just connected the
-emulator temporarily, with the case open:
-
-![Floppy emulator on open chassis](/assets/amiq/restoration/floppy_emulator.jpg)
-
-The emulator works as follows: 
-
-* with the USB Floppy Emulator software, write up to 100 different
-  1.44MB floppy disk images to a USB drive.
-
-  ![USB floppy manager](/assets/amiq/restoration/USB_floppy_manager.png)
-
-* insert the USB stick in the emulator hardware
-* select the desired image number with the buttons of the front panel
-
-That's it! The software is clunky, but it works.
-
-USB floppy manager expects a disk image in .img format. You can download them here:
-
-* [AMIQ-prepare-1.40.img.gz](/assets/amiq/recovery/AMIQ-prepare-1.40.img.gz)
-* [AMIQ-program-4.00.img.gz](/assets/amiq/recovery/AMIQ-program-4.00.img.gz)
-
-They've been compressed with gzip. 
-
-If you want to use a real floppy drive, these images are still useful to prepare
-the 2 disks.
-
-# Installation Alternative 2: Installed Drive Image
-
-*I used this method before I got my hands on the official installation disks. It
-took ages to make it work.*
-
-If you don't want to go through the whole floppy drive (emulator) business, you can just
-copy an AMIQ hard drive image backup straight to the new drive. This is definitely the
-easiest option... if it works. The problem is that a drive image is created for a given
-hardware configuration.
-
-Here's a look at the `\AMIQ` directory of a working disk image:
-
-![AMIQ directory on hard drive](/assets/amiq/restoration/AMIQ_installed_dir.png)
-
-You can see 3 `SEQ_*.LHZ` files: there are compressed bitstream images for AMIQ
-sequencer FPGA. During the floppy drive installation, one of them was decompressed
-as `S.OUT`, depending on the AMIQ model number. This is the bitstream that gets
-uploaded after power up. If you want to patch a disk image to make it work with a 
-different sequencer bitstream, you'll have to replace `S.OUT` with one of the
-decompressed other `SEQ_*.LHZ` files.
-
-As mentioned earlier, there are also 3 `CONT_*.LHZ`  files on the PREPARE disk, but
-you won't find them on the disk image: that's because the contents of these files
-are flashed to the CPLD one time during the PREPARE installation step. They don't
-need to be reflashed again after each power-up. You only need to worry about this
-if our device was running a very old firmware version.
 
 # References
 
