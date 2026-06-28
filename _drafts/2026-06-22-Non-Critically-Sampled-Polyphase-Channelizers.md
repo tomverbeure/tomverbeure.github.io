@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Non-Critically Sampled Polyphase Channelizers
+title: Revisiting the Decimation Pipeline with Polyphase Filters
 date:   2026-06-22 00:00:00 -1000
 categories:
 ---
@@ -13,34 +13,62 @@ categories:
 
 # Introduction
 
-My previous episodes about the polyphase channelizer assumed a decimation factor that is the
-same as the number of channels. That is a common configuration, but it doesn't have to be like
-that.
+I continue my quest to deconstruct fred harris' 
+[Recent Interesting and Useful Enhancements of Polyphase Filter Banks](https://www.youtube.com/watch?v=afU9f5MuXr8)
+lecture on YouTube, with the goal of understanding every last detail, with some additional
+side quests thrown when I feel like this.
 
-In [the video](https://youtu.be/afU9f5MuXr8?t=2949) 
-on which this blog post series is based, fred harris makes a strong case for filter that
-consists of a 3-stage pipeline of a decimation polyphase filter, a decimating half-band filter, and
-an interpolation polyphase filter to reduce the number of multiplications. Instead of 
-1 M:1 decimation filter, the polyphase filter does a M:2 decimation and the half-band a
-2:1 decimation.
+This blog post was triggered by 
+[his case of a narrow band filter](https://youtu.be/afU9f5MuXr8?t=2949) 
+that ultimately consists of a 3-stage pipeline with a decimation polyphase filter, 
+a decimating half-band filter, and an interpolation polyphase filter to reduce the 
+number of multiplications. 
 
-This kind of configuration is beneficial when transition band is extremely narrow compared
-to the input sample rate. 
+I'll go through the motions of working out the details and also make the link
+to my blog posts from 6 years ago about 
+[half-band filters](https://tomverbeure.github.io/2020/12/15/Half-Band-Filters-A-Workhorse-of-Decimation-Filters.html)
+and about [the design of a multi-stage decimation pipeline](https://tomverbeure.github.io/2020/12/20/Design-of-a-Multi-Stage-PDM-to-PCM-Decimation-Pipeline.html).
 
-with a decimation factor that is lower than the number of channels: it significantly
+# The Impact of Transition Band on Filter Complexity
 
-increases the transition band of the bandpass filter that separates the channels and with
-that it also reduces the number of taps.
+The [key observation](https://youtu.be/afU9f5MuXr8?t=2499) about FIR filter design is that 
+the complexity[^filter_complexity] of the filter depends 3 parameters:
 
-As was the case for the polyphase channelizer with offset, the video doesn't work out all the
-details to get to a working solution. The goal of this blog post is to fill in those gaps.
+[^filter_complexity]: In this blog post, the first order indicator for filter complexity is the number of 
+                      multiplications.
 
-# The Impact of Transition Band on Anti-Aliasing Filter Complexity
+* sample rate $$f_s$$
+* the filter transistion bandwidth $$\Delta f$$
+* stopband attenuation $$A$$ in dB
 
-Conceptually, a polyphase channelizer receives an input stream with a sample rate $$F_s$$,
+So that the number of taps is:
+
+$$ N \widetilde{=} \frac{f_s}{\Delta f} \frac{A}{20} $$
+
+This is an approximation, of course, the final number depends on the type of filter, the pass band
+ripple, the exact location of the transition band, but it's good enough for comparison.
 
 
 
+/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html#finding-the-optimal-filter-order
+
+
+
+
+# Polyphase Filter vs Polyphase + Half-Band Filter Combo
+
+* Benefit of cascading decimation filters
+* half-band blog post
+* Normally, go from simple filter to more complex. Half-band if usually easier than regular FIR filter
+  but need to take into account band-pass filtering.
+* Filter complexity formula
+* Crossover point from one to the next
+
+[![Polyphase filter vs Polyphase - 1 Half-Band filter combo](/assets/polyphase/non_crit/poly_vs_poly_1hb_combo.svg)](/assets/polyphase/non_crit/poly_vs_poly_1hb_combo.svg)
+*(Click to enlarge)*
+
+[![Polyphase filter vs Polyphase - 2 Half-Band filter combo](/assets/polyphase/non_crit/poly_vs_poly_2hb_combo_filter.svg)](/assets/polyphase/non_crit/poly_vs_poly_2hb_combo_filter.svg)
+*(Click to enlarge)*
 
 # References
 
