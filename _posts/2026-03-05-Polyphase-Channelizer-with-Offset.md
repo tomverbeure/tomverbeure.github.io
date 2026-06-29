@@ -29,7 +29,7 @@ extract all channels in parallel. There's a twist, however, in that the center f
 channels is not a multiple of the channel bandwidth. With a little bit of additional math,
 we can work around that too.
 
-I'm still roughly covering topics here are covered in 
+I'm still roughly covering topics here that are covered in 
 ["Recent Interesting and Useful Enhancements of Polyphase Filter Banks"](https://www.youtube.com/watch?v=afU9f5MuXr8)
 by fred harris, though my approach is more mathematical and less based on intuition. Furthermore,
 harris doesn't work out the details for any generic frequency offset and immediately jumps to the 
@@ -42,14 +42,14 @@ deal with the full generic case and then simplify the outcome by imposing additi
 [Bluetooth Low Energy (BLE)](https://en.wikipedia.org/wiki/Bluetooth_Low_Energy) 
 lives in the unlicensed 2.4 GHz radio band that's also used by wifi and many other
 protocols. It has 40 channels that are each 2 MHz wide for a total bandwidth of 80 MHz. The
-center frequency of bottom physical channel is 2402 MHz. In total, BLE occupies the spectrum from
+center frequency of the bottom physical channel is 2402 MHz. In total, BLE occupies a spectrum from
 2401 MHz to 2481 MHz.
 
 The 2.4 GHz radio band is often congested. To ensure that at least some packets get through, BLE
 uses frequency hopping: it continuously jumps from one channel to the next in some predictable
 pattern. However, to establish an initial connection, there are a number of fixed management channels.
 
-[Joshua](https://joshuawise.com) used his BladeRF SDR unit to provided me with a 5 ms recording with
+[Joshua](https://joshuawise.com) used his BladeRF SDR unit to provide me with a 5 ms recording with
 the following characteristics:
 
 * center frequency: 2.441 GHz
@@ -69,7 +69,8 @@ We can see a bright line at the 2441 MHz center frequency. This is a common arti
 imperfect SDR hardware. It can be caused by local oscillator leakage or an imbalance between the 
 I and Q channels of the quadrature AD converters, or both.
 
-In this video, harris talks about how DC is often problematic, and a reason to have channels with a
+In [his video](https://youtu.be/afU9f5MuXr8?t=3210), 
+harris talks about how DC is often problematic, and a reason to have channels with a
 frequency offset so that none of the channel center frequencies coincide with DC. This trace shows why
 this is good advice.
 
@@ -89,7 +90,7 @@ the techniques derived in this blog post.*
                  to fix the I/Q vectors, supposedly, but I haven't explored that yet.
 
 A recording of 96 Msps complex samples covers 48 channels of 2 MHz. Since BLE only has 40 active channels,
-we have a little bit too much data, but that's ok. In the waterfall plot below, I've added separators that
+we have a little bit too much data, but that's ok. In the waterfall plot below, I've added separators between
 the individual channels. The suprious 2441 MHz line is now obstructed, which is good because it shows that 
 it falls on a transition band.
 
@@ -130,12 +131,12 @@ $$
 x[n] = x'[n] \, e^{j \omega_\Delta n} \\
 $$
 
-This works, of course, but it undoes all the effort from last blog post where we tried very
-hard to not do anything at the input sample rate.
+This works, but it undoes all the effort from last blog post where we tried very
+hard to not do any math at the input sample rate.
 
 Still, let's do it anyway and see what kind of result we get.
 
-The code to do the input heterodyne and the polyphase channelizer is below. 
+The code for the input heterodyne and the polyphase channelizer is below. 
 I've stripped some of the comments for brevity, but check out the 
 [code in the GitHub repo](https://github.com/tomverbeure/polyphase_blog_series/blob/main/ble.py)
 for more details.
@@ -281,7 +282,7 @@ $$
 
 A frequency offset adjustment rotator has been introduced. 
 
-We can split it up this exponential, extract a free-running output rotator that only depends on decimated 
+We can split up this exponential, extract a free-running output rotator that only depends on decimated 
 sample number $$nM$$, and move it all the way to the front:
 
 $$
@@ -289,7 +290,7 @@ y_c[n] = \underbrace{e^{j \omega_{\Delta} Mn} }_\text{output rotator}
          \sum_{m=0}^{M-1}  e^{j \frac{2 \pi}{M} c \, m}  \sum_{k=0}^{N-1} h[kM + m] \; x'[(n - k)M - m] \; e^{j \omega_{\Delta} (- kM - m)}  
 $$
 
-Now extract a term that only depends on polyphase variable $$m$$:
+Now extract the term that only depends on polyphase variable $$m$$:
 
 $$
 y_c[n] = e^{j \omega_{\Delta} Mn} \sum_{m=0}^{M-1}  
@@ -534,7 +535,7 @@ lookup table of 32 instead of 48 if we choose $$r=0.5$$.[^lut]
 
 # Conclusion
 
-Just like in previous blog post, we started with a straightfoward solution to a problem
+Just like in previous blog post, we started with a straightforward solution to a problem
 that worked, but that required significant mathematical resources. We then threw
 some math at it and added constraints to simplify the math even more.
 
