@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Rohde & Schwarz AMIQ Modulation Generator - Reviving the PC System 
-date:   2026-05-25 00:00:00 -1000
+date:   2026-06-28 00:00:00 -1000
 categories:
 ---
 
