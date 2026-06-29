@@ -476,6 +476,8 @@ in the center. This is because the post-DAC anti-aliasing low-pass filters were 
 best results, one would need a sharp custom external filter after the DACs. I mention this
 in my [AMIQ teardown blog post](/2025/04/26/RS-AMIQ-Teardown-Analog-Deep-Dive.html#analog-signal-generation-architecture-fixed-vs-variable-dac-clock).*
 
+*All words in this blog posts were written by a human.*
+
 # References
 
 * [Rohde & Schwarz AMIQ teardown](/2025/04/26/RS-AMIQ-Teardown-Analog-Deep-Dive.html)
