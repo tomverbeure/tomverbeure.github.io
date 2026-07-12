@@ -92,6 +92,10 @@ Smallest bin width is 75ps.
 * [Basic GPS clock analysis with an HP-53310A modulation domain analyzer](https://damien.douxchamps.net/elec/equipment/hp53310a/gps_clock_analysis/)
 * [Always-on 10MHz reference mod for the HP53310A](https://damien.douxchamps.net/elec/equipment/hp53310a/always_on_10MHz_output/)
 
+* [HP 53310A MDA firmware upgrade? NVRAM swap?](https://groups.io/g/HP-Agilent-Keysight-equipment/topic/hp_53310a_mda_firmware/95107760)
+
+  Replacing NVRAM with DS1225AD-150+.
+
 
 **Modulation Domain Analysis Software**
 
