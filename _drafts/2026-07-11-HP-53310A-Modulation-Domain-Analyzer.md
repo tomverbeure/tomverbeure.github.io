@@ -96,8 +96,9 @@ Smallest bin width is 75ps.
 * [HP 53305A](/assets/hp53310a/53305A.zip)
 
   * Also downloadable from HP-Agilent-Keysight groups.io Files section.
-  * Needs Win16 environment. See [this eevblog thread](https://www.eevblog.com/forum/metrology/using-hp-53305a-phase-analyzer-software-on-modern-windows/).
-
+  * Needs Win16 environment. See [this eevblog thread](https://www.eevblog.com/forum/metrology/using-hp-53305a-phase-analyzer-software-on-modern-windows/). 
+    The thread also contains dumps of the ROM and discussed undocumented SCIP commands.
+ 
 * [TVA3000 TimeView™ Datasheet](https://www.tek.com/en/datasheet/modulation-domain-analysis-software)
 
 
