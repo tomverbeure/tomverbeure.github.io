@@ -82,6 +82,8 @@ Smallest bin width is 75ps.
 
 * [HP53310A and other counter Allan deviation](https://www.eevblog.com/forum/metrology/hp53310a-and-other-counter-allan-deviation)
 
+* [Using HP 53305A Phase Analyzer Software on modern windows](https://www.eevblog.com/forum/metrology/using-hp-53305a-phase-analyzer-software-on-modern-windows/)
+
 **Various**
 
 * [HP Bench Brief - Calibration of Time Base Oscillators](https://hparchive.com/Bench_Briefs/HP-Bench-Briefs-1994-04-06.pdf)
@@ -98,6 +100,9 @@ Smallest bin width is 75ps.
   * Also downloadable from HP-Agilent-Keysight groups.io Files section.
   * Needs Win16 environment. See [this eevblog thread](https://www.eevblog.com/forum/metrology/using-hp-53305a-phase-analyzer-software-on-modern-windows/). 
     The thread also contains dumps of the ROM and discussed undocumented SCIP commands.
+
+  * 3235 dump: 4 ROM dumps. See HP53310A_FW_3235_deinterleaved.bin.gz for deinterleaved version.
+  * 3944 dump: 1 file but with an incorrect 1 byte offset. See HP53310A_FW_3944_deinterleaved.bin.gz for fixed version.
  
 * [TVA3000 TimeView™ Datasheet](https://www.tek.com/en/datasheet/modulation-domain-analysis-software)
 
