@@ -69,6 +69,24 @@ Histogram with time interval instead of frequency:
 
 Smallest bin width is 75ps.
 
+# Recap list Digikey
+
+# NVRAM
+
+* No need to do a backup.Everything can be restored by running calibration.
+* Mine has a [M48Z18-100PC1](https://www.digikey.com/en/products/detail/stmicroelectronics/M48Z18-100PC1/606300).
+  * 64 kbit
+  * [Replace the battery](https://www.eevblog.com/forum/repair/hp54645d-mso-non-volatile-memory-fix(st-m48z18-100pc1)/)
+  * [Reviving An ST M48Z35 Battery Backed RAM Chip](https://www.mattmillman.com/reviving-an-st-m48z35-battery-backed-ram-chip/)
+    * Uses a Keystone 1061 battery holder
+  * [HP54616C mit M48Z18-100 NVRAM und fortschreitender Demenz](https://www.wolfgangrobel.de/electronics/nvram.htm)
+    * Shows solder points if you remove the battery enclosure entirely
+  * [Replace with FRAM adapter](https://www.pcbway.com/project/shareproject/Dallas_DS1225Y_FRAM_Adapter_3c961bed.html)
+  * [DS1225AD-85 from UTsource](https://www.utsource.net/itm/p/12035595.html)
+    * Much cheaper...
+    
+
+
 # References
 
 **eevblog forum**
@@ -88,6 +106,7 @@ Smallest bin width is 75ps.
 
 * [HP Bench Brief - Calibration of Time Base Oscillators](https://hparchive.com/Bench_Briefs/HP-Bench-Briefs-1994-04-06.pdf)
 * [Youtube - HP 53310A MDA 10MHz ref adjust](https://www.youtube.com/watch?v=ly6b49ZyaRg)
+* [Youtube - Modulation Domain Analyzer - what's that for?](https://www.youtube.com/watch?v=lBLEfVUVGyU)
 
 * [Basic GPS clock analysis with an HP-53310A modulation domain analyzer](https://damien.douxchamps.net/elec/equipment/hp53310a/gps_clock_analysis/)
 * [Always-on 10MHz reference mod for the HP53310A](https://damien.douxchamps.net/elec/equipment/hp53310a/always_on_10MHz_output/)
@@ -95,6 +114,8 @@ Smallest bin width is 75ps.
 * [HP 53310A MDA firmware upgrade? NVRAM swap?](https://groups.io/g/HP-Agilent-Keysight-equipment/topic/hp_53310a_mda_firmware/95107760)
 
   Replacing NVRAM with DS1225AD-150+.
+
+* [groups.io - HP 53310A - Why did I not know about this sooner?](https://groups.io/g/HP-Agilent-Keysight-equipment/topic/hp_53310a_why_did_i_not/73053187)
 
 
 **Modulation Domain Analysis Software**
