@@ -682,6 +682,8 @@ need something with this kind of firepower but for everything else, a small scop
 lower specs is way more practical. I like the scope better than the Agilent 54831 so that will
 probably hit Craigslist at some point.
 
+*All words in this blog posts were written by a human.*
+
 # References
 
 * [TDS7000 Series User Manual](https://www.tek.com/en/oscilloscope/tds7054-manual/tds7000-series-user-manual)
