@@ -10,7 +10,7 @@ categories:
 
 # Introduction
 
-A little of a month ago, I ran into a Tektronix TDS7104 at the
+A little over a month ago, I ran into a Tektronix TDS7104 at the
 [Silicon Valley Flea Market](https://www.electronicsfleamarket.com/),
 where else?
 
@@ -25,7 +25,7 @@ But Paul, the seller/liquidator, has a habit of saying "I'll make you a deal"
 and he did before I even asked: $300. That's still a lot by flea market standards, 
 but a pretty good price for a TDS7104... if you can get it to work.
 
-At home, the scope powered right after away and it booted straight into the main
+At home, the scope powered up right away and it booted straight into the main
 scope application. Other than a screen that was way too dim, everything seemed
 fine.
 
@@ -71,7 +71,7 @@ VxWorks like many other Tektronix products of that time, and a large acquistion 
 
 ![TDS7104 with advanced jitter analysis license](/assets/tds7104/tds7104_license_screen.jpg)
 
-In addition to a few hardware options such a 4M/channel sample memory, up from 500k defauklt, 
+In addition to a few hardware options such a 4M/channel sample memory, up from a 500k default, 
 there are plenty of software options for advanced measurements: jitter testing, USB certification 
 testing, etc. Both the software and hardware options can be enabled with a license key. To
 the suprise of no one, that protection scheme was hacked long time ago...
@@ -361,7 +361,7 @@ replace the [TEAC CD-224E](https://theretroweb.com/cddrives/3686) laptop drive
 with a 'new' one that I got from eBay for $20.
 
 Unlike the hard drive, the CDROM drive can't be removed without opening up the TDS7104,
-but once the case is option, the effort is minimal. I first removed the floppy drive 
+but once the case is open, the effort is minimal. I first removed the floppy drive 
 to have a bit more maneuvering freedom with the cables, but it's not really necessary.
 
 **Unplug the CDROM IDE cable**
@@ -443,7 +443,7 @@ It goes like this:
             like the Win2k OS on the IBM Travelstar of the scope.
 
 I tried hard to avoid the floppy disk route because my experience with floppy drives on
-old test equipment has been absymal: none of them worked. Having no choice, I tried to copy 
+old test equipment has been abysmal: none of them worked. Having no choice, I tried to copy 
 the boot manager image with my USB floppy drive and... that didn't work either. All these years 
 the USB floppy drive, freshly bought from Amazon, was the culprit!
 
@@ -527,7 +527,7 @@ The 4 specialty drivers are for these components:
 The [TDS7104 and TDS7054 firmware v2.5.5](https://www.tek.com/en/support/software/firmware/tds7104-and-7054-firmware-upgrade) 
 can be freely downloaded from the Tektronix website. The installation was painless, just launch
 the executable.
-]
+
 The TDS7104 has an convoluted architecture where the PowerPC on the controller board can access
 files on the hard drive of the regular PC that are located in the `c:\vxboot` directory. Since the
 controller backup battery on my scope was still in good condition, I didn't have to anything special:
@@ -677,7 +677,7 @@ a donor TDS220 instead.
 
 # The End
 
-And with that, the scope is ready to be deployed to a shelve in my garage. Once day I'll 
+And with that, the scope is ready to be deployed to a shelf in my garage. One day I'll 
 need something with this kind of firepower but for everything else, a small scope with
 lower specs is way more practical. I like the scope better than the Agilent 54831 so that will
 probably hit Craigslist at some point.
