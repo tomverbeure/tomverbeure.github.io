@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Refurbishing a Tektronix TDS7104 Oscilloscope
-date:   2026-08-11 00:00:00 -1000
+date:   2026-08-23 00:00:00 -1000
 categories:
 ---
 
