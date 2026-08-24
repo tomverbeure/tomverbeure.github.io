@@ -42,7 +42,7 @@ In this blog post, I go over the steps I took to get the scope back in top shape
 
 The TDS7104 is a 4-channel oscilloscope with 1 GHz bandwidth and a maximum sample
 rate of 10Gs/s, though that's only possible when using 1 channel. The sample rates
-drop to 5 Gs/s for 2 channels and 1.25 Gs/s for 3 or 4. Even by today's standard,
+drop to 5 Gs/s for 2 channels and 2.5 Gs/s for 3 or 4. Even by today's standards,
 the specs exceed those of hobbyist class oscilloscopes, think Rigol and Siglent, though
 there's a price to pay in terms of weight, 39 pounds, and volume: they're as wide and
 deep as the earlier TDS700 series, for example, and much taller. The TDS7054 is its
@@ -50,28 +50,28 @@ little brother, figuratively speaking only. In the same chassis, it has a 500 MH
 bandwidth and 5 Gs/s.
 
 Unlike more advanced TDS7xxx models, the 7104 and 7054 have BNC connectors instead of
-custom Tektronix ones that requires probes or adapters that will usually exceed today's
+custom Tektronix ones that require probes or adapters with prices that exceed today's
 price of the scope itself.
 
 Introduced mid 2000, these scopes initially ran Windows 98 but they must have upgraded
 soon after to Windows 2000 Pro Embedded, because that's what mine has and it has components
 with a late 2000 timestamp.
 
-The PC motherboard has the little used standard NLX form factor. Mine was a RadiSys SF810
-with a Socket 370 with a 100 MHz front-side bus. Originally, these scopes shipped with
+The PC motherboard has the little-used NLX form factor. Mine was a RadiSys SF810
+with a Socket 370 and a 100 MHz front-side bus. Originally, these scopes shipped with
 a dog slow 550 MHz Celeron, I got lucky with a 850 MHz Celeron. The fastest compatible
 Celerons with 100 MHz FSB go up to 1.4 GHz, but they're pricy. You should be able to
 find 1.1 GHz versions for around $20 on eBay.
 
-Unlike my Agilent 54831, the 640x480 LCD screen has resitive touch control which makes it 
+Unlike my Agilent 54831, the 640x480 LCD screen has resistive touch control which makes it 
 possible to use the advanced scope features without the need to connect a mouse.
 
-In addition to the PC motherboard, there is PowerPC-based controller board that runs
-VxWorks like many other Tektronix products of that time, and a large acquistion board.
+In addition to the PC motherboard, there is a PowerPC-based controller board that runs
+VxWorks like many other Tektronix products of that time, and a large acquisition board.
 
 ![TDS7104 with advanced jitter analysis license](/assets/tds7104/tds7104_license_screen.jpg)
 
-In addition to a few hardware options such a 4M/channel sample memory, up from a 500k default, 
+In addition to a few hardware options such as a 4M/channel sample memory, up from a 500k default, 
 there are plenty of software options for advanced measurements: jitter testing, USB certification 
 testing, etc. Both the software and hardware options can be enabled with a license key. To
 the suprise of no one, that protection scheme was hacked long time ago...
@@ -84,19 +84,19 @@ the battery current on the Apple TV Remote. :o)
 
 # Common Failures
 
-As always, you'll find a bunch of hobbyist trying to revive this kind of scope on the
+As always, you'll find a bunch of hobbyists trying to revive this kind of scope on the
 EEVblog forum, Youtube and some blogs. Here are the most common failures:
 
 1. PC motherboard CMOS backup battery dead 
 1. PowerPC backup battery dead
-1. Harddrive dead
-1. Power suppy capacitors leaking
+1. Hard drive dead
+1. Power supply capacitors leaking
 
 I was lucky and only had to deal with issues 1 and 3, sort of. 
 
 # Make an Image of the Hard Drive
 
-Whether the machine boots or not, your first step should always first make an image
+Whether the machine boots or not, your first step should always be to make an image
 of the hard drive, a 6 GB IBM Travelstar in my case. 
 [Like my Agilent 54831](/2026/03/28/Repair-of-Two-Agilent-54831-Oscilloscopes.html#first-suspect-the-ibm-travelstar-hd), 
 I thought that I'd have to open the case to access the drive, but you can just push
@@ -136,14 +136,14 @@ palette mode. It needs to be set to True Color 24-bit mode.[^16-bit]
 ![Display Settings](/assets/tds7104/tds7104_display_settings.png)
 
 Notice the presence of 2 video cards: an Intel 810 integrated graphics card and
-the Chips & Technologies 69000. The latter is responsible for the driving the LCD
+the Chips & Technologies 69000. The latter is responsible for driving the LCD
 screen. It has special hardware to render oscilloscope waveforms in overlay mode:
 they are sent by the acquisition board to the video memory through DMA[^overlay]
 without CPU intervention.
 
 [^overlay]: The Agilent 54831 uses a similar overlaying method.
 
-While we're on the topic of the display: after the installing the CR2032, the LCD display
+While we're on the topic of the display: after installing the CR2032, the LCD display
 was still very dim, to the point that I was researching replacement CCFL backlight tubes.
 That turned out to be entirely unnecessary: the TDS7104 doesn't have a way to control
 the intensity of the LCD backlight. The previous users must have used it in a dark lab
@@ -153,10 +153,10 @@ and dialed down the brightness by adjusting the gamma settings in Windows:
 
 # Do NOT Remove the Front Panel
 
-I'm putting this section before the Disassembly one to make sure those with low attention
+I'm putting this section before the Disassembly one to make sure those with a low attention
 span get the message: **chances are high that you don't need to remove the front panel**.
 
-And that's a good because, unlike the TDS*nnn* series scopes, the front panel has 
+And that's good because, unlike the TDS*nnn* series scopes, the front panel has 
 some plastic tabs that are very easy to break. That said, even if you do break them (I did!),
 the result is not catastrophic and you should be able to put the panel back firmly where it 
 belongs with no one noticing a thing.
@@ -175,10 +175,10 @@ else. That just didn't work...
 
 The front panel consists of multiple click tabs: 1 on the left side, 1 on the right and then
 a bunch at the top and the bottom. So far so good. However, the left and right side also
-have 2 slide tabs that go into the metal rails. If you lift the left and right tabs to much,
+have 2 slide tabs that go into the metal rails. If you lift the left and right tabs too much,
 these plastic slide tabs break off.
 
-So you need to be very careful in make sure that you don't lift the plastic trim too much,
+So you need to be very careful to make sure that you don't lift the plastic trim too much,
 and that you slide the panel out while it stays parallel with the display.
 
 Or... you don't touch it: you can do all PC maintenance, including replacing the floppy drive,
@@ -202,13 +202,13 @@ over at [The SignalPath](https://thesignalpath.com).
 
 ![Remove the accessory bag](/assets/tds7104/tds7104_remove_bag.jpg)
 
-This took me longer to figure out that I want to admit: you can just unclick the bag
+This took me longer to figure out than I want to admit: you can just unclick the bag
 from the chassis, but the buttons can be very tight and if you're not careful the fabric
 can tear. Use a flat-head screwdriver right next to each button to lever it off.
 
 **Put the scope upright on its back feet**
 
-It's an unusual arrangment, but the easiest way to dismantle the scope is by putting it
+It's an unusual arrangement, but the easiest way to dismantle the scope is by putting it
 on its back feet: you don't need to remove any screw from the back!
 
 ![TDS7104 on its back feet](/assets/tds7104/tds7104_on_its_back_feet.jpg)
@@ -227,7 +227,7 @@ to remove the bottom panel next.
 
 **Remove the bottom panel and loosen the black front connector trim**
 
-The 5 screws of bottom panel are next as well as 3 screws that keep the black trim 
+Next, remove the 5 screws of the bottom panel as well as 3 screws that keep the black trim 
 of the front BNC connectors in place.
 
 ![TDS7104 bottom panel and connector enclosure](/assets/tds7104/tds7104_back_panel.jpg)
@@ -248,7 +248,7 @@ now too.*
 With the bottom panel gone, the side panels are a breeze to remove after unscrewing the 
 handle.
 
-*I lied: these are 2 screws that are different than the others. But they're a different
+*I lied: these 2 screws are different than the others. But they're a different
  color and impossible to get wrong.*
 
 **Remove the 2 sheet metal parts**
@@ -300,11 +300,11 @@ the acquistion board, I put the bottom sheet metal cover back in its place.
 # A Failed Attempt at Switching over to an SSD
 
 I've been using CompactFlash cards in the past to replace ailing hard drives. They work, but
-unless you buy a more expensive "industrial" card, they don't have any protection against
-wear leveling. That is not a problem on a
+unless you buy a more expensive "industrial" card, they don't have built-in wear leveling support. 
+That is not a problem on a
 [Rohde AMIQ](/2026/06/28/Rohde-Schwarz-AMIQ-PC-System-Repair.html#replacing-the-spinning-disk-hard-drive-with-a-compactflash-drive) 
 that runs DOS, but on an OS like Windows with swap space, it could be[^swap].
-So this time, I choose a [64 GB mSATA SSD](https://www.amazon.com/dp/B0C6HTRGZT) ($35) and
+So this time, I chose a [64 GB mSATA SSD](https://www.amazon.com/dp/B0C6HTRGZT) ($35) and
 an [mSATA SSD to IDE 44 Pin 2.5" adapter](https://www.amazon.com/dp/B01GRMUQRG) ($15)[^cost].
 
 [^swap]: In reality, I will never use this scope enough to ever run into an issue like this.
@@ -322,7 +322,7 @@ stage when it tries to bring up the Windows GUI with a `STOP: c0000218 {Registry
 
 ![Registry File Failure](/assets/tds7104/tds7104_registry_failure.jpg)
 
-Old motherboards often didn't support partitions and/or drives larger than 32 GB,
+Older systems often had issues with partitions larger than 32 GB,
 so I bought a [32 GB mSATA SSD](https://www.amazon.com/dp/B0GS4S54N2) instead, $3
 cheaper for half the capacity, but I got the same error.
 
@@ -348,13 +348,13 @@ are just a Google away, but I didn't even need one: I was never asked for a lice
 during the Win2k installation on the scope.
 
 The standard way to install Win2k Pro is with a CDROM drive. Unfortunately, the drive 
-didn't work which mean I had to open the whole machine again to install a replacement drive.
+didn't work which meant I had to open the whole machine again to install a replacement drive.
 
 # Not All TEAC CD-224E Drives are the Same
 
 The [TEAC CD-224E](https://theretroweb.com/cddrives/3686) 
 laptop drive in my TDS7104 got detected just fine by the BIOS and in Windows, but when 
-you inserted a disc in the drive, neither the BOIS nor Windows could read from it.
+you inserted a disc in the drive, neither the BIOS nor Windows could read from it.
 
 Since the RadiSys motherboard doesn't support booting from USB stick, I decided to
 replace the [TEAC CD-224E](https://theretroweb.com/cddrives/3686) laptop drive
@@ -380,7 +380,7 @@ the CD-224E 50-pin slimline IDE connector to a standard PATA/IDE connector.
 I tested the broken drive with the adapter PCB and my USB-to-IDE dongle on my laptop
 to make sure the issue was with the drive and not the CDROM disc, and that didn't work,
 as expected. With the new CD-224E/dongle combo, my laptop could read the installation
-CD just fine, but when I installed the new drive in the TD7104, the BIOS couldn't even
+CD just fine, but when I installed the new drive in the TDS7104, the BIOS couldn't even
 detect the drive! I tried every BIOS setting under the sun, but no luck.
 
 There are many versions of the CD-224E, all with the same dimensions and slimline IDE
@@ -397,16 +397,16 @@ and USB port by using a virtual machine. The process is convoluted:
 
 * mount the installation CDROM ISO and the SSD onto the virtual machine.
 * go through the first phase of the installation process until asked to reboot.
-* now move the SSD to the old the machine (the scope) and process with the installation
+* now move the SSD to the old the machine (the scope) and proceed with the installation
   there.
 
-I once again spend a few hours getting this to work, but the scope never managed to
+I once again spent a few hours getting this to work, but the scope never managed to
 make it to the Windows installation GUI.
 
 # Burning the Windows 2000 Pro Installation Disk onto a USB Stick
 
 Alright, so I'm running out of options and USB is about the only storage interface left.
-The scope can't boot from a USB stick *directly* but there is way around that. 
+The scope can't boot from a USB stick *directly* but there is a way around that. 
 
 Let's first create a bootable USB stick with the Win2k installation ISO on it.
 
@@ -447,7 +447,7 @@ old test equipment has been abysmal: none of them worked. Having no choice, I tr
 the boot manager image with my USB floppy drive and... that didn't work either. All these years 
 the USB floppy drive, freshly bought from Amazon, was the culprit!
 
-Since the scope still worked fine with the IBM HD, I use its own floppy drive to
+Since the scope still worked fine with the IBM HD, I used its own floppy drive to
 put the image onto the floppy disc and that worked.
 
 ![Plop boot manager selection menu](/assets/tds7104/tds7104_plop_boot_manager.jpg)
@@ -462,7 +462,7 @@ Installation ISO.
 # Installing Windows 2000 Pro
 
 With the empty 32GB SSD plugged into the scope, the installation of Windows 2000 Pro was uneventful. 
-There are 2 phases: the first one uses text modes and primarily copies all the necessary drivers
+There are 2 phases: the first one uses text mode and primarily copies all the necessary drivers
 onto the SSD. The machine then reboots and continues the installation in Windows GUI mode from the
 SSD, though the USB stick is still needed in a later stage.
 
@@ -483,9 +483,9 @@ The README.md says that the driver *should work* for Windows 98 and XP, but
 
 [^driver]: If you install the incorrect driver, the scope will still boot with a working
            LCD screen, but once the Windows GUI starts, it will move its business to the
-           Intel integrate GPU. You need a VGA monitor to follow what's happening. Even
+           Intel integrated GPU. You need a VGA monitor to follow what's happening. Even
            if you later select the right driver, Windows somehow thinks that the old driver
-           is good enough and just not do it, without any feedback. I had to manually delete
+           is good enough and just doesn't do it, without any feedback. I had to manually delete
            the bad driver files from the SSD to finally make it work.
 
 I used [Driver Collector](https://www.majorgeeks.com/files/details/driver_collector.html)
@@ -528,12 +528,12 @@ The [TDS7104 and TDS7054 firmware v2.5.5](https://www.tek.com/en/support/softwar
 can be freely downloaded from the Tektronix website. The installation was painless, just launch
 the executable.
 
-The TDS7104 has an convoluted architecture where the PowerPC on the controller board can access
+The TDS7104 has a convoluted architecture where the PowerPC on the controller board can access
 files on the hard drive of the regular PC that are located in the `c:\vxboot` directory. Since the
-controller backup battery on my scope was still in good condition, I didn't have to anything special:
+controller backup battery on my scope was still in good condition, I didn't have to do anything special:
 the `vxboot` directory was created automatically during the firmware installation. 
 
-One thing that was missing though as the advanced jitter license option.
+One thing that was missing, though, was the advanced jitter license option.
 
 # The Scope is Working!
 
@@ -541,14 +541,14 @@ And with that, I finally had a working TDS7104 with SSD!
 
 ![TDS7104 with IBM Travelstar in front](/assets/tds7104/tds7104_working_with_ssd.jpg)
 
-The time from pressing the power button to having a waveform on the screen was must lower
+The time from pressing the power button to having a waveform on the screen was much lower
 too: from 2min50s down to 1min35s.
 
 # Re-enabling the Existing License
 
 The same GitHub repo that I mentioned earlier also has an [unlock options](https://github.com/exit-failure/tds7000/tree/main/unlock%20options)
 directory with scripts to enable and validate license key features. On the Eevblog forum,
-plenty of people have been able to use it, so it's not as user-friendly as other license key
+plenty of people have been able to use it, but it's not as user-friendly as other license key
 schemes.
 
 Most of the time, license keys are additive, with one license key per feature that must be
@@ -590,7 +590,7 @@ XBGDV-K8GDM-KH7X3-979Y9-ZZ593-9ZRZZ-4837X-9VV5Z-T9HB
 I had to join the 18 bytes into one 72-digit hex number.
 
 The license key that comes out doesn't match the original one, but after entering
-into my scope, it worked fine:
+it into my scope, it worked just the same:
 
 ![New Jitter Analysis - Advanced license](/assets/tds7104/tds7104_new_license.png)
 
@@ -605,7 +605,7 @@ mask to a certain extent, and the license key will still work:
 7GWUZ-RRRMK-59LYT-978Y8-GZD93-8ZQGZ-C836X-8CVD
 ```
 
-What remains is the the question which bit maps to which feature? 
+What remains is the question which bit maps to which feature? 
 [This post in the eevblog forum](https://www.eevblog.com/forum/testgear/tek-csa7404-repair-project/msg2633013/#msg2633013) 
 has you partially covered here:
 
@@ -657,13 +657,13 @@ any of this...
 
 # Cleaning Up
 
-The final act is cleaning. This scope was in exception condition, except for the knobs
+The final act is cleaning. This scope was in exceptional condition, except for the knobs
 on the control panel.
 
 ![Dirty knob and less dirty one](/assets/tds7104/tds7104_dirty_knobs.jpg)
 
 The knobs have a thin anti-slip layer on them that is a finger grease magnet. Removing that 
-layer with isopropyl alcohol makes the knobs look like new without a noticable difference in
+layer with isopropyl alcohol makes the knobs look like new without a noticeable difference in
 control. Just be careful about using 99% isopropyl, I think it attacks the plastic. 90% was 
 fine.
 
@@ -684,7 +684,7 @@ probably hit Craigslist at some point.
 
 # References
 
-* [TDS7000 Serires User Manual](https://www.tek.com/en/oscilloscope/tds7054-manual/tds7000-series-user-manual)
+* [TDS7000 Series User Manual](https://www.tek.com/en/oscilloscope/tds7054-manual/tds7000-series-user-manual)
 * [TDS7000 Series Service Manual](https://www.tek.com/en/oscilloscope/tds7054-manual/tds7000-series-service-manual)
 
 * [Eevblog forum - Tek CSA7404/TDS7000 repair project](https://www.eevblog.com/forum/testgear/tek-csa7404-repair-project/)
