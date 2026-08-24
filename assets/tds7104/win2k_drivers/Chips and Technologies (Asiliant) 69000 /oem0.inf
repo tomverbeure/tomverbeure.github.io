@@ -1,0 +1,202 @@
+
+; Chips2K.inf
+;
+; Installation inf for third party (OEM) graphics drivers
+;
+
+[Version]
+Signature="$CHICAGO$"
+Provider=%drvlib%
+ClassGUID={4D36E968-E325-11CE-BFC1-08002BE10318}
+Class=Display
+
+[DestinationDirs]
+DefaultDestDir   = 11
+chips5x.Miniport  = 12  ; drivers
+chips5x.Display   = 11  ; system32
+
+;
+; Driver information
+;
+
+[Manufacturer]
+%Chips% = Chips.Mfg
+
+[Chips.Mfg]
+%Chips% 65548  = chips5x, PCI\VEN_102C&DEV_00DC
+%Chips% 65550  = chips5x, PCI\VEN_102C&DEV_00E0
+%Chips% 65554  = chips5x, PCI\VEN_102C&DEV_00E4
+%Chips% 68554  = chips5x, PCI\VEN_102C&DEV_00F4
+%Chips% 65555  = chips5x, PCI\VEN_102C&DEV_00E5
+%Chips% 69000  = chips5x, PCI\VEN_102C&DEV_00C0
+%Chips% 69030  = chips5x, PCI\VEN_102C&DEV_0C30
+;
+; General installation section
+;
+
+[chips5x]
+CopyFiles=chips5x.Miniport, chips5x.Display
+Reboot
+
+;
+; File sections
+;
+
+[chips5x.Miniport]
+Chips2Km.sys
+
+[chips5x.Display]
+Chips2Kd.dll
+chpsptrt.exe
+cntntdsp.dll
+chpstart.exe
+chipsdan.hlp
+chipsdeu.hlp
+chipsdsp.hlp
+chipsesp.hlp
+chipsfin.hlp
+chipsfra.hlp
+chipsita.hlp
+chipsjpn.hlp
+chipsnld.hlp
+chipsnon.hlp
+chipsptb.hlp
+chpgamma.dll
+
+;
+; Software Installation
+;
+
+[chips5x.SoftwareSettings]
+DelReg = chips5x_RemovePortrait
+AddReg = chips5x_SoftwareDeviceSettings
+AddReg = chips5x_Configuration				; mode/refresh config file section
+
+[chips5x_SoftwareDeviceSettings]
+HKR,, InstalledDisplayDrivers,     %REG_MULTI_SZ%, Chips2Kd
+HKR,, BiosClaimSize,               %REG_DWORD%,    1
+HKR,, ConfigFlags,                 %REG_DWORD%,    0
+;
+; To force the Asiliant driver to handle full screen DOS box
+; set the VgaCompatible key to 1.  This should only be done
+; when the Asiliant (C&T) device is the primary boot screen
+;
+; HKR,, VgaCompatible,               %REG_DWORD%,    1
+HKR,, VgaCompatible,               %REG_DWORD%,    0
+
+HKR,, DualPipeMode,   %REG_DWORD%,    0
+HKR,, DisplayFlags,   %REG_DWORD%, 0xff
+HKR,, TVFlags,        %REG_DWORD%, 0x1
+
+HKR,, Mode1_DisplayFlags,%REG_DWORD%,0x102
+HKR,, Mode1_TVFlags,%REG_DWORD%,0x1
+HKR,, Mode2_DisplayFlags,%REG_DWORD%,0x102
+HKR,, Mode2_TVFlags,%REG_DWORD%,0x1
+
+
+HKCR,"CLSID\%CLIDDSP%",,,"CHIPSDSP"
+HKCR,"CLSID\%CLIDDSP%\InProcServer32",,,"cntntdsp.dll"
+HKCR,"CLSID\%CLIDDSP%\InProcServer32","ThreadingModel",,"Apartment"
+
+HKLM,"%CURRENT%\%DSPPSH%",,,"cntntdsp"
+HKLM,"%CURRENT%\%DSPPSH%\ChipsDsp",,,"%CLIDDSP%"
+HKLM,"%CURRENT%\Shell Extensions\Approved",,,"%CLIDDSP%"="CNTNTDSP"
+HKLM,"%CURRENT%\Run","CHIPSStart",,"CHPSTART.EXE"
+
+;
+; To enable Portrait modes and rotation, un-comment the following
+; line and re-install the driver.
+;
+; HKLM,"%CURRENT%\Run","CHIPSPtrt",,"CHPSPTRT.EXE"
+
+
+;
+; This section will disable the portrait tray app
+;
+[chips5x_RemovePortrait]
+HKLM,"%CURRENT%\Run","CHIPSPtrt"
+
+;
+; This section is used to place the mode/refresh configuration filename
+; in the Registry.
+;
+[chips5x_Configuration]
+HKLM,%DEFAULT_CUR_SET%,DefaultSettings.BitsPerPel,%REG_DWORD%,0x8
+HKLM,%DEFAULT_CUR_SET%,DefaultSettings.VRefresh,%REG_DWORD%,0x3C
+HKLM,%DEFAULT_CUR_SET%,DefaultSettings.XResolution,%REG_DWORD%,0x280
+HKLM,%DEFAULT_CUR_SET%,DefaultSettings.YResolution,%REG_DWORD%,0x1E0
+
+
+;
+; Service Installation
+;
+
+[chips5x.Services]
+AddService = chips, 0x00000002, chips5x_Service_Inst, chips5x_EventLog_Inst
+
+[chips5x_Service_Inst]
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 1                  ; SERVICE_SYSTEM_START
+ErrorControl   = 0                  ; SERVICE_ERROR_IGNORE
+LoadOrderGroup = Video
+ServiceBinary  = %12%\Chips2Km.sys
+
+[chips5x_EventLog_Inst]
+AddReg = chips5x_EventLog_AddReg
+
+[chips5x_EventLog_AddReg]
+HKR,,EventMessageFile,0x00020000,"%SystemRoot%\System32\IoLogMsg.dll;%SystemRoot%\System32\drivers\Chips2Km.sys"
+HKR,,TypesSupported,0x00010001,7
+
+;
+; Source file information
+;
+
+[SourceDisksNames.x86]
+1 = %DiskId%,,,""
+
+[SourceDisksFiles]
+Chips2Kd.dll  = 1,,
+Chips2Km.sys   = 1,,
+chpsptrt.exe  = 1,,
+cntntdsp.dll  = 1,,
+chpstart.exe  = 1,,
+chipsdsp.ico  = 1,,
+chipsdan.hlp  = 1,,
+chipsdeu.hlp  = 1,,
+chipsdsp.hlp  = 1,,
+chipsesp.hlp  = 1,,
+chipsfin.hlp  = 1,,
+chipsfra.hlp  = 1,,
+chipsita.hlp  = 1,,
+chipsjpn.hlp  = 1,,
+chipsnld.hlp  = 1,,
+chipsnon.hlp  = 1,,
+chipsptb.hlp  = 1,,
+chpgamma.dll  = 1,,
+[Strings]
+
+;
+; Non-Localizable Strings
+;
+
+REG_SZ         = 0x00000000
+REG_MULTI_SZ   = 0x00010000
+REG_EXPAND_SZ  = 0x00020000
+REG_BINARY     = 0x00000001
+REG_DWORD      = 0x00010001
+SERVICEROOT    = System\CurrentControlSet\Services
+DEFAULT_CUR_SET= "System\CurrentControlSet\Hardware Profiles\Current\System\CurrentControlSet\Services\ChipsPrt\Device0"
+
+;
+; Localizable Strings
+;
+
+Chips = "Chips and Technologies (Asiliant)"
+
+DiskId="CHIPS_DISK1"
+drvlib="CHIPS"
+
+CURRENT="SOFTWARE\Microsoft\Windows\CurrentVersion"
+DSPPSH="Controls Folder\Display\shellex\PropertySheetHandlers"
+CLIDDSP="{FB4D048C-2FD2-11CF-B892-02608C411917}"
