@@ -105,6 +105,13 @@ but it will hang there forever.  You will need to:
 * Enter a bunch of values to store in the NVRAM.
 
 You can detailed step-by-step instructions [here](https://github.com/exit-failure/tds7000/tree/main/NVRAM).
+
+A dead power supply is another common problem. It often will prevent the scope from
+booting up at all. There are plenty of discussions about this on the Eevblog forum,
+[here](https://www.eevblog.com/forum/testgear/tek-csa7404-repair-project/msg3064010/#msg3064010)
+is one that has the reverse engineered power supply schematic attached. Often, all that's
+needed is to replace some leaking capacitors.
+
 I didn't have to do any of that...
 
 # Make an Image of the Hard Drive
@@ -725,6 +732,15 @@ probably hit Craigslist at some point.
   as you have the patience to read through 41+ pages of discussion.
 
 * [TDS7054 repair](https://41j.com/blog/2014/08/tektronix-tds7054-repair/)
-* [Github Repo with a lot of resources](https://github.com/exit-failure/tds7000)
+* [exit-failure/tds7000 Github Repo](https://github.com/exit-failure/tds7000)
+
+  Lots of resources here that I've used for this blog post.
+
+* [TDS7104 power supply schematic](/assets/tds7104/tds7104_analog_supply.pdf)
+
+  Created by Xyphro and attached to this 
+  [Eevblog forum comment](https://www.eevblog.com/forum/testgear/tek-csa7404-repair-project/msg3064010/#msg3064010).
+  This schematic was created by reverse engineering the PCB, so proceed with caution and
+  at your own risk. I didn't verify any of the information in it.
 
 # Footnotes
