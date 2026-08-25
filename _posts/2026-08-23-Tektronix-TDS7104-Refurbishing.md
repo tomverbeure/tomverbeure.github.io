@@ -740,7 +740,7 @@ probably hit Craigslist at some point.
 
   Created by Xyphro and attached to this 
   [Eevblog forum comment](https://www.eevblog.com/forum/testgear/tek-csa7404-repair-project/msg3064010/#msg3064010).
-  This schematic was created by reverse engineering the PCB, so proceed with caution and
-  at your own risk. I didn't verify any of the information in it.
+  This schematic was created through reverse engineering the PCB, so proceed with caution and
+  use at your own risk. I didn't verify any of the information in it.
 
 # Footnotes
