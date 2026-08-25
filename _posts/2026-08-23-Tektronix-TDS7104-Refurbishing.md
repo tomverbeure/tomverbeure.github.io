@@ -94,6 +94,19 @@ EEVblog forum, Youtube and some blogs. Here are the most common failures:
 
 I was lucky and only had to deal with issues 1 and 3, sort of. 
 
+A dead PowerPC backup battery will give you considerably more work than what's described
+in this blog post. After booting up the TekScope application will show the splash screen,
+but it will hang there forever.  You will need to:
+
+* Take apart the scope even more and take out all the PC components:
+  floppy, HD, CDROM drive, motherboard.
+* Replace the top cap of the Dallas DS9034 NVRAM with a new battery.
+* Connect with RS-232 to the PowerPC controller board.
+* Enter a bunch of values to store in the NVRAM.
+
+You can detailed step-by-step instructions [here](https://github.com/exit-failure/tds7000/tree/main/NVRAM).
+I didn't have to do any of that...
+
 # Make an Image of the Hard Drive
 
 Whether the machine boots or not, your first step should always be to make an image
@@ -533,7 +546,22 @@ files on the hard drive of the regular PC that are located in the `c:\vxboot` di
 controller backup battery on my scope was still in good condition, I didn't have to do anything special:
 the `vxboot` directory was created automatically during the firmware installation. 
 
-One thing that was missing, though, was the advanced jitter license option.
+# Installing TekFonts
+
+The Tektronix scope application uses custom TrueType fonts to render some of the symbols
+screen, e.g. the rising edge trigger symbol. Without those fonts, it will show some
+Greek characters instead.
+
+To fix that, you need to download the [tekfonts.zip](https://github.com/exit-failure/tds7000/tree/main/misc)
+file, unzip it, and install the 3 fonts.
+
+Despite rendering those Greek characters, those font files were already installed on the
+new system, so I had to delete them first and reinstall the new file. Things looked good
+after that.
+
+To delete or install the fonts, do **Start** -> **Settings** -> **Control Panel** -> **Fonts**.
+
+![Install fonts](/assets/tds7104/install_fonts.png)
 
 # The Scope is Working!
 
@@ -545,6 +573,8 @@ The time from pressing the power button to having a waveform on the screen was m
 too: from 2min50s down to 1min35s.
 
 # Re-enabling the Existing License
+
+One thing was missing, though: the advanced jitter license option.
 
 The same GitHub repo that I mentioned earlier also has an [unlock options](https://github.com/exit-failure/tds7000/tree/main/unlock%20options)
 directory with scripts to enable and validate license key features. On the Eevblog forum,
