@@ -105,6 +105,7 @@ but it will hang there forever.  You will need to:
 * Enter a bunch of values to store in the NVRAM.
 
 You can detailed step-by-step instructions [here](https://github.com/exit-failure/tds7000/tree/main/NVRAM).
+You should also check out [this repair video by Feedbackloop](https://www.youtube.com/watch?v=yZwesHzd-kw).
 
 A dead power supply is another common problem. It often will prevent the scope from
 booting up at all. There are plenty of discussions about this on the Eevblog forum,
@@ -731,7 +732,12 @@ probably hit Craigslist at some point.
   This is the place to go. Chances are that all your questions will be answered here as long
   as you have the patience to read through 41+ pages of discussion.
 
-* [TDS7054 repair](https://41j.com/blog/2014/08/tektronix-tds7054-repair/)
+* [xdevs - Tektronix TDS7000 series repair](https://xdevs.com/fix/csa7404/)
+
+  Repair of a CSA7404. Many things apply to the TDS7104.
+
+* [41J Blog - TDS7054 repair](https://41j.com/blog/2014/08/tektronix-tds7054-repair/)
+
 * [exit-failure/tds7000 Github Repo](https://github.com/exit-failure/tds7000)
 
   Lots of resources here that I've used for this blog post.
@@ -742,5 +748,13 @@ probably hit Craigslist at some point.
   [Eevblog forum comment](https://www.eevblog.com/forum/testgear/tek-csa7404-repair-project/msg3064010/#msg3064010).
   This schematic was created through reverse engineering the PCB, so proceed with caution and
   use at your own risk. I didn't verify any of the information in it.
+
+* [Youtube - Feedbackloop - Tektronix TDS7104 oscilloscope repair](https://www.youtube.com/watch?v=yZwesHzd-kw)
+
+  Replaces the PowerPC NVRAM with an FRAM that doesn't need a battery.
+
+* [Youtube - John Tinkers - Fun with Oscilloscopes: SCOPEZILLA! Tektronix TDS7104 1GHz Monster](https://www.youtube.com/watch?v=SmCVPt0i5wM)
+
+  Shows the process of disassembly and some of the PowerPC NVRAM reprogramming.
 
 # Footnotes
