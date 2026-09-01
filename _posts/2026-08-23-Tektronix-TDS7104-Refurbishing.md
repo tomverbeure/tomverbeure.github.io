@@ -418,7 +418,7 @@ and USB port by using a virtual machine. The process is convoluted:
 
 * mount the installation CDROM ISO and the SSD onto the virtual machine.
 * go through the first phase of the installation process until asked to reboot.
-* now move the SSD to the old the machine (the scope) and proceed with the installation
+* now move the SSD to the old machine (the scope) and proceed with the installation
   there.
 
 I once again spent a few hours getting this to work, but the scope never managed to
