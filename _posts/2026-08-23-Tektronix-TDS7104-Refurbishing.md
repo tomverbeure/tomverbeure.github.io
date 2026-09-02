@@ -757,4 +757,8 @@ probably hit Craigslist at some point.
 
   Shows the process of disassembly and some of the PowerPC NVRAM reprogramming.
 
+* [Tektronix TDS7104: A Follow-Up](https://www.jhongelectronics.org/2024/01/tektronix-tds7104-follow-up.html)
+
+  Has the 2003 list price of the TDS7104 and a bunch of other Tek equipment.
+
 # Footnotes
