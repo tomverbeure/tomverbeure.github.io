@@ -1,6 +1,6 @@
 ---
 layout: post
-title: Revisiting the Decimation Pipeline with Polyphase Filters
+title: Non-Critically Sampled Polyphase Filters
 date:   2026-06-22 00:00:00 -1000
 categories:
 ---
@@ -15,14 +15,15 @@ categories:
 
 I continue my quest to deconstruct fred harris' 
 [Recent Interesting and Useful Enhancements of Polyphase Filter Banks](https://www.youtube.com/watch?v=afU9f5MuXr8)
-lecture on YouTube, with the goal of understanding every last detail, with some additional
-side quests thrown when I feel like this.
+lecture. The goal is to understand every last detail, with some additional side quests 
+thrown when I feel like it.
 
-This blog post was triggered by 
-[his case of a narrow band filter](https://youtu.be/afU9f5MuXr8?t=2949) 
-that ultimately consists of a 3-stage pipeline with a decimation polyphase filter, 
-a decimating half-band filter, and an interpolation polyphase filter to reduce the 
-number of multiplications. 
+[![harris presentation slide: polyphase + halfband decimation](/assets/polyphase/non_crit/harris_prezo_slide.jpg)](/assets/polyphase/non_crit/harris_prezo_slide.jpg)
+*(Click to enlarge)*
+
+In this blog post, I'm looking at
+[his case of a narrow filter](https://youtu.be/afU9f5MuXr8?t=2949) 
+with equal input and output sample rate.
 
 I'll go through the motions of working out the details and also make the link
 to my blog posts from 6 years ago about 
@@ -31,26 +32,30 @@ and about [the design of a multi-stage decimation pipeline](https://tomverbeure.
 
 # The Impact of Transition Band on Filter Complexity
 
-The [key observation](https://youtu.be/afU9f5MuXr8?t=2499) about FIR filter design is that 
+A [key observation](https://youtu.be/afU9f5MuXr8?t=2499) about FIR filter design is that 
 the complexity[^filter_complexity] of the filter depends 3 parameters:
 
-[^filter_complexity]: In this blog post, the first order indicator for filter complexity is the number of 
-                      multiplications.
+[^filter_complexity]: In this blog post series, the first order indicator for filter complexity 
+                      is always the number of multiplications.
 
 * sample rate $$f_s$$
 * the filter transistion bandwidth $$\Delta f$$
 * stopband attenuation $$A$$ in dB
 
-So that the number of taps is:
+The number of filter taps can be approximated by this formula[^harris_approximation]:
 
+[^harris_approximation]: This formula is sometimes called the *harris rule of thumb*, with a
+                         divisor of 22. In this lecture, he simplifies that further to 20.
+   
 $$ N \widetilde{=} \frac{f_s}{\Delta f} \frac{A}{20} $$
 
-This is an approximation, of course, the final number depends on the type of filter, the pass band
-ripple, the exact location of the transition band, but it's good enough for comparison.
+One would expect pass-band ripple to be part of the equation too, but unless those 
+requirements are stringent, stopband attenuation is the dominating factor.
 
+In modern communication systems, channels are often packed tightly against each other with only 
+a narrow transition band between them. In other words, $$\Delta f$$ is small, and since that's
+part of the divisor, it makes the number of taps blow up.
 
-
-/2020/10/11/Designing-Generic-FIR-Filters-with-pyFDA-and-Numpy.html#finding-the-optimal-filter-order
 
 
 

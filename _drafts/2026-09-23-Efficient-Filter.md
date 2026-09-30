@@ -1,0 +1,180 @@
+---
+layout: post
+title: High Efficiency Filters through Decimation and Interpolation
+date:   2026-09-23 00:00:00 -1000
+categories:
+---
+
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@2/MathJax.js?config=TeX-AMS_CHTML"></script>
+
+
+* TOC
+{:toc}
+
+# Introduction
+
+I continue my quest to deconstruct fred harris' 
+[Recent Interesting and Useful Enhancements of Polyphase Filter Banks](https://www.youtube.com/watch?v=afU9f5MuXr8)
+lecture. The goal is to understand every last detail, with some additional side quests 
+thrown when I feel like it.
+
+In this blog post, I'm looking at
+[his case of a narrow filter](https://youtu.be/afU9f5MuXr8?t=2949) 
+with equal input and output sample rate.
+
+[![harris presentation slide: polyphase + halfband decimation](/assets/polyphase/efficient_filter/harris_prezo_slide_1.jpg)](/assets/polyphase/efficient_filter/harris_prezo_slide_1.jpg)
+*(Click to enlarge)*
+
+# The Impact of Transition Band on Filter Complexity
+
+A [key observation](https://youtu.be/afU9f5MuXr8?t=2499) about FIR filter design is that 
+the complexity[^filter_complexity] of the filter depends 3 parameters:
+
+[^filter_complexity]: In this blog post series, the first order indicator for filter complexity 
+                      is always the number of multiplications.
+
+* sample rate $$f_s$$
+* the filter transistion bandwidth $$\Delta f$$
+* stopband attenuation $$A$$ in dB
+
+The number of filter taps can be approximated by this formula[^harris_approximation]:
+
+[^harris_approximation]: This formula is sometimes called the *harris rule of thumb*, with a
+                         divisor of 22. In this lecture, he simplifies that further to 20.
+   
+$$ N \widetilde{=} \frac{f_s}{\Delta f} \frac{A}{20} $$
+
+One would expect pass-band ripple to be part of the equation too, but unless those 
+requirements are stringent, stopband attenuation is the dominating factor.
+
+Of those 3 parameter, stopband attenuation $$\text{A}$$ is usually fixed design parameter
+that we can't do anything about. Similarly, modern communication systems have independent
+channels packed tightly against each other with only a narrow transistion band between
+them, so $$\Delta f$$ is often a fixed system parameter as well. And since $$\Delta f$$ is
+part of the divisor, narrow transition bands tend to blow up the number of filter taps.
+
+This leaves the sample rate $$f_s$$ as the parameter of choice to keep the number of 
+filter taps in check.
+
+# A Naive Low Pass Filter
+
+Let's look at the example problem that harris wants to solve:
+
+* a low-pass filter
+* input sample rate $$f_s$$ = 4 MHz
+* double-sided bandwidth of the signal of interest $$\text{BW}$$ = 40 kHz
+* transition bandwidth $$\Delta f$$ = 40 kHz
+* stopband attenuation $$\text{A}$$ = 80 dB
+
+If we fill in these numbers in his formula, we get:
+
+$$ N = \frac{4000}{40} \frac{80}{20} = 400 $$
+
+At 4 MHz, that's 1.6 G multiplications per second.
+
+That's way too much but it's also overkill: since bandwidth of the signal of interest is only
+40 kHz, it makes no sense keep the sample rate at 4 MHz. We can fix that by decimating the signal.
+
+# Minimal Sample Rate Requirement for a Filtered Signal
+
+We first need to answer the question how high of a decimation factor we can use without
+corrupting low-pass filtered signal. When performing decimation, the spectrum above the ouput sample 
+rate folds back onto the remaining spectrum. The low pass filter makes sure that this spectrum has 
+been sufficiently attenuated, so only need to make sure that transition band frequencies don't
+fold into the pass band frequency.
+
+For that, we need a minimum sample rate 
+
+$$f_s >= \text{BW} + \Delta f_s$$
+
+In our example, that means: 
+
+$$f_s >= 40 \text{kHz} + 40 \text{kHz} = 80 \text{kHz}$$
+
+With an input sample rate of 4 MHz, this mean we can decimate by a factor of up to 50.
+
+# Using a Decimating/Interpolating Polyphase Filter
+
+As discussed in [Notes about Basic Polyphase Decimation Filters](/2026/01/25/Notes-on-Basic-Polyphase-Decimation.html),
+an FIR filter that is followed by a decimator can be converted into a polyphase filter. The total number
+of filter taps is still 400, but due to the reduction in sample rate, the number of multiplication per second
+has gone by a factor of 50: 32 M multiplications per second.
+
+This is nothing new. But harris now adds a new design requirement: 
+
+* the output sample rate must remain 4 MHz.
+
+To make that happen, the 80 kHz signal is interpolated back up to by a factor of 50 with
+a second polyphase filter:
+
+
+This doubles the number of multiplications per second from 32 M to 64 M, which is
+still 25 times lower than the original 1.6 G.
+
+# Tightening the Transition Band
+
+If we reduce the transition band from 40 kHz to 4 kHz, the number of filter taps increases by
+a factor of 10 to:
+
+$$ N = \frac{4000}{4} \frac{80}{20} = 4000 $$
+
+That's 16G multiplications per second for the naive implemention.
+
+Using the same game as before, the minimum sample rate is:
+
+$$f_s >= 40 \text{kHz} + 4 \text{kHz} = 44 \text{kHz} $$
+
+which gives us a maximum decimation ratio of:
+
+$$D = \frac{4000}{44} = 90 $$
+
+The number of multiplications per second would be $$ N \cdot f_s = 176\text{M} $$, and
+352 M for a 4 MHz output sample rate.
+
+But there's an alternative: we can retain the earlier solution that uses the 40 KHz
+transition band and insert additional low pass filter with a 4 kHz transition band.
+This filter uses an 80 kHz sample rate, so the number of taps is just:
+
+$$ N_{2} = \frac{80}{4} \frac{80}{20} = 80 $$
+
+80 taps at an 80 kHz clock rate gives 6.4M multiplication per second that must be added to
+the previous number of 64 M, for a total of 70.4 M, much smaller than the 352 M of the
+straight decimator/interpolator.
+
+# Old School
+
+6 years ago, I wrote 
+[Design of a Multi-Stage PDM to PCM Decimation Pipeline](/2020/12/20/Design-of-a-Multi-Stage-PDM-to-PCM-Decimation-Pipeline.html).
+If I'd apply the teachings of that blog post to the problemm above, I'd approach the
+solution as follows:
+
+* instead of a double-sided bandwidth 40 kHz, I'd use a pass-band frequency of 20 kHz.
+* 
+
+
+
+
+
+# References
+
+* [Youtube - Recent Interesting and Useful Enhancements of Polyphase Filter Banks: fred harris](https://www.youtube.com/watch?v=afU9f5MuXr8)
+
+* [Stackexchange - Understanding Polyphase Filter Banks](https://dsp.stackexchange.com/questions/96042/understanding-polyphase-filter-banks)
+
+* [Analysis Channelizers with Even and Odd Indexed Bin Centers - fred harris](https://www.dsponlineconference.com/WPMC_2020_Even_and_Odd_Bin%20Centers_5.pdf)
+
+* [IEEE - Digital Receivers and Transmitters Using Polyphase Filter Banks for Wireless Communications](https://ieeexplore.ieee.org/document/1193158)
+
+**Other blog posts in this series**
+
+* [Notes about Basic Polyphase Decimation Filters](/2026/01/25/Notes-on-Basic-Polyphase-Decimation.html)
+* [Complex Heterodynes Explained](/2026/02/07/Complex-Heterodyne.html)
+* [The Stunning Efficiency and Beauty of the Polyphase Channelizer](/2026/02/16/Polyphase-Channelizer.html)
+* [Polyphase Channelizers with Frequency Offset - a Bluetooth LE Example](/2026/03/05/Polyphase-Channelizer-with-Offset.html)
+
+**Source code**
+
+* [GitHub - Polyphase Filtering Blog Series](https://github.com/tomverbeure/polyphase_blog_series)
+
+# Footnotes
+
