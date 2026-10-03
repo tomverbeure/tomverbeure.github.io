@@ -28,32 +28,32 @@ with equal input and output sample rate.
 # The Impact of Transition Band on Filter Complexity
 
 A [key observation](https://youtu.be/afU9f5MuXr8?t=2499) about FIR filter design is that, reduced
-to the absolute minimum,  the complexity[^filter_complexity] of the filter depends 3 parameters:
+to the absolute minimum,  the complexity[^filter_complexity] of the filter depends on 3 parameters:
 
 [^filter_complexity]: In this blog post series, the first order indicator for filter complexity 
                       is always the number of multiplications.
 
 * sample rate $$f_s$$
-* the filter transistion bandwidth $$\Delta f$$
-* stopband attenuation $$A$$ in dB
+* the filter transition bandwidth $$\Delta f$$
+* stopband attenuation $$A_s$$ in dB
 
-The number of filter taps can be estimated with the Harris Rule of Thumb[^harris_rule_of_thumb]:
+The number of filter taps can be estimated with the Harris Rule of Thumb:
 
-$$ N \approx \frac{f_s}{\Delta f} \frac{A}{22} $$
+$$ N \approx \frac{f_s}{\Delta f} \frac{A_s}{22} $$
 
-*In his YouTube lector, he uses a divisor of 20 instead of 22 to make back of the envelope
+*In his YouTube lecture, he uses a divisor of 20 instead of 22 to make back of the envelope
 calcutation even easier.*
 
-Of those 3 parameters, stopband attenuation $$\text{A}$$ is usually a fixed design parameter
+Of those 3 parameters, stopband attenuation $$A_s$$ is usually a fixed design parameter
 that we can't do anything about. Similarly, modern communication systems often have independent
-channels packed tightly against each other with only a narrow transistion band between
+channels packed tightly against each other with only a narrow transition band between
 them, so $$\Delta f$$ is a fixed system parameter as well. And since $$\Delta f$$ is
 part of the divisor, narrow transition bands tend to blow up the number of filter taps.
 
 This leaves the sample rate $$f_s$$ as the parameter of choice to keep the number of 
 filter taps in check.
 
-One would expect pass-band ripple to be part of the Harris Rule of Thumb, but unless those 
+One would expect passband ripple to be part of the Harris Rule of Thumb, but unless those 
 requirements are stringent, stopband attenuation is the dominating factor. Harris implicitly
 assume a passband ripple of around 0.1 dB.
 
@@ -64,7 +64,7 @@ of the passband ripple of individual filter stages. When specified in dB, that m
 becomes an addition. With enough stages or you demand a much lower ripple than 0.1 dB, the passband 
 ripple becomes a factor. For those cases, you can use Bellanger's approximation:
 
-$$ N \approx \frac{-2 log_{10} ( 10 \delta_p \delta_s) }{ 3 ( \frac{ \Delta f } { f_s }) } - 1 $$
+$$ N \approx \frac{-2 \log_{10} ( 10 \delta_p \delta_s) }{ 3 ( \frac{ \Delta f } { f_s }) } - 1 $$
 
 In this equation, $$ \delta_p $$ and $$ \delta_s $$ are the linear passband ripple and the stopband 
 attenuation respectively.
@@ -74,7 +74,7 @@ that uses decibels. You must be careful to use the right formulas for $$ \delta_
 
 Stopband attenuation compares the maximum power level in the stopband to unity:
 
-$$ A_s = -20 log_{10} (\delta_s) $$
+$$ A_s = -20 \log_{10} (\delta_s) $$
 
 and
 
@@ -82,15 +82,15 @@ $$ \delta_s = 10^{- \frac{ A_s }{ 20 }} $$
 
 Passband ripple compares the peak-to-peak deviation around the unit gain:
 
-$$ A_p = 20 log_{10} ( \frac{ 1 + \delta_p }{ 1 - \delta_p } ) $$
+$$ A_p = 20 \log_{10} ( \frac{ 1 + \delta_p }{ 1 - \delta_p } ) $$
 
 and
 
-$$ \delta_p = \frac { 10^{ \frac{ A_p }{ 20 } } - 1 } { 10^{ \frac{ A_p }{ 20 } } + 1 }
+$$ \delta_p = \frac { 10^{ \frac{ A_p }{ 20 } } - 1 } { 10^{ \frac{ A_p }{ 20 } } + 1 } $$
 
-For small passband ripples, $$ ln(1 \pm x) \approx \pm x $$, and you can use this:
+For small passband ripples, $$ \ln(1 \pm x) \approx \pm x $$, and you can use this:
 
-$$ A_p \approx 17.372 \delta_p
+$$ A_p \approx 17.372 \cdot \delta_p $$
 
 and
 
@@ -98,7 +98,7 @@ $$ \delta_p \approx 0.0576 \cdot A_p $$
 
 It takes a bit of reordering, but with those 2 formulas, Bellanger's approximation reduces to:
 
-$$ N \approx \frac{ A_s - 20 log_{10}( A_p ) + 4.78 }{ 30 ( \frac{ \Delta f}{ f_s } ) } - 1 $$
+$$ N \approx \frac{ A_s - 20 \log_{10}( A_p ) + 4.78 }{ 30 ( \frac{ \Delta f}{ f_s } ) } - 1 $$
 
 # A Naive Low Pass Filter
 
@@ -108,7 +108,7 @@ Let's look at the example problem that harris wants to solve:
 * input sample rate $$f_s$$ = 4 MHz
 * double-sided bandwidth of the signal of interest $$\text{BW}$$ = 40 kHz
 * transition bandwidth $$\Delta f$$ = 40 kHz
-* stopband attenuation $$\text{A}$$ = 80 dB
+* stopband attenuation $$\text{A_s}$$ = 80 dB
 
 If we fill in these numbers in his formula, we get:
 
@@ -206,10 +206,10 @@ straight decimator/interpolator.
 
 6 years ago, I wrote 
 [Design of a Multi-Stage PDM to PCM Decimation Pipeline](/2020/12/20/Design-of-a-Multi-Stage-PDM-to-PCM-Decimation-Pipeline.html).
-If I'd apply the teachings of that blog post to the problemm above, I'd approach the
+If I'd apply the teachings of that blog post to the problem above, I'd approach the
 solution as follows:
 
-* instead of a double-sided bandwidth 40 kHz, I'd use a pass-band frequency of 20 kHz.
+* instead of a double-sided bandwidth 40 kHz, I'd use a passband frequency of 20 kHz.
 * 
 
 
