@@ -27,8 +27,8 @@ with equal input and output sample rate.
 
 # The Impact of Transition Band on Filter Complexity
 
-A [key observation](https://youtu.be/afU9f5MuXr8?t=2499) about FIR filter design is that 
-the complexity[^filter_complexity] of the filter depends 3 parameters:
+A [key observation](https://youtu.be/afU9f5MuXr8?t=2499) about FIR filter design is that, reduced
+to the absolute minimum,  the complexity[^filter_complexity] of the filter depends 3 parameters:
 
 [^filter_complexity]: In this blog post series, the first order indicator for filter complexity 
                       is always the number of multiplications.
@@ -37,24 +37,68 @@ the complexity[^filter_complexity] of the filter depends 3 parameters:
 * the filter transistion bandwidth $$\Delta f$$
 * stopband attenuation $$A$$ in dB
 
-The number of filter taps can be approximated by this formula[^harris_approximation]:
+The number of filter taps can be estimated with the Harris Rule of Thumb[^harris_rule_of_thumb]:
 
-[^harris_approximation]: This formula is sometimes called the *harris rule of thumb*, with a
-                         divisor of 22. In this lecture, he simplifies that further to 20.
-   
-$$ N \widetilde{=} \frac{f_s}{\Delta f} \frac{A}{20} $$
+$$ N \approx \frac{f_s}{\Delta f} \frac{A}{22} $$
 
-One would expect pass-band ripple to be part of the equation too, but unless those 
-requirements are stringent, stopband attenuation is the dominating factor.
+*In his YouTube lector, he uses a divisor of 20 instead of 22 to make back of the envelope
+calcutation even easier.*
 
-Of those 3 parameter, stopband attenuation $$\text{A}$$ is usually fixed design parameter
-that we can't do anything about. Similarly, modern communication systems have independent
+Of those 3 parameters, stopband attenuation $$\text{A}$$ is usually a fixed design parameter
+that we can't do anything about. Similarly, modern communication systems often have independent
 channels packed tightly against each other with only a narrow transistion band between
-them, so $$\Delta f$$ is often a fixed system parameter as well. And since $$\Delta f$$ is
+them, so $$\Delta f$$ is a fixed system parameter as well. And since $$\Delta f$$ is
 part of the divisor, narrow transition bands tend to blow up the number of filter taps.
 
 This leaves the sample rate $$f_s$$ as the parameter of choice to keep the number of 
 filter taps in check.
+
+One would expect pass-band ripple to be part of the Harris Rule of Thumb, but unless those 
+requirements are stringent, stopband attenuation is the dominating factor. Harris implicitly
+assume a passband ripple of around 0.1 dB.
+
+# Bellanger's Filter Complexity Approximation
+
+When you start cascading multiple filters, the overall passband ripple is the multiplication 
+of the passband ripple of individual filter stages. When specified in dB, that multiplication
+becomes an addition. With enough stages or you demand a much lower ripple than 0.1 dB, the passband 
+ripple becomes a factor. For those cases, you can use Bellanger's approximation:
+
+$$ N \approx \frac{-2 log_{10} ( 10 \delta_p \delta_s) }{ 3 ( \frac{ \Delta f } { f_s }) } - 1 $$
+
+In this equation, $$ \delta_p $$ and $$ \delta_s $$ are the linear passband ripple and the stopband 
+attenuation respectively.
+
+I have no intuition for linear ripple and attenuation values, so let's convert this formula to one
+that uses decibels. You must be careful to use the right formulas for $$ \delta_p $$ and $$ \delta_s $$. 
+
+Stopband attenuation compares the maximum power level in the stopband to unity:
+
+$$ A_s = -20 log_{10} (\delta_s) $$
+
+and
+
+$$ \delta_s = 10^{- \frac{ A_s }{ 20 }} $$
+
+Passband ripple compares the peak-to-peak deviation around the unit gain:
+
+$$ A_p = 20 log_{10} ( \frac{ 1 + \delta_p }{ 1 - \delta_p } ) $$
+
+and
+
+$$ \delta_p = \frac { 10^{ \frac{ A_p }{ 20 } } - 1 } { 10^{ \frac{ A_p }{ 20 } } + 1 }
+
+For small passband ripples, $$ ln(1 \pm x) \approx \pm x $$, and you can use this:
+
+$$ A_p \approx 17.372 \delta_p
+
+and
+
+$$ \delta_p \approx 0.0576 \cdot A_p $$
+
+It takes a bit of reordering, but with those 2 formulas, Bellanger's approximation reduces to:
+
+$$ N \approx \frac{ A_s - 20 log_{10}( A_p ) + 4.78 }{ 30 ( \frac{ \Delta f}{ f_s } ) } - 1 $$
 
 # A Naive Low Pass Filter
 
@@ -74,6 +118,23 @@ At 4 MHz, that's 1.6 G multiplications per second.
 
 That's way too much but it's also overkill: since bandwidth of the signal of interest is only
 40 kHz, it makes no sense keep the sample rate at 4 MHz. We can fix that by decimating the signal.
+
+# Discussion
+
+There are in my opinion a bunch of issues with the harris example:
+
+* The input sample rate of 4 MHz is way too low. There is no need to use an FIR filter in
+  a polyphase form. 
+* He chooses a decimation factor of 50. While that is the lowest possible factor for a
+  40 kHz bandwidth and 40 kHz transition band, it's far from optimal in terms of achieving
+  the lowest possible number of multiplications. A decimation factor of 
+  48 ($$ 3 \cdot 2^4$$) allows a architecture of 4 decimated-by-2 halfband filters followed
+  by a decimate by 3 FIR filter. A few CIC filter might even have been possible.
+* In this lecture, harris consistently compares his results against a theoretical worst case 
+  filter complexity, where you calculate all samples in full and then perform a decimation.
+  That is fine, but doing so makes late optimization seem insignificant. When you reduce
+  1.6G operations to 32 M operations, a further reduction to 24 M operations seems trivial, but
+  it's not if 32 M was the original baseline.
 
 # Minimal Sample Rate Requirement for a Filtered Signal
 
@@ -177,4 +238,5 @@ solution as follows:
 * [GitHub - Polyphase Filtering Blog Series](https://github.com/tomverbeure/polyphase_blog_series)
 
 # Footnotes
+
 
