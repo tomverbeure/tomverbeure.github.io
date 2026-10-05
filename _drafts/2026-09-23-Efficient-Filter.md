@@ -25,7 +25,75 @@ with equal input and output sample rate.
 [![harris presentation slide: polyphase + halfband decimation](/assets/polyphase/efficient_filter/harris_prezo_slide_1.jpg)](/assets/polyphase/efficient_filter/harris_prezo_slide_1.jpg)
 *(Click to enlarge)*
 
-# The Impact of Transition Band on Filter Complexity
+# Estimation of the Number of FIR Filter Taps
+
+The number of filter taps for a given specification depends on a number of parameters:
+
+* sample rate $$f_s$$
+* the filter transition bandwidth $$\Delta f$$
+* stopband attenuation $$A_s$$ in dB
+* passband ripple $$A_p$$ in dB
+
+But that's not all: the passband ripple and stopband attenuation are only limits, the behavior
+within these bands can be very different and is dependent on how the filter coefficients
+were chosen. 
+
+For the same requirements, an equiripple filter that was designed with the Remez/Parks-McClellan 
+method will need a low number of coefficients than one that is designed with the least squares method.
+
+XXXX Example XXX
+
+Unless explicitly stated otherwise, assume that equiripple filters are used.
+
+# Bellanger's Approximation
+
+When evaluating different multi-rate filter architectures, the number of filter taps is one of 
+the most important factors. The exact number can be obtained with a binary search, run 
+the Remez algorithm with a different number of taps until requirements are met, but that's slow 
+and usually overkill. 
+
+In [Digital Processing of Signals: Theory and Practice](https://www.amazon.com/dp/0471921017), 
+Maurice Bellanger came up with a simpler formula that's empirically derived by creating hundreds
+filter with the Remez method. It's now called Bellanger's approximation:
+
+$$ N \approx \frac{-2 \log_{10} ( 10 \delta_p \delta_s) }{ 3 ( \frac{ \Delta f } { f_s }) } - 1 $$
+
+In this equation, $$ \delta_p $$ and $$ \delta_s $$ are the linear passband ripple and stopband 
+attenuation respectively.
+
+I have no intuition for linear ripple and attenuation values, so let's convert this formula to one
+that uses decibels. You must be careful to use the right formulas for $$ \delta_p $$ and $$ \delta_s $$. 
+
+Stopband attenuation compares the maximum power level in the stopband to unity:
+
+$$ A_s = -20 \log_{10} (\delta_s) $$
+
+$$ \delta_s = 10^{- \frac{ A_s }{ 20 }} $$
+
+Passband ripple compares the peak-to-peak deviation around the unit gain:
+
+$$ A_p = 20 \log_{10} ( \frac{ 1 + \delta_p }{ 1 - \delta_p } ) $$
+
+$$ \delta_p = \frac { 10^{ \frac{ A_p }{ 20 } } - 1 } { 10^{ \frac{ A_p }{ 20 } } + 1 } $$
+
+For small passband ripples, $$ \ln(1 + x) \approx x $$, and you can use this:
+
+$$ A_p = 20 \log_{10}(1 + \delta_p) - 20 \log_{10}(1 - \delta_p) $$
+
+$$ A_p \approx \frac{40}{ \ln(10) } \delta_p $$
+
+$$ A_p \approx 17.372 \cdot \delta_p $$
+
+and
+
+$$ \delta_p \approx 0.0576 \cdot A_p $$
+
+It takes a bit of reordering, but with those 2 formulas, Bellanger's approximation reduces to:
+
+$$ N \approx \frac{ A_s - 20 \log_{10}( A_p ) + 4.78 }{ 30 ( \frac{ \Delta f}{ f_s } ) } - 1 $$
+
+
+# Harris Rule of Thumb
 
 A [key observation](https://youtu.be/afU9f5MuXr8?t=2499) about FIR filter design is that, reduced
 to the absolute minimum,  the complexity[^filter_complexity] of the filter depends on 3 parameters:
@@ -57,7 +125,6 @@ One would expect passband ripple to be part of the Harris Rule of Thumb, but unl
 requirements are stringent, stopband attenuation is the dominating factor. Harris implicitly
 assume a passband ripple of around 0.1 dB.
 
-# Bellanger's Filter Complexity Approximation
 
 When you start cascading multiple filters, the overall passband ripple is the multiplication 
 of the passband ripple of individual filter stages. When specified in dB, that multiplication
@@ -66,39 +133,6 @@ ripple becomes a factor. For those cases, you can use Bellanger's approximation:
 
 $$ N \approx \frac{-2 \log_{10} ( 10 \delta_p \delta_s) }{ 3 ( \frac{ \Delta f } { f_s }) } - 1 $$
 
-In this equation, $$ \delta_p $$ and $$ \delta_s $$ are the linear passband ripple and the stopband 
-attenuation respectively.
-
-I have no intuition for linear ripple and attenuation values, so let's convert this formula to one
-that uses decibels. You must be careful to use the right formulas for $$ \delta_p $$ and $$ \delta_s $$. 
-
-Stopband attenuation compares the maximum power level in the stopband to unity:
-
-$$ A_s = -20 \log_{10} (\delta_s) $$
-
-and
-
-$$ \delta_s = 10^{- \frac{ A_s }{ 20 }} $$
-
-Passband ripple compares the peak-to-peak deviation around the unit gain:
-
-$$ A_p = 20 \log_{10} ( \frac{ 1 + \delta_p }{ 1 - \delta_p } ) $$
-
-and
-
-$$ \delta_p = \frac { 10^{ \frac{ A_p }{ 20 } } - 1 } { 10^{ \frac{ A_p }{ 20 } } + 1 } $$
-
-For small passband ripples, $$ \ln(1 \pm x) \approx \pm x $$, and you can use this:
-
-$$ A_p \approx 17.372 \cdot \delta_p $$
-
-and
-
-$$ \delta_p \approx 0.0576 \cdot A_p $$
-
-It takes a bit of reordering, but with those 2 formulas, Bellanger's approximation reduces to:
-
-$$ N \approx \frac{ A_s - 20 \log_{10}( A_p ) + 4.78 }{ 30 ( \frac{ \Delta f}{ f_s } ) } - 1 $$
 
 # A Naive Low Pass Filter
 
@@ -226,7 +260,10 @@ solution as follows:
 
 * [IEEE - Digital Receivers and Transmitters Using Polyphase Filter Banks for Wireless Communications](https://ieeexplore.ieee.org/document/1193158)
 
+* [Stackexachange: How many taps does an FIR filter need?](https://dsp.stackexchange.com/questions/31066/how-many-taps-does-an-fir-filter-need)
+
 **Other blog posts in this series**
+
 
 * [Notes about Basic Polyphase Decimation Filters](/2026/01/25/Notes-on-Basic-Polyphase-Decimation.html)
 * [Complex Heterodynes Explained](/2026/02/07/Complex-Heterodyne.html)
