@@ -19,32 +19,37 @@ Except for really simple schemes, ECC theory gets complicated quickly.
 
 The two codes that I've looked the most are 
 [Reed-Solomon](https://en.wikipedia.org/wiki/Reed–Solomon_error_correction) 
-and [BCH](https://en.wikipedia.org/wiki/BCH_code) 
+and binary [BCH](https://en.wikipedia.org/wiki/BCH_code) 
 codes. They are closely related: both add redundant symbols that are calculated
-by evaluating a polynomial that's normally evaluated using 
+with evaluating a polynomial that's normally evaluated using 
 [Galois Field math](/2026/06/14/Galois-Field-Arithmetic-Primer.html), though, as shown
 in my earlier Reed-Solomon blog post, that's not strictly required. The encoding algorithm
 is relatively straightforward, the decoding algorithms are significantly more complicated
 but similar.
 
 Reed-Solomon and BCH codes differ in the size of their symbols, their alphabet: a symbol
-of the former consists of multiple bits, while the symbol of the latter is a bit. Error are
-correct with a granularity of a symbol.
+of the former consists of multiple bits, while the symbol of the latter is a bit. Errors are
+corrected with a granularity of a symbol.
+
+One key ECC question is "How many bits do I need to correct a given number of error?"
+
+In this blog post, I lay out 
+
 
 # Hamming Distance
 
 When you look at the theory of error detecting and correcting codes, the discussion
 immediately turns to Hamming distance: the number of bit flips required to convert one
 vector of bits to another. The goal of an error correcting code is to transform the input
-vector, the message, to an output vector, the code word, so that the Hamming minimum distance
+vector, the message, to an output vector, the code word, so that the minimum Hamming distance
 between code words is guaranteed to be at least a certain number. The higher the Hamming 
 distance, the higher number of bits that can be flipped in a code word without destroying 
 the ability to recover the original message.
 
 # Intuitive Estimation of Error Correction Bits
 
-Hamming distance is not particulary complicated, but in practice I found myself using an
-an even simpler mental model:
+Hamming distance is not particularly complicated, but in practice I found myself using an
+even simpler mental model:
 
 If a message of $$k$$ bits has 1 incorrect bit, you need a number of $$ r = \lceil log_2(k) \rceil$$ [^ceil] 
 bits to point out the incorrect bit. Let's call that number the *error index*. To correct $$t$$ bits, 
@@ -55,8 +60,8 @@ use $$ r = t \cdot \lceil \log_2(k) \rceil$$ additional bits.
 ![Error indicators](/assets/err_correction/error_correction-error_indicators.svg)
 
 That's it! It's definitely simple, it can only be a first order estimation, but I felt
-like it had to be pretty close to reality: a 1000-bit message requires 10 bits of additional
-bits to recover from a 1 bit error.
+like it had to be pretty close to reality: a 1000-bit message requires 10 additional bits
+to recover from a 1 bit error.
 
 But does it really?
 
@@ -67,11 +72,11 @@ Let's consider some of the aspects of such a model:
 **It's not practical in the real world**
 
 Or, at least, not as a forward error correction code where you don't know up front which bit 
-will be corrupted. But you could at least imaging a protocol like this:
+will be corrupted. But you could at least imagine a protocol like this:
 
 * Participant A transmits 1000 bits to participant B over a noisy channel
 * B transmits 1000 bits back to A over a perfect channel
-* A transmits 10 bit error index to signal to B which bit it received wrong
+* A transmits a 10 bit error index to signal to B which bit it received wrong
 
 ![three-phase protocol](/assets/err_correction/error_correction-three_phase_protocol.svg)
 
@@ -82,7 +87,7 @@ transmission and calculate the number of bits as $$r =  \lceil log_2(k+1) \rceil
 $$r =  \lceil log_2(k) \rceil$$.
 
 E.g. for a 1000-bit message, 0 to 999 indicates an error bit, and 1000 signals perfect 
-transmision.
+transmission.
 
 For messages that are not exactly a power of 2, the number of error indicator bits
 remains the same.
@@ -92,12 +97,12 @@ remains the same.
 One way to solve this is by going through the same procedure to verify the error index. 
 
 For a first iteration, it would cost an additional 
-$$\lceil log_2(\lceil log_2(k+1) \rceil ) \rceil $$ bits, 4 for bits for a 10 bit error index. 
+$$\lceil log_2(\lceil log_2(k+1) \rceil ) \rceil $$ bits, 4 bits for a 10 bit error index. 
 Of course, those 4 bits might be corrupt too! 
 
 A better approach is to work backwards: start out with the length of the code word and the 
-number of errors you want to solve and determine the number of input message bits from there. 
-In this case, you get $$r = \lceil log_2(n) \rceil$$.
+number of errors you want to correct and determine the number of input message bits from there. 
+In this case, you get $$r = \lceil log_2(n+1) \rceil$$.
 
 **It doesn't consider that the same error index can appear only once**
 
@@ -120,7 +125,7 @@ the receiver just needs to invert the bit. This also doesn't work for Reed-Solom
 
 Forget about using the Wikipedia article to compare the intuition against theory: you won't
 find anything explicit. I found 
-[this presentation from the National Tapei University](https://web.ntpu.edu.tw/~yshan/BCH_code.pdf)
+[this presentation from the National Taipei University](https://web.ntpu.edu.tw/~yshan/BCH_code.pdf)
 useful. The key formulas are on the first slide:
 
 * Block length: $$ n = 2^m -1 $$
@@ -163,11 +168,12 @@ The only differences are:
 
 Theoretically, all BCH and Reed-Solomon code words have a length $$n = 2^m -1$$ bits. In practice, 
 the transmitted code words are often shortened by setting a bunch of the symbols in the input message
-to zero and not transmitting them.[^systematic_code]
+to zero and not transmitting them.[^systematic_code] When using shortened codes, you stil have
+to use the $$m$$ value of the parent code for which $$n = 2^m -1$$.
 
 The intuitive formula works for long code words and a limited number of errors to correct: $$n \approx k$$.
 
-[^systematic_code]: This assume that a systematic coding scheme is used, where the original message
+[^systematic_code]: This assumes that a systematic coding scheme is used, where the original message
                     appears unmodified in the code word. This is the case for most BCH and RS coding 
                     schemes.
 
@@ -187,7 +193,7 @@ And a bunch of bits with the correct values:
 
 $$ e_{values} = t \cdot s $$
 
-Just like BCD codes, $$n = 2^s - 1$$ for Reed-Solomon codes. Change $$e_{location}$$ to
+Just like BCH codes, $$n = 2^s - 1$$ for Reed-Solomon codes. Change $$e_{location}$$ to
 use $$n$$ instead of $$k$$ and you get:
 
 $$ e_{location} \approx t \cdot \lceil log_2(2^s -1) \rceil $$ 
@@ -200,29 +206,36 @@ $$
 e = e_{location} + e_{values} \approx 2 t \cdot s
 $$
 
-It turns out, that is *exactly* what you'll find in all texts about Reed-Solomon coding: the number of
-parity words is equal to 2 times the number of errors you want to correct!
+It turns out, that is *exactly* what you'll find in all texts about Reed-Solomon coding: the number of 
+partity symbols must be at least 2 times the number of corrupt symbols you want to correct.
 
 # BCH vs Reed-Solomon Codes
 
-Reed-Solomon codes are much more popular than BCD codes. It's interesting to see why this is the case.
+Reed-Solomon codes are much more popular than BCH codes. It's interesting to see why this is the case.
 
 Let's create an example where code words are 255 bytes or 2040 bits and where we reserve 32 bytes or 
 256 bits for error correction.
 
-For Reed-Solomon, this allows us to correct 16 corrupt bytes or up to 128 corrupt bits. For BCH, we
-can need 11 bits per error, so the 256 error bits can fix 23 corrupt bits.
+For Reed-Solomon, this allows us to correct 16 corrupt bytes that can contain up to 128 corrupt bits, as
+long as they're contained within those 16 bytes.
+For BCH, we can need 11 bits per error, so the 256 parity bits can fix 23 corrupt bits.
 
-Reed-Solomon is the winner if error happen in bursts: it doesn't matter if a burst is 1 or 8 bits long, it
-can still count as a single corruption. When errors are spread randomly, then BCH wins: instead of fixing
-16 bit flips, it can fix 23.
+Reed-Solomon is the winner if errors happen in bursts: it doesn't matter if a burst is 1 or 8 bits long, it
+counts as a single corruption when they're within the same byte. When errors are spread randomly, then BCH 
+wins: instead of fixing 16 bit flips, it can fix 23.
 
-In practice, communication protocols have always used 2 codes: 
+In practice, communication protocols often used 2 codes in the following scheme[^new_schemes]:
 
-Reed-Solomon -> Convolutional -> Transmission -> Viterby -> Reed-Solomon
+[^new_schemes]: The RS/Convolutional code scheme has been replaced by more powerful ones that use LDPC and
+                Turbo coded.
 
-A convolutional code has a number of benefits over BCH but it can introduce burst errors which the
-Reed-Solomon code can cleanup.
+* Transmitter: Reed-Solomon Encoder -> Interleaving -> Convolutional Encoder
+* Receiver: Viterbi Decoder -> De-interleaving -> Reed-Solomon Decoder
+
+A Viterbi decoder of the convolutional code has a number of benefits over BCH but when it makes a mistake,
+it can introduce burst errors which the Reed-Solomon code can clean up.
+
+The interleaver increase the burst error lengths that can be recovered but that's for a different blog post.
 
 
 # References
