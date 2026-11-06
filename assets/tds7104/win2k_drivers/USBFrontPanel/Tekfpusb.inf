@@ -1,0 +1,65 @@
+;; TekFPUsb.inf
+
+;; *********  PLEASE READ ***********
+;; The wizard cannot create exact INF files for all buses and device types. 
+;; You may have to make changes to this file in order to get your device to
+;; install. In particular,  hardware IDs and logical configurations require
+;; intervention.
+
+[Version]
+Signature="$CHICAGO$"
+Class=USB
+provider=%ProviderName%
+
+[Manufacturer]
+%MfgName%=Tektronix
+
+[Tektronix]
+%USB\VID_0699&PID_0101.DeviceDesc%=TekFPUsb.Dev, USB\VID_0699&PID_0101
+
+[PreCopySection]
+HKR,,NoSetupUI,,1
+
+[DestinationDirs]
+TekFPUsb.Files.Ext = 10,System32\Drivers
+TekFPUsb.Files.Inf = 10,INF
+
+[TekFPUsb.Dev]
+CopyFiles=TekFPUsb.Files.Ext, TekFPUsb.Files.Inf
+AddReg=TekFPUsb.AddReg
+
+
+[TekFPUsb.Dev.NT]
+CopyFiles=TekFPUsb.Files.Ext, TekFPUsb.Files.Inf
+AddReg=TekFPUsb.AddReg
+
+[TekFPUsb.Dev.NT.Services]
+Addservice = TekFPUsb, 0x00000002, TekFPUsb.AddService
+
+[TekFPUsb.AddService]
+DisplayName    = %SvcDesc%
+ServiceType    = 1                  ; SERVICE_KERNEL_DRIVER
+StartType      = 2                  ; SERVICE_AUTO_START
+ErrorControl   = 1                  ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %10%\System32\Drivers\TekFPUsb.sys
+LoadOrderGroup = Base
+
+[TekFPUsb.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,TekFPUsb.sys
+HKR, "Parameters", "BreakOnEntry", FLG_ADDREG_TYPE_DWORD, 1
+
+[TekFPUsb.Files.Ext]
+TekFPUsb.sys
+
+[TekFPUsb.Files.Inf]
+TekFPUsb.Inf
+
+;---------------------------------------------------------------;
+
+[Strings]
+ProviderName="Tektronix, Inc"
+MfgName="Tektronix"
+DeviceDesc="Front Panel USB Driver"
+SvcDesc="Tektronix TDS Front Panel Driver(tekfpusb.sys)"
+USB\VID_0699&PID_0101.DeviceDesc="Tektronix USB Front Panel"

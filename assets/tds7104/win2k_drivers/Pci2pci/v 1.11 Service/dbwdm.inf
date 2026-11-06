@@ -1,0 +1,91 @@
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;  TITLE: dbwdm.inf
+;
+;  (c) Copyright Tektronix Inc. 2003 - All Rights Reserved.
+;
+;  DESCRIPTION:
+;
+;  This is the installation script for the 21554, 21555 Drawbridge WDM driver.
+;
+;  dio.exe is renamed dioservice.exe and is a service.
+;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+[Version]
+Signature="$CHICAGO$"
+Class=System
+provider=%TEK%
+
+[SourceDisksNames]
+1=%FloppyName%,,,
+
+[SourceDisksFiles]
+dbwdm.sys = 1
+dblib.sys = 1
+dbfs.sys = 1
+dioservice.exe = 1
+
+[Manufacturer]
+%MfgName%=Tektronix
+
+[Tektronix]
+%PCI\VEN_1011&DEV_0046.DeviceDesc%=DBWDM.Dev, PCI\VEN_1011&DEV_0046
+%PCI\VEN_8086&DEV_B555.DeviceDesc%=DBWDM.Dev, PCI\VEN_8086&DEV_B555
+
+[PreCopySection]
+HKR,,NoSetupUI,,1
+
+[DestinationDirs]
+DBWDM.Files.Ext = 10,System32\Drivers
+DBWDM.Files.Inf = 10,INF
+DBWDM.Files.Exe = 10
+
+[DBWDM.Dev]
+CopyFiles=DBWDM.Files.Ext, DBWDM.Files.Exe
+AddReg=DBWDM.AddReg
+
+[DBWDM.Dev.NT]
+CopyFiles=DBWDM.Files.Ext, DBWDM.Files.Exe
+AddReg=DBWDM.AddReg
+
+[DBWDM.Dev.NT.Services]
+Addservice = DBWDM, 0x00000002, DBWDM.AddService
+Addservice = DIO, 0x00000138, DIO.AddService
+
+[DBWDM.AddService]
+DisplayName    = %DBWDM.SvcDesc%
+ServiceType    = 1                  ; Kernel Driver
+StartType      = 0                  ; Boot time start
+ErrorControl   = 1                  ; Display errors
+ServiceBinary  = %10%\System32\Drivers\dbwdm.sys
+LoadOrderGroup = Base
+
+[DIO.AddService]
+DisplayName    = %DIOSERVICE%
+ServiceType    = 16                 ; A service type Visible in SCM
+StartType      = 2                  ; Auto start after system
+ErrorControl   = 1                  ; Display errors
+ServiceBinary  = %10%\dioservice.exe
+LoadOrderGroup = %LOCALSYSTEM%
+
+[DBWDM.AddReg]
+HKR,,DevLoader,,*ntkern
+HKR,,NTMPDriver,,dbwdm.sys
+
+[DBWDM.Files.Ext]
+dbwdm.sys
+dblib.sys
+dbfs.sys
+
+[DBWDM.Files.Exe]
+dioservice.exe
+
+[Strings]
+FloppyName="Drawbridge Driver Installation Disk"
+TEK="Tektronix"
+MfgName="Tektronix"
+PCI\VEN_1011&DEV_0046.DeviceDesc="Tektronix PowerPC CPU Board"
+PCI\VEN_8086&DEV_B555.DeviceDesc="Tektronix PowerPC CPU Board"
+DBWDM.SvcDesc="Drawbridge I/O System Driver"
+DIOSERVICE="DIO Service"
+LOCALSYSTEM="LocalSystem"
