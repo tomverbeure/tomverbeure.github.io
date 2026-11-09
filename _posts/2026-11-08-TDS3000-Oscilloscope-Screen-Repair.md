@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Tektronix TDS3000(B) Screen Repair
-date:   2026-11-06 00:00:00 -1000
+date:   2026-11-08 00:00:00 -1000
 categories:
 ---
 
